@@ -3566,7 +3566,7 @@ exe	0x00544070	he_AllocTribute	he	byte	readable
 exe	0x00544330	he_RunTribute	he	byte	readable		
 exe	0x00544550	he_DrawPairPicks	he	byte	readable		
 exe	0x00544630	he_AllocCourtship	he	byte	readable		
-exe	0x00544840	he_RunCourtship	he	draft	readable	deep	
+exe	0x00544840	he_RunCourtship	he	byte	readable		
 exe	0x005455e0	he_AllocRandomMessage	he	byte	readable		
 exe	0x00545640	he_RunRandomMessage	he	byte	readable		
 exe	0x00545670	he_AllocPatrol	he	byte	readable		
@@ -3639,13 +3639,13 @@ exe	0x0054d7d0	he_RunSkillUp	he	byte	readable
 exe	0x0054da20	he_StartBard	he	byte	readable		
 exe	0x0054da80	he_RunBard	he	byte	readable		
 exe	0x0054de60	he_StartPopulation	he	byte	readable		
-exe	0x0054dec0	he_RunPopulation	he	draft	readable	deep	
+exe	0x0054dec0	he_RunPopulation	he	byte	readable		
 exe	0x0054e770	he_StartLover	he	byte	readable		
 exe	0x0054e890	he_RunLover	he	byte	readable		
 exe	0x0054eb80	he_IsSimCandidate	he	byte	readable		
 exe	0x0054ebd0	he_RunDiseaseSim	he	byte	readable		
 exe	0x0054ef70	he_StartDarkCorner	he	byte	readable		
-exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep	
+exe	0x0054f160	he_RunDarkCorner	he	byte	readable		
 exe	0x0054fb50	he_StartEffectEvent	he	byte	readable		
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
@@ -3692,7 +3692,7 @@ exe	0x00553d60	he_NoEvent4bPair	he	byte	readable
 exe	0x00553db0	he_NoEvent35Pair	he	byte	readable		
 exe	0x00553e10	he_AllocSale	he	byte	readable		
 exe	0x00553e90	he_RunSale	he	byte	readable		
-exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
+exe	0x00554320	he_RunCustomers	he	byte	readable		
 exe	0x00554820	he_AllocCustomersHire	he	byte	readable		
 exe	0x00554860	he_RunHire	he	byte	readable		
 exe	0x00554cb0	he_AllocTransport	he	byte	readable		
@@ -3707,7 +3707,7 @@ exe	0x00556600	he_RunTransport	he	byte	readable
 exe	0x00556dc0	he_AllocCartRepair	he	byte	readable		
 exe	0x00556ed0	he_RunCartRepair	he	byte	readable		
 exe	0x00557160	he_AllocMessageBox	he	byte	readable		
-exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
+exe	0x00557190	he_RunMessageBox	he	byte	readable		
 exe	0x005578a0	he_RunSlotOrder	he	byte	readable		
 exe	0x00557b30	he_AllocSlotOrderStore	he	byte	readable		
 exe	0x00557b70	he_RunStoreExtension	he	byte	readable		
@@ -3761,7 +3761,7 @@ exe	0x0055e9d0	he_AllocRoutine	he	byte	readable
 exe	0x0055ea60	he_FigureContact	he	byte	readable		
 exe	0x0055eba0	he_FindFigurePlace	he	byte	readable		
 exe	0x0055ee40	he_PickNearBuilding	he	byte	readable		
-exe	0x0055efc0	he_RunRoutine	he	draft	readable	deep	
+exe	0x0055efc0	he_RunRoutine	he	byte	readable		
 exe	0x0055fa20	he_AllocMarket	he	byte	readable		
 exe	0x0055fa90	he_RunMarketSupervisor	he	shape	readable	deep	
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
