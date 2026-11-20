@@ -2525,7 +2525,7 @@ exe	0x004de610	cm_DuelVariant	cmscene	byte	readable
 exe	0x004de640	cm_DuelShotAction	cmscene	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004de900	cm_DuelRound	cmscene	byte	readable		
 exe	0x004debe0	cm_DuelOutcome	cmscene	byte	readable		
-exe	0x004ded10	cm_RunDuel	cmscene	draft	readable	deep	
+exe	0x004ded10	cm_RunDuel	cmscene	byte	readable		
 exe	0x004dfa20	cm_DuelAftermath	cmscene	byte	readable		
 exe	0x004dfcb0	cm_DuelRoundDialog	cmscene	byte	readable		
 exe	0x004dfdd0	cm_DuelChooseRound	cmscene	byte	readable		
