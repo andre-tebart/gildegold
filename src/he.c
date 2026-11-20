@@ -16204,7 +16204,7 @@ float gm_StockPrice(int p, int n);  /* 0x4ffa10 (f3gm.c; f3gm.h does not declare
    min / if), (int)f through k first, s2 as pl-block / initialised local, a label before the call or the
    statement (no region effect); 0.5f or g / 2 give fmul dword (fpu 6); the statement before the call: M10.
    c2pass: no tail / adjust pass moves it (the scheduler or the x87 stackifier). flip --want on the three
-   lines: no single mutation. climb 2 rounds: nothing. prior: s49: 156 -> 122 ins, 964 = 964 instructions,
+   lines: no single mutation. climb: 3 rounds, beam 8 (1700 mutants): nothing below 2. prior: s49: 156 -> 122 ins, 964 = 964 instructions,
    size 3479 -> 3463 (the original 3459, padded equal). Levers: the end as if (ai_Time.hour < 22) { next
    run } else he_FreeEvent(ev) (VC6 then cross-jumps the free into the first guard's block as the original:
    the tail hunk and one he_FreeEvent copy gone, 156 -> 137); the rolls' bound as (s.demand * 1.5f) /
