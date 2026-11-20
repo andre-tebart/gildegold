@@ -1205,22 +1205,34 @@ int cm_CheckTrial(G28REC *p)
    else the judge picks the sentence (mode 5, gv_CheckSentence / gv_PassSentence, texts 0x152f .. 0x1531). On the host the
    accuser, the judge and the assessors get the fees (cm_SendMoveGoodsUnchecked, a third of the plan's rating each) and
    with the item 0x22e the accused's relations change. Every voice bank loaded is freed at the end.
-   @deep Rebuilt whole from the original (2340 instructions), every region read against it: the plan record
-   init, the crime grouping and reading loops, the plea, the torture (instrument tables, rolls,
-   confession), the vote of judge and assessors, the verdict, fees, relations and the bank cleanup
-   (including the original's double unload of bankF2). The callees, arguments, literals and statement order
-   agree (ours 2333 vs 2340). Left is allocation and layout: the frame 0x784 vs 0x760 and its slot renaming
-   (slots 750), register choice (regs 134), and two clamps VC6 lowers differently: dec.cur to 0..4 (ours
-   inline jmp/mov eax,4 at +0xaa, the original out of line at +0x24f) and the instrument 0..6 (ours
-   setle/dec/and at +0x11ed, the original jle/jmp blocks). (references: M8 at +0x1297: ours refers to
-   sprintf (0x5de652), the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2 more), explained: the
-   three M8 lines (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment crossings: the same
-   calls in the same order on both sides, paired one call apart where the surrounding pushes are scheduled
-   differently; the proof stops only on the crime id array's frame offset (frame+0x154 vs +0x130)) */
+   @deep deep s47: 885 -> 160 ins (frame now right). Kept: (1) the reading loop's AIDEC dec as a block
+   local of that loop and the opening dec.cur read in its own block ({ AIDEC dec; gv_GetTableRecord(0,
+   &dec); k = max(min(dec.cur, 4), 0); }): the original's dec.cur-dec shares crime's slot (0x240) and the
+   loop dec shares other/factors/texts (0xb0) - frame 0x784 -> 0x760; (2) both clamps as max(min(v, hi), 0)
+   (the original's out-of-line 'mov eax,4; jmp' / jle-jmp blocks; plan.instrument = max(min(sel, 6), 0) -
+   sel itself stays unclamped: the original indexes instruments/files/texts with the raw sel); (3) the two
+   assessor vote blocks with their own block locals (AICHAR *assessor; int vote;): slot packing {p, c5,
+   ev2} / {k, severity} as the original. No lever: the three continues of the grouping / reading loops as
+   if-blocks (= control), k renamed per use group (= control), crime / other block scopes (= control once
+   dec is split). Left (diffclass): the grouping loop (lines ~1358-1372): the original computes i's offset
+   into edx (mov eax,edx) and stores groups[i] = 1 after the crime copy setup, its loop counter i*4 in ecx;
+   the reading loop: the original pushes &dec before the crime copy and reads crime.law at +0x260; a setne
+   / dl-cl rotation at the plea voice (c1->sex != 0) + 2, and later register rotations. prior: Rebuilt
+   whole from the original (2340 instructions), every region read against it: the plan record init, the
+   crime grouping and reading loops, the plea, the torture (instrument tables, rolls, confession), the vote
+   of judge and assessors, the verdict, fees, relations and the bank cleanup (including the original's
+   double unload of bankF2). The callees, arguments, literals and statement order agree (ours 2333 vs
+   2340). Left is allocation and layout: the frame 0x784 vs 0x760 and its slot renaming (slots 750),
+   register choice (regs 134), and two clamps VC6 lowers differently: dec.cur to 0..4 (ours inline jmp/mov
+   eax,4 at +0xaa, the original out of line at +0x24f) and the instrument 0..6 (ours setle/dec/and at
+   +0x11ed, the original jle/jmp blocks). (references: M8 at +0x1297: ours refers to sprintf (0x5de652),
+   the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2 more), explained: the three M8 lines
+   (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment crossings: the same calls in the
+   same order on both sides, paired one call apart where the surrounding pushes are scheduled differently;
+   the proof stops only on the crime id array's frame offset (frame+0x154 vs +0x130)) */
 
 void cm_RunTrial(G28REC *m)
 {
-    AIDEC dec;
     CRIME crime, other;
     AIPLAN plan;
     float factors[5];
@@ -1252,13 +1264,12 @@ void cm_RunTrial(G28REC *m)
     factors[2] = 1.0f;
     factors[3] = 0.8f;
     factors[4] = 0.6f;
-    gv_GetTableRecord(0, (int *)&dec);
-    k = dec.cur;
-    if (k < 4) {
-        if (k <= 0)
-            k = 0;
-    } else
-        k = 4;
+    {
+        AIDEC dec;
+
+        gv_GetTableRecord(0, (int *)&dec);
+        k = max(min(dec.cur, 4), 0);
+    }
     severity = factors[k];
     cm_SetViewEnabled(cm_TextBox, 0);
     cm_LoadEventScene("Gericht.ed3");
@@ -1372,6 +1383,7 @@ void cm_RunTrial(G28REC *m)
     }
     for (i = 0; i < ncrimes; i++) {
         char text[0x100];
+        AIDEC dec;
 
         crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
         gv_GetTableRecord(crime.law, (int *)&dec);
@@ -1501,13 +1513,7 @@ void cm_RunTrial(G28REC *m)
             cm_WaitEvent(ev);
             ev2 = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"1");
             sel = cm_CutInfosT[i].session.answer & 0xf;
-            if (sel < 6) {
-                if (sel > 0)
-                    plan.instrument = sel;
-                else
-                    plan.instrument = 0;
-            } else
-                plan.instrument = 6;
+            plan.instrument = max(min(sel, 6), 0);
             plan.tries = ai_PlanLevel(&plan);
             plan.answer = 0;
             sprintf(buf, "PROZESS_5_FOLTER2_%s.sbf", instruments[sel]);
@@ -1658,28 +1664,34 @@ void cm_RunTrial(G28REC *m)
     cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"1");
     cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"1");
     if (plan.ids[3] != -1) {
-        k = cm_CutInfosT[i + 1].session.answer;
+        AICHAR *assessor;
+        int vote;
+
+        vote = cm_CutInfosT[i + 1].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-1.esc", (int)ch_EmptyName);
         d2_SetForm(cm_TextBox, 0);
-        p = (AICHAR *)gm_FindChar(plan.ids[3]);
+        assessor = (AICHAR *)gm_FindChar(plan.ids[3]);
         io_PrintText("$N");
-        io_PrintText(0x1528, p->id);
+        io_PrintText(0x1528, assessor->id);
         cm_WaitTicks(2);
-        io_PrintText(0x152c + k);
+        io_PrintText(0x152c + vote);
         cm_QueueVoice(c3->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 1].session.answer * 3, 100);
         cm_WaitTicks(2);
         votes += cm_CutInfosT[i + 1].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"2");
     }
     if (plan.ids[4] != -1) {
-        k = cm_CutInfosT[i + 2].session.answer;
+        AICHAR *assessor;
+        int vote;
+
+        vote = cm_CutInfosT[i + 2].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-2.esc", (int)ch_EmptyName);
         d2_SetForm(cm_TextBox, 0);
-        p = (AICHAR *)gm_FindChar(plan.ids[4]);
+        assessor = (AICHAR *)gm_FindChar(plan.ids[4]);
         io_PrintText("$N");
-        io_PrintText(0x1528, p->id);
+        io_PrintText(0x1528, assessor->id);
         cm_WaitTicks(2);
-        io_PrintText(0x152c + k);
+        io_PrintText(0x152c + vote);
         cm_QueueVoice(c4->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 2].session.answer * 3, 100);
         cm_WaitTicks(2);
         votes += cm_CutInfosT[i + 2].session.answer;
