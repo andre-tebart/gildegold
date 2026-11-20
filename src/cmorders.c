@@ -279,25 +279,11 @@ typedef struct CMFIGHTREC {
    1) and back (step 2, command 5), 4 follow the owner of a dummy (command 3, or cm_Attack on an enemy in reach),
    8 hold (command 6). A finished order sends the entry back to state 0 (cm_SendCutEntry). A dead fighter with a
    weapon frees its entry and ends the run.
-   @deep Lead (scratch copies of cm.c, obj bytes against the image): 574 of the differing instructions are
-   one cause. The original reloads x->scene->obj for every cm_CharObjDistXZ call (mov eax,[edi+0x184]; mov
-   ecx,[eax+0x34]; push ecx); ours keeps it in edi across the calls because VC6 knows cm_CharObjDistXZ
-   (defined above) writes no memory. A dead global store in cm_CharObjDistXZ (if (0) cm_LastSeq = 0;) or an
-   external copy of it takes this function from 849 to 275 differing instructions of 1445 with nothing else
-   changed here; cm_NearestEnemy (byte) allows the global store but no indirect store and no external call.
-   So the original cm_CharObjDistXZ's text holds a global store or a call of a known global-writing
-   function that leaves no code (it is byte now, D3VECTOR4 v, d); not found, see the unit's Open: summary
-   line. Done this session: cm_SendCutEntry / cm_SendCutEntryUpdate take the entry's address as an integer,
-   so m counts as escaped (three store orders, 955 -> 953). prior: Reconstructed against the original in
-   full (0x4d76a0..0x4d88b8, all 8 states): the case order of the source (5, 1, 2, 3, 6, 4, 7, 8), the hit
-   chance times cm_DefenseFactor for the defender's side, the damage without a target 9.0 * n, the AI
-   counter-order with one cm_CharWeaponItem call, the ranged walk with cm_BestCellNear's reach (range /
-   cell size * 0.9), the goods-carry state 6 on the bytes 0x20..0x22 (store cell, step) with
-   cm_SendCutEntryUpdate, the four name buffers (0x30 each, frame 0x138 equal), the senders' return values
-   as the order slot (cm_SendCutEntry / cm_SendCutEntryUpdate now return cm_QueueSend's slot). Switch
-   tables equal, ins 1437 vs 1434. Left: allocation and block layout - the loop keeps slot in edx at the
-   top (ours reloads it from [esp+0x68]), the original cross-jumps the identical tails differently (state
-   2's stop joins state 5's command at 0x4d7789 where ours join... */
+   @deep deep s50: the lead of the previous note was a unit boundary: cm_RunCutOrders .. cm_ClearSceneChars
+   are now unit cmorders (layout commit), so the leaf cm_CharObjDistXZ is unknown here and x->scene->obj is
+   reloaded after each call as in the original: 949 -> 436 ins (size 4558 vs 4599). Next: read the
+   remaining hunks against the original again from the top (the cross-jumped tails of the states and the
+   slot of the loop's slot pointer noted below are older findings). */
 void cm_RunCutOrders(CMCUTINFO *rec)
 {
     D3SM *h = (D3SM *)d3_DefaultScene->hmap;
