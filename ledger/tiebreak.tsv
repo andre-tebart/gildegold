@@ -3644,7 +3644,7 @@ exe	0x0054e890	he_RunLover	he	7509c332593cc8ff	no	byte	control=byte p1=byte p2=b
 exe	0x0054eb80	he_IsSimCandidate	he	07713905d1bd4c5f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054ebd0	he_RunDiseaseSim	he	599f4ed756a1bb36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054ef70	he_StartDarkCorner	he	d3cb6d76a14d4af0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	0d9d4bf0ab190757
-exe	0x0054f160	he_RunDarkCorner	he	266e14b3eaa195f3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0054f160	he_RunDarkCorner	he	fe962bf1336dd15f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	552563e0c7b227b6
 exe	0x0054fb50	he_StartEffectEvent	he	cc0c7665c2b184d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054fc00	he_CreateSmokeEffect	he	5d785fd6e5a26834	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054fc70	he_CreatePointsEffect	he	f555d19a1f19f001	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
