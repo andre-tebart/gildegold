@@ -2418,7 +2418,7 @@ exe	0x004ce270	cm_OtherBuilding	cmfight	byte	readable
 exe	0x004ce290	cm_LayBomb	cmfight	byte	readable		
 exe	0x004ce300	cm_UpdateBombs	cmfight	byte	readable		
 exe	0x004ce5d0	cm_ThrowGrenade	cmfight	byte	readable		
-exe	0x004ce830	cm_UpdateGrenades	cmfight	draft	readable	deep	
+exe	0x004ce830	cm_UpdateGrenades	cmfight	byte	readable		
 exe	0x004ceb70	cm_ObjectOwner	cmfight	byte	readable		
 exe	0x004ceb80	cm_WaitEventStop	cmfight	byte	readable		
 exe	0x004cec00	cm_CloseCharInfoWins	cmfight	byte	readable		
@@ -2442,8 +2442,8 @@ exe	0x004d02d0	cm_OrderConquer	cmfight	byte	readable
 exe	0x004d0380	cm_OrderWare	cmfight	byte	readable		
 exe	0x004d0460	cm_OrderToBestCell	cmfight	byte	readable		
 exe	0x004d0520	cm_OrderWait	cmfight	byte	readable		
-exe	0x004d0570	cm_OrderClick	cmfight	draft	readable	deep	
-exe	0x004d0740	cm_FightMouse	cmfight	draft	readable	deep	
+exe	0x004d0570	cm_OrderClick	cmfight	byte	readable		
+exe	0x004d0740	cm_FightMouse	cmfight	byte	readable		
 exe	0x004d08c0	cm_ClearMarks	cmfight	byte	readable		
 exe	0x004d0920	cm_AddFighter	cmfight	byte	readable		
 exe	0x004d0a30	cm_CollectSceneChars	cmfight	byte	readable		
@@ -2452,7 +2452,7 @@ exe	0x004d0ca0	cm_PlaceFlagObjects	cmfight	byte	readable
 exe	0x004d0cd0	cm_FreeNetIdSlot	cmfight	byte	readable		
 exe	0x004d0cf0	ai_ArmGateGuards	cmfight	byte	readable		
 exe	0x004d0f80	cm_ClearKind3MaskCB	cmfight	byte	readable		
-exe	0x004d0fa0	cm_SetupFightScene	cmfight	draft	readable	deep	
+exe	0x004d0fa0	cm_SetupFightScene	cmfight	byte	readable		
 exe	0x004d1a10	cm_EndFightScene	cmfight	byte	readable		
 exe	0x004d1c20	cm_PlaceFighters	cmfight	byte	readable		
 exe	0x004d1e00	cm_FightIntro	cmfight	byte	readable		
@@ -2485,8 +2485,8 @@ exe	0x004d3ea0	cm_LootCarts	cmfight	byte	readable
 exe	0x004d4050	cm_FightRole	cmfight	byte	readable		
 exe	0x004d4090	cm_LootList	cmfight	byte	readable		
 exe	0x004d4340	cm_FightPortraits	cmfight	byte	readable		
-exe	0x004d4540	cm_FightStartDialog	cmfight	draft	readable	deep	
-exe	0x004d4d70	cm_FightEndDialog	cmfight	draft	readable	deep	
+exe	0x004d4540	cm_FightStartDialog	cmfight	byte	readable		
+exe	0x004d4d70	cm_FightEndDialog	cmfight	byte	readable		
 exe	0x004d60b0	cm_CheckFight	cmfight	byte	readable		
 exe	0x004d63e0	cm_RunFight	cmfight	byte	readable		
 exe	0x004d6930	cm_FightResult	cmfight	byte	readable		
@@ -2500,11 +2500,11 @@ exe	0x004d7000	cm_FightSlotPickUp	cmfight	byte	readable
 exe	0x004d70a0	cm_FightSlotPutDown	cmfight	byte	readable		
 exe	0x004d7150	cm_FightSlotWinner	cmfight	byte	readable		
 exe	0x004d7190	cm_PlantEscapeFlag	cmfight	byte	readable		
-exe	0x004d7360	cm_Attack	cmfight	draft	readable	deep	
-exe	0x004d76a0	cm_RunCutOrders	cmfight	draft	readable	deep	
-exe	0x004d88c0	cm_FightLoop	cmfight	byte	readable		
-exe	0x004d8b10	cm_FightMember	cmfight	byte	readable		
-exe	0x004d8b30	cm_ClearSceneChars	cmfight	byte	readable		
+exe	0x004d7360	cm_Attack	cmfight	byte	readable		
+exe	0x004d76a0	cm_RunCutOrders	cmorders	draft	readable	deep	
+exe	0x004d88c0	cm_FightLoop	cmorders	byte	readable		
+exe	0x004d8b10	cm_FightMember	cmorders	byte	readable		
+exe	0x004d8b30	cm_ClearSceneChars	cmorders	byte	readable		
 exe	0x004d8b50	cm_DrawFightTime	cmscene	byte	readable		
 exe	0x004d8c40	cm_DeleteSceneChars	cmscene	byte	readable		
 exe	0x004d8c70	cm_StackPicture	cmscene	byte	readable		
