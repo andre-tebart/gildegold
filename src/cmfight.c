@@ -3853,15 +3853,9 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                     nb++;
             }
         }
-        if (nb > na)
-            side = cm_FightAttackerC;
-        else
-            side = cm_FightDefenderC;
-    } else {
-        side = cm_FightDefenderC;
-        if (cm_FightWinner != cm_FightAttacker)
-            side = cm_FightAttackerC;
     }
+    side = cm_FightWinner == 0 ? (nb > na ? cm_FightAttackerC : cm_FightDefenderC)
+                               : (cm_FightWinner == cm_FightAttacker ? cm_FightDefenderC : cm_FightAttackerC);
     win = d2_OpenForm(0, 0, "cutscenes\\combat_end");
     d2_PlaceMainWindowF(win, 3);
     d2_SetForm(win, 2);
