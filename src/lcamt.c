@@ -4704,25 +4704,25 @@ typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree wi
    @deep s(this): the box loops read their x as a short local t (mov bx,word [..]; add ebx,2; push ebx) in
    the first sibling loop and both child loops (not the second sibling loop: a pointer walk over siblingX
    in the original) 277 -> 145; the father's relatives walk has its own counter j (hi's slot in the
-   original) 145 -> 71; the children-row midpoint written out at each use instead of mid (lea
-   ebp,[eax+ebx]: a CSE temp copied) 71 -> 43; oddX / evenX filled in index order 43 -> 30, size equal.
-   Left (30 ins): +0x253 the top init stores (original: the zeros nChildren / nSiblings / partner before
-   each memset, half and h after them; h written before w moves the stores right but swaps the w / h slots,
-   every late position of half / h = M8 or far worse: the stores are split pieces, not statement order);
+   original) 145 -> 71; the children-row midpoint written out at each use instead of mid 71 -> 43; oddX /
+   evenX filled in index order 43 -> 30; the zero inits k / nChildren / nSiblings / partner first, then
+   half / w / h, then the three memsets (840 orders, one code family) 30 -> 20. Left (20 ins, size equal):
    +0x403 parents[0].x = (half - w) + w/2 where ours (w/2 - w) + half (33 spellings one code: reassociation
    rank); SIB base/index swapped in the d2_Objs style/user stores of the row[2] / row[3] boxes (+0x637
-   +0x710 +0x7f4), not in the parents' boxes. prior: Reconstructed in full against the original (all 1277
-   instructions read: the relatives walk, the parent / middle-row / sibling / child boxes with their
-   d2_Objs style/user, the connecting PlotLines, the labels and the click dispatch); size now equal (4542
-   vs 4542, ours 1276 ins vs 1277), every call, constant and reference agrees. The remaining code hunks are
-   allocation-driven instruction selection and store scheduling: +0x2b3 the original computes (half - w) +
-   w/2 (ecx=ebx; sub ecx,edx; lea eax,[ecx+ebp]) where ours computes (w/2 - w) + half (mov ecx,ebp; sub
-   ecx,edx; lea eax,[ecx+ebx]) - source variants (reordered terms, a left local) do not move it (a local
-   adds a frame slot); the box loops store node.x with add eax,ebx / mov word [ebp+8],ax where ours uses
-   lea ecx,[ebx+eax] / mov word [ebp+8],cx and stores ctrl first (+0x77c, +0x867, +0xa86, +0xb79); the line
-   midpoints end in lea ebp,[eax+ebx] vs ours mov esi,eax; ...; add esi,ebx (+0xc68, +0xd52); the loop
-   counters and 4W/5 sit in [esp+0x18]/[esp+0x10] swapped. proof stops at the sibling loop's store order (x
-   before ctrl). */
+   +0x710 +0x7f4: original [d2_Objs + idx], ours [idx + d2_Objs]), not in the parents' boxes. No lever for
+   the SIB: spellings of the index ((d2_Objs + c)->, &d2_Objs[c], a named ctrl local), declaration moves of
+   row / parents, dead stores of row[2].ctrl at the top; flip.py over every single mutation: 0 flips.
+   prior: Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
+   parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
+   labels and the click dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call,
+   constant and reference agrees. The remaining code hunks are allocation-driven instruction selection and
+   store scheduling: +0x2b3 the original computes (half - w) + w/2 (ecx=ebx; sub ecx,edx; lea
+   eax,[ecx+ebp]) where ours computes (w/2 - w) + half (mov ecx,ebp; sub ecx,edx; lea eax,[ecx+ebx]) -
+   source variants (reordered terms, a left local) do not move it (a local adds a frame slot); the box
+   loops store node.x with add eax,ebx / mov word [ebp+8],ax where ours uses lea ecx,[ebx+eax] / mov word
+   [ebp+8],cx and stores ctrl first (+0x77c, +0x867, +0xa86, +0xb79); the line midpoints end in lea
+   ebp,[eax+ebx] vs ours mov esi,eax; ...; add esi,ebx (+0xc68, +0xd52); the loop counters and 4W/5 sit in
+   [esp+0x18]/[esp+0x10] swapped. proof stops at the sibling loop's store order (x before ctrl). */
 void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId)
 {
     AICHARREC *ch;
@@ -4776,15 +4776,15 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
     width = d2_Wins[d2_LastWindow].w;
     do {
         if (draw) {
+            k = 0;
+            nChildren = 0;
+            nSiblings = 0;
+            partner = 0;
             half = width / 2;
             w = d2_Pics[0x5db].w;
             h = d2_Pics[0x5db].h;
-            k = 0;
-            nChildren = 0;
             memset(parents, 0xff, sizeof parents);
-            nSiblings = 0;
             memset(row, 0xff, sizeof row);
-            partner = 0;
             memset(children, 0xff, sizeof children);
             draw = 0;
             row[2].id = ch->id;
