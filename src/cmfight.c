@@ -4037,34 +4037,34 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             total = 0;
             for (v = 0; v < 16; v++) {
                 id = a->defenders[v];
-                if (id == -1)
-                    continue;
-                c = (AICHAR *)cm_FindFighter(id);
-                col = v % 4;
-                row = v / 4 + 1;
-                px = col * 80 + 0x30;
-                py = row * 100;
-                d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
-                d2_WinOpenPic(px + 2, py, c->picture, d2_LastWindow);
-                sv_ValueBar(px, py + 0x3c, c->sk83, 0x4eb);
-                h = 0;
-                if (c->health == 0) {
-                    h = (int)(c->sk83 * 0.023809524f + 1.0f);
-                    d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
-                    h = gm_PlayerFactor(h * 40, ai_OwnPlayer);
-                }
-                if (side == cm_FightAttackerC) {
-                    if (c->health > 0) {
-                        int z = 0;
-
-                        cm_BeginFieldBlock((char *)c, c->netId);
-                        cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &z);
-                        cm_SendFieldDeltas();
+                if (id != -1) {
+                    c = (AICHAR *)cm_FindFighter(id);
+                    col = v % 4;
+                    row = v / 4 + 1;
+                    px = col * 80 + 0x30;
+                    py = row * 100;
+                    d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
+                    d2_WinOpenPic(px + 2, py, c->picture, d2_LastWindow);
+                    sv_ValueBar(px, py + 0x3c, c->sk83, 0x4eb);
+                    h = 0;
+                    if (c->health == 0) {
+                        h = (int)(c->sk83 * 0.023809524f + 1.0f);
+                        d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
+                        h = gm_PlayerFactor(h * 40, ai_OwnPlayer);
                     }
-                    txt_Format(tmp, "%T", h);
-                    if (h != 0)
-                        d2_CreateWinText(px, py + 0x50, tmp, d2_LastWindow);
-                    total += h;
+                    if (side == cm_FightAttackerC) {
+                        if (c->health > 0) {
+                            int z = 0;
+
+                            cm_BeginFieldBlock((char *)c, c->netId);
+                            cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &z);
+                            cm_SendFieldDeltas();
+                        }
+                        txt_Format(tmp, "%T", h);
+                        if (h != 0)
+                            d2_CreateWinText(px, py + 0x50, tmp, d2_LastWindow);
+                        total += h;
+                    }
                 }
             }
             if (total != 0)
