@@ -4455,13 +4455,13 @@ exe	0x005bd1f0	ai_LeftAlignedText	lcamt	byte	readable
 exe	0x005bd250	ai_ShowWindowRow	lcamt	byte	readable		
 exe	0x005bd330	ai_ShowLoanRows	lcamt	byte	readable		
 exe	0x005bd470	ai_ShowBuildingRows	lcamt	byte	readable		
-exe	0x005bd5e0	ai_ShowAmountRows	lcamt	draft	readable	deep	
+exe	0x005bd5e0	ai_ShowAmountRows	lcamt	byte	readable		
 exe	0x005bdb60	ai_ShowOfficeRows	lcamt	byte	readable		
 exe	0x005be1d0	ai_AmountRowStatus	lcamt	byte	readable		
 exe	0x005be3b0	ai_AmountRow	lcamt	byte	readable		
 exe	0x005be720	ai_DrawAmountRow	lcamt	byte	readable		
 exe	0x005bea00	ai_SpecialAmountList	lcamt	byte	readable		
-exe	0x005bea50	ai_SpecialAmountListWindow	lcamt	draft	readable	deep	
+exe	0x005bea50	ai_SpecialAmountListWindow	lcamt	byte	readable		
 exe	0x005bf0d0	ai_FillFamilyTab	lcamt	byte	readable		
 exe	0x005bf300	ai_FillFriendsTab	lcamt	byte	readable		
 exe	0x005bf4f0	ai_FillEnemiesTab	lcamt	byte	readable		
@@ -4505,7 +4505,7 @@ exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	byte	readable		
 exe	0x005c4100	ai_LawSelectionEntry	lcamt	byte	readable		
 exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
-exe	0x005c5310	ai_CharInfoPanel	lcamt	draft	readable	deep	
+exe	0x005c5310	ai_CharInfoPanel	lcamt	shape	readable	deep	
 exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
 exe	0x005c64c0	ai_FindCandidateIds	lcamt	byte	readable		
 exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
