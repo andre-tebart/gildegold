@@ -10612,23 +10612,7 @@ void he_RunDelay(int ev)
    characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
-   later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it
-   @deep s25: c2trace --prio with the != loop: cnt prio -8 (5 refs; it pays -10 for living from its top
-   initializer to the loop) against left -11 (3 refs: def, dec, test), so cnt takes the register and left
-   is split. In the original left (ebp) must outrank cnt, i.e. left had more references at allocation (the
-   two zero pushes). Probes: != with gm_AddTime(&e->end, left, 5, left) written out and != with if (cnt < n
-   && left == 0): one code, 25 ins, frame 0xc (left no longer needs the slot, cnt gets it: not the
-   original's frame either); if (left == 0 && cnt < n): 8 ins. climb.py 2 rounds (396 mutants): nothing.
-   Left: code 8 (jg against jne, the two zero pushes). prior: size queue s18 (padded size kept, 6 ins). The
-   push ebp for gm_AddTime's zeros is VC6's equality propagation: with if (cnt < n && left == 0) after the
-   loop (lz-gt-rev: 4 ins, raw 542, padded) the then-block pushes ebp, left gets the references at the
-   pushes (c2trace: left prio 11, 5 refs -> ebp; cnt memory, n ebx: the original's roles); but the left
-   test stays (test ebp,ebp / jne) and the loop test is jg, while the original has the != 0 loop and no
-   left test at all. With the != loop the same test is decided on the exit edge before the propagation
-   (lz-rev: test gone, pushes 0, left memory, 25 ins). Not kept: the original has no left test. Also tried:
-   != / > 0 x left = 0x300 placement x cnt = 0 placement (14 variants, 8-29 ins), the success code inside
-   the loop (82), left != 0 && cnt < n in the for (8). Next: a form whose IL keeps a left == 0 fact into
-   the retry block without a test that survives (the original's). */
+   later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it */
 void he_RunConversion(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -10646,7 +10630,8 @@ void he_RunConversion(int ev)
         return;
     n = (int)((double)cv->left < ceil((double)(cv->left + cv->rounds)) ? (double)cv->left : ceil((double)(cv->rounds + cv->left)));
     ring = util_RandomU(0x300);
-    for (left = 0x300; left > 0; left--) {
+    left = 0x300;
+    while (left != 0) {
         if (cnt >= n)
             break;
         if (ai_CharsT[ring].id != 0xffff && ai_CharsT[ring].kind <= 4 && ai_CharsT[ring].b00c == cv->from) {
@@ -10656,6 +10641,7 @@ void he_RunConversion(int ev)
             cm_SendFieldDeltas();
             cnt++;
         }
+        left--;
         ring = (ring + 1) % 0x300;
     }
     if (cnt < n) {
