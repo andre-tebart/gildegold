@@ -4371,7 +4371,13 @@ int cm_PrevPartyMember(char *m, int n)
    flag cm_Kinds[].allAtOnce 1 the owner answers for the computer members, then each player for his own character, all at once;
    with 0 the members answer one after the other (a member once the one before him has answered, the owner the computer
    ones), until cm_PartyAnswered. The counter cm_ScenePartyRuns grows by one per run; the random seed is kept
-   @deep s51: climb round 1 found the lever: in the owner's turn loop of the one-after-the-other run, next
+   @deep deep s54: the copies r of the three askPlayer / askOther blocks of the all-at-once and the
+   player's turn as block locals (CMCUTINFO r; in each block, next stays function-scope: block-local next
+   69 -> 75..87), 69 -> 65; then in the player's turn r = cm_CutInfosT[me] before cm_PartyTurn = me (65 ->
+   63; gm_FindChar before the copy 77). Hunk (2) is gone. Left: only (1), the all-at-once owner loop's IVs
+   (i at 0x14 / members IV at 0x18 kept in esi at the loop head, cut IV at 0x10 reloaded into esi for rep
+   movsd; ours i 0x18, members 0x14 reloaded through ecx, the cut IV kept in eax from the valid test).
+   prior: s51: climb round 1 found the lever: in the owner's turn loop of the one-after-the-other run, next
    = cm_CutInfosT[i] copied before the cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds:
    nothing). Left: (1) the all-at-once owner loop's IV slots: the original has the cut-record IV at 0x10, i
    at 0x14, the members IV at 0x18 and keeps the members IV in esi for the gm_FindChar argument (reloaded
@@ -4380,18 +4386,7 @@ int cm_PrevPartyMember(char *m, int n)
    pushes party->members[me] before the rep movsd of rec (after the cm_PartyTurn store), ours copies first.
    No lever: the loop's continue as one positive if, the valid test split, rec copied before cm_CutChar = c
    in the first owner loop (73), next instead of rec there (75), a separate counter j for any subset of the
-   four loops (all = control). prior: reconstructed from the original's 551 instructions, every block read
-   and compared (the local run, the all-at-once net run with the owner's loop over the computer members and
-   the player's own answer, the one-after-the-other run with its two waits); calls, stores and branches
-   line up one to one (ours 554 / 551). Left is allocation: the loop induction variables (i, &members[i],
-   &cm_CutInfosT[i].valid) sit in other registers / slots (the original keeps the k==1 owner loop's
-   counters at esp+0x14/0x10/0x18 and c of the last loop in esp+0x10, ours in ebx), code hunks at +0x1f4
-   (mov ecx,[esp+0x10] vs [esp+0x14]) and +0x68b (lea eax,[esi*8] vs [ebx*8]); the prover stops on the
-   stack depth at a pushed block (references: M8 at +0x55d: ours refers to cm_SceneDuration (0x60d364), the
-   original's field to 0x6f0d80 (cm_SceneTicks) (and 1 more), explained: the two M8 lines are crossings of
-   the alignment, not other objects: at +0x55d both sides load cm_SceneTicks and cm_SceneDuration and add
-   them (ours in the other register order), at +0x6ba both store cm_PartyTurn then cm_CutChar, the
-   alignment pairing one store with the other) */
+   four loops (all = control). */
 
 void cm_RunSceneParty(char *m, int ctx)
 {
@@ -4445,17 +4440,19 @@ void cm_RunSceneParty(char *m, int ctx)
             if (party->host == ai_CharsT[ai_PlayerId].netId) {
                 /* the owner answers for the computer members */
                 for (i = 0; i < party->used; i++) {
+                    CMCUTINFO r;
+
                     c = (AICHAR *)gm_FindChar(party->members[i]);
                     if (c == 0 || c->kind == 6 || c->kind == 7 || cm_CutInfosT[i].valid != 0)
                         continue;
                     cm_CutChar = (char *)c;
-                    rec = cm_CutInfosT[i];
+                    r = cm_CutInfosT[i];
                     cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                     if (cb != 0)
-                        cb(&rec, ctx);
-                    rec.valid = 1;
-                    rec.ready = 0;
-                    cm_SetLongMsg(0x35c, &rec);
+                        cb(&r, ctx);
+                    r.valid = 1;
+                    r.ready = 0;
+                    cm_SetLongMsg(0x35c, &r);
                     h = cm_RequestSendCutInfo(c->netId, party->id);
                     while (cm_GetSlotState(h) == 0)
                         sv_PumpNet();
@@ -4467,13 +4464,15 @@ void cm_RunSceneParty(char *m, int ctx)
             cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
             for (i = 0; i < party->used; i++) {
                 if (party->members[i] == ((AICHAR *)cm_CutChar)->netId) {
-                    rec = cm_CutInfosT[i];
+                    CMCUTINFO r;
+
+                    r = cm_CutInfosT[i];
                     cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                     cm_SceneTimedOut = 0;
-                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&rec, ctx);
-                    rec.valid = 1;
-                    rec.ready = 0;
-                    cm_SetLongMsg(0x35c, &rec);
+                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&r, ctx);
+                    r.valid = 1;
+                    r.ready = 0;
+                    cm_SetLongMsg(0x35c, &r);
                     h = cm_RequestSendCutInfo(((AICHAR *)cm_CutChar)->netId, party->id);
                     while (cm_GetSlotState(h) == 0)
                         sv_PumpNet();
@@ -4501,16 +4500,18 @@ void cm_RunSceneParty(char *m, int ctx)
                 cm_ShowPartyTexts(m);
                 sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
                 if (me != -1 && (me == 0 || cm_CutInfosT[prev].valid == 1) && cm_CutInfosT[me].valid == 0) {
+                    CMCUTINFO r;
+
+                    r = cm_CutInfosT[me];
                     cm_PartyTurn = me;
-                    rec = cm_CutInfosT[me];
                     cm_CutChar = (char *)gm_FindChar(party->members[me]);
                     cm_ShowPartyTexts(m);
                     cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                     cm_SceneTimedOut = 0;
-                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&rec, ctx);
-                    rec.valid = 1;
-                    rec.ready = 0;
-                    cm_SetLongMsg(0x35c, &rec);
+                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&r, ctx);
+                    r.valid = 1;
+                    r.ready = 0;
+                    cm_SetLongMsg(0x35c, &r);
                     h = cm_RequestSendCutInfo(((AICHAR *)cm_CutChar)->netId, party->id);
                     while (cm_GetSlotState(h) == 0)
                         sv_PumpNet();
