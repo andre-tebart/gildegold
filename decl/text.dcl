@@ -167,7 +167,9 @@
 0x004c3180 boundary start by=tag tu=cm -- rea 8cef7d5b: @boundary plausible; cm.c -- the game messages exchanged with the server (net.c): the size of a message by its type, the send ring ai_Unka69140 (0x8000 slots) and its states, the receive list ai_Unka68d24 (0x2000 records), long messages split into parts of type 7, the field blocks of an object (delta / plain values). It...
 0x004cd9d0 boundary end tu=cm -- cmfight starts here (dcp unit split)
 0x004cd9d0 boundary start by=guess tu=cmfight -- the fight object: its .data block ai_WeaponRecordData 0x60c7c0..0x60cb68 + string run (first user ai_FindWeaponRecord), .bss 0x6f0ce0..0x6f0d64, its common group 0x930380..0x935da0 (data layout s12)
-0x004d8b50 boundary end tu=cmfight -- cmscene starts here (dcp unit split)
+0x004d76a0 boundary end tu=cmfight -- cmorders starts here (dcp unit split)
+0x004d76a0 boundary start by=guess tu=cmorders -- the fight orders and loop: the original's cm_RunCutOrders does not know cm_CharObjDistXZ (bprobe at 0x4d76a0: only cm_RunCutOrders changes); its strings 0x60d300.. used only from here
+0x004d8b50 boundary end tu=cmorders -- cmscene starts here (dcp unit split)
 0x004d8b50 boundary start by=guess tu=cmscene -- the scene object: its .data block cm_DialogFrameFlags 0x60d360.. and string run (first user cm_DrawFightTime), .bss 0x6f0d68.., its common group 0x925510..0x930380 (data layout s12)
 0x004e58e0 boundary end tu=cmscene -- cmdump starts here (dcp unit split)
 0x004e58e0 boundary start by=guess tu=cmdump -- ai_CharKindNames (0x60eae0) is a plain .data block after cm's last string (cm_MessageBox's 0x60eac4): a new object; its users are the ai_DumpPerson* functions (data layout s11)

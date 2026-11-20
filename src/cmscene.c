@@ -2,10 +2,10 @@
    execution, wedding, birth, auction, the scene loop (cm_ExecCutscene), the message box. Split from cmfight (data
    layout s12): its own .data block cm_DialogFrameFlags 0x60d360 .. cm_DialogLength after the fight strings, then its
    string run (first user cm_DrawFightTime 0x4d8b50); its .bss 0x6f0d68..; its common group 0x925510..0x930380
-   (cm_SavedScene .. cm_OrderChances; cm_OrderTicks, read only by cmfight's cm_RunCutOrders, lies inside it). The first
+   (cm_SavedScene .. cm_OrderChances; cm_OrderTicks, read only by cmorders' cm_RunCutOrders, lies inside it). The first
    function is bounded only: after cm_FightLoop 0x4d88c0 (the last user of the fight strings), at or before
-   cm_DrawFightTime; cm_FightMember / cm_ClearSceneChars (0x4d8b10 / 0x4d8b30, no strings or .data) stay in cmfight
-   (bprobe at all three points: only cm_RunBirth, a draft, changes).
+   cm_DrawFightTime; cm_FightMember / cm_ClearSceneChars (0x4d8b10 / 0x4d8b30, no strings or .data) stay with
+   cm_FightLoop (now cmorders; bprobe at all three points: only cm_RunBirth, a draft, changes).
    Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
    string literals in cm's data block: the code inline-copies from them, and naming them as arrays makes VC6
    copy byte-wise (cm_RunAuction shape -> draft), so they stay gap bytes.
