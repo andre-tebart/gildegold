@@ -13793,22 +13793,25 @@ void he_AllocSpying(int ev)
    its door, before the end the next round (stage 1), at the end the spy goes to the target (stage 3). 3: there,
    the event's character gets the news 0x1734 (the victim) and the event ends. 4: ended. Stages -2 / -1: a started
    event's spy is stopped and killed, the event freed
-   @deep frame sweep s21: frame 0x40c vs 0x408 is not an escaped local: ours spills lo of case 1's kind
-   mask to [esp+0x18] where the original keeps lo in ebp (and the BTypesT base in ebx with a dead lea after
-   the kind load: the record-pointer form). No lever: a bt = &ai_BTypesT[bld->type] record pointer (106
-   ins, frame unchanged), bld without its = 0 (107), lo / hi / kind as block locals of the do-while body (=
-   control). Lead: case 1's loop form (the n countdown, the bld = 0 reset). prior: reconstructed from the
-   207-byte stub against 0x55a030..0x55a5e4 with he_RunDarkCorner (0x54f160) as its twin: the cancel path
-   (opts 2: stop / kill the spy), the slot waits, all five stages (the switch tables equal), the walk over
-   the 0x100 buildings with the 64-bit kind mask 0x1a7fcc3a6 and the signed % 0x100 steps, the debug text,
-   the door waits, the end test gm_CompareTime(&until, &ai_Time) == -1, the news 0x1734; every call and
-   argument read. Left is allocation and tails, the twin's own deep reason: in the walk ours keeps lo in a
-   stack slot (frame 0x40c vs 0x408; - mov [esp+0x18],ebx) where the original keeps lo in ebp and hi in ebx
-   with the AIBTYPE base in ebx (+ mov ebx,[ai_BTypes] / xor ebp,ebp / add ebx,ecx), and schedules the n--
-   / cursor step otherwise (+0x55a24d); tails: the original jumps to the shared gm_AddTime(..,0,1,0) +
-   cm_SendExSetHEI(-1) block (jmp 0x55a29f from +0x55a340 / +0x55a3b3 / +0x55a580) that ours keeps inline,
-   and keeps case 2's first -1 return inline where ours shares it. Tried: the twin's declarations (unsigned
-   lo / hi, unsigned char kind, n in memory) */
+   @deep s48: case 1's walk body ordered bld, kind, hi = 0, lo = 0 and the tail bld = 0; n--; idx = ..: the
+   frame is the original's 0x408 (lo no longer spilled), the n-- before the modulo keeps the original's
+   separate test eax,eax (105 -> 87 ins; 71 orders of the body, the best kept). Left: (1) the walk: ours
+   hoists one global (c2trace: ai_Blds#1 prio 12 takes ebp after lo ebx / hi eax), the original reloads
+   ai_Blds and ai_BTypes each pass, hi in ebx (byte test bl), lo in ebp; there eax holds a dead lea
+   eax,[ebx+eax*4] (the type record's address) over hi = 0, i.e. hi cannot take eax: some value of the type
+   record's address lives across hi's start in the original. = control: a bt record pointer (function or
+   block scope, every order of bld / bt / hi / lo / kind, 40), the kind read inline at each use, value
+   casts / char arithmetic for both tables, a same-type alias probe. (2) the scratch rotation after the
+   walk (case 1's success path one step off) follows from (1). (3) tails: the original jumps from case 1's
+   c == 0, case 2's c == 0 and case 4 into the gm_AddTime(.., 0, 1, 0) + SendExSetHEI(-1) block at +0x26f
+   and from the two door waits into its call at +0x277 (cross-jumped), keeps case 1's c == 0 copy out of
+   line with lea edx, and case 2's bld == 0 return inline (jne over it); ours merges case 1's c == 0 copy
+   whole and keeps the others as own returns. Start there: the tails decide 40 of the 87. prior: frame
+   sweep s21: frame 0x40c vs 0x408 is not an escaped local: ours spills lo of case 1's kind mask to
+   [esp+0x18] where the original keeps lo in ebp (and the BTypesT base in ebx with a dead lea after the
+   kind load: the record-pointer form). No lever: a bt = &ai_BTypesT[bld->type] record pointer (106 ins,
+   frame unchanged), bld without its = 0 (107), lo / hi / kind as block locals of the do-while body (=
+   control). Lead: case 1's loop form (the n countdown, the bld = 0 reset). */
 void he_RunSpying(int ev)
 {
     char text[0x400];
@@ -13861,18 +13864,18 @@ void he_RunSpying(int ev)
         n = 0x100;
         do {
             bld = &ai_BldsT[idx];
-            lo = 0;
-            hi = 0;
             kind = ai_BTypesT[bld->type].kind;
+            hi = 0;
+            lo = 0;
             if (kind > 0x1f)
                 hi = 1 << (kind - 0x20);
             else
                 lo = 1 << kind;
             if (((lo & 0xa7fcc3a6) != 0 || (hi & 1) != 0) && bld->id != s->target)
                 break;
-            idx = (idx + s->step) % 0x100;
             bld = 0;
             n--;
+            idx = (idx + s->step) % 0x100;
         } while (n != 0);
         s->cursor = (s->step + idx) % 0x100;
         if (bld == 0) {
