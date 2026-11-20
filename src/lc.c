@@ -6530,74 +6530,58 @@ typedef struct LCDUEL {                 /* a dice duel (am.h AGDUEL, same layout
    ms, redrawing the rolling dice (ai_DrawDice, ai_DrawDuelDice) at growing steps (2 ms, then half again each
    time), and modes 3 and 4 draw the throw (ai_DrawDuelThrow) and wait `wait` ms; with `fast` every mode draws
    the throw and waits. The frames are pumped with sv_RunFrame(0, 0x777c7); it returns as soon as the player's
-   character is dead (health 0)
-   @deep size queue s17: the 7 bytes over the original (1092 vs 1085) are exactly the second mode load: the
-   original loads mode once in the first block (test fast; mov eax,[mode]; .. dec eax in both switches),
-   ours loads it in each arm (mov eax/edx,[esp+0x120], 7 bytes each). c2trace lists no mode candidate (one
-   reference per arm); a local m = mode before or after step = 2 = control; the arms swapped (if (fast !=
-   0)) 270. climb round 1: best 187 ins (end = d3_Time moved behind ai_DrawDuelThrow in the fast tail: the
-   dead read's position; not kept, it is the draft's dead read). Next: what gives mode a reference before
-   the if (a read the original keeps, e.g. a guard) or a mode candidate that spans both switches. prior:
-   Reconstructed whole from the original: both switches on mode (the slow one: modes 1/2 roll with
-   ai_DrawDice / ai_DrawDuelDice at growing steps step += step/2, modes 3/4 draw ai_DrawDuelThrow and wait;
-   the fast one formats 0x1883..0x1886 and shares the throw-and-wait tail), the player's health check
-   (return), the texts with the name +0x30 and the duel's raiseAmount, the second (dead) volatile d3_Time
-   read of the throw paths. Left: allocation/scheduling: the original hoists the mode load above the fast
-   test ('test eax,eax; mov eax,[esp+0x110]' and 'dec eax' in the second switch), ours loads it in each arm
-   ('mov edx,[esp+0x120]; lea eax,[edx-1]'), which shifts the second switch's case bodies (tables differ
-   only by those offsets); the health byte goes through al/edx in the original, cl/eax in ours; 'end =
-   d3_Time + wait' loads the clock before/after the add. Tried: the fast arm as an else (n... */
+   character is dead (health 0). Every mode reads the clock into start and last; the throw modes never use last
+   (the original's unused second read) */
 
 void ai_DuelDiceAnimation(LCDUEL *duel, LCDUELSIDE *side, int mode, int win, int frame, int wait, int fast)
 {
     char text[0x100];
     int step;
-    unsigned int t0;
-    unsigned int end;
+    unsigned int start;
+    unsigned int last;
 
     step = 2;
     if (fast == 0) {
         switch (mode) {
         case 1:
             txt_Format(text, 0x1883, side->ch->name);
-            end = d3_Time + wait;
-            t0 = d3_Time;
-            while (end > d3_Time) {
+            start = d3_Time;
+            last = d3_Time;
+            while (start + wait > d3_Time) {
                 sv_RunFrame(0, 0x777c7);
                 if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
-                if (t0 + step < d3_Time) {
+                if (last + step < d3_Time) {
                     d2_SetForm(win, frame);
                     ai_DrawDice(text);
-                    t0 = d3_Time;
+                    last = d3_Time;
                     step += step / 2;
                 }
             }
             break;
         case 2:
             txt_Format(text, 0x1884, side->ch->name, duel->raiseAmount);
-            end = d3_Time + wait;
-            t0 = d3_Time;
-            while (end > d3_Time) {
+            start = d3_Time;
+            last = d3_Time;
+            while (start + wait > d3_Time) {
                 sv_RunFrame(0, 0x777c7);
                 if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
-                if (t0 + step < d3_Time) {
+                if (last + step < d3_Time) {
                     d2_SetForm(win, frame);
                     ai_DrawDuelDice(text, side);
-                    t0 = d3_Time;
+                    last = d3_Time;
                     step += step / 2;
                 }
             }
             break;
         case 3:
             txt_Format(text, 0x1885, side->ch->name, duel->raiseAmount);
-            t0 = d3_Time;
-            end = d3_Time;
+            start = d3_Time;
+            last = d3_Time;
             d2_SetForm(win, frame);
             ai_DrawDuelThrow(text, side);
-            end = t0 + wait;
-            while (end > d3_Time) {
+            while (start + wait > d3_Time) {
                 if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
@@ -6605,12 +6589,11 @@ void ai_DuelDiceAnimation(LCDUEL *duel, LCDUELSIDE *side, int mode, int win, int
             break;
         case 4:
             txt_Format(text, 0x1886, side->ch->name, duel->raiseAmount);
-            t0 = d3_Time;
-            end = d3_Time;
+            start = d3_Time;
+            last = d3_Time;
             d2_SetForm(win, frame);
             ai_DrawDuelThrow(text, side);
-            end = t0 + wait;
-            while (end > d3_Time) {
+            while (start + wait > d3_Time) {
                 if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
@@ -6632,12 +6615,11 @@ void ai_DuelDiceAnimation(LCDUEL *duel, LCDUELSIDE *side, int mode, int win, int
             txt_Format(text, 0x1886, side->ch->name, duel->raiseAmount);
             break;
         }
-        t0 = d3_Time;
-        end = d3_Time;
+        start = d3_Time;
+        last = d3_Time;
         d2_SetForm(win, frame);
         ai_DrawDuelThrow(text, side);
-        end = t0 + wait;
-        while (end > d3_Time) {
+        while (start + wait > d3_Time) {
             if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                 return;
             sv_RunFrame(0, 0x777c7);
