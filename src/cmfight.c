@@ -4053,9 +4053,10 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 }
                 if (side == cm_FightAttackerC) {
                     if (c->health > 0) {
-                        v = 0;
+                        int z = 0;
+
                         cm_BeginFieldBlock((char *)c, c->netId);
-                        cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &v);
+                        cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &z);
                         cm_SendFieldDeltas();
                     }
                     txt_Format(tmp, "%T", h);
