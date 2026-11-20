@@ -4721,6 +4721,8 @@ typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree wi
    mutation: only i as short / char flips it (all sites change). c2trace names the box fields k#1c
    (parents[0].ctrl), k#101 (parents[1].ctrl), k#104 (row[2].ctrl): the order may follow these field
    symbols' ranks against d2_Objs; untested how to move them. climb 6 rounds (seed 7) from here: nothing.
+   Loop counters: every single loop and every pair of loops on j instead of i (120 variants): neither hunk
+   moves (only slots break).
    prior: Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
    parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
    labels and the click dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call,
