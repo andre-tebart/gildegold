@@ -17261,8 +17261,8 @@ void he_RunBuildingSpying(AIJOB *ev)
                 all = 0;
         }
         if (all != 0) {
-            n = 0;
             sum = 0;
+            n = 0;
             for (k = 0; k < 8; k++) {
                 c = (AICHAR *)gm_FindChar(ev->ids[k]);
                 if (c != 0) {

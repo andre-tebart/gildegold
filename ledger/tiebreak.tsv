@@ -3771,7 +3771,7 @@ exe	0x00561470	he_AllocEvent39_3e	he	8751adc3b4d056b4	no	byte	control=byte p1=by
 exe	0x005614c0	he_RunRansomDemand	he	7b398cebf45b153d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005619a0	he_AllocBurglary	he	5c9615a02655ad1b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00561a20	he_RunBurglary	he	ec1c2dbef1d728aa	yes	byte	sweep control=shape best=byte by 12 unused typedefs at the unit's start; codegens=2 compiled=24 (stopped at the goal)	e22f23bb0cfd7bf8
-exe	0x005628e0	he_RunBuildingSpying	he	cf7331d218947511	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005628e0	he_RunBuildingSpying	he	aafcebcdf0af4f9c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a319943faf29c57a
 exe	0x00563070	he_AllocAmbush	he	4e9b1b1b12883099	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005630f0	he_RunAmbush	he	2250ce36866269d9	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	093505b2b35f78cf
 exe	0x00563980	he_AllocDueInOne	he	7b291ae89dcee62a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
