@@ -4157,7 +4157,7 @@ exe	0x00592290	ai_BookContact	lc	9022030e27c6cc05	no	byte	control=byte p1=byte p
 exe	0x00592320	ai_MercenaryBookContact	lc	ab99ab2c4fa446f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005923c0	ai_SearchResourceWindow	lc	202dbcf55dcc489b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00592b90	ai_ExtractResourceWindow	lc	ecd6e36f2ac68b90	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00593150	ai_ProductionGoodsWindow	lc	988719af2be08c42	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00593150	ai_ProductionGoodsWindow	lc	22dd4eb22328e007	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	89b6224a8efbc168
 exe	0x005938c0	ai_MiningContact	lc	d8f788bf4190d954	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00593960	ai_KontorContact	lc	26db03e08f6faac9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00593b00	ai_WoodKontorContact	lc	c4519586f26a3646	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
