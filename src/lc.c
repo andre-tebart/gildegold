@@ -12863,21 +12863,7 @@ int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float 
    the first sends the kidnapping message 0x3c (to the player's netId, flags 1, arg[0] the victim's netId, arg[1]
    the place, arg[2] the player's building, the selected characters as ids), pays 3, accuses the player (gv_Accuse
    0x1a) and closes; with nobody selected the text 0x19e3. The second button and a right click close it. Returns 1
-   once the kidnapping was ordered
-   @deep s47: n = 0 before the memset of msg.ids (not after): 113 -> 73 ins, kept. Block-scoped msg, done =
-   0 moved to the loop: = or worse. Left: frame 0x908 vs 0x90c and the 1s: the original keeps the constant
-   1 as a candidate in ebx from before the bld2 test (mov ebx,1; push ebx for BuildQuery's 1, 1,
-   d2_SetForm, d2_GetWinObj, msg.flags from bl, sv_PopRequest = 1, done = 1) and bld in a slot (mov
-   [esp+0x1c],eax at the join, reloaded for msg.arg[1]); c2trace of ours: no const#1 candidate at all,
-   bld#1 (4 refs, prio -31) takes ebx. climb 2 rounds: only meaning-changing mutants (69). Open: the source
-   that makes 1 a candidate (a local holding 1? done's stores?). prior: Read whole against the original and
-   reconstructed (the draft had sv_CheckMoney's arguments swapped, the place building wrong, the early
-   returns not merged): every call, argument, store and branch matches (ours 209, the original 210). Left:
-   register allocation. The original keeps the place building in a stack slot (mov [esp+0x1c], eax at
-   +0xdf, reloaded at +0x1a1) and the constant 1 in ebx (mov ebx, 1 at +0x9a: push ebx for every 1, done =
-   ebx at +0x26c); ours keeps the building in ebx and 1 in edi (or as push 1), which also makes its frame 4
-   bytes smaller (0x908 vs 0x90c). Tried: the early returns as one nested condition with the held text as
-   the then-arm (that fixed the block order). */
+   once the kidnapping was ordered */
 int ai_KidnapWindow(AICHARREC *victim)
 {
     int done;
@@ -12893,15 +12879,22 @@ int ai_KidnapWindow(AICHARREC *victim)
     int i;
 
     done = 0;
-    if (victim != 0 && sv_CheckMoney((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], 3) != 0
+    if (victim == 0)
+        return 0;
+    if (sv_CheckMoney((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], 3) != 0
         && (victim->bld == 0 || victim->bld->owner != victim->id)) {
         if (victim->heldRounds != 0) {
             txt_Format(text, 0x19ba, victim->id);
             sv_MessageBox(text, 0);
         } else {
-            bld = (AIBLD *)victim->bld2;
-            if (bld == 0) {
-                if (ai_PickActionBuilding((struct AIPER *)victim, 0, LC_KIDNAP_PLACES, 0, 100.0f, &picked) == 0)
+            if (victim->bld2 != 0)
+                bld = (AIBLD *)victim->bld2;
+            else {
+                LARGE_INTEGER mask;
+
+                mask.LowPart = LC_KIDNAP_PLACES;
+                mask.HighPart = 0;
+                if (ai_PickActionBuilding((struct AIPER *)victim, 0, mask.QuadPart, 0, 100.0f, &picked) == 0)
                     return 0;
                 bld = (AIBLD *)gm_BuildQuery(1, 1, picked);
             }
@@ -12919,6 +12912,7 @@ int ai_KidnapWindow(AICHARREC *victim)
                 if (d2_ClickedId == -1)
                     continue;
                 if (d2_PointerObj == ok) {
+                    n = 0;
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x3c;
                     msg.flags = 1;
@@ -12926,7 +12920,6 @@ int ai_KidnapWindow(AICHARREC *victim)
                     msg.arg[0] = victim->netId;
                     msg.arg[1] = bld->id;
                     msg.arg[2] = ((AIBLD *)ai_PlayerBuilding)->id;
-                    n = 0;
                     memset(msg.ids, 0xff, sizeof(msg.ids));
                     for (i = 0; i < 0x300; i++)
                         if (((AICHARREC *)ai_Chars)[i].selected != 0)

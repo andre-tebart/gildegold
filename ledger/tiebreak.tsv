@@ -4288,7 +4288,7 @@ exe	0x005a4d40	ai_ThievesGuildListener	lc	acc5176d75f8bfa4	no	shape	control=shap
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	10449624a48949b9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a4f70	ai_StorageContact	lc	31ab5d167628987a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fc08e0bd709d9b8b
 exe	0x005a5080	ai_TrainingContact	lc	673daf2074c9d947	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a5120	ai_KidnapWindow	lc	e6540ce0bbd66e96	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005a5120	ai_KidnapWindow	lc	9a7e094860aad9de	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	604832af449a9a1b
 exe	0x005a53e0	ai_KidnapStart	lc	a87d586e43b9c559	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a5530	ai_RansomWindow	lc	f59fa0de443c2a40	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a5910	ai_HostageEscape	lc	edfc40db9dfd289d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
