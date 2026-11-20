@@ -3757,41 +3757,41 @@ int cm_FightStartDialog(CMFIGHTREC *a)
    money and goods is taken, 3 the attacker gains face, 0 the town guards are called, 0x11a4 .. 0x11a7), the bars of
    the defenders of a building of kind 0x13 (flags 4: their health, the money for the wounded) or the AI's capture
    (flags 2, the AI attacking: the same outcomes by random)
-   @deep deep s50: 696 -> 216 ins, size 4916 vs 4915. Levers that moved it, in order: no gotos (the last
-   pump one loop at the end, while (wait && sv_RunFrame(..)) with wait = 1 from the loot, both takes and
-   the bars: VC6 threads wait, the loop stays non-rotated, sv_RunFrame x5 / gm_BuildQuery x8; take and face
-   written out in both capture arms: the take tail cross-jumps, d2_SetForm x5); the bars' zero field value
-   as a block local int z (v no longer address-taken: 565 -> 351); obj = 0 then role = 0 as statements; the
-   taken building's kind through bt = &ai_BTypesT[ca->type] (236); the goods share as ((double)(..) * 0.01)
-   * q->count (232); the bars loop counting in cnt (the goods count variable: 216; every other spare int =
-   control or worse). Left: (1) slots: the original has v with role at [esp+0x10] and cnt at [esp+0x1c]
-   (with the money clamp temp), ours cnt with role and v at 0x1c (c2frame: cnt now count 10, v 6; v must be
-   packed before cnt); (2) side stored once at the join before d2_OpenForm (ours per assignment); (3) the
-   money share multiplies the clamped value by fimul [tmp] in the original (ours fild / fmulp; every clamp
-   spelling = control); (4) a->flags loaded into cl before the side == defender test in the original; (5)
-   the pump block laid after the loot loop in the original, ours after the player's take tail; (6)
-   ai_BTypes loaded after the record offset in the bars' kind test. climb round 1 from 232: only an
-   attackerBldId local (the original reads a->attackerBldId each time). prior: Read in full against
-   0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via cm_FightAttackerC/DefenderC and
-   ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes: the money/goods take clears tc
-   (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the address), the loot list mode as
-   two calls (the original's push 0 / push 1 merged tail, was setne). The original's shared tails are kept
-   as in its layout: the take tail (take_done) and the face block (face) are reached from both capture
-   branches, the last pump (pump) from the take and the flags-4 bars. All statements line up (ours 1510 vs
-   1508). Left: allocation and tail placement - the original keeps a in its arg slot and reloads it
-   ([esp+0x1138]) where ours holds it in ebx, side in edi stored once to [esp+0x14] (ours stores it per
-   branch), our zero register edi (xor edi,edi; push edi) vs the original's immediates, the slot pairs
-   ob/cnt [esp+0x14]/[esp+0x1c] swapped between the two take copies; ours merges the roundSums tail of the
-   flags-4 branch into the take's (gm_BuildQuery x7 vs x8) and rotates the last pump (sv_RunFrame x6 vs x5;
-   the original's last pump is a non-rotated loop with esi=1 hoisted, a for(;;)/break form compiles the
-   same as ours); the epilogue after the n==1 path sits inline in the original at 0x4d5685, ours jumps to
-   it. (references: M8 at +0x9eb: ours refers to cm_FightAttacker (0x6f0cec), the original's field to
-   0x6f0ce8 (cm_FightDefender, cm_FightDefenderC) (and 1 more), explained: the three M8 lines (+0x9e8
-   cm_FightAttacker|cm_FightDefender, +0xe4f gm_BuildingJob|gm_TitleJob, +0xf47 gm_Query|gm_GetGoodsValue)
-   are alignment artefacts inside code hunks: asmdiff --symbols shows the same calls on both sides one
-   instruction pair off (gm_BuildingJob then gm_TitleJob, gm_Query 0x2a/0x116 then
-   gm_GetGoodsValue(cm_FightDefender)); the call-count lines are the merged roundSums tail and the rotated
-   pump) */
+   @deep deep s50: 696 -> 190 ins, size 4908 vs 4915. Levers, in order: no gotos (the last pump one loop at
+   the end, while (wait && sv_RunFrame(..)) with wait = 1 from the loot, both takes and the bars: VC6
+   threads wait, the loop stays non-rotated, sv_RunFrame x5 / gm_BuildQuery x8; take and face written out
+   in both capture arms: d2_SetForm x5); the bars' zero field value as a block local int z (565 -> 351);
+   obj = 0 then role = 0 as statements; the taken building's kind through bt = &ai_BTypesT[ca->type] (236);
+   the goods share as ((double)(..) * 0.01) * q->count (232); the bars loop counting in v with the bonus in
+   h (the original's slot table: v with role at 0x10, cnt alone at 0x1c: 198); the guards walks as index
+   loops (i < 0x300, ch = &ai_CharsT[i]: 190). Left: (1) side stored once at the join before d2_OpenForm
+   (ours per assignment); (2) a->flags loaded into cl before the side == defender test (a fl local folds);
+   (3) the money share multiplies the clamp by fimul [tmp] in the original (ours fild / fmulp; every clamp
+   spelling = control); (4) the pump block is laid after the loot loop in the original, ours after the
+   player's take tail (the pump inside the loot arm with gotos: 334); (5) the bars' total: ours holds it in
+   esi at the end and the roundSums tail cross-jumps into the take's, the original reloads total from its
+   slot (no merge); (6) ai_BTypes loaded after the record offset in the bars' kind test (a bt local =
+   control). climb from 232: only an attackerBldId local (the original reloads a->attackerBldId). prior:
+   Read in full against 0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via
+   cm_FightAttackerC/DefenderC and ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes:
+   the money/goods take clears tc (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the
+   address), the loot list mode as two calls (the original's push 0 / push 1 merged tail, was setne). The
+   original's shared tails are kept as in its layout: the take tail (take_done) and the face block (face)
+   are reached from both capture branches, the last pump (pump) from the take and the flags-4 bars. All
+   statements line up (ours 1510 vs 1508). Left: allocation and tail placement - the original keeps a in
+   its arg slot and reloads it ([esp+0x1138]) where ours holds it in ebx, side in edi stored once to
+   [esp+0x14] (ours stores it per branch), our zero register edi (xor edi,edi; push edi) vs the original's
+   immediates, the slot pairs ob/cnt [esp+0x14]/[esp+0x1c] swapped between the two take copies; ours merges
+   the roundSums tail of the flags-4 branch into the take's (gm_BuildQuery x7 vs x8) and rotates the last
+   pump (sv_RunFrame x6 vs x5; the original's last pump is a non-rotated loop with esi=1 hoisted, a
+   for(;;)/break form compiles the same as ours); the epilogue after the n==1 path sits inline in the
+   original at 0x4d5685, ours jumps to it. (references: M8 at +0x9eb: ours refers to cm_FightAttacker
+   (0x6f0cec), the original's field to 0x6f0ce8 (cm_FightDefender, cm_FightDefenderC) (and 1 more),
+   explained: the three M8 lines (+0x9e8 cm_FightAttacker|cm_FightDefender, +0xe4f
+   gm_BuildingJob|gm_TitleJob, +0xf47 gm_Query|gm_GetGoodsValue) are alignment artefacts inside code hunks:
+   asmdiff --symbols shows the same calls on both sides one instruction pair off (gm_BuildingJob then
+   gm_TitleJob, gm_Query 0x2a/0x116 then gm_GetGoodsValue(cm_FightDefender)); the call-count lines are the
+   merged roundSums tail and the rotated pump) */
 void cm_FightEndDialog(CMFIGHTREC *a)
 {
     char ba[0x800];
