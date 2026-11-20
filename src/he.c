@@ -16195,22 +16195,27 @@ float gm_StockPrice(int p, int n);  /* 0x4ffa10 (f3gm.c; f3gm.h does not declare
    home); the hourly share in pass 1's form at all sites; one g for the passes; f one local for pass 1 and
    pass 4 with the free capacity read back into it (f memory-live in pass 4 conflicts with g, so the packer
    puts f with amount and pass 3's have, g alone: the original's frame); have per pass (block locals), n
-   one local; pass 3's mean as mean + (g - have) * 0.4. Left: pass 4's s2.mean = (float)(g * 0.5 + s2.mean)
-   after cm_SendExSellObject: the original schedules fadd [mean] before the call's add esp,0x18, ours after
-   the fmul (c2dag's graph puts the fadd first in both: a later pass decides). = control: the sum's operand
-   order, (float) placement, 0.5 / 2.0, += forms, the statement before the call (order 10 worse); 0.5f: fpu
-   6. prior: s49: 156 -> 122 ins, 964 = 964 instructions, size 3479 -> 3463 (the original 3459, padded
-   equal). Levers: the end as if (ai_Time.hour < 22) { next run } else he_FreeEvent(ev) (VC6 then
-   cross-jumps the free into the first guard's block as the original: the tail hunk and one he_FreeEvent
-   copy gone, 156 -> 137); the rolls' bound as (s.demand * 1.5f) / s.mean (without the parentheses VC6
-   reassociates it into 1.5f / mean * demand: 137 -> 125); the hourly share as (minutes * (1.0 / 60)) *
-   (demand * (1.0f / 14)) at the three sites (the fild / fmul 1/60 / fld / fmul / fmulp order: 125 -> 122,
-   but the slot hunks grow 106 -> 160). No lever: if / else at the first guard, minutes / 60.0, no (float)
-   cast, the bound as < from the other side (167). Left: the frame packing only (dcp frame: the original's
-   [esp+0xc] is shared by five of our slots, its [esp+0x20] by two; ours minutes at [esp+0x30], the
-   original [esp+0x28]; pass 2's n has a stack home written at each definition in ours, the original keeps
-   it in edi and stores only amount = n into [esp+0x10]). Next: c2frame --names on the variable sets of the
-   passes (one s / n / k per pass?). */
+   one local; pass 3's mean as mean + (g - have) * 0.4. Left (order 4): pass 4's s2.mean = (float)(g * 0.5
+   + s2.mean) right after cm_SendExSellObject: the original has call; fld g; fmul 0.5; fadd [s2.mean]; add
+   esp,0x18; fstp, ours call; fld g; fmul; add esp,0x18; fadd; fstp. c2dag's graph of ours: add esp prio
+   32768 (h=4), fadd 229376 after fmul with latency 3 (17/3:7): with latencies the add fills the stall, so
+   the original's add must be ready later or its fadd not wait. No lever (= control): every spelling of the
+   sum (operand order, (float) placement, 0.5 / .5 / 2.0 / (double), += forms, min(), the clamp after it as
+   min / if), (int)f through k first, s2 as pl-block / initialised local, a label before the call or the
+   statement (no region effect); 0.5f or g / 2 give fmul dword (fpu 6); the statement before the call: M10.
+   c2pass: no tail / adjust pass moves it (the scheduler or the x87 stackifier). flip --want on the three
+   lines: no single mutation. climb 2 rounds: nothing. prior: s49: 156 -> 122 ins, 964 = 964 instructions,
+   size 3479 -> 3463 (the original 3459, padded equal). Levers: the end as if (ai_Time.hour < 22) { next
+   run } else he_FreeEvent(ev) (VC6 then cross-jumps the free into the first guard's block as the original:
+   the tail hunk and one he_FreeEvent copy gone, 156 -> 137); the rolls' bound as (s.demand * 1.5f) /
+   s.mean (without the parentheses VC6 reassociates it into 1.5f / mean * demand: 137 -> 125); the hourly
+   share as (minutes * (1.0 / 60)) * (demand * (1.0f / 14)) at the three sites (the fild / fmul 1/60 / fld
+   / fmul / fmulp order: 125 -> 122, but the slot hunks grow 106 -> 160). No lever: if / else at the first
+   guard, minutes / 60.0, no (float) cast, the bound as < from the other side (167). Left: the frame
+   packing only (dcp frame: the original's [esp+0xc] is shared by five of our slots, its [esp+0x20] by two;
+   ours minutes at [esp+0x30], the original [esp+0x28]; pass 2's n has a stack home written at each
+   definition in ours, the original keeps it in edi and stores only amount = n into [esp+0x10]). Next:
+   c2frame --names on the variable sets of the passes (one s / n / k per pass?). */
 void he_RunMarketSupervisor(AIJOB *ev)
 {
     GMSTOCK *rec;
