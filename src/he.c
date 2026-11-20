@@ -16310,6 +16310,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
 
     for (i = 0; i < 0x55; i++) {
         int n;
+        float g;
 
         rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
         if (rec->item == 0)
@@ -16381,7 +16382,6 @@ void he_RunMarketSupervisor(AIJOB *ev)
             continue;
         for (i = 0; i < 0x55; i++) {
             int n;
-            float g;
             int have;
 
             s = gm_StockBlocks[pl].goods[i];
