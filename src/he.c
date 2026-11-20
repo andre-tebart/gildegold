@@ -11120,7 +11120,8 @@ void he_EndPersonEvents(unsigned short *p)
    building's object). Found: the event goes to d->found, its characters are stopped, the one that saw it beckons
    ("gestik/herranwinken"), all are sent to the building ("Detected") with a scornful gesture
    ("gestik/abfaellig" 1 .. 2), the event is bound to the attack (attackId), due 8 minutes from now and posted
-   again (cm_SendExSetHE 0x400); 1. Nothing found (or no building object): 0 */
+   again (cm_SendExSetHE 0x400); 1. Nothing found (or no building object): 0. The question comes as an int: the
+   callers treat their HEDETECT as escaped (he_RunBurglary keeps d.found loaded across gv_Accuse) */
 int he_DetectAttack(int p)
 {
     HEDETECT *d = (HEDETECT *)p;
@@ -16976,8 +16977,8 @@ void he_RunBurglary(AIJOB *ev)
 {
     HEBURGLARY *x = (HEBURGLARY *)ev;
     AIBLD *b, *g, *gb;
-    AICHAR *c, *owner, *master = 0, *guard;
     AIOBJ *room = 0, *stall, *store = 0, *it;
+    AICHAR *c, *owner, *master = 0, *guard;
     HEWATCH *w;
     AIJOB *patrol;
     HEFINVIEW *fin;
@@ -16985,8 +16986,8 @@ void he_RunBurglary(AIJOB *ev)
     char text[0x200];
     char line[0x100];
     int k, ok, amt, skill;
-    AIOBJ *report = 0;
     int n = 0;
+    AIOBJ *report = 0;
     float know, sk;
 
     switch (ev->stage) {
@@ -17067,52 +17068,50 @@ void he_RunBurglary(AIJOB *ev)
         return;
     case 4:
         w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
-        if (w == 0) {
+        if (w == 0)
             ev->stage = -1;
-            return;
-        }
-        if (w->attackId == ev->id) {
+        else if (w->attackId == ev->id)
             gm_AddTime(&ev->end, 0, 6, 0);
-            return;
-        }
-        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
-        if (b != 0) {
-            int reward;
+        else {
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            if (b != 0) {
+                int reward;
 
-            g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
-            if (g != 0)
-                master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
-            guard = &ai_CharsT[((AIJOB *)w)->chr];
-            if (guard != 0 && master != 0) {
-                reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
-                txt_Format(text, 0x19ea, b, reward, guard->id);
-                he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_76");
-                txt_Format(text, 0x19eb, b, reward);
-                he_ShowNews(guard->netId, guard->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_77");
-                cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, reward);
-            }
-            gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
-            if (gb != 0) {
-                cm_BeginFieldBlock((char *)gb, gb->id);
-                cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: AIBLD.earnings */
-                cm_SendFieldDeltas();
-            }
-        }
-        for (k = 0; k < 8; k++) {
-            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0)
-                gm_AddHealth(c->id, -100 - (unsigned short)util_Random(100));
-        }
-        g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
-        if (g != 0) {
-            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
-            for (k = 0; k < 8; k++) {
-                if (ev->ids[k] != -1) {
-                    cm_SendChrStop(ev->ids[k]);
-                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Entdeckt");
+                g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+                if (g != 0)
+                    master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
+                guard = &ai_CharsT[((AIJOB *)w)->chr];
+                if (guard != 0 && master != 0) {
+                    reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
+                    txt_Format(text, 0x19ea, b, reward, guard->id);
+                    he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_76");
+                    txt_Format(text, 0x19eb, b, reward);
+                    he_ShowNews(guard->netId, guard->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_77");
+                    cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, reward);
+                }
+                gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
+                if (gb != 0) {
+                    cm_BeginFieldBlock((char *)gb, gb->id);
+                    cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: AIBLD.earnings */
+                    cm_SendFieldDeltas();
                 }
             }
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0)
+                    gm_AddHealth(c->id, -100 - (unsigned short)util_Random(100));
+            }
+            g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+            if (g != 0) {
+                room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+                for (k = 0; k < 8; k++) {
+                    if (ev->ids[k] != -1) {
+                        cm_SendChrStop(ev->ids[k]);
+                        cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Entdeckt");
+                    }
+                }
+            }
+            ev->stage = -1;
         }
-        ev->stage = -1;
         return;
     case 5:
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
