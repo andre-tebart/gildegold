@@ -3992,7 +3992,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
             if (ob != 0 && obj != 0) {
                 for (q = (AIOBJ *)gm_Query(ob->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
-                    cnt = (int)((double)(cm_Random(0x14) + 0x50) * 0.01 * q->count);
+                    cnt = (int)(((double)(cm_Random(0x14) + 0x50) * 0.01) * q->count);
                     if (cnt < 1)
                         cnt = 1;
                     sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
@@ -4100,7 +4100,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
             if (ob != 0 && obj != 0) {
                 for (q = (AIOBJ *)gm_Query(ob->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
-                    cnt = (int)((double)(cm_Random(0x14) + 0x50) * 0.01 * q->count);
+                    cnt = (int)(((double)(cm_Random(0x14) + 0x50) * 0.01) * q->count);
                     if (cnt < 1)
                         cnt = 1;
                     sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
