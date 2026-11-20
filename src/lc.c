@@ -8704,51 +8704,54 @@ int ai_UsedRecordCount(LCEXCHROW *rows)
    one coin of the picked good, none for the bank's owner) against the other good, refused when that row holds too
    little (0x18fd) or it is the same good (0x18fc); the four moves go out as one "kredit" group, then the lists are
    refilled (0x18fe) and the picked amounts cleared; a right click clears them, or closes the window when none
-   @deep s1 (547 -> 455): the clear loops are i < 16 (the original's cmp 0x1c0 / jl), the side-2 clamp is
-   amount = __min(bankRows[idx].available, ownRows[sel].value) (store, jl, store, reload: +1 basic block).
-   The mechanism of what is left: the original runs the bulk split in REGIONS (100+ basic blocks; ours has
-   99 now, 98 before): its zero lives in scratch edx only in the init loop (pushes of ebx/ebp/esi/edi AFTER
-   the init loop, every 0 an immediate), and arrow / ownUp / bankText are reloaded into ebx / ebp / edi at
-   the loop head (mov ebp,[3c]; mov edi,[40]; mov ebx,[44]), picked / sel / side in slots. Every variant
-   with 100+ blocks lands at 200-260 ins with that prologue (flip --want 'sub esp, N / xor edx, edx' hits:
-   a duplicated fee line, a duplicated wait loop, picked = -1 deleted, ClearPointerItems inside the rup if:
-   none is the original's text). The second extra block is still unknown: not do { } while (0) around the
-   clears, not a decided picked == -1 test, not switch (side), not while (1) around the pump, not fee =
-   __max(CF, fee), not if / else for the owner fee or the counts; fee = __max(value * rate, CF) gives 101
-   blocks but the wrong fee code (value * rate computed twice, a copy arm); a separate float for value *
-   rate gives 100 blocks but a copy fee = f in the keep arm the original lacks. The final code has 86
-   blocks on both sides, so the missing block vanishes after allocation (a merged tail?). prior:
-   reconstructed from the whole original 0x59c700..0x59d2d0 (the draft had condensed the money moves): both
-   row lists (LCEXCHROW), the scroll pairs and count texts (<= 4 disables), the offer selection with picked
-   / sel, the fee as __max(value * rate, gm_CurrencyFactor(1, good)) (the original calls it twice and tests
-   test ah,5 / jnp), owner exempt, the four cm_SendExSellObject moves of both sides with their (int)
-   conversions, the cm_EndGroup slot wait (cm_EndGroup now returns cm_QueueSend's slot), the refills and
-   clears; fee * 0.01 order read and fixed. Left is allocation: the original keeps sel / picked, the side-2
-   amount, the paid amount and idx * 0x1c in stack slots ([esp+0x10], [esp+0x14], [esp+0x18], [esp+0x28])
-   and reloads bank from its argument and bankText / ownText / arrow from slots at the loop head, ours
-   keeps sel in edi, bank in ebp and a zero in ebx (pushing the callee-saved registers before the init
-   loop: '- push ebp / push ebx / xor ebx, ebx' vs '+ xor edx, edx ... push ebx' after it); frame 0x4b4 vs
-   0x4b8 (one slot more in the original), 884 vs 893 instructions (references: M8 at +0x412: ours refers to
-   d2_CopyCaption (0x478870), the original's field to 0x59c6e0 (ai_UsedRecordCount) (and 1 more),
-   explained: both M8 are alignment crossings of the same calls: at +0x412 the original lays the 'no offer'
-   else block (d2_CopyCaption 0x18f7, d2_SetObjPic 0x4f7) out of line after the two ai_UsedRecordCount
-   calls and merges the 0x4f8 / 0x4f9 d2_SetObjPic tails (calls: d2_SetObjPic ours x3, the original x2), at
-   +0x6cb the side-1 refusal txt_Format / d2_CopyCaption pair lines up one call off; every call, argument
-   and literal was read equal (the proof stops at the pooled literal of the form name)) */
+   @deep s1 (547 -> 106, shape): the clear loops are i < 16; the side-2 clamp is amount =
+   __min(bankRows[idx].available, ownRows[sel].value); the arrow picture for sides 1 / 2 is set after the
+   offer chain by a second test of side (if (side == 1) .. 0x4f8; else if (side == 2) .. 0x4f9), the
+   no-offer arm keeps its own d2_SetObjPic 0x4f7: those two give the original 100+ basic blocks, so the
+   bulk split runs in regions (pushes after the init loop, the zero in scratch edx, arrow / ownUp /
+   bankText reloaded at the loop head) and the 0x4f8 / 0x4f9 calls cross-jump; side 1 uses fee itself for
+   the rate (fee = exchangeFee * 0.01; .. fee = value * fee), fee and value are block locals of each side's
+   block (their own slots: side-1 fee shares slot 0 with picked / i / sel / side-2 value as in the
+   original). Rounds with no lever: block scope of idx / sold / bought / slot / paid (only fee / value /
+   amount scope moves the frame), sold / bought renamed per side. Left: slots only (frame size equal) plus
+   the side-1 head order that follows from them: the original's slot 4 = side-1 value + ownCount + side-2
+   amount, slot 8 = side-2 bought + side-1 paid + the CF temps of value and of the 1-coin fee, slot 0xc =
+   side-1 amount + the CF temps of the refusal tests, slot 0x18 = the idx * 0x1c spill alone; ours packs
+   amount (one function-scope variable) alone and paid with value / ownCount. A replay of the packer
+   (c2frame --names, counts varied by +-2 on 11 locals) reaches slots 0 / 4 / 8 with amount block-scoped
+   and its side-1 count 4 (ownCount 4, tmp of CF(1, bought) 4), but never puts side-1 amount with the
+   refusal temps: amount@side1 conflicts with them in our dataflow. prior: reconstructed from the whole
+   original 0x59c700..0x59d2d0 (the draft had condensed the money moves): both row lists (LCEXCHROW), the
+   scroll pairs and count texts (<= 4 disables), the offer selection with picked / sel, the fee as
+   __max(value * rate, gm_CurrencyFactor(1, good)) (the original calls it twice and tests test ah,5 / jnp),
+   owner exempt, the four cm_SendExSellObject moves of both sides with their (int) conversions, the
+   cm_EndGroup slot wait (cm_EndGroup now returns cm_QueueSend's slot), the refills and clears; fee * 0.01
+   order read and fixed. Left is allocation: the original keeps sel / picked, the side-2 amount, the paid
+   amount and idx * 0x1c in stack slots ([esp+0x10], [esp+0x14], [esp+0x18], [esp+0x28]) and reloads bank
+   from its argument and bankText / ownText / arrow from slots at the loop head, ours keeps sel in edi,
+   bank in ebp and a zero in ebx (pushing the callee-saved registers before the init loop: '- push ebp /
+   push ebx / xor ebx, ebx' vs '+ xor edx, edx ... push ebx' after it); frame 0x4b4 vs 0x4b8 (one slot more
+   in the original), 884 vs 893 instructions (references: M8 at +0x412: ours refers to d2_CopyCaption
+   (0x478870), the original's field to 0x59c6e0 (ai_UsedRecordCount) (and 1 more), explained: both M8 are
+   alignment crossings of the same calls: at +0x412 the original lays the 'no offer' else block
+   (d2_CopyCaption 0x18f7, d2_SetObjPic 0x4f7) out of line after the two ai_UsedRecordCount calls and
+   merges the 0x4f8 / 0x4f9 d2_SetObjPic tails (calls: d2_SetObjPic ours x3, the original x2), at +0x6cb
+   the side-1 refusal txt_Format / d2_CopyCaption pair lines up one call off; every call, argument and
+   literal was read equal (the proof stops at the pooled literal of the form name)) */
 void ai_ExchangeWindow(AIBLD *bank)
 {
     char text[0x100];
     LCEXCHROW ownRows[16];
     LCEXCHROW bankRows[16];
-    float fee;
-    float value;
-    float rate;
     int amount;
     int paid;
+    int idx;
+    int sold;
+    int bought;
+    int slot;
     int sel;
     int picked;
     int side;
-    int idx;
     int bankCount;
     int ownCount;
     int bankUp;
@@ -8758,9 +8761,6 @@ void ai_ExchangeWindow(AIBLD *bank)
     int bankText;
     int ownText;
     int arrow;
-    int sold;
-    int bought;
-    int slot;
     int win;
     int i;
 
@@ -8827,7 +8827,6 @@ void ai_ExchangeWindow(AIBLD *bank)
             }
             side = 1;
             sel = picked;
-            d2_SetObjPic(arrow, 0x4f8);
         } else if ((picked = ai_FillExchangeRows(((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ownRows, win, 4, 1)) != -1) {
             if (d2_CaptionCopy[0] == 0 || side == 0) {
                 txt_Format(text, 0x18f8, ownRows[picked].value, ownRows[picked].good * 2 + 0x9a8);
@@ -8835,13 +8834,16 @@ void ai_ExchangeWindow(AIBLD *bank)
             }
             side = 2;
             sel = picked;
-            d2_SetObjPic(arrow, 0x4f9);
         } else {
             side = 0;
             d2_CopyCaption(txt_Ptrs[0x18f7]);
             sel = -1;
             d2_SetObjPic(arrow, 0x4f7);
         }
+        if (side == 1)
+            d2_SetObjPic(arrow, 0x4f8);
+        else if (side == 2)
+            d2_SetObjPic(arrow, 0x4f9);
         bankCount = ai_UsedRecordCount(bankRows);
         ownCount = ai_UsedRecordCount(ownRows);
         if (bankCount <= 4) {
@@ -8882,6 +8884,9 @@ void ai_ExchangeWindow(AIBLD *bank)
             }
         }
         if (side == 1) {
+            float fee;
+            float value;
+
             idx = ai_ClickedExchangeRecord(ownRows);
             if (idx != -1) {
                 sold = ownRows[idx].good;
@@ -8890,10 +8895,10 @@ void ai_ExchangeWindow(AIBLD *bank)
                     d2_CopyCaption(txt_Ptrs[0x18fc]);
                 } else {
                     amount = bankRows[sel].value;
-                    rate = bank->exchangeFee * 0.01;
+                    fee = bank->exchangeFee * 0.01;
                     value = gm_CurrencyFactor(amount, bought);
                     if (ai_PlayerId != bank->owner) {
-                        fee = value * rate;
+                        fee = value * fee;
                         fee = __max(fee, gm_CurrencyFactor(1, bought));
                     } else {
                         fee = 0;
@@ -8927,6 +8932,9 @@ void ai_ExchangeWindow(AIBLD *bank)
                 }
             }
         } else if (side == 2) {
+            float fee;
+            float value;
+
             idx = ai_ClickedExchangeRecord(bankRows);
             if (idx != -1) {
                 bought = bankRows[idx].good;
