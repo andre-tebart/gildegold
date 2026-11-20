@@ -4650,25 +4650,27 @@ void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
    also orders the other side's AI to strike back (cm_OrderAttack, unless an order is pending); the fight command 2 goes
    out (cm_SendFightCommand). Out of range c walks to the free cell near g (cm_SendObjCell), unless c holds its place.
    Returns the send slot, -1 when nothing was sent.
-   @deep s47: ix / iz / py as block locals of the walk tail ({ int ix, iz; float py; .. } after the
-   in-range arm): frame 0x3c -> 0x34 as the original (they pack into the dead parameter slots), 114 -> 101;
-   ix/iz alone or py alone keep 0x38. The hit roll as (k->accuracy * 0.01) * c->sk83 (VC6 regrouped the
+   @deep deep s50: r as int (the original's mov si,ax / and esi,0xffff after the fild, cmp esi,ecx): 95 ins
+   but 250 bytes (was 514), every hunk left is the esi/edi swap of k against g/r/hit/g->scene plus a
+   one-step scratch rotation in the walk tail and SendSetField. c2trace: k#1 prio 58 (9 refs, blk 18 damage
+   P=6 +36) is assigned first and takes esi; r 40, hit 19, g->scene temp 17, g#2 -4 then get edi. The
+   original needs one of those before k (or k below 40). Rounds: no n local in the damage (89, same swap),
+   hit=1 after the damage store, side read before / after the roll (worse), r and hit one variable (same
+   code: separate webs), s.kill set in the arms (worse), kind local (kind2: 49 with r int? no - with r int
+   it stays swapped, frame 0x38), the walk nested inside the melee test with a gs = g->scene local (211),
+   gs assigned in the condition (114). Also open: the original reloads g into eax for
+   cm_CutEntrySlot(other, g) and starts g's edi piece only at cm_CharWeaponItem(g) (ours keeps g in edi
+   from CutEntrySlot). climb 2 rounds on the r int text: only the float-t mutant (meaning differs). prior:
+   s47: ix / iz / py as block locals of the walk tail ({ int ix, iz; float py; .. } after the in-range
+   arm): frame 0x3c -> 0x34 as the original (they pack into the dead parameter slots), 114 -> 101; ix/iz
+   alone or py alone keep 0x38. The hit roll as (k->accuracy * 0.01) * c->sk83 (VC6 regrouped the
    unparenthesised product into acc * sk83 * 0.01): fpu hunks gone, 95; kept. The store order of id /
    active / target around the memset (23 orders): no gain. Left: g and k swap esi / edi through the body:
    the original loads g into esi before the rep stosd (g ranks above k, so it avoids edi), ours ranks k
    first and loads g into edi after the stosd; r then sits in si (mov si,ax). Lowering k by one reference
    (kind = k->kind int local for the two kind tests) swaps them the original's way (49 ins) but spills kind
    (frame 0x38): the lever is k's / g's reference count, not that local. climb 2 rounds: only a float t
-   mutant (76, meaning differs). prior: Read against the original in full. Fixed: the walk takes g's body
-   position (g->scene->obj->pos, was g + 0x34), the side-leader bonus is 1.25 (the 0x5ecebc float, was
-   1.5), the AI order is renewed when the pending one's send slot is still busy (cm_GetSlotState != 0, was
-   == 0), the damage is computed in the slot record itself, the range test as !(dist > range) in one
-   condition with the melee kinds (walk out of line as the original), both exits return the send slot
-   (cm_SendFightCommand / cm_SendObjCell now return cm_QueueSend's slot: the original has no xor eax after
-   them). Instruction count equal (273). Left: allocation - the original packs ix / iz / py and the fild
-   temporaries into the dead parameter slots (rec / c / g at [esp+0x48..0x50], frame 0x34) where ours keeps
-   two of them in the frame (0x3c); g in esi and the weapon in edi (ours esi / edi swapped), the random
-   value in esi; the g load moved before the rep stosd. */
+   mutant (76, meaning differs). */
 
 int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
 {
@@ -4680,7 +4682,7 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
     CMCUTINFO *other;
     CMCUTENTRY *e;
     int i, n, hit, state;
-    unsigned short r;
+    int r;
 
     memset(&s, 0, sizeof(s));
     s.id = c->netId;
