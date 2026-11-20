@@ -13792,26 +13792,7 @@ void he_AllocSpying(int ev)
    not the target ("Spionage: next target = %G"), the spy is sent there (stage 2; none or no spy: ended). 2: once at
    its door, before the end the next round (stage 1), at the end the spy goes to the target (stage 3). 3: there,
    the event's character gets the news 0x1734 (the victim) and the event ends. 4: ended. Stages -2 / -1: a started
-   event's spy is stopped and killed, the event freed
-   @deep s48: case 1's walk body ordered bld, kind, hi = 0, lo = 0 and the tail bld = 0; n--; idx = ..: the
-   frame is the original's 0x408 (lo no longer spilled), the n-- before the modulo keeps the original's
-   separate test eax,eax (105 -> 87 ins; 71 orders of the body, the best kept). Left: (1) the walk: ours
-   hoists one global (c2trace: ai_Blds#1 prio 12 takes ebp after lo ebx / hi eax), the original reloads
-   ai_Blds and ai_BTypes each pass, hi in ebx (byte test bl), lo in ebp; there eax holds a dead lea
-   eax,[ebx+eax*4] (the type record's address) over hi = 0, i.e. hi cannot take eax: some value of the type
-   record's address lives across hi's start in the original. = control: a bt record pointer (function or
-   block scope, every order of bld / bt / hi / lo / kind, 40), the kind read inline at each use, value
-   casts / char arithmetic for both tables, a same-type alias probe. (2) the scratch rotation after the
-   walk (case 1's success path one step off) follows from (1). (3) tails: the original jumps from case 1's
-   c == 0, case 2's c == 0 and case 4 into the gm_AddTime(.., 0, 1, 0) + SendExSetHEI(-1) block at +0x26f
-   and from the two door waits into its call at +0x277 (cross-jumped), keeps case 1's c == 0 copy out of
-   line with lea edx, and case 2's bld == 0 return inline (jne over it); ours merges case 1's c == 0 copy
-   whole and keeps the others as own returns. Start there: the tails decide 40 of the 87. prior: frame
-   sweep s21: frame 0x40c vs 0x408 is not an escaped local: ours spills lo of case 1's kind mask to
-   [esp+0x18] where the original keeps lo in ebp (and the BTypesT base in ebx with a dead lea after the
-   kind load: the record-pointer form). No lever: a bt = &ai_BTypesT[bld->type] record pointer (106 ins,
-   frame unchanged), bld without its = 0 (107), lo / hi / kind as block locals of the do-while body (=
-   control). Lead: case 1's loop form (the n countdown, the bld = 0 reset). */
+   event's spy is stopped and killed, the event freed */
 void he_RunSpying(int ev)
 {
     char text[0x400];
@@ -13916,8 +13897,10 @@ void he_RunSpying(int ev)
             return;
         }
         gm_FindById(&bld, 0, 0, s->target);
-        if (bld == 0 || bld->owner == 0xffff)
-            break;
+        if (bld == 0 || bld->owner == 0xffff) {
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
         if (gm_CompareTime(&s->until, &ai_Time) == -1) {
             cm_SendChrStop(c->netId);
             cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
@@ -13929,8 +13912,10 @@ void he_RunSpying(int ev)
     case 3:
         gm_AddTime(&e->end, 0, 5, 0);
         gm_FindById(&bld, 0, 0, s->target);
-        if (bld == 0 || bld->owner == 0xffff)
-            break;
+        if (bld == 0 || bld->owner == 0xffff) {
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
         c = (AICHAR *)gm_FindChar(s->spy);
         if (c != 0 && sv_IsAtDoor(c, bld) == 0) {
             e->stage = 3;
@@ -13943,15 +13928,13 @@ void he_RunSpying(int ev)
             txt_Format(text, 0x1734, c->id);
             he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5fa, 0);
         }
-        break;
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
     case 4:
         gm_AddTime(&e->end, 0, 1, 0);
         e->exSlot = cm_SendExSetHEI(-1, ev);
         return;
-    default:
-        return;
     }
-    e->exSlot = cm_SendExSetHEI(-1, ev);
 }
 
 int ai_BrawlWin();
