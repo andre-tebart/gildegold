@@ -10266,30 +10266,14 @@ void he_InitSixGroupEvent(int ev)
    to 6): of the variant 1 an official of level 9 / 6 sends an office message two times in three; every official who
    is not of kind 3 loses 3 x level + random(3 x level) of opinion with each character whose building he owns, and a
    player character among them who lost any is told (0x10bd / 0x10bf); then the next stage an hour later. Other
-   stages free the event
-   @deep s47: the hand do/while over offices (o++, --n) is a plain for (k = 0; k < n; k++) { o =
-   &offices[k]; .. }: the countdown store now sits after push ebx as the original's (90 -> 88; o-> against
-   offices[k]., c local against ai_CharsT[i] inline, the guard if (n > 0): all one code). p->netId !=
-   c->netId commuted: 86, kept. Left: one scratch rotation from the first office load (ours mov ecx,[ebx-4]
-   / the original eax) through the loop body; c2trace: n#1 takes eax, the original's next temp is eax
-   again. The amount stays inline: a d local before hit++ gives 48 ins but sinks push 1 behind the
-   util_RandomU call and drops the original's mov cx,ax / own add esp,4 (6 bytes short): not the original.
-   Open: what temp the original lacks (or has) between the GetColumnOffices call and the first o->owner
-   load. prior: read whole against the original and fixed the meaning (amt_GetColumnOffices(col, 6, out),
-   cm_SendRelations' 4th argument 1 and the amount -random(3 x level) - 3 x level through the 16-bit
-   util_RandomU, index loops over ai_CharsT with the signed jl, the variant texts as if / else). Same size
-   (715 bytes, 225 instructions each). Left, allocation only: from +0xf5 the loop's registers are permuted
-   (ours eax/ecx/edx where the original has edx/ecx/eax: mov ecx,[ebx-4] | mov eax,[ebx-4]; mov al,[ebx] |
-   mov dl,[ebx]; mov ax,[eax+0x27] | mov dx,[eax+0x27]; mov dx,ax | mov cx,ax), the office count stored
-   before push ebx (mov [esp+0xc],eax) where the original stores it after (mov [esp+0x10],eax), and the
-   cm_SendRelations argument pushes scheduled around the netId load. The prover stops on the 8-bit
-   amt_SendOfficeMessage argument (Ins8Lo of another register). */
+   stages free the event */
 void he_RunSixGroupEvent(AIJOB *ev)
 {
     AMTKIND kind;
     AMTREC offices[6];
     char text[0x800];
     AMTREC *o;
+    int col;
     AICHAR *p, *c;
     int n, i, k, hit;
 
@@ -10310,7 +10294,8 @@ void he_RunSixGroupEvent(AIJOB *ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    n = amt_GetColumnOffices(ev->groups[ev->stage], 6, offices);
+    col = ev->groups[ev->stage];
+    n = amt_GetColumnOffices(col, 6, offices);
     for (k = 0; k < n; k++) {
         o = &offices[k];
         p = (AICHAR *)gm_FindChar(o->owner);
@@ -10321,7 +10306,7 @@ void he_RunSixGroupEvent(AIJOB *ev)
                 hit = 0;
                 for (i = 0; i < 768; i++) {
                     c = &ai_CharsT[i];
-                    if (c->bld != 0 && p->netId != c->netId && c->bld->owner == p->id) {
+                    if (c->bld != 0 && c->netId != p->netId && c->bld->owner == p->id) {
                         hit++;
                         cm_SendRelations(p->netId, c->netId, -util_RandomU(kind.level * 3) - kind.level * 3, 1);
                     }

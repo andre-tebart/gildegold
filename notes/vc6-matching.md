@@ -4360,6 +4360,11 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **lea operand order `[esi+edi]` vs `[edi+esi]` for `i = (step + i) % N`**: follows which variable was defined
   first in the loop body (`i = ..; step = ..` flips it), not the text. ai_TokenRandomPlayer: outer `for (i = 0; i
   < 0x300; i++)` around a search that reassigns i (byte); `do .. while (i + 1 < 0x300)` left the lea.
+- **A loop body one scratch step off (ours `mov ecx,[ebx-4]`, the original eax, every temp behind rotated) while
+  the call that fills the looped array is equal**: a call argument read through a table into a named local first
+  (`col = ev->groups[ev->stage]; n = amt_GetColumnOffices(col, 6, offices);`): the local's register does not
+  advance the rotation the way the inline load did. flip only named meaning-changing statements of an earlier
+  block (a swapped store there rotated everything behind it, the call's registers too) (he_RunSixGroupEvent byte).
 - **A count kept in ebx with a stack home (frame 4 larger, `mov [esp+X],ebx` after its inits, reloaded after an
   inner loop that borrows ebx) where ours borrows ebp and reloads the event pointer from its argument**: the
   event pointer must outrank the count by a few points: the statement after an `if (n != 0) { .. }` written in
