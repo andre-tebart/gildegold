@@ -1695,8 +1695,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     LCSEARCHWORDS.room (+0x5c, the 0x14 message's place): a one-instruction slot hunk inside a message fill.
   - Left with notes: lc_UpdateGoodsReserves (the cursor as a temp copied into i: a while whose continue skips
     the increment gives the copy shape), he_RunSixGroupEvent (n takes eax, one rotation), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
-    cm_Attack (g / k ranks: one k reference fewer swaps them), ai_ShowAmountRows (the two text arms' first call:
-    nothing hoisted in the original), he_RunGathering (the not-found block last: every search spelling is one
+    cm_Attack (g / k ranks: one k reference fewer swaps them), he_RunGathering (the not-found block last: every search spelling is one
     code), rd_PathToRoad (i in ebx, g->cells re-read per row), ai_Miracle (case slot packing, one rotation),
     d3s_ShadowTriangle (y outranks minY; the original computes y in minY's ebp).
 
@@ -3128,6 +3127,14 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   is referenced (93 -> byte, with redraw = 0 after the row calls and the store order inside the arm, which a
   6-order round settled). Measure such races with the margin (prio difference from c2trace per variant), not
   the instruction count: a round that moves the margin 8 -> 6 -> 0 shows no code change until it flips.
+
+- **Two if / else arms that start with the same call, ours hoisting the first argument loads / push above the
+  jcc, the original's arms equal but with ecx / edx swapped in the second**: the hoist is post-allocation (equal
+  registers in both arms); the original's second arm rotated because the statement after the if was written in
+  both arms (`ai_CentredText(text, x, row->y + 0xf, ..)` at the end of each arm, as the byte twin
+  ai_ShowOfficeRows has it): VC6 cross-jumps the copies (the shared `lea / push / call` tail, one `add esp,0x44`).
+  Then a named copy `ch = row->rec` written out (`row->rec->kind` at each use) settled the rest (ai_ShowAmountRows
+  95 -> byte; the first-line spellings, 36 of them, never reached it).
 
 ### A constant or zero kept in a register
 

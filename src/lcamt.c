@@ -1459,30 +1459,7 @@ int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls)
    character: the family picture (AICHARREC.ref54) of the kinds 5 .. 7, the portrait, the four icons in the
    corners, the title and name ("%s %1N7") and below it the office of kind 7 ("%s", the deputy office text) or the
    name ("%1N5"); a character other than viewer and not of kind 6 gets the liking slider (gm_Liking of the viewer,
-   0 for kind 7); a viewer of kind 6 marks its partner with the picture 0x6d3; returns 0
-   @deep s47: the row walk as an index loop (row = &rows[i]) 117 -> 115; the layout loop without the off /
-   colY induction locals (rows[i].y = col * 0x80 + step; rows[i].x = j * 0xca (+ 0x65)): 95 ins / 175
-   bytes, size 1374 as the original, the layout part equal (VC6 strength-reduces j * 0xca into the
-   original's edx IV). Left: the text block only. The original's two arms compile to the same instructions
-   with other registers and NOTHING hoisted above the kind == 7 jne; ours hoists the rec->id push
-   (identical first txt_Format in both arms). Round of 24 first-line spellings per arm: ch-> in one arm
-   263-373; (sex ? 10 : 0) + 0x114 + b00d in the else arm only: 38 ins (arm 2 not hoisted, but lea instead
-   of add / add, and arm 1 still hoisted) - not kept (two spellings of one value). Open: what makes the two
-   arms' IL differ while their code is equal. prior: rewritten from the first draft and read through
-   against the original (all 429 instructions; ours 428): the layout switch (cols[3], ncols, step), the
-   column loop with the i < n guard, the row walk by pointer, the frame / family / portrait / corner icon
-   pictures, the two text lines, the liking slider (d2_SetObjValue(slider, 0, 100, 0, 1) for kind 7: the
-   original hoists the push 1 shared with gm_Liking's third argument), the partner mark and the filter.
-   Left: scheduling of the text block - ours hoists 'xor ecx, ecx / mov cx, word ptr [eax] / push ecx'
-   (rec->id) above the kind == 7 jne and cross-jumps the first txt_Format, the original keeps both arms'
-   first txt_Format + ai_CentredText whole and merges only the third txt_Format tail ('lea edx, [esp +
-   0x50] / push edx / call'); the variants tried (ai_CentredText in both arms, the first line outside the
-   if, the ternaries folded or not) move it further; plus the layout loop's 'xor edx, edx' / 'mov [esp +
-   0x20], eax' placement and the 'mov esi, rows' before the n test (order), and register choice in the
-   gm_Liking argument loads. (references: M8 at +0x3c4: ours refers to d2_Pics (0x6ed918), the original's
-   field to 0x6ed938 (d2_LastWindow), explained: the ref line at +0x3c4 pairs our d2_Pics load with the
-   original's d2_LastWindow load only by their order before d2_WinOpenSlider: both sides load both and pass
-   the same arguments) */
+   0 for kind 7); a viewer of kind 6 marks its partner with the picture 0x6d3; returns 0 */
 
 int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTROW *rows, AICHARREC *viewer)
 {
@@ -1498,7 +1475,6 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
     int x;
     int y;
     int left;
-    AICHARREC *ch;
     LCAMOUNTROW *row;
 
     cols[0] = -1;
@@ -1573,9 +1549,8 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
         row->ctl[0] = d2_WinOpenPic(left, y, 0x5da, d2_LastWindow);
         if (row->rec == 0)
             continue;
-        ch = row->rec;
-        if (ch->kind == 6 || ch->kind == 7 || ch->kind == 5)
-            d2_WinOpenPic(left - 0x20, y, ch->ref54, d2_LastWindow);
+        if (row->rec->kind == 6 || row->rec->kind == 7 || row->rec->kind == 5)
+            d2_WinOpenPic(left - 0x20, y, row->rec->ref54, d2_LastWindow);
         row->portrait = d2_WinOpenPic(x - d2_Pics[row->rec->picture].w / 2 - 3, y + 1, row->rec->picture,
                                          d2_LastWindow);
         d2_WinOpenPic(left + 3, y + 3, row->icons[0], d2_LastWindow);
@@ -1588,12 +1563,13 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
             txt_Format(text, "%s %1N7", (row->rec->sex ? 0x11e : 0x114) + row->rec->b00d, row->rec->id);
             ai_CentredText(text, x, row->y, 0xca, 0x56);
             txt_Format(text, "%s", (row->rec->sex ? 0x27b : 0x253) + row->rec->secondOffice);
+            ai_CentredText(text, x, row->y + 0xf, 0xca, 0x56);
         } else {
             txt_Format(text, "%s %1N7", (row->rec->sex ? 0x11e : 0x114) + row->rec->b00d, row->rec->id);
             ai_CentredText(text, x, row->y, 0xca, 0x56);
             txt_Format(text, "%1N5", row->rec->id);
+            ai_CentredText(text, x, row->y + 0xf, 0xca, 0x56);
         }
-        ai_CentredText(text, x, row->y + 0xf, 0xca, 0x56);
         if (row->rec != viewer && row->rec->kind != 6) {
             row->ctl[1] = d2_WinOpenSlider(x - 0x23, d2_Pics[0x5da].h + y + 5, 0x40, 0, 100, 0x75, 0x442,
                                               d2_LastWindow);
