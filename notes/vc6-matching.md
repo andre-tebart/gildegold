@@ -3136,6 +3136,15 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   Then a named copy `ch = row->rec` written out (`row->rec->kind` at each use) settled the rest (ai_ShowAmountRows
   95 -> byte; the first-line spellings, 36 of them, never reached it).
 
+- **`and eax,0xff; .. add eax,ecx; push eax` (the sum in the tested byte's register) where ours has `add ecx,eax;
+  push ecx` (the sum in the ternary's), and the next arm's ternary one scratch register on**: the sex-dependent text
+  base was a local set by if / else (`if (chr->sex) base = 0x18f; else base = 0x130; io_PrintText(.., chr->jobId +
+  base);`): two definitions make it a variable (VC6 still if-converts it to `neg / sbb / and / add`), and a
+  variable's register is not reused for the sum. Every ternary spelling, cast, order, `t +=` form or single-use
+  local folds to the ternary temp (ai_CharInfoPanel, proven byte; ord_WageReportOrder's `base` in ebx is the same
+  rule). Also there: two sv_ButtonRow button pairs were scalars plus a block-local `int btns[2]` per arm (the
+  scalar shares its arm's array slot; the original keeps the scalar in ebp through the click loop).
+
 ### A constant or zero kept in a register
 
 - **A zero register (`xor ebp,ebp; cmp eax,ebp; push ebp`) where the original tests `test eax,eax` and keeps a
