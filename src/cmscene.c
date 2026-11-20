@@ -4379,29 +4379,31 @@ int cm_PrevPartyMember(char *m, int n)
    members IV in memory (c2trace pass 3 piece: head use +4, reload -4, latch use +4, latch store -4 =
    savings 0). KEY: ONE more reference of party->members[i] in that loop's head or test chain (region r1,
    w2) is the whole lever: '|| party->members[i] == 0' after the valid test plus r = cm_CutInfosT[i] BEFORE
-   cm_CutChar = c = 2 ins, only the probe's own cmp [esi],0 / je left (any compare form keeps its code: ==
-   -1, > 0x7fffffff, (char) casts, &party->members[i] == 0 / an id pointer test before the deref: test
-   esi,esi; after the deref it folds with no reference). A reference in the body (r2 / r3) or after the
-   loop does not help. Identical-arm ternaries in the call argument lose their test after allocation and
-   count both arms ((i < 16 ? M : M): 14, but the i compare is LFTR'd onto the cut IV, which then takes
-   edi; conditions on memory keep a load + test). Two latch copies (while loop, i++ before continue and at
-   the end) split the cut IV into two (162) or, with a ci pointer, keep two uncross-jumped latches (136).
-   Removed before allocation (= control): empty if, dead local store, self-assignment, (void) / ?: (void)0
-   statements, flag-guarded tests, x - x / x ^ x. = control: tests as positive if / split / nested, assign
-   in test, ((G28REC *)m)->members, a ci pointer, memcpy, no cb local, c / h / cb block-local, while forms,
-   do-while(0) / for(;;) break probes, r scopes (64), a real CMCUTINFO array for the view macro, G20_ME for
-   the host tests; climb 3 rounds from the tree, 2 from r-first: nothing; climb from the probe: only
-   r-first. Open: which ordinary statement gives that reference without code. prior: s51: climb round 1
-   found the lever: in the owner's turn loop of the one-after-the-other run, next = cm_CutInfosT[i] copied
-   before the cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds: nothing). Left: (1) the
-   all-at-once owner loop's IV slots: the original has the cut-record IV at 0x10, i at 0x14, the members IV
-   at 0x18 and keeps the members IV in esi for the gm_FindChar argument (reloaded from its slot at the
-   latch, the rep movsd source taken from the cut slot), ours members IV at 0x14 via eax, i at 0x18, esi =
-   the loaded cut pointer; (2) the one-after-the-other player's turn: the original pushes
-   party->members[me] before the rep movsd of rec (after the cm_PartyTurn store), ours copies first. No
-   lever: the loop's continue as one positive if, the valid test split, rec copied before cm_CutChar = c in
-   the first owner loop (73), next instead of rec there (75), a separate counter j for any subset of the
-   four loops (all = control). */
+   cm_CutChar = c = 2 ins, only the probe's own cmp [esi],0 / je left. Every compare form keeps its code
+   (== -1, > 0x7fffffff, (char) casts, &party->members[i] == 0, an id pointer test before the deref; after
+   the deref it folds with no reference). A reference in the body (r2 / r3) or after the loop does not
+   help. Late-removed constructs that do count: a repeated test (cm_CutInfosT[i].valid != 0 again: no code,
+   one more cut IV reference; a dead && right side does not count), identical-arm ternaries in the call
+   argument ((i < 16 ? M : M) and other i-against-constant conditions: 14 ins, but the i compare is LFTR'd
+   onto the cut IV, which then takes edi; conditions on memory keep a load + test). Two latch copies (while
+   loop, i++ before continue and at the end) split the cut IV in two (162) or, with a ci pointer, keep two
+   uncross-jumped latches (136). Removed before allocation (= control): empty if, dead local store,
+   self-assignment, (void) / ?: (void)0 statements, flag-guarded tests, x - x / x ^ x, a members test as
+   the body's last statement. = control: tests as positive if / split / nested, assign in test, ((G28REC
+   *)m)->members, a ci pointer, memcpy, no cb local, c / h / cb block-local, while forms, do-while(0) /
+   for(;;) break probes, r scopes (64), a real CMCUTINFO array for the view macro, G20_ME for the host
+   tests, gm_FindChar parameter types; worse: the A counter as prev / me (77 / 67), a hand-rotated loop
+   (95). climb 3 rounds from the tree, 2 from r-first: nothing; climb from the probe: only r-first. Open:
+   which ordinary statement gives that one reference without code. prior: s51: climb round 1 found the
+   lever: in the owner's turn loop of the one-after-the-other run, next = cm_CutInfosT[i] copied before the
+   cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds: nothing). Left: (1) the all-at-once
+   owner loop's IV slots: the original has the cut-record IV at 0x10, i at 0x14, the members IV at 0x18 and
+   keeps the members IV in esi for the gm_FindChar argument (reloaded from its slot at the latch, the rep
+   movsd source taken from the cut slot), ours members IV at 0x14 via eax, i at 0x18, esi = the loaded cut
+   pointer; (2) the one-after-the-other player's turn: the original pushes party->members[me] before the
+   rep movsd of rec (after the cm_PartyTurn store), ours copies first. No lever: the loop's continue as one
+   positive if, the valid test split, rec copied before cm_CutChar = c in the first owner loop (73), next
+   instead of rec there (75), a separate counter j for any subset of the four loops (all = control). */
 
 void cm_RunSceneParty(char *m, int ctx)
 {
