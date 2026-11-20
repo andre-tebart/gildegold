@@ -3623,12 +3623,12 @@ exe	0x0054b1e0	he_RunProtection	he	shape	readable	deep
 exe	0x0054b9b0	he_StartAudit	he	byte	readable		
 exe	0x0054ba20	he_RunAudit	he	byte	readable		
 exe	0x0054be20	he_StartGathering	he	byte	readable		
-exe	0x0054bec0	he_RunGathering	he	draft	readable	deep	
+exe	0x0054bec0	he_RunGathering	he	byte	readable		
 exe	0x0054c4c0	he_AllocSim	he	byte	readable		
 exe	0x0054c510	he_IsAtWork	he	byte	readable		
 exe	0x0054c570	he_RunAccidentSim	he	byte	readable		
 exe	0x0054c870	he_StartAuctionEvent	he	byte	readable		
-exe	0x0054c8e0	he_RunAuctionEvent	he	draft	readable	deep	
+exe	0x0054c8e0	he_RunAuctionEvent	he	byte	readable		
 exe	0x0054cc20	he_StartTitleCeremony	he	byte	readable		
 exe	0x0054cc50	he_RunTitleCeremony	he	byte	readable		
 exe	0x0054d190	he_StartInnSim	he	byte	readable		
@@ -3667,7 +3667,7 @@ exe	0x005516a0	he_PlayGestures	he	byte	readable
 exe	0x00551780	he_StepWalk	he	byte	readable		
 exe	0x00551b70	he_RunWalk	he	byte	readable		
 exe	0x00551d00	he_InitSixGroupEvent	he	byte	readable		
-exe	0x00551d70	he_RunSixGroupEvent	he	draft	readable	deep	
+exe	0x00551d70	he_RunSixGroupEvent	he	byte	readable		
 exe	0x00552040	he_StartExam	he	byte	readable		
 exe	0x00552090	he_RunExamQuestion	he	byte	readable		
 exe	0x00552200	he_StartExamOffer	he	byte	readable		
@@ -3722,7 +3722,7 @@ exe	0x00558e10	he_RunEvent17	he	byte	readable
 exe	0x00558e70	he_AllocSabotage	he	byte	readable		
 exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
 exe	0x00559d20	he_AllocSpying	he	byte	readable		
-exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
+exe	0x0055a030	he_RunSpying	he	byte	readable		
 exe	0x0055a5f0	he_AllocBrawl	he	byte	readable		
 exe	0x0055a730	he_RunBrawl	he	byte	readable		
 exe	0x0055af70	he_AllocTheft	he	byte	readable		
@@ -3746,7 +3746,7 @@ exe	0x0055ce60	he_RunMasterExamPassed	he	byte	readable
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_RunEvent27	he	byte	readable		
 exe	0x0055d490	he_AllocHarvest	he	byte	readable		
-exe	0x0055d5c0	he_RunHarvest	he	draft	readable	deep	
+exe	0x0055d5c0	he_RunHarvest	he	byte	readable		
 exe	0x0055dbe0	he_RunDismissal	he	byte	readable		
 exe	0x0055dd70	he_AllocEvent32	he	byte	readable		
 exe	0x0055de30	he_RunPromotion	he	byte	readable		
