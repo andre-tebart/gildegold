@@ -2995,40 +2995,13 @@ int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(
    3 per row; 2: an empty picture 0x4fb; the classes 0xf and 6 are left out; group 3 also sets sv_ResearchClass and
    pays from the player's seat object). A click on a kind checks the money (the seat's stock or the character's),
    lc_GebaeudeAusrichten places it and the build message 0xd (the kind, its cost, the site's position and angles,
-   the model) is sent; the right button closes the window
-   @deep s1 (309 -> 116 ins): amount is char[0x80] (the original's frame: amount 0x14c..0x1cc); x / y were
-   no locals (the kind arm's button and text places written inline as (n % 3) * 70 + .. / (n / 3) * 0x5a +
-   .., CSE temps); ai_BTypes[kind].kind inline; off = 0 at the top of the group loop body (behind the 2 / 5
-   continue), not after n++; the build message fill type, flags, to = fromId, time (FyfcT of 288 orders;
-   block scope of msg changes nothing). Left: the kind loop only (+ the frame 8 bytes short): the original
-   computes type = ai_BTypes + kind BEFORE gm_MayTakeJob (mov ecx,[ai_BTypes]; add esi,ecx between the
-   pushes; type in esi across the call, the 0x24d offset IV in [esp+0x20]), kind in ebx, n in ebp, the
-   txt_Ptrs walk in [esp+0x10] (shared with prevGroup), so the strcpy of the kind name finds no byte
-   register and spills src [esp+0x1c] / char [esp+0x17] (those are the 8 frame bytes). Ours: kind ebx, n
-   esi, the txt walk in ebp, the type IV in memory, no type local. Putting type = .. back before the call
-   (typeback) gives the right kind-loop shape but reshuffles the whole function (243 ins: view ebx, zero
-   edi); type after the call / inside ok == 1 = control (forwarded). Rounds with no lever: init order of
-   pointed / prevGroup / seat, ok inline, the kind loop without continue. climb from the s1 states: only
-   meaning-changing leads (a float local, strcpy moved after captionY). prior: Reconstructed in full from
-   the original 0x5909a0..0x591164: the group buttons (2 and 5 skipped, 3 / 7 gated by officeKind / jobId),
-   the kind list per group (gm_BuildingClass, gm_MayTakeJob 1 / 2, the kind name and cost text), the click
-   handling (sv_CheckStock on the seat for group 3, else sv_CheckGoodAmount; the byte-pushed money kind is
-   the @original cast), lc_GebaeudeAusrichten and the build message 0xd (AIMSG.buildPos / buildRot /
-   buildPath). ours=547 original=550. Left: register allocation and scheduling only: the original keeps ebx
-   as the zero register from the prologue on (push ebx before the ai_RunAllows test; ours saves esi there),
-   the group index in esi, the kind loop's name pointer txt_Ptrs + 0x48e*4 walked in [esp+0x10] and the
-   strcpy of the kind's name spilled through [esp+0x1c] / [esp+0x17] (frame 0x2cc vs ours 0x2b4: these
-   spills); ours holds them in ebx / edi; e.g. +0xd5e: ours 'mov ecx, [ebx]; mov bl, [ecx]' vs the original
-   'mov ecx, [edx]; mov [esp+0x1c], ecx; ... mov dl, [edx]; mov [esp+0x17], dl'. A variant round.
-   (references: M8 at +0x68a: ours refers to ai_Time+0x8 (0x770ae8), the original's field to 0x88 (and 1
-   more), explained: the two M8 lines are the alignment pairing two loads of the build message's field
-   copies that the schedulers order differently (ours loads ai_Time+8 and ai_BuildGroup at other places in
-   the same block; both sides copy ai_Time's 14 bytes into msg.time and test ai_BuildGroup == 3 once)) */
+   the model) is sent; the right button closes the window */
 void ai_ConstructionWindow(void)
 {
     AIMSG msg;
+    AIBTYPE *type;
     char amount[0x80];              /* the cost text of a kind */
-    char model[0x100];              /* the model lc_GebaeudeAusrichten picked */
+    char model[MAX_PATH];           /* the model lc_GebaeudeAusrichten picked */
     int groups[10];                 /* the group buttons */
     AIROOM *seat;                   /* group 3: the player's seat object that pays */
     int prevGroup;
@@ -3042,7 +3015,6 @@ void ai_ConstructionWindow(void)
     int text;
     int site;
     int kind;
-    int cost;
     int ok;
     int n;
     int i;
@@ -3064,8 +3036,7 @@ void ai_ConstructionWindow(void)
     d2_SetForm(view, 1);
     io_PrintText(0x17eb);
     d2_SetForm(view, 2);
-    n = 0;
-    for (i = 1; i < 10; i++) {
+    for (i = 1, n = 0; i < 10; i++) {
         if (i == 2 || i == 5)
             continue;
         off = 0;
@@ -3115,9 +3086,10 @@ void ai_ConstructionWindow(void)
             for (kind = 0; kind < 88; kind++) {
                 if (gm_BuildingClass(kind) != ai_BuildGroup)
                     continue;
+                type = (AIBTYPE *)ai_BTypes + kind;
                 ok = gm_MayTakeJob(kind, ai_PlayerId);
                 if (ok == 1) {
-                    if (((AIBTYPE *)ai_BTypes)[kind].kind == 0xf || ((AIBTYPE *)ai_BTypes)[kind].kind == 6)
+                    if (type->kind == 0xf || type->kind == 6)
                         continue;
                     ctl = d2_WinOpenPic((n % 3) * 70 + 0x30, (n / 3) * 0x5a + 0xf, kind + 0x427, d2_LastWindow);
                     d2_Objs[ctl].checkable = 1;
@@ -3130,15 +3102,14 @@ void ai_ConstructionWindow(void)
                     d2_SetObjText(text, amount);
                     d2_Objs[text].w = 0x8c;
                     d2_Objs[text].centred = 1;
+                    n++;
                 } else if (ok == 2) {
                     ctl = d2_WinOpenPic((n % 3) * 70 + 0x30, (n / 3) * 0x5a + 0xf, 0x4fb, d2_LastWindow);
                     d2_Objs[ctl].caption[0] = ch_EmptyName[0];
                     d2_Objs[ctl].style = 3;
                     d2_Objs[ctl].capfont = 0x54;
-                } else {
-                    continue;
+                    n++;
                 }
-                n++;
             }
             prevGroup = ai_BuildGroup;
         }
@@ -3159,7 +3130,7 @@ void ai_ConstructionWindow(void)
                 if (site != 0) {
                     msg.type = 0xd;
                     msg.flags = 2;
-                    msg.to = msg.fromId = ai_CharInts[ai_PlayerId][0];
+                    msg.fromId = msg.to = ai_CharInts[ai_PlayerId][0];
                     msg.time = ai_Time;
                     if (ai_BuildGroup == 3)
                         msg.arg[0] = ((AICHARREC *)ai_PlayerChar)->netId;
