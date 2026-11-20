@@ -3664,7 +3664,7 @@ exe	0x005512c0	he_StartWalk	he	byte	readable
 exe	0x00551340	he_StepWalkSlot	he	byte	readable		
 exe	0x00551440	he_FillWalkSlot	he	byte	readable		
 exe	0x005516a0	he_PlayGestures	he	byte	readable		
-exe	0x00551780	he_StepWalk	he	draft	readable	deep	
+exe	0x00551780	he_StepWalk	he	byte	readable		
 exe	0x00551b70	he_RunWalk	he	byte	readable		
 exe	0x00551d00	he_InitSixGroupEvent	he	byte	readable		
 exe	0x00551d70	he_RunSixGroupEvent	he	draft	readable	deep	
@@ -3694,7 +3694,7 @@ exe	0x00553e10	he_AllocSale	he	byte	readable
 exe	0x00553e90	he_RunSale	he	byte	readable		
 exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
 exe	0x00554820	he_AllocCustomersHire	he	byte	readable		
-exe	0x00554860	he_RunHire	he	draft	readable	deep	
+exe	0x00554860	he_RunHire	he	byte	readable		
 exe	0x00554cb0	he_AllocTransport	he	byte	readable		
 exe	0x005551c0	he_CollectTransporter	he	byte	readable		
 exe	0x00555210	he_RandomTransporter	he	byte	readable		
@@ -3776,11 +3776,11 @@ exe	0x005628e0	he_RunBuildingSpying	he	draft	readable	deep
 exe	0x00563070	he_AllocAmbush	he	byte	readable		
 exe	0x005630f0	he_RunAmbush	he	draft	readable	deep	
 exe	0x00563980	he_AllocDueInOne	he	byte	readable		
-exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
+exe	0x005639c0	he_RunAttack	he	byte	readable		
 exe	0x005642e0	he_AllocFire	he	byte	readable		
 exe	0x005644e0	he_RunFire	he	byte	readable		
 exe	0x00564860	he_AllocBurn	he	byte	readable		
-exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
+exe	0x005649b0	he_RunBurn	he	byte	readable		
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	byte	readable		
 exe	0x00565500	he_AllocHealing	he	byte	readable		

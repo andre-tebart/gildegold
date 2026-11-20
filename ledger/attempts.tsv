@@ -133,6 +133,7 @@ exe	0x0052bbc0	sv_SendSelectedToBuilding	1
 exe	0x0052bec0	sv_HandleSelectionMouse	1
 exe	0x0052eee0	sv_UpdateBand	1
 exe	0x0052f0d0	sv_UpdateBandLed	1
+exe	0x0053e300	he_NextEvent	1
 exe	0x0056be30	he_RunConstruction	1
 exe	0x0057bf00	ai_AlchemistCandidates	1
 exe	0x0057c690	ai_AlchemistResearchWindow	1
