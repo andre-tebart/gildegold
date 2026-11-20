@@ -3757,26 +3757,26 @@ int cm_FightStartDialog(CMFIGHTREC *a)
    money and goods is taken, 3 the attacker gains face, 0 the town guards are called, 0x11a4 .. 0x11a7), the bars of
    the defenders of a building of kind 0x13 (flags 4: their health, the money for the wounded) or the AI's capture
    (flags 2, the AI attacking: the same outcomes by random)
-   @deep deep s50: 696 -> 190 ins, size 4908 vs 4915. Levers, in order: no gotos (the last pump one loop at
+   @deep deep s50: 696 -> 187 ins, size 4904 vs 4915. Levers, in order: no gotos (the last pump one loop at
    the end, while (wait && sv_RunFrame(..)) with wait = 1 from the loot, both takes and the bars: VC6
    threads wait, the loop stays non-rotated, sv_RunFrame x5 / gm_BuildQuery x8; take and face written out
    in both capture arms: d2_SetForm x5); the bars' zero field value as a block local int z (565 -> 351);
    obj = 0 then role = 0 as statements; the taken building's kind through bt = &ai_BTypesT[ca->type] (236);
    the goods share as ((double)(..) * 0.01) * q->count (232); the bars loop counting in v with the bonus in
    h (the original's slots: v with role at 0x10, cnt alone at 0x1c: 198); the guards walks as index loops
-   (i < 0x300, ch = &ai_CharsT[i]: 190). Left: (1) block order: the original lays the pump right after the
-   loot loop (the takes / bars jump back to it), ours after the player's take tail (vc6-matching: reverse
-   postorder of a DFS taking jump edges first: the pump is first reached through the player arm). The pump
-   inside the loot arm (wait = 1; pump: while (wait && ..) + wait = 1; goto pump in the others: 'gotowait')
-   gives the original's instruction count (1508 = 1508, non-rotated) but lays the loop at the function's
-   end (334 ins); without wait it rotates (x6); the loot as the else of an inverted flags test: 493. (2)
-   side stored once at the join before d2_OpenForm (ours per assignment); (3) a->flags loaded into cl
-   before the side == defender test (an fl local folds); (4) the money share multiplies the clamp by fimul
-   [tmp] (ours fild / fmulp; every clamp spelling incl. the twin cm_LootStock's (unsigned int) cast =
-   control); (5) the bars' total held in esi at the end (ours) so the roundSums tail cross-jumps into the
-   take's; the original reloads total (block-scoped total / h / row .. = control); (6) ai_BTypes loaded
-   after the record offset in the bars' kind test (a bt local = control). climb from 190: only an
-   attackerBldId local in the bars (132; the original reloads a->attackerBldId). prior: Read in full
+   (190); side picked in one assignment, side = winner == 0 ? (nb > na ? att : def) : (winner == attacker ?
+   def : att) (the original stores side once at the join: 187). Left: (1) block order: the original lays
+   the pump right after the loot loop, ours after the player's take tail. By the block-order rule (reverse
+   postorder, jump edges first) the player arm must not reach the pump when the blocks are ordered, so the
+   takes' / bars' jumps to it come later (merging / threading); tried: the pump inside the loot arm with
+   gotos (gotowait: the original's 1508 instructions, non-rotated, but laid at the end: 334), the loop
+   written out in every arm (while / for(;;): 361, VC6 does not merge the loops), the loot as the else of
+   an inverted test (493), wait = 1 moved before the roundSums ifs (= control). (2) a->flags loaded into cl
+   before the side == defender test (an fl local folds); (3) the money share's fimul [tmp] (ours fild /
+   fmulp; all clamp spellings = control); (4) the bars' total#3 piece (lines 'if (total != 0)',
+   SendMoveGoods, roundSums) gets esi in ours, the original reloads total, so its roundSums tail is not
+   merged into the take's; flip.py finds only meaning-changing mutants for it. climb from 187: only an
+   attackerBldId local in the bars (129, the original reloads a->attackerBldId). prior: Read in full
    against 0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via cm_FightAttackerC/DefenderC and
    ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes: the money/goods take clears tc
    (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the address), the loot list mode as
