@@ -5072,28 +5072,39 @@ void ai_ShowMissions(int owner);
    powerFlags has 0x20) and with it the profession choice for a jobless child (no event 0x5e and f020 at most the
    age + 4) or the university for one with a profession that has not studied (powerFlags 0x10000), and for the
    player's own character the missions button when it has missions. The right button closes it.
-   @deep Reconstructed in full against the original (all 999 instructions read: the dates, profession /
-   title, offices, worth, partner / betrothal event 0x41 walk, faith, children, the skill bars and the nine
-   ailment rows, the button ladder of page 4 and the click dispatch); all calls, literals and references
-   agree, no M8/M9. Remaining: the original does not strength-reduce or constant-fold the row counter of
-   page 3 - in the skill loop it keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea ecx,[eax*8+1]) and
-   computes the header / ailment rows at run time (lea ecx,[eax*8+0xa]; inc esi), where ours carries
-   row*0x18+1 as a stepped counter and folds the later rows to constants (mov esi,7 / push 0x9a / push
-   0xb2): tried ++row in the call, (row+1)*0x18+1 with a trailing row++, both keep the reduction (8
-   instructions fewer: ours 991 vs 999); the original keeps universityBtn[0] in ebp (cmp eax,ebp) where
-   ours reloads [esp+0x24]; the rest is order / regs / slots; proof stops at the escaped frame layout (gift
-   / professionBtn / universityBtn slots). */
+   @deep s48: kept (100 -> 20 ins): the professionBtn / universityBtn arrays were scalars, the sv_ButtonRow
+   row a block-local int btns[2] in each arm (giftBtn = btns[0]; universityBtn = btns[1];): the frame then
+   shares each scalar's slot with its arm's array and the original keeps universityBtn in ebp through the
+   click loop; row = 0 before d2_SetForm(win, 3); in the skill loop row++; y += 0x18; before the
+   txt_Format; each ailment / header line's row++ after the .centred store. Left (20 ins): (1) the job /
+   title arms: the original adds into jobId's register (and eax,0xff .. add eax,ecx; push eax), ours into
+   the ternary's (add ecx,eax; push ecx), which rotates the title arm's ternary to edx; no lever among ~25
+   spellings (operand order, (int) / (unsigned char) casts, the split constant (lea), a byte / int local k
+   for jobId (worse)); flip.py on 'add eax, ecx .. push 8021': no single mutation. (2) the click loop's
+   entry reloads in another order (ebx win, esi giftBtn, ebp universityBtn in the original; ours ebp before
+   esi): reload order by candidate id, the declaration moves are = control. prior: Reconstructed in full
+   against the original (all 999 instructions read: the dates, profession / title, offices, worth, partner
+   / betrothal event 0x41 walk, faith, children, the skill bars and the nine ailment rows, the button
+   ladder of page 4 and the click dispatch); all calls, literals and references agree, no M8/M9. Remaining:
+   the original does not strength-reduce or constant-fold the row counter of page 3 - in the skill loop it
+   keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea ecx,[eax*8+1]) and computes the header / ailment
+   rows at run time (lea ecx,[eax*8+0xa]; inc esi), where ours carries row*0x18+1 as a stepped counter and
+   folds the later rows to constants (mov esi,7 / push 0x9a / push 0xb2): tried ++row in the call,
+   (row+1)*0x18+1 with a trailing row++, both keep the reduction (8 instructions fewer: ours 991 vs 999);
+   the original keeps universityBtn[0] in ebp (cmp eax,ebp) where ours reloads [esp+0x24]; the rest is
+   order / regs / slots; proof stops at the escaped frame layout (gift / professionBtn / universityBtn
+   slots). */
 void ai_CharInfoPanel(AICHARREC *chr, int other)
 {
     int win;
     int y;
     int giftBtn;
-    int professionBtn[2];
+    int professionBtn;
     int i;
     int dead;
     int width;
     int takeOverBtn;
-    int universityBtn[2];
+    int universityBtn;
     int missionBtn;
     GMDATE date;
     char text[64];
@@ -5112,8 +5123,8 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     takeOverBtn = -1;
     missionBtn = -1;
     giftBtn = -1;
-    universityBtn[0] = -1;
-    professionBtn[0] = -1;
+    universityBtn = -1;
+    professionBtn = -1;
     callId = sv_FrameMask;
     win = d2_OpenForm(0, 0, "panel\\info_spieler");
     d2_SetPointerSprite(0, 0);
@@ -5134,9 +5145,9 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
         io_PrintText("$5<$R%s$0<$3>$L%i$A$0>", 0x1f54, (int)gm_CharAge(chr->id));
     }
     if (chr->jobId != 0)
-        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f55, chr->jobId + (chr->sex ? 0x18f : 0x130));
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f55, (chr->sex ? 0x18f : 0x130) + chr->jobId);
     else if (chr->title != 0)
-        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f56, chr->title + (chr->sex ? 0x230 : 0x20d));
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f56, (chr->sex ? 0x230 : 0x20d) + chr->title);
     officeBase = chr->sex ? 0x27b : 0x253;
     if (chr->officeKind == 0 && chr->secondOffice == 0) {
         txt_Format(text, "%s", "-");
@@ -5189,8 +5200,8 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
         io_PrintText("$3>$L-$A$0>");
 
     /* page 3: the skills and the ailments */
-    d2_SetForm(win, 3);
     row = 0;
+    d2_SetForm(win, 3);
     width = d2_Wins[d2_LastWindow].w;
     txt_Format(text, 0x1f61);
     obj = d2_CreateWinText(0, 1, text, d2_LastWindow);
@@ -5198,8 +5209,8 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     d2_Objs[obj].centred = 1;
     d2_Objs[obj].w = width;
     for (i = 0; i < 5; i++) {
-        y += 0x18;
         row++;
+        y += 0x18;
         txt_Format(text, 0x16b7 + i);
         d2_CreateWinText(10, row * 0x18 + 1, text, d2_LastWindow);
         sv_DrawBalanceBar(0xaf, y, chr, i, 0x4e5);
@@ -5207,71 +5218,71 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     row++;
     txt_Format(text, 0x1f63);
     obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-    row++;
     d2_Objs[obj].centred = 1;
+    row++;
     d2_Objs[obj].w = width;
     if (chr->ailments != 0) {
         if (chr->ailments & 0xf) {
             txt_Format(text, 0x161e);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0xf0) {
             txt_Format(text, 0x161f);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0xf00) {
             txt_Format(text, 0x1620);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0x3000) {
             txt_Format(text, 0x1621);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0x1c000) {
             txt_Format(text, 0x1622);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0xe0000) {
             txt_Format(text, 0x1623);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 7 << 20) {
             txt_Format(text, 0x1624);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0x1800000) {
             txt_Format(text, 0x1625);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
         if (chr->ailments & 0x1e000000) {
             txt_Format(text, 0x1626);
             obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
-            row++;
             d2_Objs[obj].centred = 1;
+            row++;
             d2_Objs[obj].w = width;
         }
     }
@@ -5289,9 +5300,12 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
                         txt_Format(text1, 0x1f4b, chr->id);
                         txt_Format(text2, 0x1a96);
                         d2_SetForm(win, 4);
-                        sv_ButtonRow(d2_LastWindow, 0, professionBtn, 2, text1, text2);
-                        giftBtn = professionBtn[0];
-                        professionBtn[0] = professionBtn[1];
+                        {
+                            int btns[2];
+                            sv_ButtonRow(d2_LastWindow, 0, btns, 2, text1, text2);
+                            giftBtn = btns[0];
+                            professionBtn = btns[1];
+                        }
                     }
                 } else if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
                     txt_Format(text1, 0x1f4b, chr->id);
@@ -5303,9 +5317,12 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
                     txt_Format(text2, 0x1f4b, chr->id);
                     txt_Format(text1, 0x1a97);
                     d2_SetForm(win, 4);
-                    sv_ButtonRow(d2_LastWindow, 0, universityBtn, 2, text2, text1);
-                    giftBtn = universityBtn[0];
-                    universityBtn[0] = universityBtn[1];
+                    {
+                        int btns[2];
+                        sv_ButtonRow(d2_LastWindow, 0, btns, 2, text2, text1);
+                        giftBtn = btns[0];
+                        universityBtn = btns[1];
+                    }
                 }
             } else if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
                 txt_Format(text1, 0x1f4b, chr->id);
@@ -5340,12 +5357,12 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
             } else if (d2_PointerObj == giftBtn) {
                 if (ai_GiftWindow(ai_Chars[ai_PlayerId], chr) != 0)
                     d2_SetObjEnabled(giftBtn, 0);
-            } else if (d2_PointerObj == professionBtn[0]) {
+            } else if (d2_PointerObj == professionBtn) {
                 if (ai_ChooseProfessionWindow(ai_Chars[ai_PlayerId], chr) != 0)
-                    d2_SetObjEnabled(professionBtn[0], 0);
-            } else if (d2_PointerObj == universityBtn[0]) {
+                    d2_SetObjEnabled(professionBtn, 0);
+            } else if (d2_PointerObj == universityBtn) {
                 if (ai_UniversityWindow(ai_Chars[ai_PlayerId], chr) != 0)
-                    d2_SetObjEnabled(universityBtn[0], 0);
+                    d2_SetObjEnabled(universityBtn, 0);
             } else if (d2_PointerObj == missionBtn) {
                 ai_ShowMissions(chr->netId);
             }
