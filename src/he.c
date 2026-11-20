@@ -13821,8 +13821,8 @@ void he_RunSpying(int ev)
     AICHAR *c;
     HEFINVIEW *fin;
     unsigned lo, hi;
-    unsigned char kind;
     int n, idx;
+    AIBTYPE *bt;
 
     if (e->stage == -1 || e->stage == -2) {
         if ((e->opts & 2) != 0 && s->spy != -1) {
@@ -13864,13 +13864,13 @@ void he_RunSpying(int ev)
         n = 0x100;
         do {
             bld = &ai_BldsT[idx];
-            kind = ai_BTypesT[bld->type].kind;
+            bt = &ai_BTypesT[bld->type];
             hi = 0;
             lo = 0;
-            if (kind > 0x1f)
-                hi = 1 << (kind - 0x20);
+            if (bt->kind > 0x1f)
+                hi = 1 << (bt->kind - 0x20);
             else
-                lo = 1 << kind;
+                lo = 1 << bt->kind;
             if (((lo & 0xa7fcc3a6) != 0 || (hi & 1) != 0) && bld->id != s->target)
                 break;
             bld = 0;
