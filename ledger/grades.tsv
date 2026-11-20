@@ -3763,7 +3763,7 @@ exe	0x0055eba0	he_FindFigurePlace	he	byte	readable
 exe	0x0055ee40	he_PickNearBuilding	he	byte	readable		
 exe	0x0055efc0	he_RunRoutine	he	draft	readable	deep	
 exe	0x0055fa20	he_AllocMarket	he	byte	readable		
-exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep	
+exe	0x0055fa90	he_RunMarketSupervisor	he	shape	readable	deep	
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
 exe	0x00560900	he_RunKidnap	he	byte	readable		
 exe	0x00561130	he_AllocRansom	he	byte	readable		
@@ -3771,7 +3771,7 @@ exe	0x00561190	he_RunRansom	he	byte	readable
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	byte	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
-exe	0x00561a20	he_RunBurglary	he	draft	readable	deep	
+exe	0x00561a20	he_RunBurglary	he	shape	readable	deep	
 exe	0x005628e0	he_RunBuildingSpying	he	draft	readable	deep	
 exe	0x00563070	he_AllocAmbush	he	byte	readable		
 exe	0x005630f0	he_RunAmbush	he	draft	readable	deep	
