@@ -2704,7 +2704,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     D3OBJECT *model;
     AIBTYPE *type;
     unsigned char *b;
-    float letter;
+    float f;                        /* the name loop's f, then the shown model's fade (one float) */
     float best;
     float d;
     float dx;
@@ -2751,14 +2751,14 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     strcpy(buf, "gb_");
     strcat(buf, ((AIBTYPE *)ai_BTypes)[kind].name);
     strupr(buf + 2);
-    for (letter = 0.0f; letter < 128.0f; letter += 1.0f) {
-        if (letter != 0.0f)
-            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, buf, (char)(letter + 'A' - 1.0f));
+    for (f = 0.0f; f < 128.0f; f += 1.0f) {
+        if (f != 0.0f)
+            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, buf, (char)(f + 'A' - 1.0f));
         else
             sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, buf);
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
             strcpy(names[n++], path);
-        } else if (letter != 0.0f)
+        } else if (f != 0.0f)
             break;
     }
     if (n == 0) {
@@ -2807,7 +2807,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
         do {
             if (reload) {
                 /* a new model of names[] at the old one's place */
-                letter = 0.0f;
+                f = 0.0f;
                 if (model != 0) {
                     pos.x = model->pos.x;
                     pos.y = model->pos.y;
@@ -2902,7 +2902,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
             }
             if (dm_L.rup != 0)
                 sv_PopRequest = 1;
-            if (model != 0 && letter < 90.0f) {
+            if (model != 0 && f < 90.0f) {
                 /* the model half transparent, once per model */
                 model->stateFlags &= ~2;
                 tf.all = 0;
@@ -2922,7 +2922,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                         color = 2;
                     }
                 }
-                letter = 90.0f;
+                f = 90.0f;
             }
             if (sv_UpdateCamera() == 0) {
                 /* the model follows the mouse over the height map */
