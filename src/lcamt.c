@@ -4706,12 +4706,21 @@ typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree wi
    in the original) 277 -> 145; the father's relatives walk has its own counter j (hi's slot in the
    original) 145 -> 71; the children-row midpoint written out at each use instead of mid 71 -> 43; oddX /
    evenX filled in index order 43 -> 30; the zero inits k / nChildren / nSiblings / partner first, then
-   half / w / h, then the three memsets (840 orders, one code family) 30 -> 20. Left (20 ins, size equal):
-   +0x403 parents[0].x = (half - w) + w/2 where ours (w/2 - w) + half (33 spellings one code: reassociation
-   rank); SIB base/index swapped in the d2_Objs style/user stores of the row[2] / row[3] boxes (+0x637
-   +0x710 +0x7f4: original [d2_Objs + idx], ours [idx + d2_Objs]), not in the parents' boxes. No lever for
-   the SIB: spellings of the index ((d2_Objs + c)->, &d2_Objs[c], a named ctrl local), declaration moves of
-   row / parents, dead stores of row[2].ctrl at the top; flip.py over every single mutation: 0 flips.
+   half / w / h, then the three memsets (840 orders) 30 -> 20, size equal. Left (20 ins, two operand-order
+   hunks, everything else identical): (1) +0x403 parents[0].x: original (half - w) + w/2 (mov ecx,ebx; sub
+   ecx,edx; lea eax,[ecx+ebp]), ours (w/2 - w) + half; no lever: 33 spellings of the sum, 127 commuted w/2
+   sums over the function, a named hw local (still w/2 first), a named x for the CSE half - w + w/2, all
+   5040 orders of the init run, dead initialisers at every declaration, declaration moves: one code.
+   flip.py finds it only with mutants that rewrite the allocation (w as char, deleting row[i].x = w / 2 +
+   t, ..): it follows the ranks of half against the w/2 CSE temp. (2) SIB base/index of the d2_Objs
+   style/user stores of the row[2] / row[3] boxes (+0x637 +0x710 +0x7f4): original [d2_Objs + idx] (c1's
+   own order), ours [idx + d2_Objs] as in the parents' boxes, where the original also swaps. No lever:
+   (d2_Objs + c)->, &d2_Objs[c], c[d2_Objs], a named ctrl local, a box pointer b = &row[2], a constant
+   index variable, declaration moves of row / parents / t, block-scoped t / j / x, a block-scope extern of
+   d2_Objs, the partner arms swapped (layout breaks), dead stores of row[2].ctrl; flip.py over every single
+   mutation: only i as short / char flips it (all sites change). c2trace names the box fields k#1c
+   (parents[0].ctrl), k#101 (parents[1].ctrl), k#104 (row[2].ctrl): the order may follow these field
+   symbols' ranks against d2_Objs; untested how to move them. climb 6 rounds (seed 7) from here: nothing.
    prior: Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
    parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
    labels and the click dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call,
