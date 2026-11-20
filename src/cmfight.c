@@ -1715,28 +1715,12 @@ char cm_OrderClick(char *rec, char *c)
    (AICHAR.selected) that cm_CutChar may command (ai_LedSelectBits 0x800) and that is alive its order (cm_OrderClick),
    answered with the voice "_K_C2C_BEFEHL_ERHALTEN" of its side, and drops the mark. Then the marked characters' bodies
    are greyed (d3t_SetGrey, D3OBJECT.stateFlags bit 2) and the unmarked ones restored, unless the body is fading; a
-   right click clears every mark (cm_ClearMarks)
-   @deep deep s35: the highlight loop's flags byte. The original loads stateFlags into cl once in the block
-   of the selected test (mov dl,[c+0x188]; mov eax,[scene+0x34]; test dl,dl; mov cl,[eax+0x212]; je), then
-   test bl,cl / and cl,bl; cmp cl,bl with the constant 2 in bl. 27 variants of a flags local (unsigned char
-   / char / int x three test spellings x three else spellings, assigned before the if): the load moves
-   before the branch but the constant 0x40 of the fading test takes bl and the 2 tests become immediates
-   (int: 20 ins, the best row, not kept: other code). The selected test written twice (if (sel && !(f & 2))
-   .. else if (!sel && ..), with != 0 / == 0): 26; two ifs: 41. Left: what makes the flags load a CSE of
-   both arms while 2 keeps bl. prior: Read whole against the original: every call, store and branch of the
-   band / click part lines up; the highlight loop reads the same fields (scene->flags 0x40 fading,
-   selected, obj->stateFlags & 2) and greys / restores the same way. Left (+0x11a..): the original loads
-   selected into dl and stateFlags into cl once before the branch (test bl, cl / and cl, bl / cmp cl, bl
-   with bl = 2), ours reads stateFlags in each branch (test byte ptr [ecx+0x212], bl; mov dl, [ecx+0x212];
-   and dl, bl) - one load of an unchanged byte against two, the rest regs (ecx<->eax). Tried a local for
-   the flags (unsigned char / int, with and without a local for selected): VC6 then hoists 0x40 into bl
-   instead of 2 and the hunk grows. Allocation / load CSE only. */
+   right click clears every mark (cm_ClearMarks) */
 
 void cm_FightMouse(char *rec)
 {
     AICHAR **pp;
     AICHAR *c;
-    D3OBJECT *body;
 
     if (dm_L.lhold == 0 && sv_BandActive != 0)
         sv_EndBand();
@@ -1763,12 +1747,11 @@ void cm_FightMouse(char *rec)
     for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
         c = *pp;
         if (c != 0 && !(c->scene->flags.bytes.lo & 0x40)) {
-            body = c->scene->obj;
             if (c->selected) {
-                if (!(body->stateFlags & 2))
-                    d3t_SetGrey(body, 1);
-            } else if ((body->stateFlags & 2) == 2)
-                d3t_SetGrey(body, 0);
+                if (!(c->scene->obj->stateFlags & 2))
+                    d3t_SetGrey(c->scene->obj, 1);
+            } else if ((c->scene->obj->stateFlags & 2) == 2)
+                d3t_SetGrey(c->scene->obj, 0);
         }
     }
     if (dm_L.rup != 0)
