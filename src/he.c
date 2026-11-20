@@ -17806,26 +17806,7 @@ void he_AllocDueInOne(AIJOB *ev)
    out of the start building. Not above it the attack fails (0x114b with the start building's fight role to the
    event's character, 0x1c56 to a player owner; stage 5). Stage 3 waits for the party's slot and keeps its id (stage
    4), stage 4 waits (5 minutes) until the party is over (stage 5 in a second); stages 5 / -2 / -1 send the gang to
-   the start building's main room and free the record
-   @deep s52: the slots: stage 5's main room is its own local room, initialised 0 at the declaration (the
-   original's top store mov [esp+0x10],ebx is room = 0; o has no initialiser): o / chance pack as the
-   original (o's slot takes stage 0's loop temp), slots 70 -> 0. Left: code 8 at the party fill: the
-   original loads host, then me (from its slot) -> eax = me->netId, edx = owner->netId, stores members[0],
-   members[1]; ours (members[1] = owner first) loads owner->netId early. members[0] first (m0first): the
-   loads right but ours stores members[1] first and me's pointer in ecx (10 ins). 5040 sampled orders of
-   the 8 fill lines: none byte (best 4 ins). party block-scoped in the success block: 8 / with members[0]
-   first 14. raid's fill order, n < 16 && n < 6, owner as c: no help. prior: s51: the byte sibling
-   he_RunRaid's forms: raid100 as an element loop (239 -> 84), the start building read into home before
-   gm_Query 0xca (home->objList) and again before raidHome = home->id (84 -> 54, size = the original's
-   2291), then a 720-order round of the party fill: thing, used, host, variant, members[1], members[0] (54
-   -> 40). Left: (1) the slots of o and chance swapped through the whole function (the original o at 0x10,
-   chance at 0x14): c2frame packs o (count 7) first and chance's slot takes the loop temps of stages 1 / 5
-   and the reportKnow fild temp (weight 12 against 9), so chance's slot sorts first; the original needs o's
-   slot denser. A separate room local in stage 5 fixes the slots but drops the o = 0 store at the top (the
-   original's o = 0 reaches stage 5's o->objId): wrong. Moving the o / chance declarations: only the store
-   order moves. (2) members[1]'s owner->netId load: the original after members[0] (me from its slot), ours
-   (with this fill order) before; members[0] first costs 6 elsewhere (46). No lever: if (gm_AllowAll),
-   while-form of the report search, o && in the move test. */
+   the start building's main room and free the record */
 void he_RunAttack(AIJOB *ev)
 {
     AIBLD *b, *home;
@@ -17891,9 +17872,9 @@ void he_RunAttack(AIJOB *ev)
             party.thing = b->id;
             party.used = 2;
             party.host = ai_CharInts[ai_PlayerId][0];
-            party.variant = 2;
-            party.members[1] = owner->netId;
             party.members[0] = me->netId;
+            party.members[1] = owner->netId;
+            party.variant = 2;
             for (i = 0; i < 16; i++) {
                 party.raid.raiders[i] = -1;
                 party.raid.defenders[i] = -1;
