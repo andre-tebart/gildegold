@@ -17807,38 +17807,30 @@ void he_AllocDueInOne(AIJOB *ev)
    event's character, 0x1c56 to a player owner; stage 5). Stage 3 waits for the party's slot and keeps its id (stage
    4), stage 4 waits (5 minutes) until the party is over (stage 5 in a second); stages 5 / -2 / -1 send the gang to
    the start building's main room and free the record
-   @deep s51: the byte sibling he_RunRaid's forms: raid100 as an element loop (239 -> 84), the start
-   building read into home before gm_Query 0xca (home->objList) and again before raidHome = home->id (84 ->
-   54, size = the original's 2291), then a 720-order round of the party fill: thing, used, host, variant,
-   members[1], members[0] (54 -> 40). Left: (1) the slots of o and chance swapped through the whole
-   function (the original o at 0x10, chance at 0x14): c2frame packs o (count 7) first and chance's slot
-   takes the loop temps of stages 1 / 5 and the reportKnow fild temp (weight 12 against 9), so chance's
-   slot sorts first; the original needs o's slot denser. A separate room local in stage 5 fixes the slots
-   but drops the o = 0 store at the top (the original's o = 0 reaches stage 5's o->objId): wrong. Moving
-   the o / chance declarations: only the store order moves. (2) members[1]'s owner->netId load: the
-   original after members[0] (me from its slot), ours (with this fill order) before; members[0] first costs
-   6 elsewhere (46). No lever: if (gm_AllowAll), while-form of the report search, o && in the move test.
-   prior: Reconstructed whole from the skeleton against 0x5639c0..0x5642d4 (713 vs 710 instructions, switch
-   tables equal), as the twin of he_RunRaid (the raid* words of AIJOB): stage 0 the gang to the target
-   ('Angriff', no null check of the figure as the original), stage 1 the actions wait (10 minutes), stage 2
-   the roll random(0x4b) + 100 * the spy report's (reportKnow + 100) / 100 (10 with gm_AllowAll) against
-   125 * (1 + 0.01 * skill 5), the G28REC kind 3 party (variant 2, defenders scan i < 768 && n < 6, raiders
-   i < 8 && k < 6, raid100 -1, raidHome), the loot branch (cm_LootStock, roundSums[0], 0x1c54 / 0x1c55),
-   the report move (cm_SendMoveObject), the failure (cm_FightRole + 0x1125, 0x114b, 0x1c56), stages 3 / 4 /
-   5 / -2 / -1. Left: scheduling and allocation: the gm_BuildingSkill temp and the stack cleanup around
-   gm_Query 0xca (+0x242, ours cleans up after each call, the original once with add esp, 0x28), the party
-   field stores in another order (+0x324), -1 kept in ebp (ours) vs edx / immediate (+0x3b0, +0x3f4), the
-   cm_LootStock / he_MessageBoxQuickjump argument lea chains interleaved with the pushes in another order
-   (+0x4b9 .. +0x5ee) (references: M8 at +0x41b: ours refers to ai_Time+0x4 (0x770ae4), the original's
-   field to 0x770ae0 (ai_Time) (and 1 more), explained: the two M8 lines are the party.time = ai_Time
-   struct copy (+0x41b): the same four words copied to party.time, loaded into other registers in another
-   order (as he_RunRaid's); the open M10 is the shared 100.0f (ai_FloatHundred, lc.c's view, its owner
-   open), as in he_RunRaid) */
+   @deep s52: the slots: stage 5's main room is its own local room, initialised 0 at the declaration (the
+   original's top store mov [esp+0x10],ebx is room = 0; o has no initialiser): o / chance pack as the
+   original (o's slot takes stage 0's loop temp), slots 70 -> 0. Left: code 8 at the party fill: the
+   original loads host, then me (from its slot) -> eax = me->netId, edx = owner->netId, stores members[0],
+   members[1]; ours (members[1] = owner first) loads owner->netId early. members[0] first (m0first): the
+   loads right but ours stores members[1] first and me's pointer in ecx (10 ins). 5040 sampled orders of
+   the 8 fill lines: none byte (best 4 ins). party block-scoped in the success block: 8 / with members[0]
+   first 14. raid's fill order, n < 16 && n < 6, owner as c: no help. prior: s51: the byte sibling
+   he_RunRaid's forms: raid100 as an element loop (239 -> 84), the start building read into home before
+   gm_Query 0xca (home->objList) and again before raidHome = home->id (84 -> 54, size = the original's
+   2291), then a 720-order round of the party fill: thing, used, host, variant, members[1], members[0] (54
+   -> 40). Left: (1) the slots of o and chance swapped through the whole function (the original o at 0x10,
+   chance at 0x14): c2frame packs o (count 7) first and chance's slot takes the loop temps of stages 1 / 5
+   and the reportKnow fild temp (weight 12 against 9), so chance's slot sorts first; the original needs o's
+   slot denser. A separate room local in stage 5 fixes the slots but drops the o = 0 store at the top (the
+   original's o = 0 reaches stage 5's o->objId): wrong. Moving the o / chance declarations: only the store
+   order moves. (2) members[1]'s owner->netId load: the original after members[0] (me from its slot), ours
+   (with this fill order) before; members[0] first costs 6 elsewhere (46). No lever: if (gm_AllowAll),
+   while-form of the report search, o && in the move test. */
 void he_RunAttack(AIJOB *ev)
 {
     AIBLD *b, *home;
     AICHAR *c, *owner, *me;
-    AIOBJ *o = 0;
+    AIOBJ *o, *room = 0;
     G28REC party;
     char text[0x800];
     int i, n, k, loot, role;
@@ -17983,12 +17975,12 @@ void he_RunAttack(AIJOB *ev)
     case -1:
         home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
         if (home != 0)
-            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
         for (i = 0; i < 8; i++) {
             if (ev->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[i])) != 0) {
                 cm_SendChrStop(c->netId);
                 if (home != 0)
-                    cm_SendChrGotoBuilding(c->netId, home->id, o->objId, 0, 0, "Angriff");
+                    cm_SendChrGotoBuilding(c->netId, home->id, room->objId, 0, 0, "Angriff");
                 sv_MoveToGroup(0, 0, c->id, 0);
             }
         }

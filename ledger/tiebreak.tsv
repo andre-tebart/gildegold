@@ -3775,7 +3775,7 @@ exe	0x005628e0	he_RunBuildingSpying	he	cf7331d218947511	no	draft	control=draft p
 exe	0x00563070	he_AllocAmbush	he	4e9b1b1b12883099	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005630f0	he_RunAmbush	he	b7b0b86d84a8d9fe	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00563980	he_AllocDueInOne	he	7b291ae89dcee62a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005639c0	he_RunAttack	he	0c27cfa1e5f6fada	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005639c0	he_RunAttack	he	9ce1f544b154ee3f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	0ec4a09470b86f59
 exe	0x005642e0	he_AllocFire	he	7226ef8cc65aadbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005644e0	he_RunFire	he	8b08bad696a69954	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00564860	he_AllocBurn	he	68a90a033d697f84	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
