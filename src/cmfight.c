@@ -3969,8 +3969,8 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             n++;
         if (n == 1) {
             /* the building is taken */
-            k = ai_BTypesT[ca->type].kind;
-            if (k == 4 || k == 0x10)
+            bt = &ai_BTypesT[ca->type];
+            if (bt->kind == 4 || bt->kind == 0x10)
                 ai_CountMissionEvent(cm_FightAttacker, 0x1c);
             cm_SendOwnership(ca->id, cm_FightAttackerC->netId, cm_FightAttackerC->netId);
             txt_Format(ba, 0x11a4, cm_FightAttackerC->id, ca);
