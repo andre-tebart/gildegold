@@ -4120,9 +4120,9 @@ exe	0x0058af50	lobby_ChoosePlayer	lobby	byte	readable
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
 exe	0x0058ba70	lobby_ShowChat	lobby	byte	readable		
 exe	0x0058bbd0	ai_InitProductionTables	lc	byte	readable		
-exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
-exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep	
-exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	readable	deep	
+exe	0x0058bd60	ai_ProductionWindow	lc	byte	readable		
+exe	0x0058c680	ai_UpdateResourceColumns	lc	byte	readable		
+exe	0x0058cc10	ai_UpdateProdColumns	lc	byte	readable		
 exe	0x0058d720	ai_UpdateProdGoodsList	lc	byte	readable		
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
 exe	0x0058e130	ai_UpdateMarketGoodsList	lc	byte	readable		
@@ -4156,9 +4156,9 @@ exe	0x00591bf0	ai_TechTreeWindow	lc	byte	readable
 exe	0x00592230	ai_UpgradeContact	lc	byte	readable		
 exe	0x00592290	ai_BookContact	lc	byte	readable		
 exe	0x00592320	ai_MercenaryBookContact	lc	byte	readable		
-exe	0x005923c0	ai_SearchResourceWindow	lc	draft	readable	deep	
+exe	0x005923c0	ai_SearchResourceWindow	lc	byte	readable		
 exe	0x00592b90	ai_ExtractResourceWindow	lc	byte	readable		
-exe	0x00593150	ai_ProductionGoodsWindow	lc	draft	readable	deep	
+exe	0x00593150	ai_ProductionGoodsWindow	lc	byte	readable		
 exe	0x005938c0	ai_MiningContact	lc	byte	readable		
 exe	0x00593960	ai_KontorContact	lc	byte	readable		
 exe	0x00593b00	ai_WoodKontorContact	lc	byte	readable		
@@ -4189,7 +4189,7 @@ exe	0x00596400	ai_RobberContact	lc	byte	readable
 exe	0x005965f0	ai_RhetoricContact	lc	byte	readable		
 exe	0x005966f0	ai_FeastContact	lc	byte	readable		
 exe	0x005967c0	ai_MistressAffairWindow	lc	byte	readable		
-exe	0x00596ba0	ai_MistressWindow	lc	draft	readable	deep	
+exe	0x00596ba0	ai_MistressWindow	lc	byte	readable		
 exe	0x00596f90	ai_MistressContact	lc	byte	readable		
 exe	0x00596ff0	ai_MasterExamWindow	lc	byte	readable		
 exe	0x00597380	ai_EspionageAmountMenu	lc	byte	readable		
@@ -4205,8 +4205,8 @@ exe	0x00598170	ai_TavernDiceWindow	lc	byte	readable
 exe	0x00598b80	ai_StammtischWindow	lc	byte	readable		
 exe	0x00598dc0	ai_StammtischJoinWindow	lc	byte	readable		
 exe	0x00599240	ai_OpenStammtisch	lc	byte	readable		
-exe	0x005992c0	ai_DarkCornerMenu	lc	draft	readable	deep	
-exe	0x005996b0	ai_DarkCornerBuy	lc	draft	readable	deep	
+exe	0x005992c0	ai_DarkCornerMenu	lc	byte	readable		
+exe	0x005996b0	ai_DarkCornerBuy	lc	byte	readable		
 exe	0x00599aa0	ai_DarkCornerTable	lc	byte	readable		
 exe	0x00599af0	ai_TavernContact	lc	byte	readable		
 exe	0x00599cb0	ai_BreweryContact	lc	byte	readable		
@@ -4289,7 +4289,7 @@ exe	0x005a4d40	ai_ThievesGuildListener	lc	byte	readable
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
 exe	0x005a4f70	ai_StorageContact	lc	byte	readable		
 exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
-exe	0x005a5120	ai_KidnapWindow	lc	draft	readable	deep	
+exe	0x005a5120	ai_KidnapWindow	lc	byte	readable		
 exe	0x005a53e0	ai_KidnapStart	lc	byte	readable		
 exe	0x005a5530	ai_RansomWindow	lc	byte	readable		
 exe	0x005a5910	ai_HostageEscape	lc	byte	readable		
