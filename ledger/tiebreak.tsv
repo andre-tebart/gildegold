@@ -3762,7 +3762,7 @@ exe	0x0055eba0	he_FindFigurePlace	he	768cae742040b8c0	no	byte	control=byte p1=by
 exe	0x0055ee40	he_PickNearBuilding	he	25cc32bc862f2eb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055efc0	he_RunRoutine	he	98f62cdefa8b8764	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0055fa20	he_AllocMarket	he	e1ad334b60ca8012	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0055fa90	he_RunMarketSupervisor	he	35e5fea5f9dd0282	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0055fa90	he_RunMarketSupervisor	he	0a8e5fcfd0934b2c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	bdf4e72b3e2f8945
 exe	0x00560820	he_AllocEvent3c	he	7f58d4a0b86b6990	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00560900	he_RunKidnap	he	90cf44f5b67b5d16	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	14acdd61cb4cf9ac
 exe	0x00561130	he_AllocRansom	he	8e61b26054a9fa34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

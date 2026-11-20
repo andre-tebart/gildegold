@@ -16222,7 +16222,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
     AIOBJ *o, *q, *st;
     AIBLD *b;
     AIGOOD *good;
-    int minutes, i, pl, inStore, amount, k;
+    int minutes, i, pl, inStore, amount, k, have, n;
     float g, fv;
 
     if (ai_MarketBuilding == 0) {
@@ -16309,9 +16309,6 @@ void he_RunMarketSupervisor(AIJOB *ev)
     }
 
     for (i = 0; i < 0x55; i++) {
-        int n;
-        float g;
-
         rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
         if (rec->item == 0)
             continue;
@@ -16381,9 +16378,6 @@ void he_RunMarketSupervisor(AIJOB *ev)
         if (st == 0)
             continue;
         for (i = 0; i < 0x55; i++) {
-            int n;
-            int have;
-
             s = gm_StockBlocks[pl].goods[i];
             if (s.item == 0)
                 continue;
@@ -16434,7 +16428,6 @@ void he_RunMarketSupervisor(AIJOB *ev)
         for (i = 0; i < 0x55; i++) {
             GMSTOCK s2;
             float f;
-            int have;
 
             s2 = gm_StockBlocks[pl].goods[i];
             if (s2.item == 0)
