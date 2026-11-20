@@ -13413,7 +13413,8 @@ int ord_DispatchOrder(int id, char *c, int *m);
    20 + random 16 - 3 * the type's level) and plays "Explosion"; every blast up to the first one (blasts < 1) shows
    smoke, earth and an explosion (3 times bigger for the first in the town scene) at a random dummy object of the
    building ("dummy_TUER" / "dummy_FAHNE" / "dummy_RAUCH_0") and the next follows in random 2 minutes; after it the
-   stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
+   stage is 6. 6: back home (else 4 more minutes) the saboteur is let go (saboteur -1: stage -1 does not kill it) and
+   the event cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
    @deep size queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }: the
@@ -13700,6 +13701,7 @@ void he_RunSabotage(int ev)
             return;
         }
         if (c->scene->actions == 0) {
+            x->saboteur = -1;
             e->stage = -1;
             return;
         }
