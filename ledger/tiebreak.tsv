@@ -2452,7 +2452,7 @@ exe	0x004d0ca0	cm_PlaceFlagObjects	cm	9f3ca9a046724817	no	byte	control=byte p1=b
 exe	0x004d0cd0	cm_FreeNetIdSlot	cm	9c96d91c59536726	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d0cf0	ai_ArmGateGuards	cm	2e743f00099a8a8b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d0f80	cm_ClearKind3MaskCB	cm	7d2ac293a4144ad1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d0fa0	cm_SetupFightScene	cm	1629d66d9d2677f8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004d0fa0	cm_SetupFightScene	cmfight	1a3453441e712101	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4a984d9e3204998e
 exe	0x004d1a10	cm_EndFightScene	cm	63f427245ebd75a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d1c20	cm_PlaceFighters	cm	daad058e7555c1b2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d1e00	cm_FightIntro	cm	bbcc5c91cf8748ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
