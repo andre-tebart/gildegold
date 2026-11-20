@@ -1028,31 +1028,35 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4);
    Then it collects the goods of the first room into ai_ProdColumns (new kinds only, at most 16), computes each
    column's inputs, the amount the stock of inputs makes and the stock of the goods, shows the count and lays
    out the columns and the goods list; on the way out it saves the scroll position in bld->prodScroll
-   @deep s49: 151 -> 127 ins. Lever: fresh = 1 inside the count > 1 test (the byte sibling
-   ai_ExtractResourceWindow's form; 151 -> 127). The original's class test is an AIBTYPE pointer with
-   type->kind read at each test (lea eax,[edi+eax*4]; mov al,[eax]: typeptr-nocls fixes that hunk, 126 ins)
-   but in our current allocation it raises the size 2335 -> 2337, so not kept. Left (allocation): the
-   original keeps bld in ebp from the prologue (mov ebp,[esp+0x134] before push esi), win in esi across the
-   frame loop (cmp [d2_ClickedForm],esi), the click loop's column offset c and its countdown in two slots
-   ([esp+0x1c] / [esp+0x20], frame 0x128 vs ours 0x124: ours has the offset in ebp, c2trace k#519 prio -426
-   still takes ebp); the member loop's character index premultiplied (shl eax,2; mov
-   ecx,[eax+ai_Chars.job]) where ours forms ch. No lever (s49): ch written out at each use (the sibling's
-   form: 211-239), the second column loop as an index or p = &ai_ProdColumns[c] per pass (= control), g
-   written out at each use (frame right 0x128 but 296+: the original has g as a pointer, esi, and the k
-   loop walks &g->in[k]), int cls (272), climb round 1 (305 mutants, nothing comparable: frame size).
-   prior: reconstructed from the original (2335 B, was a 615 B skeleton): the click on a column picture
-   (the member-row any-loop, the job-worker selection, the capacity / input checks with txt 0xbe/0xbf/0xc0,
-   the job search, the order message AIMSG type 4 with its cm_GetSlotState wait, sv_MoveToGroup), the
-   right-click branch, the column collection (gm_Query 1,5 / gm_QueryNext, ncols < 16), the per-column
-   inputs with min(...)/need and batch, the stock, the count text, ai_UpdateProdColumns /
-   ai_UpdateProdGoodsList / ai_LayoutProdGoodsList in the original order, the scroll save. Same size (2335
-   vs 2335), same calls, no ref differences. All code hunks read: allocation only - the original keeps bld
-   in ebp for the whole function and uses ebx as a zero register in the order branch (ours reloads bld from
-   the argument slot, 0x58c0ed: '- mov ebx, [esp+0x138]' / '+ mov eax, [ebp+1]; xor ebx, ebx'), keeps win
-   in esi across the frame loop (0x58bf39 '- mov edx,[esp+0x28]; cmp eax,edx' / '+ cmp [X], esi') and the
-   column loop as an offset + countdown in two slots (0x58bf87, frame 0x128 vs ours 0x124); the character
-   lookups index ai_Chars by eax*4 + field where ours forms a pointer (0x58bfc4, writing it without the
-   pointer cost 50 more instructions); 0x58be23 the class byte through lea+mov al. */
+   @deep s50: kept (draft, 127 -> 210 ins but the original's code at those spots): the member loop without
+   the ch pointer (job = ai_Chars[chr].job, powerFlags / selected through ai_Chars[chr]: the original's shl
+   eax,2 / [eax+field] form, as byte ai_ProductionGoodsWindow) and the class test through an AIBTYPE *type
+   pointer (type->kind per test: the original's lea eax,[edi+eax*4]; mov al,[eax]). The count rose because
+   everything behind is out of step: what is left is ONE allocation decision - the original keeps bld in
+   ebp (prologue mov ebp,[esp+0x134], [ebp+1] in the member loop and the order branch) and the click loop's
+   column offset in a slot ([esp+0x1c], with its countdown [esp+0x20]: the frame's missing 4 bytes, 0x124
+   vs 0x128); ours gives the offset (c2trace k#555#1, prio -426, pass 2, avail{ebp}) ebp ahead of bld#2
+   (-735) / bld#3 (-491, pass 3 regions). The ai_Time copy M8s (crossed) follow from it. No lever (s50):
+   the click loop without continue (nested if / else: = control), the column-loop k continue as an if
+   (worse), the msg fill in ai_ProductionGoodsWindow's / ai_ExtractResourceWindow's orders and nIds /
+   reserved14 / flags at each position (+-4, no frame change), job->from == bld->id operand order, probes
+   (the member-loop good compare removed, an extra bld ref in the member loop: neither moves the frame).
+   climb 2 rounds from the ch variant: best only col->good as an int local (130 ins at the old start, frame
+   still wrong). Next: what lowers the offset IV's priority or raises bld's (c2trace --prio 'k#555|bld#2'),
+   e.g. the original's edi load of bld->id in the member loop (mov edi,[ebp+1]; cmp esi,edi where byte
+   siblings fold it into cmp: a CSE or a candidate for bld->id). prior: s49: 151 -> 127 ins. Lever: fresh =
+   1 inside the count > 1 test (the byte sibling ai_ExtractResourceWindow's form; 151 -> 127). The
+   original's class test is an AIBTYPE pointer with type->kind read at each test (lea eax,[edi+eax*4]; mov
+   al,[eax]: typeptr-nocls fixes that hunk, 126 ins) but in our current allocation it raises the size 2335
+   -> 2337, so not kept. Left (allocation): the original keeps bld in ebp from the prologue (mov
+   ebp,[esp+0x134] before push esi), win in esi across the frame loop (cmp [d2_ClickedForm],esi), the click
+   loop's column offset c and its countdown in two slots ([esp+0x1c] / [esp+0x20], frame 0x128 vs ours
+   0x124: ours has the offset in ebp, c2trace k#519 prio -426 still takes ebp); the member loop's character
+   index premultiplied (shl eax,2; mov ecx,[eax+ai_Chars.job]) where ours forms ch. No lever (s49): ch
+   written out at each use (the sibling's form: 211-239), the second column loop as an index or p =
+   &ai_ProdColumns[c] per pass (= control), g written out at each use (frame right 0x128 but 296+: the
+   original has g as a pointer, esi, and the k loop walks &g->in[k]), int cls (272), climb round 1 (305
+   mutants, nothing comparable: frame size). */
 int ai_ProductionWindow(AIBLD *bld)
 {
     int win;
@@ -1064,7 +1068,7 @@ int ai_ProductionWindow(AIBLD *bld)
     int fresh;
     int first;
     int text;
-    unsigned char cls;
+    AIBTYPE *type;
     int slot;
     int down;
     int up;
@@ -1096,16 +1100,16 @@ int ai_ProductionWindow(AIBLD *bld)
     ncols = 0;
     d2_SetForm(win, 0);
     text = 0x70b;
-    cls = ((AIBTYPE *)ai_BTypes)[bld->type].kind;
-    if (cls == 0x13 || cls == 4 || cls == 0x10)
+    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    if (type->kind == 0x13 || type->kind == 4 || type->kind == 0x10)
         text = 0x72f;
-    else if (cls == 8 || cls == 0xe)
+    else if (type->kind == 8 || type->kind == 0xe)
         text = 0x70f;
-    else if (cls == 6)
+    else if (type->kind == 6)
         text = 0x713;
-    else if (cls == 0x16)
+    else if (type->kind == 0x16)
         text = 0x717;
-    else if (cls == 0xd || cls == 0xc || cls == 0xb)
+    else if (type->kind == 0xd || type->kind == 0xc || type->kind == 0xb)
         text = 0x717;
     sv_OpenWindowFrame(d2_LastWindow, text, 0x742);
     sv_CreateScrollButtons(0x270, 0x15e, d2_LastWindow, d2_GetViewWin(win, 2), 0x78, &down, &up, &bar);
@@ -1132,11 +1136,11 @@ int ai_ProductionWindow(AIBLD *bld)
                     for (i = 0; i < 0x20; i++) {
                         if (sv_MemberRows[i].chr == 0xffff)
                             break;
-                        ch = &((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr];
-                        job = ch->job;
-                        if (job != 0 && job->kind == 4 && job->from == bld->id && (ch->powerFlags & 0x800) == 0 &&
+                        job = ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].job;
+                        if (job != 0 && job->kind == 4 && job->from == bld->id &&
+                            (((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].powerFlags & 0x800) == 0 &&
                             job->u.w.lo == ai_ProdColumns[c].good)
-                            ch->selected = 1;
+                            ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 1;
                     }
                     continue;
                 }
