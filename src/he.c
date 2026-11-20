@@ -17641,7 +17641,7 @@ void he_RunAmbush(AIJOB *ev)
             if (gm_AllowAll)
                 chance = 0;
             d3if_SelectScene(scene, 1);
-            if (o != 0 && cm_FindPartyOfKind(3, -1) == 0 && (unsigned short)util_Random(100) > chance) {
+            if (n != 0 && cm_FindPartyOfKind(3, -1) == 0 && (unsigned short)util_Random(100) > chance) {
                 G28REC party;
 
                 b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
