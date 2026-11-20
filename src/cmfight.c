@@ -3540,18 +3540,31 @@ void cm_FightPortraits(int *ids, int x, int y)
    share 10 / 50 / 90 (taken when random 10 .. 99 is at most it, else refused), or the AI side picks one at random when
    it fights no defenders or its random 0 .. 4 is above the escort. The loot goes through cm_LootCarts into
    cm_FightLootValue (-1: refused), cm_FightSettled = 1 when it was taken. Returns 1 when the fight goes on.
-   @deep read the whole function against the original 0x4d4540..0x4d4d66 and fixed the meaning: the share
-   branches set res = 0 (the original's 'mov [esp+0x18],0' after the pushes is res at [esp+0x14], not b4),
-   the loot sum reads AIRECIPE.amount[k] (rc+0x68; the draft read rc+0x70), the cart's job is read once
-   before d2_SetForm (AIOBJ.job24 -> AIJOB.cartBld for gm_FindBuildingById); typed: a is CMFIGHTREC (new
-   field escort at 0x110, ai_ArmGateGuards' rec->kind; the cm.h prototype and the caller now pass
-   CMFIGHTREC *), the attacker / defender through cm_FightAttackerC / cm_FightDefenderC (kind, id, sex),
-   the goods list as AIRECIPE, no raw access left; the description rewritten. All statements line up (ours
-   609 vs 611). Left: allocation - the original keeps win in its slot [esp+0x1c] and reloads it for every
-   d2_SetForm / d2_GetWinObj ('+ mov edx,[esp+0x30] / + push edx'), ours holds it in ebx; place / home /
-   role in ebp / esi / ebx vs ours edi / esi / ebp; the zero register edi vs esi; the 0x1138 branch's
-   result line stored through the shared 'mov edi,eax' at 0x4d4795 (ours 'mov esi,eax' per branch); frame
-   0x8d0 vs 0x8cc (one more spill slot of ours). */
+   @deep deep s50: what the original allocates differently: win lives in its slot [esp+0x1c] (stored right
+   after d2_OpenForm, reloaded into ebx for the first dialog and into edi for the loot dialog's GetWinObj
+   calls: bulk-split pieces), place / home / role in ebp / esi / ebx (ours edi / esi / ebp), the top zero
+   in edi (ours esi), the dialog loop's constants 1 / 0 in esi / ebp (ours edi / ebp), line in edi, b1 / b2
+   in ebx / ebp through the loot loop (ours b1..b4 all spilled), the callee-saved pops before the closing
+   if (win != -1) d2_CloseView(win) (nothing callee-saved used after). Frame 0x8d0 vs 0x8cc follows from
+   it: the original's small slots are st, res, total/fv/b4, win, b3. c2trace: win#1 prio 6 gets ebx in pass
+   1 (nothing above it needs ebx over its range: role 47 takes ebp because place 65 took edi); in the
+   original place took ebp, role ebx, so win was cut. Probe volatile win (not a fix): frame right but zero
+   / place still esi / edi, so the cause is upstream of win (the pass-2 zero piece const#0#19 lines
+   3558-3571 picks esi, a#2 esi: the original has a in esi and the zero in edi). Rounds: res / st inits as
+   statements in all orders (= control or worse), st = 0 before each counting loop (worse); climb (1 and 2
+   rounds, ops local/inline/inexpr/init/arms): nothing with the original's frame (the only lead inlines b4,
+   1512 bytes). prior: read the whole function against the original 0x4d4540..0x4d4d66 and fixed the
+   meaning: the share branches set res = 0 (the original's 'mov [esp+0x18],0' after the pushes is res at
+   [esp+0x14], not b4), the loot sum reads AIRECIPE.amount[k] (rc+0x68; the draft read rc+0x70), the cart's
+   job is read once before d2_SetForm (AIOBJ.job24 -> AIJOB.cartBld for gm_FindBuildingById); typed: a is
+   CMFIGHTREC (new field escort at 0x110, ai_ArmGateGuards' rec->kind; the cm.h prototype and the caller
+   now pass CMFIGHTREC *), the attacker / defender through cm_FightAttackerC / cm_FightDefenderC (kind, id,
+   sex), the goods list as AIRECIPE, no raw access left; the description rewritten. All statements line up
+   (ours 609 vs 611). Left: allocation - the original keeps win in its slot [esp+0x1c] and reloads it for
+   every d2_SetForm / d2_GetWinObj ('+ mov edx,[esp+0x30] / + push edx'), ours holds it in ebx; place /
+   home / role in ebp / esi / ebx vs ours edi / esi / ebp; the zero register edi vs esi; the 0x1138
+   branch's result line stored through the shared 'mov edi,eax' at 0x4d4795 (ours 'mov esi,eax' per
+   branch); frame 0x8d0 vs 0x8cc (one more spill slot of ours). */
 
 int cm_FightStartDialog(CMFIGHTREC *a)
 {
