@@ -5072,17 +5072,22 @@ void ai_ShowMissions(int owner);
    powerFlags has 0x20) and with it the profession choice for a jobless child (no event 0x5e and f020 at most the
    age + 4) or the university for one with a profession that has not studied (powerFlags 0x10000), and for the
    player's own character the missions button when it has missions. The right button closes it.
-   @deep s48: kept (100 -> 20 ins): the professionBtn / universityBtn arrays were scalars, the sv_ButtonRow
-   row a block-local int btns[2] in each arm (giftBtn = btns[0]; universityBtn = btns[1];): the frame then
-   shares each scalar's slot with its arm's array and the original keeps universityBtn in ebp through the
-   click loop; row = 0 before d2_SetForm(win, 3); in the skill loop row++; y += 0x18; before the
-   txt_Format; each ailment / header line's row++ after the .centred store. Left (20 ins): (1) the job /
-   title arms: the original adds into jobId's register (and eax,0xff .. add eax,ecx; push eax), ours into
-   the ternary's (add ecx,eax; push ecx), which rotates the title arm's ternary to edx; no lever among ~25
-   spellings (operand order, (int) / (unsigned char) casts, the split constant (lea), a byte / int local k
-   for jobId (worse)); flip.py on 'add eax, ecx .. push 8021': no single mutation. (2) the click loop's
-   entry reloads in another order (ebx win, esi giftBtn, ebp universityBtn in the original; ours ebp before
-   esi): reload order by candidate id, the declaration moves are = control. prior: Reconstructed in full
+   @deep s48: kept (100 -> 20 ins, draft -> shape): professionBtn / universityBtn as scalars with a
+   block-local int btns[2] per sv_ButtonRow arm (giftBtn = btns[0]; X = btns[1];) - the frame then shares
+   each scalar's slot with its arm's array and universityBtn takes ebp in the click loop as in the
+   original; row = 0 before d2_SetForm(win, 3); in the skill loop row++; y += 0x18; before the txt_Format;
+   each header / ailment line's row++ after the .centred store. Left (20 ins, two causes): (1) the job /
+   title arms: the original adds into the jobId CSE register (and eax,0xff .. add eax,ecx; push eax), ours
+   into the ternary's (add ecx,eax; push ecx), which also rotates the title arm's ternary to edx. Mechanism
+   (probe): VC6 adds into jobId's register only when the ternary's register is not free after the add - a
+   named base kept live after the print (probe: officeBase = sex ? 0x18f : 0x130; print(jobId +
+   officeBase); probeX = officeBase;) gives add eax,reg; ord_WageReportOrder (byte) has that shape with a
+   base local in ebx. Every plain form folds the base (single-use locals, i / y / row / officeBase reused,
+   t += forms): ~70 spellings, casts, bitfield views, __inline helpers, nested / two-if / one-call / sex-if
+   arms, probes of chr->sex / chr->jobId earlier: all add ecx,eax. Open: what keeps the ternary's ecx alive
+   past the add in the original. (2) the click loop's entry reloads (ebx win, esi giftBtn, ebp
+   universityBtn in the original; ours ebp before esi): swapping the universityBtn / giftBtn inits fixes it
+   but moves the init stores; candidate-id order (decl moves = control). prior: Reconstructed in full
    against the original (all 999 instructions read: the dates, profession / title, offices, worth, partner
    / betrothal event 0x41 walk, faith, children, the skill bars and the nine ailment rows, the button
    ladder of page 4 and the click dispatch); all calls, literals and references agree, no M8/M9. Remaining:
