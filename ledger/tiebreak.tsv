@@ -3770,7 +3770,7 @@ exe	0x00561190	he_RunRansom	he	e829b1f4896ff578	no	shape	sweep control=shape bes
 exe	0x00561470	he_AllocEvent39_3e	he	8751adc3b4d056b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005614c0	he_RunRansomDemand	he	7b398cebf45b153d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005619a0	he_AllocBurglary	he	5c9615a02655ad1b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00561a20	he_RunBurglary	he	4642afbee1c1393d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00561a20	he_RunBurglary	he	bd73532ae8710700	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=127	365aa90169688e12
 exe	0x005628e0	he_RunBuildingSpying	he	cf7331d218947511	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00563070	he_AllocAmbush	he	4e9b1b1b12883099	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005630f0	he_RunAmbush	he	b7b0b86d84a8d9fe	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

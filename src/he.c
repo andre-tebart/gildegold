@@ -11121,8 +11121,9 @@ void he_EndPersonEvents(unsigned short *p)
    ("gestik/herranwinken"), all are sent to the building ("Detected") with a scornful gesture
    ("gestik/abfaellig" 1 .. 2), the event is bound to the attack (attackId), due 8 minutes from now and posted
    again (cm_SendExSetHE 0x400); 1. Nothing found (or no building object): 0 */
-int he_DetectAttack(HEDETECT *d)
+int he_DetectAttack(int p)
 {
+    HEDETECT *d = (HEDETECT *)p;
     AIJOB *e, *best;
     HEWATCH *w;
     AICHAR *seen, *c;
@@ -13500,7 +13501,7 @@ void he_RunSabotage(int ev)
         d.range = 4000.0f;
         d.ev = e;
         d.found = 0;
-        if (he_DetectAttack(&d) != 0) {
+        if (he_DetectAttack((int)&d) != 0) {
             x->slot = gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, x->target);
             e->stage = 7;
             x->watch = d.found->id;
@@ -14053,7 +14054,7 @@ void he_RunBrawl(AIJOB *e)
             d.range = 4000.0f;
             d.ev = e;
             d.found = 0;
-            if (he_DetectAttack(&d) != 0) {
+            if (he_DetectAttack((int)&d) != 0) {
                 br->slot = gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, victim->netId, b->id);
                 br->watch = d.found->id;
                 e->stage = 8;
@@ -16978,13 +16979,12 @@ void he_RunBurglary(AIJOB *ev)
     AICHAR *c, *owner, *master = 0, *guard;
     AIOBJ *room = 0, *stall, *store = 0, *it;
     HEWATCH *w;
-    HEDETECT d;
     AIJOB *patrol;
     HEFINVIEW *fin;
     CRIME *cr;
     char text[0x200];
     char line[0x100];
-    int k, ok, money, amt, skill;
+    int k, ok, amt, skill;
     AIOBJ *report = 0;
     int n = 0;
     float know, sk;
@@ -17028,12 +17028,14 @@ void he_RunBurglary(AIJOB *ev)
     case 2:
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
         if (b != 0) {
+            HEDETECT d;
+
             owner = &ai_CharsT[b->owner];
             d.bld = b;
             d.range = 5000.0f;
             d.ev = ev;
             d.found = 0;
-            if (he_DetectAttack(&d) != 0) {
+            if (he_DetectAttack((int)&d) != 0) {
                 patrol = d.found;
                 x->slot = gv_Accuse(0x17, 1, ai_CharInts[ev->chr][0], owner->netId, b->id);
                 x->watch = patrol->id;
@@ -17143,11 +17145,11 @@ void he_RunBurglary(AIJOB *ev)
                 if (report->reportBld == b->id)
                     break;
             }
-            if (report != 0) {
+            if (report != 0)
                 know = (float)(report->reportKnow * 0.01);
-                if (0.001f > know)
-                    know = 0.001f;
-            } else
+            else
+                know = 0.0f;
+            if (0.001f > know)
                 know = 0.001f;
             owner = &ai_CharsT[b->owner];
             skill = gm_BuildingSkill(b, 7, 1);
@@ -17161,6 +17163,7 @@ void he_RunBurglary(AIJOB *ev)
         if (ok) {
             char loot[0x400];
             int vals[2];
+            int money;
 
             loot[0] = ch_EmptyName[0];
             memset(loot + 1, 0, sizeof(loot) - 1);
@@ -18999,7 +19002,7 @@ void he_RunRobbery(AIJOB *ev)
             d.range = 2500.0f;
             d.ev = ev;
             d.found = 0;
-            if (he_DetectAttack(&d) != 0) {
+            if (he_DetectAttack((int)&d) != 0) {
                 patrol = d.found;
                 x->slot = gv_Accuse(0x17, 1, ai_CharInts[ev->chr][0], owner->netId, b->id);
                 x->watch = patrol->id;
