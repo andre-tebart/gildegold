@@ -65,23 +65,29 @@ char d3_MirBoundaryEdges(unsigned int n, unsigned char *used, D3PVERT **pts, uns
    vertices in edges[], nedge of them) into the outline segments: connected edges that are collinear are
    merged, *out gets the (start, end) vertex pairs, *nout their count (2 per segment). Returns 0 only for n < 3.
    used[0..nedge) = edge taken by the current chain, used[nedge..2*nedge) (mark) = edge taken by any chain
-   @deep deep s48: the address operand order follows the evaluation order of the two loads at every site:
-   mark[x] loads x first and addresses [x+mark], used[nedge + x] loads the mark temp first and addresses
-   [mark+x]; the original's head block loads mark first (edx) and addresses [head+mark] ([eax+edx]), which
-   no spelling gives. Rounds (dcp try): head + nedge, (used + head)[nedge], *(used + nedge + head), *(head
-   + used + nedge), (nedge + head)[used], (int) casts: = control; *(head + mark) / mark[(int)head] =
+   @deep deep s49: the IL creates the loads in evaluation order and hands out the rotation registers then
+   (c2dag: mark[head] makes head's load first -> edx, mark -> eax, address [edx+eax] = head base; the
+   used[nedge + head] form makes the CSE mark load first -> edx, address [edx+eax] = mark base). The
+   original creates mark first (edx) but lists head as the base ([eax+edx]): neither form. Tried this
+   session without a third code: 15 more spellings of the store (casts to int / unsigned, &used[nedge],
+   &mark[0], (head + mark)[0], the RHS as used[i], chains with used[i], a comma), types of head / nedge /
+   mark (int, unsigned, char *: 72), local declaration order (16), head / tail / mark = 0 at the
+   declaration, the top, before mark = used + i or after (96 = 2 codes), the head = tail = 0 statement at
+   every place of the init block x mark[0] spelled mark[tail] / mark[head] (52), init and restart
+   assignment spellings (56), the restart test / store forms x tail arm form x initializers (128): only the
+   two codes (2: control, 6: mark[head]) and worse. flip.py on the control and on the mark[head] form: only
+   meaning changes (deleting head = tail = 0 or tail = head = i, deleting dir lines) give mark-first. Next:
+   what makes mark's load evaluate first while it is the second operand (Sethi-Ullman: mark a heavier
+   expression that VC6 later folds to the mark load), or a value live in edx when head is created. prior:
+   deep s48: the address operand order follows the evaluation order of the two loads at every site: mark[x]
+   loads x first and addresses [x+mark], used[nedge + x] loads the mark temp first and addresses [mark+x];
+   the original's head block loads mark first (edx) and addresses [head+mark] ([eax+edx]), which no
+   spelling gives. Rounds (dcp try): head + nedge, (used + head)[nedge], *(used + nedge + head), *(head +
+   used + nedge), (nedge + head)[used], (int) casts: = control; *(head + mark) / mark[(int)head] =
    mark[head] (6, order 10); 63 masks of {arm 1 mark[tail] / used[nedge + tail], arm 2 mark[head], restart
    test and store as used[nedge + i], head = 0 initializer, mark = 0 initializer dropped}: best = control
    (2), every other 4..12; nres = 0 inside the if / before res / at the top (4..15), head = tail = 0 right
-   before the do (10 / 14): no lever. Left: the regs-2 hunk at 0x454acf ([edx+eax] for [eax+edx]). prior:
-   deep s30: fixed the new-chain clear (D3M_ZERO_VAR(used, nedge), the original reads nedge from the dead
-   pts slot it passed as the count pointer): frame 0x48 as the original, 14 -> 2 ins. The dead stores mark
-   = 0 / tail = 0 are one code with the declaration initializer mark = 0 alone (tail's is = control). Left:
-   the head chain's mark[head] = 1, written used[nedge + head]: [edx+eax] where the original has [eax+edx]
-   (regs 2). With mark[head] (any spelling: *(mark + head), head[mark], chained with used[i]) VC6 loads
-   head before mark (order 10 with mark = 0; head = 0 instead fixes that block but reverses the two mark[i]
-   accesses of the restart scan, 6). Tried: 64 initializer subsets x both forms, 24 orders of the head
-   block, climb 3 rounds from the plain form (10) and 2 from the tree (2): nothing closer. */
+   before the do (10 / 14): no lever. Left: the regs-2 hunk at 0x454acf ([edx+eax] for [eax+edx]). */
 
 char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PVERT ***out)
 {
