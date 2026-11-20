@@ -4701,17 +4701,26 @@ typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree wi
    click opens the info panel of the picked character (ai_CharInfoPanel: without its take-over button with 0x10
    or for the character itself, with it under 8), a click on no box redraws; the right button closes the window
    unless flags has 8. callId is the frame pump's call id; the campaign step 6 brackets the window.
-   @deep Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
-   parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
-   labels and the click dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call,
-   constant and reference agrees. The remaining code hunks are allocation-driven instruction selection and
-   store scheduling: +0x2b3 the original computes (half - w) + w/2 (ecx=ebx; sub ecx,edx; lea
-   eax,[ecx+ebp]) where ours computes (w/2 - w) + half (mov ecx,ebp; sub ecx,edx; lea eax,[ecx+ebx]) -
-   source variants (reordered terms, a left local) do not move it (a local adds a frame slot); the box
-   loops store node.x with add eax,ebx / mov word [ebp+8],ax where ours uses lea ecx,[ebx+eax] / mov word
-   [ebp+8],cx and stores ctrl first (+0x77c, +0x867, +0xa86, +0xb79); the line midpoints end in lea
-   ebp,[eax+ebx] vs ours mov esi,eax; ...; add esi,ebx (+0xc68, +0xd52); the loop counters and 4W/5 sit in
-   [esp+0x18]/[esp+0x10] swapped. proof stops at the sibling loop's store order (x before ctrl). */
+   @deep s(this): the box loops read their x as a short local (mov bx,word [..]; add ebx,2; push ebx):
+   short t = siblingX[i] / oddX[i] / evenX[i] in the first sibling loop and both child loops (not the
+   second sibling loop, which the original strength-reduces to a pointer walk over siblingX) 277 -> 145;
+   the father's relatives walk has its own counter j (the original keeps it in hi's slot) 145 -> 71, frame
+   slots all agree. Left: the top init stores (original stores the zeros nChildren / nSiblings / partner
+   before each memset, half / h after them: +0x253 order 30); +0x403 parents[0].x = (half - w) + w/2 (ours
+   (w/2 - w) + half); sib swaps in the d2_Objs style/user stores at +0x637 +0x710 +0x7f4; the odd children
+   positions +0xb47 (original keeps oddX[0] in edx and copies); +0xc62 evenX; the line midpoints +0xdb3
+   +0xe9d (lea ebp,[eax+ebx] where ours add esi,ebx) with esi/ebp swapped there. prior: Reconstructed in
+   full against the original (all 1277 instructions read: the relatives walk, the parent / middle-row /
+   sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the labels and the click
+   dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call, constant and reference
+   agrees. The remaining code hunks are allocation-driven instruction selection and store scheduling:
+   +0x2b3 the original computes (half - w) + w/2 (ecx=ebx; sub ecx,edx; lea eax,[ecx+ebp]) where ours
+   computes (w/2 - w) + half (mov ecx,ebp; sub ecx,edx; lea eax,[ecx+ebx]) - source variants (reordered
+   terms, a left local) do not move it (a local adds a frame slot); the box loops store node.x with add
+   eax,ebx / mov word [ebp+8],ax where ours uses lea ecx,[ebx+eax] / mov word [ebp+8],cx and stores ctrl
+   first (+0x77c, +0x867, +0xa86, +0xb79); the line midpoints end in lea ebp,[eax+ebx] vs ours mov esi,eax;
+   ...; add esi,ebx (+0xc68, +0xd52); the loop counters and 4W/5 sit in [esp+0x18]/[esp+0x10] swapped.
+   proof stops at the sibling loop's store order (x before ctrl). */
 void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId)
 {
     AICHARREC *ch;
@@ -4724,10 +4733,12 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
     int w;
     int h;
     int x;
+    short t;
     int mid;
     int lo;
     int hi;
     int i;
+    int j;
     int k;
     int found;
     int partner;
@@ -4786,9 +4797,9 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
             rel = (AICHARREC *)gm_FindChar(ch->relatives[1]);
             if (rel != 0) {
                 parents[0].id = rel->id;
-                for (i = 3; i < 8 && k < 6; i++) {
-                    if (rel->relatives[i] != -1 && rel->relatives[i] != ch->netId) {
-                        pick = (AICHARREC *)gm_FindChar(rel->relatives[i]);
+                for (j = 3; j < 8 && k < 6; j++) {
+                    if (rel->relatives[j] != -1 && rel->relatives[j] != ch->netId) {
+                        pick = (AICHARREC *)gm_FindChar(rel->relatives[j]);
                         if (pick != 0) {
                             row[k].id = pick->id;
                             k++;
@@ -4881,10 +4892,11 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                 for (i = 0; i < 2; i++) {
                     if (row[i].id == 0xffff)
                         break;
-                    row[i].ctrl = d2_WinOpenPic(siblingX[i], 0x96, 0x5db, d2_LastWindow);
-                    row[i].x = w / 2 + siblingX[i];
+                    t = siblingX[i];
+                    row[i].ctrl = d2_WinOpenPic(t, 0x96, 0x5db, d2_LastWindow);
+                    row[i].x = w / 2 + t;
                     row[i].y = 0x96;
-                    d2_WinOpenPic(siblingX[i] + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
+                    d2_WinOpenPic(t + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
                     d2_Objs[row[i].ctrl].style = 3;
                     d2_Objs[row[i].ctrl].user = ai_Chars[row[i].id];
                 }
@@ -4932,10 +4944,11 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                     for (i = 0; i < 5; i++) {
                         if (children[i].id == 0xffff)
                             break;
-                        children[i].ctrl = d2_WinOpenPic(oddX[i], 0x122, 0x5db, d2_LastWindow);
-                        children[i].x = w / 2 + oddX[i];
+                        t = oddX[i];
+                        children[i].ctrl = d2_WinOpenPic(t, 0x122, 0x5db, d2_LastWindow);
+                        children[i].x = w / 2 + t;
                         children[i].y = 0x122;
-                        d2_WinOpenPic(oddX[i] + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
+                        d2_WinOpenPic(t + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
                         d2_Objs[children[i].ctrl].style = 3;
                         d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
                     }
@@ -4947,10 +4960,11 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                     for (i = 0; i < 4; i++) {
                         if (children[i].id == 0xffff)
                             break;
-                        children[i].ctrl = d2_WinOpenPic(evenX[i], 0x122, 0x5db, d2_LastWindow);
-                        children[i].x = w / 2 + evenX[i];
+                        t = evenX[i];
+                        children[i].ctrl = d2_WinOpenPic(t, 0x122, 0x5db, d2_LastWindow);
+                        children[i].x = w / 2 + t;
                         children[i].y = 0x122;
-                        d2_WinOpenPic(evenX[i] + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
+                        d2_WinOpenPic(t + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
                         d2_Objs[children[i].ctrl].style = 3;
                         d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
                     }
