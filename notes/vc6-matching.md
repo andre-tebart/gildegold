@@ -1694,8 +1694,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - Fixed: ai_AquariumSearchWindow's search message 0x15 carries the room object in arg[2] (+0x60), not in
     LCSEARCHWORDS.room (+0x5c, the 0x14 message's place): a one-instruction slot hunk inside a message fill.
   - Left with notes: lc_UpdateGoodsReserves (the cursor as a temp copied into i: a while whose continue skips
-    the increment gives the copy shape), he_RunSixGroupEvent (n takes eax, one rotation), ai_SpecialAmountListWindow
-    (win -67 over viewing -75 for ebx), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
+    the increment gives the copy shape), he_RunSixGroupEvent (n takes eax, one rotation), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
     cm_Attack (g / k ranks: one k reference fewer swaps them), ai_ShowAmountRows (the two text arms' first call:
     nothing hoisted in the original), he_RunGathering (the not-found block last: every search spelling is one
     code), rd_PathToRoad (i in ebx, g->cells re-read per row), ai_Miracle (case slot packing, one rotation),
@@ -3119,6 +3118,16 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   the original; `dd_RMask = ddpf..; r = dd_RMask;` gives the original's spills (counter in the dead bpp slot, r
   in [ebp+0x20]) but loses the funnel. No lever: loop forms (up / down / `while(bpp--)`), counter variables,
   declaration moves.
+
+- **A window pump's two flags in swapped callee-saved registers, every ordinary mutation leaving the pass-3
+  margin unchanged (ai_SpecialAmountListWindow: win -67 over viewing -75 for ebx; climb rounds, blockscope,
+  types all at exactly 8)**: the trailing `redraw = 1;` after an if / else-if chain was written in each arm
+  (`if (..) { ..; redraw = 1; } else if (..) { sv_PopRequest = 1; chosen = c; redraw = 1; } else { ..; redraw
+  = 1; }` plus `else redraw = 1;` for the no-hit path, and both arms of the `id != 0xffff` test): VC6 merges the
+  copies into one `mov esi,1` tail, but each arm's block gains the redraw and 1 values, raising P where viewing
+  is referenced (93 -> byte, with redraw = 0 after the row calls and the store order inside the arm, which a
+  6-order round settled). Measure such races with the margin (prio difference from c2trace per variant), not
+  the instruction count: a round that moves the margin 8 -> 6 -> 0 shows no code change until it flips.
 
 ### A constant or zero kept in a register
 
