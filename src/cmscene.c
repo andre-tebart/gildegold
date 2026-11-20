@@ -1205,31 +1205,34 @@ int cm_CheckTrial(G28REC *p)
    else the judge picks the sentence (mode 5, gv_CheckSentence / gv_PassSentence, texts 0x152f .. 0x1531). On the host the
    accuser, the judge and the assessors get the fees (cm_SendMoveGoodsUnchecked, a third of the plan's rating each) and
    with the item 0x22e the accused's relations change. Every voice bank loaded is freed at the end.
-   @deep deep s47: 885 -> 160 ins (frame now right). Kept: (1) the reading loop's AIDEC dec as a block
-   local of that loop and the opening dec.cur read in its own block ({ AIDEC dec; gv_GetTableRecord(0,
-   &dec); k = max(min(dec.cur, 4), 0); }): the original's dec.cur-dec shares crime's slot (0x240) and the
-   loop dec shares other/factors/texts (0xb0) - frame 0x784 -> 0x760; (2) both clamps as max(min(v, hi), 0)
-   (the original's out-of-line 'mov eax,4; jmp' / jle-jmp blocks; plan.instrument = max(min(sel, 6), 0) -
-   sel itself stays unclamped: the original indexes instruments/files/texts with the raw sel); (3) the two
-   assessor vote blocks with their own block locals (AICHAR *assessor; int vote;): slot packing {p, c5,
-   ev2} / {k, severity} as the original. No lever: the three continues of the grouping / reading loops as
-   if-blocks (= control), k renamed per use group (= control), crime / other block scopes (= control once
-   dec is split). Left (diffclass): the grouping loop (lines ~1358-1372): the original computes i's offset
-   into edx (mov eax,edx) and stores groups[i] = 1 after the crime copy setup, its loop counter i*4 in ecx;
-   the reading loop: the original pushes &dec before the crime copy and reads crime.law at +0x260; a setne
-   / dl-cl rotation at the plea voice (c1->sex != 0) + 2, and later register rotations. prior: Rebuilt
-   whole from the original (2340 instructions), every region read against it: the plan record init, the
-   crime grouping and reading loops, the plea, the torture (instrument tables, rolls, confession), the vote
-   of judge and assessors, the verdict, fees, relations and the bank cleanup (including the original's
-   double unload of bankF2). The callees, arguments, literals and statement order agree (ours 2333 vs
-   2340). Left is allocation and layout: the frame 0x784 vs 0x760 and its slot renaming (slots 750),
-   register choice (regs 134), and two clamps VC6 lowers differently: dec.cur to 0..4 (ours inline jmp/mov
-   eax,4 at +0xaa, the original out of line at +0x24f) and the instrument 0..6 (ours setle/dec/and at
-   +0x11ed, the original jle/jmp blocks). (references: M8 at +0x1297: ours refers to sprintf (0x5de652),
-   the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2 more), explained: the three M8 lines
-   (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment crossings: the same calls in the
-   same order on both sides, paired one call apart where the surrounding pushes are scheduled differently;
-   the proof stops only on the crime id array's frame offset (frame+0x154 vs +0x130)) */
+   @deep deep s47: 885 -> 129 ins (frame right). Kept: (1) the reading loop's AIDEC dec block-local and the
+   opening dec.cur read in its own block: the original's dec.cur-dec shares crime's slot (0x240), the loop
+   dec other/factors/texts (0xb0); (2) both clamps as max(min(v, hi), 0) (plan.instrument = max(min(sel,
+   6), 0); sel itself stays unclamped: the original indexes instruments/files/texts with the raw sel); (3)
+   the assessor vote blocks with their own block locals (AICHAR *assessor; int vote): slot packing {p, c5,
+   ev2} / {k, severity}; (4) the three verdict voices' sex test as (x == 1) & 1 (@original: xor; cmp; sete;
+   and reg,1 - exact at the sites; (unsigned char)(x == 1) gives and 0xff there but 36-43 ins overall: the
+   masking changes the allocation far above, so the original's form may be another that yields and 1
+   without a constant-1 reference); (5) crime copy before groups[i] = 1, plan.plea = plea after the score
+   line. No lever (= control): the three continues as if-blocks (tried twice), k renamed per use group,
+   crime / other block scopes, memset of groups as a loop, ?: 1 : 0 / !! / != 0 spellings of the sex test.
+   Left: the grouping loop's i*4 piece (ours eax then mov edx,eax; original edx then mov eax,edx, its latch
+   in ecx with ncrimes reloaded after the loop), and the scratch rotation from there to the plea (reading
+   loop: the original pushes &dec in edx before the crime copy; gv_CrimeText's &text after the copy;
+   m->host load order at the plea's host check). climb round 1 (at 159): only meaning-changing or
+   float-temp rows (local float t = groups[j]: 48). prior: Rebuilt whole from the original (2340
+   instructions), every region read against it: the plan record init, the crime grouping and reading loops,
+   the plea, the torture (instrument tables, rolls, confession), the vote of judge and assessors, the
+   verdict, fees, relations and the bank cleanup (including the original's double unload of bankF2). The
+   callees, arguments, literals and statement order agree (ours 2333 vs 2340). Left is allocation and
+   layout: the frame 0x784 vs 0x760 and its slot renaming (slots 750), register choice (regs 134), and two
+   clamps VC6 lowers differently: dec.cur to 0..4 (ours inline jmp/mov eax,4 at +0xaa, the original out of
+   line at +0x24f) and the instrument 0..6 (ours setle/dec/and at +0x11ed, the original jle/jmp blocks).
+   (references: M8 at +0x1297: ours refers to sprintf (0x5de652), the original's field to 0x4e2bd0
+   (cm_SetViewEnabled) (and 2 more), explained: the three M8 lines (+0x1297 sprintf|cm_SetViewEnabled,
+   +0x1648, +0x1a4b) are alignment crossings: the same calls in the same order on both sides, paired one
+   call apart where the surrounding pushes are scheduled differently; the proof stops only on the crime id
+   array's frame offset (frame+0x154 vs +0x130)) */
 
 void cm_RunTrial(G28REC *m)
 {
@@ -1369,8 +1372,8 @@ void cm_RunTrial(G28REC *m)
     for (i = 0; i < ncrimes; i++) {
         if (groups[i] == -1)
             continue;
-        groups[i] = 1;
         crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
+        groups[i] = 1;
         for (j = i + 1; j < ncrimes; j++) {
             if (groups[j] == -1)
                 continue;
@@ -1427,8 +1430,8 @@ void cm_RunTrial(G28REC *m)
     io_PrintText("$C");
     plan.mode = 4;
     if (plea == 1) {
-        plan.plea = plea;
         plan.score = sum - gm_Liking(c1->id, c2->id, 1) * sum * 0.002f;
+        plan.plea = plea;
         h = cm_LoadVoiceBank((int)"PROZESS_3_SCHULDIG.sbf", 0);
         cm_QueueVoice(c1->id, h, (int)"_PROZESS_3_SCHULDIG", 0, 0);
         io_PrintText(0x14bd, c1->id, 0x14be);
@@ -1720,7 +1723,8 @@ void cm_RunTrial(G28REC *m)
         io_PrintText("$C");
         io_PrintText(0x152f, c1->id);
         io_PrintText(0x1530);
-        cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_SCHULDIG", c1->sex == 1, 100);
+        /* @original the three verdict voices pass the sex test masked with & 1 (xor; cmp; sete; and reg,1), the other sex tests of this function do not */
+        cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_SCHULDIG", (c1->sex == 1) & 1, 100);
         cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_SCHULDIG", 2, 0xfa);
         cm_WaitTicks(3);
         gv_CheckSentence(c1, sentence);
@@ -1735,7 +1739,7 @@ void cm_RunTrial(G28REC *m)
                 fin->officeSentences++;
         }
         cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_7_STRAFEN", sentence, 100);
-        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", c1->sex == 1, 200);
+        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", (c1->sex == 1) & 1, 200);
         if (m->host == ai_CharsT[ai_PlayerId].netId)
             gv_PassSentenceK(c1, sentence, c2, c3, c4);
         io_PrintText(0x1531);
@@ -1752,7 +1756,7 @@ void cm_RunTrial(G28REC *m)
     } else {
         bankVerdict = cm_LoadVoiceBank((int)"PROZESS_7_NICHT_SCHULDIG.sbf", 0);
         cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_NICHT_SCHULDIG", c1->sex == 1, 100);
-        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", (c0->sex == 1) + 2, 200);
+        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", ((c0->sex == 1) & 1) + 2, 200);
         cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", (int)ch_EmptyName);
         cm_SetViewEnabled(cm_TextBox, 1);
         d2_SetForm(cm_TextBox, 0);
