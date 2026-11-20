@@ -3793,7 +3793,7 @@ exe	0x00565d10	he_AllocKillPlayer	he	byte	readable
 exe	0x00565db0	he_RunKillPlayer	he	byte	readable		
 exe	0x005662d0	he_AllocNightWatch	he	byte	readable		
 exe	0x00566370	he_RunNightWatch	he	byte	readable		
-exe	0x00566830	he_RunRobbery	he	draft	readable	deep	
+exe	0x00566830	he_RunRobbery	he	byte	readable		
 exe	0x00567620	he_AllocTitleDue	he	byte	readable		
 exe	0x00567660	he_RunTitleDue	he	byte	readable		
 exe	0x00567810	he_OpenHelpEvents	he	byte	readable		
