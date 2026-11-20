@@ -15850,37 +15850,7 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId)
    a rich one (goods worth over 3200) goes to an inn half the time (he_PickNearBuilding, "Go to wirtshaus"), else
    home ("Go home"; up to 0x40 of the players'); with any sent, the event is due in 5 minutes. Two hours past the day
    end every remaining one with an own building moves at once (to the inn, its place or the door "dummy_TUER") and
-   the record is freed
-   @deep s52: 443 -> 106. Kept: the out-parameter ints as block locals of each loop body (int bld, contact;
-   in loops 1 / 2 / 5, int place, obj; in loops 3 / 4: the original's five 4-byte slots 0x10 place / 0x14
-   contact, obj / 0x18 count / 0x1c bld, n / 0x20 season, count now in memory with its cache in edi / ebp
-   as the original) and from / to as D3VECTOR4 (16 bytes each, 0x24 / 0x34). Stage 0 is the original's but
-   for ev: the original keeps it in ebx from the entry (mov ebx,[esp+0xcc]; live across he_FigureContact in
-   loop 1, reloaded at +0x255 only where bld took ebx), ours has it in ecx (c2trace: ev#7 ecx, pass 10, the
-   head piece ev#2 lost edi to count#2) and reloads it at the latch; with ecx taken every scratch register
-   of stage 1 is one step off (+0x3f6 ..). Also left in stage 1: n = 0 (xor ebp / mov [n],ebp) stands
-   behind the gm_BuildQuery call in the original, ours in front; loop 5 keeps 0x800 in ebp and n in ebx in
-   the original. Not yet tried: the comma conditions (distance test, bt = ..) as plain nested ifs / a dist
-   local, n = 0 inside the for init. prior: Reconstructed whole from the old skeleton against the original
-   0x55efc0..0x55fa18 (790 ins): the stage switch (-2/-1 free, 0 morning, 1 evening), all five ai_Chars
-   passes (stage 0: send to work with the 7000 distance / day-start-minus-one test, then everyone at once
-   from the day start; stage 1: inns list, players' buildings' workers, the first other one, then two hours
-   past the day end everyone at once), every call with its arguments, strings and constants (7000.0f,
-   ai_FloatOne, 2.0f, 0xc80, 0x40, 0x800 / 0x1000 flags), the loop bases (index loops; passes 2 and 5 index
-   ai_CharsT[i] directly, matching the original's +0x164 base and jl end), the kind test through AIBTYPE *
-   and the hour >= day-start block. Same calls in the same order, tables equal, 791 vs 790 instructions.
-   Left is allocation: the original keeps count in a stack slot ([esp+0x18], cached in edi for the stage-0
-   loop test, reloaded at 0x55f20b and incremented through memory at 0x55f1ae / 0x55f5bd) with i in ebp and
-   ev in ebx, ours keeps count in ebp, i in ebx and ev in edi; every slot (+0x10 / +0x14 / +0x1c bld /
-   contact / place / obj, the two D3VECTORs 0x24 / 0x34 vs ours 0x28 / 0x38) and reg hunk follows from
-   that, as do the code hunks of spills / reloads (0x55efca, 0x55f190..0x55f208, 0x55f557, 0x55f5c5). The
-   ref M8 at +0x3a4 is the ev->end = ai_Time copy before gm_SetTime scheduled in another order (ours loads
-   ai_Time+8 where the original loads +4 at that line). Tried: c pointer vs direct ai_CharsT[i] per loop,
-   pointer loops (wrong: jb end compare), bt / k / ai_BTypesT + type spellings of the kind test.
-   (references: M8 at +0x3a4: ours refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4
-   (ai_TimeHourW), explained: the only ref is the four-part AITIME copy ev->end = ai_Time
-   (0x55f345..0x55f36f) interleaved with the gm_SetTime pushes in another order: both sides copy the same
-   14 bytes) */
+   the record is freed */
 void he_RunRoutine(AIJOB *ev)
 {
     HEROUTINE *r = (HEROUTINE *)ev;
@@ -15889,13 +15859,15 @@ void he_RunRoutine(AIJOB *ev)
     AIBLD *inns[0x20];
     AIBTYPE *bt;
     D3VECTOR4 from, to;
-    float dx, dy, dz;
+    float dx, dy, dz, dist;
     int count = 0;
     int season, i, n;
 
     season = gm_ClockSeason(&ai_Time);
     switch (ev->stage) {
     case -2:
+        he_FreeEvent((int *)ev);
+        return;
     case -1:
         he_FreeEvent((int *)ev);
         return;
@@ -15909,12 +15881,16 @@ void he_RunRoutine(AIJOB *ev)
                 if (gm_IsHomeType(c->bld) == 0 && c->bld->object != 0) {
                     if (ai_CharsT[c->bld->owner].kind != 6 && ai_CharsT[c->bld->owner].kind != 7 && ch_Count(0, 0) < 0x20) {
                         b = (AIBLD *)gm_FindBuildingById(c->model->bldId);
-                        if ((b == 0 || b->object == 0
-                             || (d3_PointToWorld((D3OBJECT *)c->bld->object, &((D3OBJECT *)c->bld->object)->pos, (D3VECTOR *)&from),
-                                 d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&to),
-                                 dx = from.x - to.x, dy = from.y - to.y, dz = from.z - to.z,
-                                 (float)sqrt(dx * dx + dy * dy + dz * dz) < 7000.0f))
-                            && (float)ai_Time.hour < gm_DayStartHours[season] - 1.0f) {
+                        dist = 0.0f;
+                        if (b != 0 && b->object != 0) {
+                            d3_PointToWorld((D3OBJECT *)c->bld->object, &((D3OBJECT *)c->bld->object)->pos, (D3VECTOR *)&from);
+                            d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&to);
+                            dx = from.x - to.x;
+                            dy = from.y - to.y;
+                            dz = from.z - to.z;
+                            dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
+                        }
+                        if (dist < 7000.0f && (float)ai_Time.hour < gm_DayStartHours[season] - 1.0f) {
                             cm_SendCharHalt(c->netId);
                             cm_SendChrGotoBuilding(c->netId, bld, contact, 0, 0, "Go to work");
                             c->flags1c8 |= 0x1000;
@@ -15958,8 +15934,9 @@ void he_RunRoutine(AIJOB *ev)
             he_FreeEvent((int *)ev);
             return;
         }
+        b = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
         n = 0;
-        for (b = (AIBLD *)gm_BuildQuery(1, 5, 0x16); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        for (; b != 0; b = (AIBLD *)gm_BuildNext()) {
             if (n >= 0x20)
                 break;
             if (b->owner != 0xffff && b->object != 0)
@@ -15969,82 +15946,88 @@ void he_RunRoutine(AIJOB *ev)
             int place, obj;
 
             c = &ai_CharsT[i];
-            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0
-                && (bt = &ai_BTypesT[c->bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
-                && he_FindFigurePlace(c, &place, &obj, 0) != 0
-                && (place != c->model->bldId || obj != c->model->scriptGroup)
-                && (c->flags1c8 & 0x800) == 0
-                && (ai_CharsT[c->bld->owner].kind == 6 || ai_CharsT[c->bld->owner].kind == 7)) {
-                cm_SendCharHalt(c->netId);
-                if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
-                    if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
-                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
-                } else if (obj == -1) {
-                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
-                } else if (count < 0x40) {
-                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
+                bt = &ai_BTypesT[c->bld->type];
+                if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
+                    && he_FindFigurePlace(c, &place, &obj, 0) != 0
+                    && (place != c->model->bldId || obj != c->model->scriptGroup)
+                    && (c->flags1c8 & 0x800) == 0
+                    && (ai_CharsT[c->bld->owner].kind == 6 || ai_CharsT[c->bld->owner].kind == 7)) {
+                    cm_SendCharHalt(c->netId);
+                    if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
+                        if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
+                            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
+                    } else if (obj == -1) {
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
+                    } else if (count < 0x40) {
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+                    }
+                    c->flags1c8 |= 0x800;
+                    cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
+                    r->chrIdx = i;
+                    count++;
                 }
-                c->flags1c8 |= 0x800;
-                cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
-                r->chrIdx = i;
-                count++;
             }
         }
         for (i = 0; i < 768 && count < 1; i++) {
             int place, obj;
 
             c = &ai_CharsT[i];
-            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0
-                && (bt = &ai_BTypesT[c->bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
-                && he_FindFigurePlace(c, &place, &obj, 0) != 0
-                && (place != c->model->bldId || obj != c->model->scriptGroup)
-                && (c->flags1c8 & 0x800) == 0) {
-                cm_SendCharHalt(c->netId);
-                if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
-                    if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
-                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
-                } else if (obj == -1) {
-                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
-                } else {
-                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
+                bt = &ai_BTypesT[c->bld->type];
+                if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
+                    && he_FindFigurePlace(c, &place, &obj, 0) != 0
+                    && (place != c->model->bldId || obj != c->model->scriptGroup)
+                    && (c->flags1c8 & 0x800) == 0) {
+                    cm_SendCharHalt(c->netId);
+                    if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
+                        if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
+                            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
+                    } else if (obj == -1) {
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
+                    } else {
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+                    }
+                    c->flags1c8 |= 0x800;
+                    cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
+                    count++;
+                    r->chrIdx = i;
                 }
-                c->flags1c8 |= 0x800;
-                cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
-                count++;
-                r->chrIdx = i;
             }
         }
         if (count != 0) {
             ev->end = ai_Time;
             gm_AddTime(&ev->end, 0, 5, 0);
         }
-        if ((float)ai_Time.hour <= gm_DayEndHours[season] + 2.0f)
-            return;
-        for (i = 0; i < 768; i++) {
-            int bld, contact;
+        if ((float)ai_Time.hour > gm_DayEndHours[season] + 2.0f) {
+            for (i = 0; i < 768; i++) {
+                int bld, contact;
 
-            if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].bld2 != 0 && ai_CharsT[i].model != 0
-                && (bt = &ai_BTypesT[ai_CharsT[i].bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
-                && he_FindFigurePlace(&ai_CharsT[i], &bld, &contact, 0) != 0
-                && (bld != ai_CharsT[i].model->bldId || contact != ai_CharsT[i].model->scriptGroup)
-                && (ai_CharsT[i].flags1c8 & 0x800) == 0) {
-                cm_SendCharHalt(ai_CharsT[i].netId);
-                if (n != 0 && gm_GetGoodsValue((char *)&ai_CharsT[i]) > 0xc80 && (short)util_Random(2) != 0) {
-                    if (he_PickNearBuilding(&ai_CharsT[i], n, inns, &bld, &contact) != 0) {
-                        cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
-                        cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].bld2 != 0 && ai_CharsT[i].model != 0) {
+                    bt = &ai_BTypesT[ai_CharsT[i].bld->type];
+                    if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
+                        && he_FindFigurePlace(&ai_CharsT[i], &bld, &contact, 0) != 0
+                        && (bld != ai_CharsT[i].model->bldId || contact != ai_CharsT[i].model->scriptGroup)
+                        && (ai_CharsT[i].flags1c8 & 0x800) == 0) {
+                        cm_SendCharHalt(ai_CharsT[i].netId);
+                        if (n != 0 && gm_GetGoodsValue((char *)&ai_CharsT[i]) > 0xc80 && (short)util_Random(2) != 0) {
+                            if (he_PickNearBuilding(&ai_CharsT[i], n, inns, &bld, &contact) != 0) {
+                                cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
+                                cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                            }
+                        } else if (contact != -1) {
+                            cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
+                            cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                        } else {
+                            cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, -1, "dummy_TUER");
+                        }
+                        ai_CharsT[i].flags1c8 |= 0x800;
+                        cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0x800, 0x1000);
                     }
-                } else if (contact != -1) {
-                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
-                    cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
-                } else {
-                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, -1, "dummy_TUER");
                 }
-                ai_CharsT[i].flags1c8 |= 0x800;
-                cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0x800, 0x1000);
             }
+            he_FreeEvent((int *)ev);
         }
-        he_FreeEvent((int *)ev);
         return;
     }
 }
