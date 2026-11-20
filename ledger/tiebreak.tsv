@@ -2509,7 +2509,7 @@ exe	0x004d8b50	cm_DrawFightTime	cm	18e016418cffe110	no	shape	sweep control=shape
 exe	0x004d8c40	cm_DeleteSceneChars	cm	7680d834774b55dc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d8c70	cm_StackPicture	cm	f1daf60d7e725ab6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d8cb0	cm_TallyStack	cm	ee34d61a717abafa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d8e20	cm_RunCouncilSession	cm	55ba35528e51d929	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004d8e20	cm_RunCouncilSession	cmscene	d70dc19dd0948202	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=3 compiled=127	20bf5bb4a5550acc
 exe	0x004da9e0	cm_AskDeposeVote	cm	11d3f9a1513e9a2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004dab50	cm_AskElectVote	cm	f29e2dfe3058610e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004dada0	cm_SessionAskPlayer	cm	79bdc1af10e655a5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9

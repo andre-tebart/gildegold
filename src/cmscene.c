@@ -351,24 +351,7 @@ void cm_TallyStack(int a, int b, int c)
      appliedOffice): a single one takes it, without voters one is drawn, else the members vote (texts 0x12d8 .. 0x12e5, a
      tie drawn with cm_Random); the host sends the office message 1 for the winner.
    The event scene "Sitzung_*.ed3" with the members' figures and its fly-in is loaded once per column when there is something
-   to vote on, and left at the end of the column.
-   @deep size queue s20: step as a local of each if (nvoters > 0) block (the depose and the elect tally):
-   frame 0x904 -> 0x900 (the original's), the original's shared slots viewLeft/step and
-   challenger/best/step now as ours, raw 7120 -> 7105 (the original 7089, padded 7104: one byte over); code
-   hunks 104 -> 74 but the scalar slot order is permuted (frame > 0x80: density sort; ours
-   viewTop/nvoters/tie has 19 references, the original's 15: tie / win sit in memory in ours where the
-   original keeps tie in edx, best in edi in the vote loop), so 188 -> 338 ins by count. Left: that tally
-   loop's allocation (tie memory-homed), the 1 cached in edi at the cut infos fill (mov edi,1 where ours
-   xor edi: the 0 / 0 / 1 stores of observer / ready / valid), slot order. prior: Rebuilt whole from the
-   original (1985 instructions), every block read against it: the array initialisers in the original's
-   order, the voter/observer member setup, the deposition loop (answers, voices, remarks, relations as an
-   if/else chain, office messages) and the election loop (applicant scan by index, the -1/0 fill loop,
-   single/drawn/voted winner, tie draw). No call, store, reference or literal differs (diffclass: no
-   differs/ref lines; ours 1989 vs 1985). Left is allocation only: frame 0x904 vs 0x900 (one more spilled
-   scalar; tie/win spilled to [esp+0x24]/[esp+0x14] where the original keeps them in edx/esi because ours
-   caches bankElect in edi: hunks +0x1845..+0x1870), the holders loop keeps 0 in edi where the original
-   keeps 1 (+0x48c: '- xor edi,edi' / '+ mov edi,1'), and the slot renaming that follows from the frame
-   shift. */
+   to vote on, and left at the end of the column. */
 
 void cm_RunCouncilSession(G28REC *a)
 {
@@ -411,8 +394,7 @@ void cm_RunCouncilSession(G28REC *a)
     for (k = 0; k < 6; k++) {
         kind = columns[k];
         n = amt_GetColumnOffices(kind, 6, offices);
-        nh = 0;
-        for (i = 0; i < n; i++) {
+        for (i = 0, nh = 0; i < n; i++) {
             c = (AICHAR *)gm_FindChar(offices[i].owner);
             if (c != 0 && c->heldRounds == 0) {
                 holderIdx[nh] = i;
@@ -492,8 +474,7 @@ void cm_RunCouncilSession(G28REC *a)
             tally[2] = 0;
             if (amt_HasDeposalVote(kind, &offices[j]) == 0)
                 continue;
-            nvoters = 0;
-            for (i = 0; i < nh; i++)
+            for (i = 0, nvoters = 0; i < nh; i++)
                 if (holders[i]->officeKind != 0)
                     nvoters++;
             viewBottom = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
@@ -524,8 +505,7 @@ void cm_RunCouncilSession(G28REC *a)
                 int step;
 
                 step = (0x320 - d2_Pics[0x5da].w * nvoters) / (nvoters + 1);
-                shown = 0;
-                for (i = 0; i < nh; i++) {
+                for (i = 0, shown = 0; i < nh; i++) {
                     if (holders[i]->officeKind != 0) {
                         holderRows[i].rec = holders[i];
                         holderRows[i].y = 0;
@@ -779,32 +759,33 @@ void cm_RunCouncilSession(G28REC *a)
                 /* each voter's vote: its row and the applicant's row lit, a picture on the applicant's stack */
                 for (i = 0; i < nh; i++) {
                     s = &cm_CutInfosT[i];
-                    if (s->session.answer == -1)
-                        continue;
-                    for (e = 0; e < napp; e++) {
-                        if (elect.ids[e] != s->session.answer)
-                            continue;
-                        d2_Objs[holderRows[i].ctl].highlighted = 1;
-                        d2_SetForm(view, 0);
-                        io_PrintText("$C");
-                        io_PrintText(0x12de, holders[i]->id);
-                        votes[e]++;
-                        cm_RunSceneTicks(0x3e8);
-                        d2_Objs[applicantRows[e].ctl].highlighted = 1;
-                        d2_SetForm(viewLeft, e + 1);
-                        cm_StackPicture(e + 1, &applicantRows[e]);
-                        d2_SetForm(view, 0);
-                        io_PrintText(0x12df, applicants[e]->id);
-                        cm_RunSceneTicks(0xfa0);
-                        d2_Objs[holderRows[i].ctl].highlighted = 0;
-                        d2_Objs[applicantRows[e].ctl].highlighted = 0;
-                        break;
+                    if (s->session.answer != -1) {
+                        for (e = 0; e < napp; e++) {
+                            if (elect.ids[e] == s->session.answer) {
+                                d2_Objs[holderRows[i].ctl].highlighted = 1;
+                                d2_SetForm(view, 0);
+                                io_PrintText("$C");
+                                io_PrintText(0x12de, holders[i]->id);
+                                votes[e]++;
+                                cm_RunSceneTicks(0x3e8);
+                                d2_Objs[applicantRows[e].ctl].highlighted = 1;
+                                d2_SetForm(viewLeft, e + 1);
+                                cm_StackPicture(e + 1, &applicantRows[e]);
+                                d2_SetForm(view, 0);
+                                io_PrintText(0x12df, applicants[e]->id);
+                                cm_RunSceneTicks(0xfa0);
+                                d2_Objs[holderRows[i].ctl].highlighted = 0;
+                                d2_Objs[applicantRows[e].ctl].highlighted = 0;
+                                break;
+                            }
+                        }
                     }
                 }
+                tie = 0;
+                e = 0;
                 best = -1;
                 win = -1;
-                tie = 0;
-                for (e = 0; e < napp; e++) {
+                for (; e < napp; e++) {
                     if (votes[e] > best) {
                         tie = 0;
                         best = votes[e];

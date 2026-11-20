@@ -2169,6 +2169,13 @@ copied back into short predecessors only after all of this.
   original passes win (byte after the fix; the other levers there: the loop's flag tests inline in a plain while,
   the click tests as one else-if chain).
 
+- (Registers) **A long function's allocation off in one later region (a value cached in a callee-saved register
+  through a tally loop where the original keeps another, slot order permuted by the counts that follow), every block
+  otherwise equal**: a `continue` at the top of a loop body is a goto edge (`jncc skip; jmp L`) that changes the
+  bulk split's regions; the plain form `if (s->answer != -1) { for (..) if (ids[e] == s->answer) { ..; break; } }`
+  took cm_RunCouncilSession (272 blocks) 338 -> 10 ins. The rest were zero-init orders: `for (i = 0, nh = 0; ..)`
+  where the original zeroes the counter first, and `tie = 0; e = 0; best = -1; win = -1; for (; e < n; e++)`.
+
 ### Which arm is inline and which is out of line
 
 - **`if (A || .. || F) X else if (G || ..) Y` with X laid out last (near je to it, the G tests inline), the
