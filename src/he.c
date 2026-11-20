@@ -4111,28 +4111,14 @@ int ai_EvalFest();
    the host the news 0x5fd: the text 0x1787 with the cost, then one line 0x1788 per guest (0x178f + 3 * the guest's
    verdict + a random 0 .. 2); it re-posts the event, as stage 1 does. The original clears only the group's first
    4 bytes, and without a building it tests the guests of a null table (*(int *)0x1c ..) before it looks up the
-   event's own guests: both kept
-   @deep deep s29: the news line buffer is char line[0x100] (frame 0x92c -> the original's 0x940, 14 ins /
-   29 -> 24 bytes; the unused G28REC party dropped, same code). Left as before: +0x100 the table branch
-   stores g.essen before loading festMusik (the original loads both first; the else branch, e->, does), and
-   the txt_Format(line, 0x1788, id, ..) argument registers (ours ecx/edx/eax, the original xor ecx first,
-   eax = ch, edx = &line). Tried s29: essen / musik swapped in the table branch (20), in the else (22),
-   both (28); g.leader in each arm (80); n = 0 after g.leader (= control); climb round 1 with the new
-   frame: nothing. prior: reconstructed and read in full against the original (feast event: AIGRP filled
-   from the feast table object kind 0x17 or the event's festGuests, MEM_ZERO inline clear of 4 bytes,
-   switch on stage); same instruction count 261/261, 14 differing. Left: +0x100 the table branch stores
-   essen ([ebp-0x1c]) before loading festMusik (mov cl,[esi+0x2d]) where the original loads both first
-   (order); +0x1df the txt_Format(line, 0x1788, id, ...) argument setup: ours mov ecx,[ebp+ebx*8-0x3c]; xor
-   edx,edx; mov dx,[ecx]; lea eax,line vs the original xor ecx,ecx; mov eax,[ebp+ebx*8-0x3c]; lea edx,line;
-   mov cx,[eax] (registers eax/ecx/edx permuted, same pushes); tried the arguments' term order (no change) */
+   event's own guests: both kept */
 void he_RunFeast(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AIBLD *bld = 0;
     AIOBJ *table = 0;
     AICHAR *c;
-    int k, n;
-    AIGRP g;
+    int k, n, verdict;
     char text[0x800];
     char line[0x100];
 
@@ -4149,7 +4135,9 @@ void he_RunFeast(int ev)
         return;
     }
     switch (e->stage) {
-    case 0:
+    case 0: {
+        AIGRP g;
+
         MEM_ZERO(&g, 4);
         n = 0;
         g.leader = (struct AIC4 *)&ai_CharsT[e->chr];
@@ -4173,7 +4161,8 @@ void he_RunFeast(int ev)
             && (((AICHAR *)g.leader)->kind == 6 || ((AICHAR *)g.leader)->kind == 7)) {
             txt_Format(text, 0x1787, g.cost);
             for (k = 0; k < g.n; k++) {
-                txt_Format(line, 0x1788, ((AICHAR *)g.mem[k].ch)->id, util_RandomU(3) + 0x178f + g.mem[k].d * 3);
+                verdict = util_RandomU(3) + 0x178f + g.mem[k].d * 3;   /* the guest's verdict text */
+                txt_Format(line, 0x1788, ((AICHAR *)g.mem[k].ch)->id, verdict);
                 strcat(text, line);
             }
             he_ShowNews(((AICHAR *)g.leader)->netId, -1, text, 0x20, 0x5fd, ch_EmptyName);
@@ -4181,6 +4170,7 @@ void he_RunFeast(int ev)
         e->end = ai_Time;
         cm_SendExSetHEI(-1, ev);
         return;
+    }
     case 1:
         e->end = ai_Time;
         cm_SendExSetHEI(-1, ev);
