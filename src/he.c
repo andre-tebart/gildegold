@@ -16339,9 +16339,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         k = (int)(float)amount;
         if (amount != n)
             n = amount;
-        if (k < n)
-            n = k;
-        amount = n;
+        amount = min(k, n);
         if (amount != 0) {
             s.mean = s.mean - g * 0.6f;
             s.daily[1] += amount;
