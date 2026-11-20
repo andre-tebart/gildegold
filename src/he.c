@@ -15330,22 +15330,22 @@ void he_AllocHarvest(int ev)
    the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
    Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
    tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8.
-   @deep size queue s14: right size (raw 1536 = 1536), 119 -> 67 ins: case 0 ends with break instead of
-   return (retgen single: that site alone; the other sites = control or worse: s2 131). Left: case 2's
-   message fill: the original copies m.time = ai_Time through edi (free after the memset's rep stosd)
-   interleaved with the type / reserved14 stores, ours through eax / ecx with arg[1]'s load early; and lea
-   ebx,[eax+ecx+2] operand order in the ripe search (x + size, ours size + x; both spellings one code).
-   Tried: AIMSG m in the if (ripe) block (= control), the bound operands swapped (= control); climb
-   move,swap 2 rounds: 24 ins by moving m.time after m.flags (not the original's store order, not kept).
-   prior: size queue s12: dir declared in the two scene blocks (stage 0 / 2) where vfs_FindFile fills it:
-   the frame is the original's 0x250 (the dir slot packs with the scalars), frame and slot hunks gone, 129
-   -> 119 ins; raw size 1525 vs 1536 (by dcp grade; padded 1552 vs 1568 unchanged). spot in the blocks too:
-   = control. Left: (1) the shared e->end = ai_Time / gm_AddTime / e->stage++ tail of stages 0 and 2: the
-   original keeps it in stage 2 (+0x387) and stage 0's paths push 1 / 0 and jmp down into it, ours keeps it
-   in stage 0 (+0x1d1) and stage 2 pushes 0 / 0xa and jumps up (the pair / move merger's kept copy); (2)
-   the message block (+0x4d3): the time copy through edi after the rep stosd; (3) lea ebx,[ecx+eax+2] vs
-   [eax+ecx+2] in the ripe scan (t->size + plants[i].x + 2 operand order). prior: read whole against
-   0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant / fiel... */
+   @deep s15: case 3's message fill: the original copies m.time = ai_Time through edi because eax (the
+   e->chr chain, then the b->id CSE), ecx (m.to's value, then the constant 1) and edx (i) are all live
+   across the copy in the IL; that needs the fill order type, to, nIds, fromId, time, arg[0], reserved14,
+   arg[3], arg[1], flags with fromId / arg[0] as two statements around the time copy (b->id one CSE live
+   across it). Found by a 3000-order random sample of the 10 split statements (shape, 4 ins); the subset
+   round (statements before the copy, tree order otherwise: best 30), 720 orders of the first six (31),
+   climb all ops 2 rounds (24) never gave the edi copy. Left: lea ebx,[ecx+eax+2] where the original has
+   [eax+ecx+2] in both reach tests (t->size + plants[i].x + 2): 8 spellings of the sum (operand order,
+   parentheses, 2 first / last) = control. prior: size queue s14: right size (raw 1536 = 1536), 119 -> 67
+   ins: case 0 ends with break instead of return (retgen single: that site alone; the other sites = control
+   or worse: s2 131). Left: case 2's message fill: the original copies m.time = ai_Time through edi (free
+   after the memset's rep stosd) interleaved with the type / reserved14 stores, ours through eax / ecx with
+   arg[1]'s load early; and lea ebx,[eax+ecx+2] operand order in the ripe search (x + size, ours size + x;
+   both spellings one code). Tried: AIMSG m in the if (ripe) block (= control), the bound operands swapped
+   (= control); climb move,swap 2 rounds: 24 ins by moving m.time after m.flags (not the original's store
+   order, not kept). */
 
 void he_RunHarvest(int ev)
 {
@@ -15451,15 +15451,16 @@ void he_RunHarvest(int ev)
         if (ripe != 0) {
             i = ripe->id;
             memset(&m, 0, sizeof(m));
-            m.time = ai_Time;
             m.type = 0x28;
-            m.reserved14 = 0;
-            m.arg[3] = i;
             m.to = ai_CharInts[e->chr][0];
             m.nIds = 1;
-            m.flags = 1;
-            m.arg[0] = m.fromId = b->id;
+            m.fromId = b->id;
+            m.time = ai_Time;
+            m.arg[0] = b->id;
+            m.reserved14 = 0;
+            m.arg[3] = i;
             m.arg[1] = e->harvestWorker;
+            m.flags = 1;
             cm_SendLongMessage((char *)&m);
         }
         sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
