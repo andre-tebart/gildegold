@@ -3799,11 +3799,12 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     AIBLD *b, *ca;
     AIBTYPE *bt;
     AIFIN *rec;
-    int win, i, n, role = 0, v, cnt, total, na, nb, id, k;
+    int win, i, n, role, v, cnt, total, na, nb, id, k;
     int h, row, col, px, py;
     int wait = 0;
 
     obj = 0;
+    role = 0;
     d2_CopyCaption(&ch_EmptyName);
     sv_SetStatusText(&ch_EmptyName);
     if (a->attackerBldId != -1) {
