@@ -2623,12 +2623,7 @@ void he_SpawnFounders(void)
     AICHAR *c;
 
     n7b = 0;
-    lvl = ai_Difficulty;
-    if (lvl <= 4) {
-        if (lvl <= 0)
-            lvl = 0;
-    } else
-        lvl = 4;
+    lvl = max(min(4, ai_Difficulty), 0);
     x = ai_Time.year / 4 + 1;
     gate = (float)x / ((float)x + he_FounderOdds[lvl]);
     he_TopUpCharMoney();
@@ -2655,11 +2650,11 @@ void he_SpawnFounders(void)
         int d4, d13, d10, mask, zero, pick;
         int r, n;
         /* the others' buildings of the kinds 4 / 0x13 / 0x10 */
-        d10 = cnt[0x10] - own[0x10];
         d4 = cnt[4] - own[4];
+        d10 = cnt[0x10] - own[0x10];
         d13 = cnt[0x13] - own[0x13];
-        pick = 0;
         mask = 0;
+        pick = 0;
         zero = 0;
         if (d4 < 3)
             mask |= 1;
@@ -2675,12 +2670,11 @@ void he_SpawnFounders(void)
             zero |= 4;
         if (zero != 0) {
             r = util_RandomU(3);
-            for (n = 3; n != 0; n--) {
+            for (n = 3; n != 0; n--, r = (r + 1) % 3) {
                 if (mask & (1 << r)) {
                     pick = mask = 1 << r;
                     break;
                 }
-                r = (r + 1) % 3;
             }
         } else {
             if (util_RandomF() > gate)
@@ -2985,12 +2979,11 @@ void he_SpawnFounders(void)
             if (util_RandomF() > gate)
                 return;
             r = util_RandomU(3);
-            for (n = 3; n != 0; n--) {
+            for (n = 3; n != 0; n--, r = (r + 1) % 3) {
                 if (elig & (1 << r)) {
                     elig = 1 << r;
                     break;
                 }
-                r = (r + 1) % 3;
             }
         }
         for (i = 0; i < 3; i++) {
