@@ -12464,23 +12464,7 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c);
    and running: done, unless a quick jump's party is flagged 0x10; due and not running: the player leaves it, -1);
    other boxes end when due. A click on the window: 0 carries the quick jump out (sv_SelectPanelObject on the
    building and object), 1 (or the slot confirmed) dismisses it and leaves a cutscene's party; both stop the voice,
-   unpause a help box and close the window. Stages -2 / -1 stop the voice, unpause and close it
-   @deep Read whole against the original: the four stages (jump table equal), the seven window flavours
-   with their news, the voice (strcpy of the text after its NUL), the 8 / 16 / 24 hour lifetimes, the party
-   handling of a cutscene box, the click handling as the original's if (ClickedId != 0) { 1 or confirmed:
-   dismiss; he_SlotConfirmed = 0 } else accept (compare order and block layout now the original's). Left:
-   allocation. The original keeps ev in ebp, the constant 0 in ebx (push ebx / cmp eax, ebx throughout), -1
-   in edi in stage 1 and 0x10 in bl / 1 in esi in the click paths; ours keeps ev in esi and uses
-   immediates. With esi taken ours cannot emit the rep-movs strcpy (+0x55741b: the original's repne scasb /
-   rep movsd / rep movsb, ours the byte-copy loop), which is most of the size difference; the two M8 lines
-   (+0x2d8 / +0x301, ai_Time vs ai_Time+4) are the same two AITIME copies (start / end = ai_Time) with
-   their loads paired to other registers. (references: M8 at +0x2d8: ours refers to ai_Time+0x4 (0x770ae4),
-   the original's field to 0x770ae0 (ai_Time) (and 1 more), explained: the ai_Time+0 / +4 / +8 references
-   are the field loads of the two whole-struct AITIME copies e->start = ai_Time and e->end = ai_Time,
-   aligned against each other in another register order; the same object is copied to the same places)
-   (size: 523 vs 542 instructions, explained: ours=523 original=542: the strcpy intrinsic's loop form (no
-   free esi/edi, ev in esi) is ~20 instructions shorter than the rep-movs form the original's ebp-based
-   allocation allows; the constant registers (ebx=0, edi=-1, bl=0x10) change no instruction count) */
+   unpause a help box and close the window. Stages -2 / -1 stop the voice, unpause and close it */
 void he_RunMessageBox(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -12548,7 +12532,9 @@ void he_RunMessageBox(int ev)
         if ((m->flags & 8) != 0)
             he_ActivateSlot((int *)e->slot);
         if ((m->flags & 0x10) != 0) {
-            strcpy(speak, e->text + strlen(e->text) + 1);
+            char *s = e->text + strlen(e->text) + 1;
+
+            memcpy(speak, s, strlen(s) + 1);
             m->voice = snd_QueueVoice(-7, 0, speak, 0, 0x7d0);
         }
         e->start = ai_Time;
@@ -12592,18 +12578,43 @@ void he_RunMessageBox(int ev)
             return;
         if (d2_ClickedForm != e->slot->win && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
             return;
-        if (d2_ClickedId == -1 && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
-            return;
-        if (d2_ClickedId != 0) {
-            if (d2_ClickedId == 1 || he_SlotConfirmed != 0) {
-                if ((m->flags & 4) != 0 && (p = (G28REC *)cm_PartyById(m->party)) != 0) {
-                    if ((p->flags & 0x80) != 0) {
-                        if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
-                            p->done = 1;
-                    } else if ((ai_GameFlags & 8) != 0)
-                        cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
-                    else if ((ai_GameFlags & 4) != 0)
-                        cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+        if (d2_ClickedId != -1 || (he_SlotConfirmed != 0 && he_ActiveSlot == e->slot)) {
+            if (d2_ClickedId != 0) {
+                if (d2_ClickedId == 1 || he_SlotConfirmed != 0) {
+                    if ((m->flags & 4) != 0 && (p = (G28REC *)cm_PartyById(m->party)) != 0) {
+                        if ((p->flags & 0x80) != 0) {
+                            if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
+                                p->done = 1;
+                        } else if ((ai_GameFlags & 8) != 0)
+                            cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
+                        else if ((ai_GameFlags & 4) != 0)
+                            cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+                    }
+                    if ((m->flags & 0x10) != 0 && m->voice != 0) {
+                        sb_Stop((struct SBSAMPLE *)m->voice, 0);
+                        m->voice = 0;
+                    }
+                    if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
+                        tb_Paused = 0;
+                    if (dm_L.lclick != 0) {
+                        di_GuiClick = 1;
+                        di_ClearButtons();
+                    }
+                    he_ReleaseSlot(ev);
+                    he_FreeEvent((int *)ev);
+                }
+                he_SlotConfirmed = 0;
+            } else {
+                if ((m->flags & 4) != 0) {
+                    p = (G28REC *)cm_PartyById(m->party);
+                    if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
+                        p->done = 1;
+                }
+                if ((m->flags & 2) != 0) {
+                    bld = (AIBLD *)gm_BuildQuery(1, 1, m->bld);
+                    if (bld == 0)
+                        return;
+                    sv_SelectPanelObject((unsigned char *)bld, m->obj, &m->sel);
                 }
                 if ((m->flags & 0x10) != 0 && m->voice != 0) {
                     sb_Stop((struct SBSAMPLE *)m->voice, 0);
@@ -12617,33 +12628,8 @@ void he_RunMessageBox(int ev)
                 }
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
+                return;
             }
-            he_SlotConfirmed = 0;
-        } else {
-            if ((m->flags & 4) != 0) {
-                p = (G28REC *)cm_PartyById(m->party);
-                if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
-                    p->done = 1;
-            }
-            if ((m->flags & 2) != 0) {
-                bld = (AIBLD *)gm_BuildQuery(1, 1, m->bld);
-                if (bld == 0)
-                    return;
-                sv_SelectPanelObject((unsigned char *)bld, m->obj, &m->sel);
-            }
-            if ((m->flags & 0x10) != 0 && m->voice != 0) {
-                sb_Stop((struct SBSAMPLE *)m->voice, 0);
-                m->voice = 0;
-            }
-            if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
-                tb_Paused = 0;
-            if (dm_L.lclick != 0) {
-                di_GuiClick = 1;
-                di_ClearButtons();
-            }
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-            return;
         }
         return;
     case -2:
