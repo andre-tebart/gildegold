@@ -17483,22 +17483,26 @@ void he_AllocAmbush(AIJOB *ev)
    objects in raid100, the carts' escorts armed (ai_ArmGateGuards; one cart of escort 2: kinds 2 and 1), the gang
    as raiders, in 15 minutes (stage 2). Else it waits 10 .. 14 minutes more until the event's time is up (then the
    cm ends it). Stage 2 waits for the party's slot (no party: cm slot 1), stage 3 waits (5 minutes) while the party
-   runs, then ends in an hour. Stages -2 / -1 send the gang (option 2) home and free the record
-   @deep size queue s19 (raw 2172, padded 2176 vs 2192): the ai_ArmGateGuards prototype is in reach now
-   (cm.h, unsigned char kind): ours pushes eax as the original, the movsx of the older note is gone. Read
-   at the arm loop: the original keeps n in a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in
-   edi, so VC6's equality propagation turns the second call's literal 1 into push edi inside the n == 1
-   arm; the lever is what keeps n memory-homed in the original (as gm_CreateObject's last). No lever: the
-   stage 1 cart count as its own local (cnt, either declaration order) = control. prior: Reconstructed
-   whole from the skeleton against 0x5630f0..0x56397c (654 vs 660 instructions, switch tables equal): the
-   exSlot wait, stage 0 the gang to the place ('\334berfall', mean skills[2], no member: cm slot -1), stage
-   1 the 25000 place check (d3_FindObject 0x100 / d3_PointToWorld / d3_VecEqual), he_CharacterBehavior, the
-   event 0x51 / 15 searches, the transport pick (1500 near, the level = skill * 0.023809524f value bands,
-   HETRANSPORT.ambushed, owner, the carts' objects gm_Query(0, 2, 7, 1, cart)), the chance 30 / 80 /
-   gm_AllowAll, cm_FindPartyOfKind(3, -1), the G28REC kind 3 party (flags 0xa2, variant 1 | 8 for 'STADT',
-   raid100 = the carts' objIds, ai_ArmGateGuards by escort, raidHome, raiders = ids, +15 minutes), the 10 +
-   rand 5 wait / end at until, stages 2 / 3 / -2 / -1. Tried: the n == 0 block as the else (matched its
-   out-of-line place), the escort passed for the n == 1 case (pus... */
+   runs, then ends a second later. Stages -2 / -1 send the gang (option 2) home and free the record
+   @deep s51: fixed the stage 3 meaning bug (the end clock gets gm_AddTime(&end, 0, 0, 1), one second, not
+   an hour: the original pushes 1, 0, 0). 159 -> 146 ins, size 2155 vs 2162. Kept: the level bands as if
+   (level == 0 && ..) nearby = 1; else if (level == 1) { if (value > 200 && value < 750) nearby = 1; } ..
+   else if (level == 5 && value > 700) nearby = 1; if (nearby != 0) {..}: the original's addresses; left
+   there: each nested band's sense (ours jl take / jmp nb, the original jge nb / jmp take; nested ifs, a
+   negated or, a ternary = same code). Left elsewhere: (1) the party block: the original keeps b in ebx and
+   o in its slot (the strstr test of o kept: o not known there), ours o#3 takes ebx (c2trace: b#1 prio -3
+   split, o#3 pass 5); n memory in the original's arm loop (cmp [n],1; the second ai_ArmGateGuards pushes
+   1), ours n#4 in edi (push edi); slots n / o swapped (original n +0x10, o +0x18). (2) raid100 as if /
+   else stores (the original's two stores, jmp) = right shape but rotates everything (242). (3) the take
+   block's stores sink below the gm_Query argument loads in the original (permute of the 4 statements: 153
+   best). (4) stage 1's d3_VecEqual argument one rotation step (ecx vs eax). = control: b as a block-local
+   home, climb 2 rounds (only a float escort local). prior: size queue s19 (raw 2172, padded 2176 vs 2192):
+   the ai_ArmGateGuards prototype is in reach now (cm.h, unsigned char kind): ours pushes eax as the
+   original, the movsx of the older note is gone. Read at the arm loop: the original keeps n in a slot
+   ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so VC6's equality propagation turns the second
+   call's literal 1 into push edi inside the n == 1 arm; the lever is what keeps n memory-homed in the
+   original (as gm_CreateObject's last). No lever: the stage 1 cart count as its own local (cnt, either
+   declaration order) = control. */
 void he_RunAmbush(AIJOB *ev)
 {
     HEAMBUSH *x = (HEAMBUSH *)ev;
@@ -17677,7 +17681,7 @@ void he_RunAmbush(AIJOB *ev)
             return;
         }
         ev->end = ai_Time;
-        gm_AddTime(&ev->end, 1, 0, 0);
+        gm_AddTime(&ev->end, 0, 0, 1);
         ev->stage = -1;
         return;
     case -2:
