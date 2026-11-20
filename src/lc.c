@@ -2795,7 +2795,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
             d = (float)sqrt(dz * dz + dy * dy + dx * dx);
             if (d < best) {
                 best = d;
-                sel = cur = (int)flags[i];
+                cur = sel = (int)flags[i];
             }
             d3t_PlayAnim(flags[i], "sonstiges\\sp_WIMPEL.baf", 1);
         }
@@ -2909,13 +2909,14 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                 tf.b[2] = 1;
                 tf.b[0] = 0xdd;
                 d3_SetObjectAlpha(model, model->info, tf);
-                model->stateFlags |= 2;
                 if (ok) {
+                    model->stateFlags |= 2;
                     if (color != 1) {
                         d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
                         color = 1;
                     }
                 } else {
+                    model->stateFlags |= 2;
                     if (color != 2) {
                         d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
                         color = 2;
