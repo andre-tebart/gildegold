@@ -18964,6 +18964,7 @@ void he_RunRobbery(AIJOB *ev)
     AIBLD *b, *g, *gb;
     AICHAR *c, *owner, *master, *guard;
     AIOBJ *room = 0, *stall, *store = 0, *it;
+    int n = 0;
     HEWATCH *w;
     AIJOB *patrol;
     HEFINVIEW *fin;
@@ -18973,7 +18974,6 @@ void he_RunRobbery(AIJOB *ev)
     char text[0x200];
     char line[0x100];
     int k, ok, amt;
-    int n = 0;
 
     switch (ev->stage) {
     case 0:
