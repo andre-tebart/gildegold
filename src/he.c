@@ -13621,7 +13621,7 @@ void he_RunSabotage(int ev)
             he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
             gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
             e->stage = -1;
-            return;
+            break;
         }
         e->stage = -1;
         return;
