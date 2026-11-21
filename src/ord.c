@@ -13,7 +13,6 @@
 #include "gv.h"
 #include "di_input.h"
 #include "data_views.h"
-#define d3sm_GetVertexI ((int (*)(D3SM *, int, int, int))d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's caller reads an int result and passes its own int z through (byte-matched ord_RandomCellPoint 0x4f86e5: push ecx, no 0f be c0 after the call) */
 #include "d3_types.h"
 #include "ahm.h"
 #include "ai.h"
@@ -1826,9 +1825,9 @@ void ord_SubGridAmount(int who, unsigned char kind)
         }
     }
 }
-/* 0x4f86a0, a random point inside the cell (x, y) of scene 0's height map (d3_Scenes[0].hmap; the map's cell count per side (D3SM.size, +0x20) over 8 is the span of the grid cell): d3sm_GetVertex (0x45f100) with the third argument z */
+/* 0x4f86a0, a random point inside the cell (x, y) of scene 0's height map (d3_Scenes[0].hmap; the map's cell count per side (D3SM.size, +0x20) over 8 is the span of the grid cell): d3sm_GetVertex (0x45f100) into *out; returns its found flag (the one caller, cm.c, ignores it) */
 
-int ord_RandomCellPoint(int x, int y, int z)
+char ord_RandomCellPoint(int x, int y, D3VECTOR *out)
 {
     D3SM *hmap;
     int n;
@@ -1839,7 +1838,7 @@ int ord_RandomCellPoint(int x, int y, int z)
     n = hmap->size / 8;
     a = util_Random(n) + n * x;
     b = util_Random(n) + n * y;
-    return d3sm_GetVertexI(hmap, a, b, z);
+    return d3sm_GetVertex(hmap, a, b, out);
 }
 /* 0x4f8700, picks a random object id for the character c (-1 without one): the ids of its two buildings
    (bld / bld2, when their object is present) and, up to 0x20 times, of up to 3 random buildings (3 of 4

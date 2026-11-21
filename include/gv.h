@@ -666,7 +666,7 @@ void ord_CountGridObjects(void);               /* 0x4f8360 */
 
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c */
 extern char ord_KindTable[];            /* 0x617468, 0x58 pairs of ints */
-int ord_RandomCellPoint(int x, int y, int z);  /* 0x4f86a0 */
+char ord_RandomCellPoint(int x, int y, struct D3VECTOR *out);  /* 0x4f86a0, ord.c */
 int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */
 
 void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py);  /* 0x4f8460, kind: a law record (CRIME.law; the caller cm_ExAddCrime pushes the byte unwidened) */

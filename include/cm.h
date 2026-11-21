@@ -350,7 +350,7 @@ int gv_FreeCrimeSlot();  /* 0x4f36b0 */
 int gv_EvidenceSlot();  /* 0x4f3780 */
 int gv_RetireCrime();  /* 0x4f37e0 */
 void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py);  /* 0x4f8460, gv.h (ord.c) */
-int ord_RandomCellPoint();  /* 0x4f86a0 */
+char ord_RandomCellPoint();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */
 void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */

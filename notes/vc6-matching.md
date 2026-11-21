@@ -6096,8 +6096,13 @@ the bytes no portable form gives.
   ai_DecideTorture's plan, ai_PlagueMessage's building, init_StartNewGame)**: add it to the definition, unread;
   the code is the same. Where a callback is called with (r, ctx) and tail-jumps on, both the callback and the
   tail-jump targets take the pair (cm_DuelAskPlayer, cm_DuelRoundDialog).
+- **A char function's result returned unwidened by an int-returning caller (ord_RandomCellPoint's `return
+  d3sm_GetVertex(..)`, no movsx) that also passes its own int parameter through as the pointer argument**: the
+  caller's prototype was wrong, not the callee's: `char ord_RandomCellPoint(int x, int y, D3VECTOR *out)`
+  returns the char result and takes the out pointer (its one caller, cm.c, passes `&pos` and ignores the result);
+  byte, no cast.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
-  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_GetVertex / d3sm_Pick / d3_ClipBox (char result read as
+  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick / d3_ClipBox (char result read as
   int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_MoveObj / d2_CreateWindow /
   d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
