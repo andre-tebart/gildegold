@@ -6006,7 +6006,8 @@ the bytes no portable form gives.
   redeclarations in f3init.c / io_text.c changed nothing when removed (another CRT declares them otherwise).
 - **Win32 API calls**: `#include <windows.h>`, never a hand-written `__declspec(dllimport) __stdcall` prototype.
   windows.h's min / max are the same macros as stdlib.h's; including it (at the top, after the unit's own
-  headers, with or without WIN32_LEAN_AND_MEAN / NOMINMAX) left every function of hmt.c unchanged.
+  headers, with or without WIN32_LEAN_AND_MEAN / NOMINMAX) left every function of hmt.c unchanged; likewise
+  hst.c (GetTickCount) and rmsg.c (timeGetTime: windows.h brings mmsystem.h).
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

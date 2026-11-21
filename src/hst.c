@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <windows.h>
 #include "hst.h"
 #include "txt.h"
 typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
@@ -2860,7 +2861,6 @@ extern int cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
 extern int hst_SeedPending;
 int cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
 void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
-__declspec(dllimport) unsigned long __stdcall GetTickCount(void);
 
 /* 0x4b3960, the yearly history: tells the others (message 5 with the tick count) in a network game, waits
    while hst_SeedPending, then shows the history dialog of hst_TextsOn (1: texts, 2: texts and commands) */

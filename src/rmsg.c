@@ -1960,7 +1960,6 @@ unsigned int ai_RandomSeed = 0;  /* 0x6f0730, random seed of the messages */
 
 unsigned int ai_NextRandom(unsigned int n);
 
-__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
 /* 0x4bb720, posts 0..n random messages for character id (AIMSG type 0x42, aiMsg.car = id and aiMsg.type = a random
    message type 0 .. 0x44); returns the number; reseeds ai_RandomSeed with timeGetTime() */
