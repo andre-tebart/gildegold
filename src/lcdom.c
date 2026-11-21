@@ -874,7 +874,6 @@ int d2_WinOpenPic(short x, short y, int pic, int win); void d2_SetObjFont(); voi
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 void txt_Format(char *out, int id0, ...);
 int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
-#define sv_CheckStockB ((int (*)(AIROOM *, int, int, unsigned char))sv_CheckStock)  /* @original ai_ConstructionWindow pushes the money kind as a byte (only cl loaded) */
 int gm_IsHomeType();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
@@ -6498,7 +6497,7 @@ void ai_RenovationWindow(AIBLD *bld)
                 }
                 if (bld->owner == *ai_PlayerChar) {
                     treasury = (AIROOM *)gm_ClassTreasury(bld);
-                    if (treasury == 0 || sv_CheckStockB(treasury, treasury->list, cost, ai_OwnPlayer) == 0)
+                    if (treasury == 0 || sv_CheckStock((short *)treasury, treasury->list, cost, ai_OwnPlayer) == 0)
                         continue;
                     msg.arg[1] = points;
                     cm_BeginGroup("renovieren");
@@ -6815,7 +6814,7 @@ void ai_UpgradeBuilding(AIBLD *bld)
         treasury = (AIROOM *)gm_Query((void *)first->objList, 2, 6, 0, 0x115);
         if (sv_MessageBox(text, 0x11) == 0)
             return;
-        if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
+        if (sv_CheckStock((short *)treasury, treasury->list, price, ai_OwnPlayer) != 0) {
             AIMSG msg;
 
             memset(&msg, 0, sizeof(msg));
@@ -6834,7 +6833,7 @@ void ai_UpgradeBuilding(AIBLD *bld)
         treasury = (AIROOM *)gm_ClassTreasury(bld);
         if (sv_MessageBox(text, 0x11) == 0 || treasury == 0)
             return;
-        if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
+        if (sv_CheckStock((short *)treasury, treasury->list, price, ai_OwnPlayer) != 0) {
             AIMSG msg;
 
             memset(&msg, 0, sizeof(msg));

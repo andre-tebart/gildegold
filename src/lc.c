@@ -2974,7 +2974,6 @@ void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(ch
 void txt_Format(char *out, int id0, ...);
 int gm_CharCurrency(char *c, char p); int gm_BuildingClass(int kind); int gm_MayTakeJob(int k, int c);
 
-#define sv_CheckStockB ((int (*)(AIROOM *, int, int, unsigned char))sv_CheckStock)  /* @original ai_ConstructionWindow pushes the money kind as a byte (only cl loaded) */
 
 /* 0x5909a0, the construction window "BAUEN\GEB_BAUEN" (1988 B): run by ai_RunAllows (0x40) between the campaign
    steps 0xe (0, 0, 0) / (0, 1, 0); the window's padding 0x18 and its scroll buttons; the form 1 title (text 0x17eb)
@@ -3112,7 +3111,7 @@ void ai_ConstructionWindow(void)
             }
             pointed = d2_PointerObj;
             if ((seat != 0 &&
-                 sv_CheckStockB(seat, seat->list, gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer)) ||
+                 sv_CheckStock((short *)seat, seat->list, gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer)) ||
                 (seat == 0 && sv_CheckGoodAmount(ai_Chars[ai_PlayerId],
                                                   gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer))) {
                 d2_SetViewEnabled(view, 0);
@@ -3610,7 +3609,7 @@ void ai_TechTreeWindow(int bld, int room)
                                 txt_Format(text, 0x1a, cost, bld, i * 2 + 0x9a8);
                             } else {
                                 treasury = (AIROOM *)gm_ClassTreasury(b);
-                                if (sv_CheckStockB(treasury, treasury->list, cost, ai_OwnPlayer) != 0)
+                                if (sv_CheckStock((short *)treasury, treasury->list, cost, ai_OwnPlayer) != 0)
                                     ok = 1;
                                 txt_Format(text, 0x1c, cost, bld, i * 2 + 0x9a8);
                             }
