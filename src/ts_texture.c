@@ -44,7 +44,6 @@ struct VFSDIR;
 #include "dd_vesa.h"
 #include "mem.h"
 #include "vfs.h"
-extern const char d3_ScrollPool[];
 
 /* engine globals used here */
 extern unsigned char d3_MipSkip;
@@ -57,31 +56,11 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormatsSame d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern ULONG dd_Ref;                        /* 0x146356c, result of the last Release (dd_vesa.c) */
 char ts_PathBuf[256] = {0};  /* 0x633e00 */
-/* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
-   (a float 0.0001f promoted, d3_SnapEpsilon at +0) is at 0x5ebc20 and the speed table starts in its upper
-   half at 0x5ebc24, so the two names keep their bytes only as views of one definition; the frame duration
-   table d3_AnimDiv (12 dwords at +0x40, 0x5ebc60 .. 0x5ebc90) is part of the block too */
-const char d3_ScrollPool[0x70] = {
-    /* the double 0.0001f promoted to double: d3_SnapEpsilon (+0) */
-    0x00, 0x00, 0x00, 0xe0, 0xe2, 0x36, 0x1a, 0x3f,
-    /* d3_ScrollSpeed from +0x4 (15 floats); the frame durations follow at +0x40 */
-    0x65, 0xcf, 0x0b, 0x38, 0x65, 0xcf, 0x8b, 0x38,
-    0x18, 0xb7, 0xd1, 0x38, 0x65, 0xcf, 0x0b, 0x39,
-    0x3f, 0xc3, 0x2e, 0x39, 0xf0, 0xaa, 0x74, 0x39,
-    0x51, 0x49, 0x9d, 0x39, 0xac, 0xc5, 0x27, 0x38,
-    0x18, 0xb7, 0x51, 0x38, 0x48, 0x06, 0x26, 0x3a,
-    0x18, 0xb7, 0x51, 0x3a, 0xe7, 0x67, 0x7d, 0x3a,
-    0xd7, 0xea, 0x98, 0x3a, 0x34, 0x80, 0xb7, 0x3a,
-    /* d3_AnimDiv from +0x40 (12 dwords) */
-    0x0d, 0x74, 0xda, 0x3a, 0x0f, 0x00, 0x00, 0x00,
-    0x0d, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x00, 0x00,
-    0x09, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
-    0x07, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
-    0x03, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-/* d3_ScrollSpeed: view of d3_ScrollPool (tools/data_views.py) */
-/* d3_AnimDiv: view of d3_ScrollPool (tools/data_views.py) */
+/* 0x5ebc20 holds VC6's pooled double 0.0001f (d3sm_Pick's `fabs(..) < 0.0001f`); the two tables follow it */
+const float d3_ScrollSpeed[15] = { 3.3333334e-05f, 6.666667e-05f, 0.000100000005f, 0.00013333333f, 0.00016666668f, 0.00023333333f, 0.00029999999f, 4e-05f, 5.0000002e-05f, 0.00063333334f, 0.00080000004f, 0.0009666667f, 0.0011666667f, 0.0014f, 0.0016666666f };  /* 0x5ebc28, the texture scroll speeds 1 .. 15 (ts_UpdateScroll reads
+                                                  d3_ScrollSpeed[i - 1]) */
+const unsigned int d3_AnimDiv[11] = { 15, 13, 11, 9, 8, 7, 5, 3, 2, 1, 0 };  /* 0x5ebc64, the frame durations of the animation speeds 1 .. 10
+                                                  (d3_AnimDiv[speed - 1]; the 0 ends the table) */
 
 
 void d3d_CreateTexture(DWORD size, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext, DWORD n, BYTE *pal, unsigned char mips);           /* 0x4383d0 */
@@ -773,7 +752,7 @@ char tex_Animate(D3OBJECT *obj, unsigned int time)
             tex = texs[i];
             if (tex && tex->frames > 0 && !tex->frame && tex->speed > 0 && tex->refs > 0) {
                 group = tex->group;
-                f = tex_GetFrame(tex - d3_Textures, (time / d3_AnimDiv[tex->speed] + seed) % tex->frames);
+                f = tex_GetFrame(tex - d3_Textures, (time / d3_AnimDiv[tex->speed - 1] + seed) % tex->frames);
                 for (k = ntris, tri = ((TSMESH *)obj->info)->tris; k > 0; k--, tri++) {
                     if (tri->tex && tri->tex->group == group)
                         tri->tex = f;
@@ -795,7 +774,7 @@ void ts_UpdateScroll(unsigned long time)
         f = (float)dt;
         ts_LastTime = time;
         for (i = 1; i < 16; i++) {
-            s = f * d3_ScrollSpeed[i];
+            s = f * d3_ScrollSpeed[i - 1];
             ts_ScrollV[i] += s;
             if (ts_ScrollV[i] > 1.0f)
                 ts_ScrollV[i] -= 1.0f;
@@ -804,7 +783,7 @@ void ts_UpdateScroll(unsigned long time)
                 ts_ScrollU[i] -= 1.0f;
         }
         for (i = 1; i < 16; i++) {
-            s = f * d3_ScrollSpeed[i];
+            s = f * d3_ScrollSpeed[i - 1];
             ts_ScrollV[i + 16] -= s;
             if (ts_ScrollV[i + 16] < 0.0f)
                 ts_ScrollV[i + 16] += 1.0f;

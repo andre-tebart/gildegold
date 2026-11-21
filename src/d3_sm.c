@@ -17,7 +17,6 @@
 #include "d3s.h"
 #include "mem.h"
 #include "ts_texture.h"
-extern const char d3_ScrollPool[];
 
 
 void d3_TransformMeshes(void);                                                                /* 0x43d840 */
@@ -560,7 +559,7 @@ char d3sm_Pick(D3SM *h, int sx, int sy, int *px, int *pz)
     d.x /= h->cell.x;
     d.y /= h->cell.y;
     d.z /= h->cell.z;
-    if (fabs(d.x) < d3_SnapEpsilon && fabs(d.z) < d3_SnapEpsilon) {
+    if (fabs(d.x) < 0.0001f && fabs(d.z) < 0.0001f) {
         ix = (int)p.x;
         iz = (int)p.z;
         if (d.y > 0.0f && h->data[h->size * iz + ix] < p.y)

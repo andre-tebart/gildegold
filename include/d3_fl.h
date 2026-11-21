@@ -330,7 +330,7 @@ extern struct VFSDIR *vfs_Root;                      /* 0x6333fc, vfs.c */
 D3FLMAP *d3fl_LoadMap(D3FLDESC *desc);                                                  /* 0x442390 */
 struct TSTEXTURE *tex_GetFrame(int index, unsigned char frame);                         /* 0x460b00, ts_texture.c (d3_fl.c reads it through tex_GetFrameF) */
 #ifndef DATA_VIEWS_H
-extern unsigned int d3_AnimDiv[];           /* 0x5ebc60, ts_texture.c */
+extern const unsigned int d3_AnimDiv[11];   /* 0x5ebc64, ts_texture.c: indexed by speed - 1 */
 #endif
 extern D3VECTOR4 d3fl_LightCol;             /* 0xfbb860, color per light-map unit */
 extern D3VECTOR4 d3fl_Ambient;              /* 0xfbbd20 */

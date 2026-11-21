@@ -57,11 +57,6 @@
 /* cm_SaveAcks */
 #define ai_Unk76fa24             (*(char (*)[60])((char *)&cm_SaveAcks + 0x4))  /* 0x76fa24 */
 
-/* d3_ScrollPool */
-#define d3_ScrollSpeed           (*(float (*)[15])((char *)&d3_ScrollPool + 0x4))  /* 0x5ebc24 */
-#define d3_AnimDiv               (*(unsigned int (*)[12])((char *)&d3_ScrollPool + 0x40))  /* 0x5ebc60 */
-#define d3_SnapEpsilon           (*(double *)((char *)&d3_ScrollPool + 0x0))  /* 0x5ebc20 */
-
 /* d3_DefaultD3DConfig */
 #define d3if_SceneState0           (*(int *)((char *)&d3_DefaultD3DConfig + 0xc))  /* 0x5fb5c0 */
 
