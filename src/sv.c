@@ -947,7 +947,6 @@ void sv_DestroyScreen(void)
 }
 
 extern struct AIGOOD *ai_Goods;              /* 0x91aaf0 */
-#define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 /* 0x479150, with d2.h's prototype (the 9 pushes of 0x522b38 agree: push 1, d2_ScreenSurf, 0x5b, d2_ScreenW - 0x6e, view, h, w, 0, 0) */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
@@ -5012,9 +5011,9 @@ void sv_HandleSelectionMouse(void)
             char name[0x80];
 
             t = -1;
-            sprintf(name, "dummy_%s", sv_ClickedObjectT->name + 8);
-            if (d3_FindObject((int)sv_ClickedObjectT, 0x100, 0, name) == 0)
-                strcpy(name, sv_ClickedObjectT->name);
+            sprintf(name, "dummy_%s", ((D3OBJECT *)ai_ClickedObject)->name + 8);
+            if (d3_FindObject(ai_ClickedObject, 0x100, 0, name) == 0)
+                strcpy(name, ((D3OBJECT *)ai_ClickedObject)->name);
             for (j = 0; j < 0x20; j++) {
                 c = ai_SceneChars[j];
                 b = 0;
