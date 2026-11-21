@@ -2099,7 +2099,7 @@ exe	0x004be3b0	rt_ChooseTabGood	rt	byte	readable
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
 exe	0x004be930	rt_InitControls	rt	byte	readable		
-exe	0x004be940	rt_EditPointDialog	rt	shape	readable	deep	
+exe	0x004be940	rt_EditPointDialog	rt	byte	readable		
 exe	0x004bf080	rt_CartSettingsDialog	rt	byte	readable		
 exe	0x004bf360	rt_SetMarkPic	rt	byte	readable		
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable		
