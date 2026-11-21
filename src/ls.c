@@ -576,7 +576,7 @@ int ls_WriteCharacters(int f)
 
         tmp = -1;
         if (ai_KindBChars[i] != 0) {
-            LS_W(&((AICHAR *)ai_KindBChars[i])->netId, 4)
+            LS_W(&ai_KindBChars[i]->netId, 4)
         } else {
             LS_W(&tmp, 4)
         }
@@ -2420,7 +2420,7 @@ int ls_FixupAfterLoad(void)
     ai_MarketBuilding = (AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ls_Version >= 0x10017) {
         for (i = 0; i < 8; i++)
-            ai_KindBChars[i] = (char *)gm_FindChar((int)ai_KindBChars[i]);
+            ai_KindBChars[i] = (AICHAR *)gm_FindChar((int)ai_KindBChars[i]);
     }
     for (i = 0; i < 768; i++) {
         c = &ai_Chars[i];

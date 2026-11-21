@@ -341,7 +341,7 @@ int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
-char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
+AICHAR *ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind 0xb */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the four player slots */
 extern int cm_NetFlags;  /* 0x6f2594 */
@@ -2733,7 +2733,7 @@ void init_LocalData(void)
     n = 0;
     for (i = 0; i < 0x300; i++)
         if (ai_Chars[i].kind == 0xb)
-            ai_KindBChars[n++] = (char *)&ai_Chars[i];
+            ai_KindBChars[n++] = &ai_Chars[i];
     if (ai_JudgeCatholic == 0)
         err_Message("init_LocalData(): gm_RichterKatholisch==NULL");
     if (ai_JudgeProtestant == 0)
