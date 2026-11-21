@@ -2546,13 +2546,13 @@ void ai_HelperBook(AIBLD *bld, char *model)
     AICHARREC *c;
     AIJOB *job;
 
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     nWorkers = 0;
-    dismissButton = -1;
     sel = -1;
+    dismissButton = -1;
     radio = -1;
     fireMasterButton = -1;
     hireMasterButton = -1;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     book = sv_OpenBook(model, "Buch", 4, "Buch\\Soeldnerbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
                        "Buch\\Personalbuch_4");
     sv_UpdateBook(book);
@@ -2592,10 +2592,10 @@ void ai_HelperBook(AIBLD *bld, char *model)
             break;
         r = j / 2;
         if (r >= 2) {
+            j = 0;
+            r = 0;
             pg++;
             vp++;
-            r = 0;
-            j = 0;
             if (pg > 3)
                 break;
         }
@@ -2611,14 +2611,12 @@ void ai_HelperBook(AIBLD *bld, char *model)
             radio = d2_CreateRadioGroup(1, pic);
         else
             d2_RadioAdd(radio, pic);
-        px -= 0x36;
-        t = d2_CreateWinText(px, y - 0x11, txt_NoCharacter, d2_LastWindow);
+        t = d2_CreateWinText(px - 0x36, y - 0x11, txt_NoCharacter, d2_LastWindow);
         rows[i].text = t;
-        y += 0x44;
         d2_Objs[pic].interactive = 1;
         d2_Objs[t].w = 0xa0;
         d2_Objs[t].centred = 1;
-        t = d2_CreateWinText(px, y, ch_EmptyName, d2_LastWindow);
+        t = d2_CreateWinText(px - 0x36, y + 0x44, ch_EmptyName, d2_LastWindow);
         rows[i].name = t;
         rows[i].ch = 0;
         d2_Objs[t].w = 0xa0;
