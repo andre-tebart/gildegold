@@ -3956,6 +3956,17 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### How the back end orders instructions
 
+- **A `volatile` view of a global moves the whole block's schedule**: menu.h declares `gypsyFilter` `const
+  volatile unsigned __int64`; its two loads behind an AMOUNTCFG memset keep the memset chain one height step
+  above the zero register's `xor` and an unrelated struct-copy store, which then sink behind `mov ecx,0x14 /
+  xor eax,eax / lea edi`. Read through the plain view `gypsyFilterValue` (`*(unsigned __int64 *)&gypsyFilter`)
+  the original's order comes back (ai_FeastWindow byte; flip.py hit the deleted ai_AmountMenu(&cfg) call, the
+  next probe was the volatile). Suspect it in every gypsy window whose only hunk is the filter loads against
+  the memset (ai_SermonWindow's note describes exactly that).
+- **Zeros as declaration initializers do not join the zero candidate**: `int done = 0; AICHARREC *guests[4] =
+  {0, 0, 0, 0};` (not `{0}`: that is a memset) took ai_FeastWindow's 0 piece below a pointer parameter's
+  priority, so 0 got ebp and the parameter edi as in the original (58 -> 4 ins).
+
 - **The scheduler's priority rule** (read from the pass, checked against dumps): per block VC6 builds a dependency
   graph (register def/use, memory overlap, flags; calls and jumps are barriers) and emits the ready instruction
   with the highest priority. priority = height * 8192, + 65536 for a memory load; height = longest latency path
