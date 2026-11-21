@@ -4582,20 +4582,7 @@ int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
    counts into the player record (+0x50) and the running order, or posts the order message 0x12 (n = 1: the
    first slot, ch = 1: the second); the second button buys the capacity upgrade (0x3200, message 0x13) after
    the confirmation 0x113. The buttons grey out at the limits; at capacity 3 with both slots full the text
-   0x112 replaces them. The tutorial steps 0x1d frame the window
-   @deep size queue s16: the three slot / capacity message fills in one order, type, to, fromId, flags, n,
-   (ch,) time, car (a 3000-sample permutation of msg2's fill, then the same order for msg1 / msg3, which
-   climb.py's move round pointed at): 200 -> 117 ins; raw 2693 -> 2695 (padded 2704 vs the original's 2688:
-   the size moves away, the 64 slot hunks of the frame are left). prior: Reconstructed whole from the stub
-   against the original (759 instructions read end to end): the store lookup (0x2a / 0x116 via the list or
-   the room object 2), the window, the two slot-order events 0x12 and the capacity event 0x13, the level
-   texts 0xfe..0x107, the slot purchase through ai_NewStorageSlotWindow (0x1f40, the cm_GetSlotState wait,
-   the player record +0x50, message 0x12 n=1 / ch=1), the capacity upgrade (0x3200, confirmation 0x113,
-   message 0x13), the button limits and the 0x112 replacement, the goods lists. 765 vs 759 instructions;
-   frame equal (0x724: btns[8], text[0x400]). Left, allocation and layout only: the first event search
-   keeps its cursor in eax and copies it to edi / [esp+0x34] after the loop in the original, ours walks it
-   in edi with a store per step (0x5b2834); the three message builds store the same fields in another
-   schedule (0x5b2b33, 0x5b2c96, 0x5b2e61); the origi... */
+   0x112 replaces them. The tutorial steps 0x1d frame the window */
 
 void ai_StorageWindow(AIBLD *bld, int list)
 {
@@ -4651,9 +4638,10 @@ void ai_StorageWindow(AIBLD *bld, int list)
              ev = (AIJOB *)he_NextEvent())
             ;
         slots1 = ev;
-        for (slots2 = (AIJOB *)he_FindEvent(2, 0, 0x12, 3, bld->id); slots2 != 0 && slots2->slotOrder1d == 0;
-             slots2 = (AIJOB *)he_NextEvent())
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0x12, 3, bld->id); ev != 0 && ev->slotOrder1d == 0;
+             ev = (AIJOB *)he_NextEvent())
             ;
+        slots2 = ev;
         upgrade = (AIJOB *)he_FindEvent(2, 0, 0x13, 3, bld->id);
         d2_SetForm(win, 2);
         if (store->id != 0x116) {
@@ -4799,15 +4787,16 @@ void ai_StorageWindow(AIBLD *bld, int list)
             if (btn1 != -1) {
                 d2_Objs[btn1].greyed = 1;
                 d2_Objs[btn1].clickDisabled = 1;
-                if (upgrade == 0)
-                    d2_SetCaption(btn1, txt_Ptrs[0xfc]);
-                else
-                    d2_SetCaption(btn1, txt_Ptrs[0xfd]);
             }
         } else if (btn1 != -1) {
             d2_Objs[btn1].greyed = 0;
             d2_Objs[btn1].clickDisabled = 0;
-            d2_SetCaption(btn1, txt_Ptrs[0xfc]);
+        }
+        if (btn1 != -1) {
+            if (upgrade != 0)
+                d2_SetCaption(btn1, txt_Ptrs[0xfd]);
+            else
+                d2_SetCaption(btn1, txt_Ptrs[0xfc]);
         }
         if (store->count >= 3 && store->lvl1c >= lim1 && store->lvl1d >= lim2) {
             if (btn1 != -1)
