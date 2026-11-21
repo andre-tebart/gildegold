@@ -33,7 +33,7 @@ int gm_ClockSeason(AITIME *c);                                                  
 struct CHARACTER *ch_Create(char *name, struct D3VECTOR *pos);                                         /* 0x403390, ch.c: CHARACTER *, D3VECTOR * */
 struct CHACTION *ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);                            /* 0x40b2f0, ch.c */
 int ch_Delete(struct CHARACTER *ch);                                                         /* 0x4028a0, ch.c: CHARACTER * */
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20, d3.h: D3 types */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20, d3.h: D3 types */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);                                  /* 0x453e80, d3.h: D3VECTOR */
 unsigned char * gm_BuildQuery(int n, ...);                                                  /* 0x501190, ai.h: AIBLD * */
 unsigned char * gm_BuildNext(void);                                                        /* 0x501030 */

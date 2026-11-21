@@ -25,7 +25,6 @@
 #include "d3_tools.h"
 #include "ts_texture.h"
 #include "d3_pose.h"
-#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (d3_pose.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
 /* 0x455630, empties the default scene's particle list (the head d3_ParHead becomes the end marker d3_ParEnd,
    the tail d3_ParTail the head node d3if_ParList) and sets the two quad UV tables */
@@ -212,7 +211,7 @@ void par_Draw(D3PARTSYS *ps)
     if (ps->callback && ps->callback(ps, d3_Time)) {
         d3_TriCount += ps->count * 2;
         d3_VertCount += ps->count * 4;
-        d3_WorldMatrixD(PAR_OBJ(ps), (PAR_OBJ(ps)->state & 0x80) ? 0 : d3_Camera, 0, &m);
+        d3_WorldMatrix(PAR_OBJ(ps), (PAR_OBJ(ps)->state & 0x80) ? 0 : d3_Camera, 0, &m);
         for (i = 0; i < ps->count; i++) {
             p = &ps->particles[i];
             vis = 0;

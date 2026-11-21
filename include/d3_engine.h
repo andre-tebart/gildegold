@@ -7,7 +7,6 @@ struct D3FLMAP;                     /* the tag (d3_fl.h spells it out; MS compat
 #define D3_ENGINE_H
 #include <windows.h>                  /* HWND (d3_Init) */
 #include "d3.h"                       /* the D3 records and typedefs this header names */
-struct XOBJ;
 struct D3SOUND;
 
 typedef struct D3SCENELISTS {       /* view of the D3SCENE fields used by the object walks */
@@ -213,7 +212,7 @@ extern unsigned int d3_SceneFlags;           /* 0x63349c */
 
 void d3s_ResetShadows(D3OBJECT *obj);       /* 0x45ce00, d3s.c, d3_ForEachObject2 callback */
 void d3s_FreeShadows(D3OBJECT *obj);        /* 0x45ccd0, d3s.c, d3_ForEachObject2 callback */
-void d3_WorldMatrix(struct XOBJ *obj, struct XOBJ *ref, char orientOnly, D3MATRIX *out);   /* 0x458da0 */
+void d3_WorldMatrix(struct D3OBJECT *obj, struct D3OBJECT *ref, char orientOnly, D3MATRIX *out);   /* 0x458da0 */
 void d3fl_SetMips(char a);               /* 0x43f930, d3_fl.c (takes char; the 0x43c4e0 caller pushes an int) */
 void d3fl_SetDetail(unsigned int n); /* 0x43f8a0, d3_fl.c (takes unsigned int; the 0x43c4e0 caller pushes an int) */
 void tex_ReloadAll(char keep, void (*cb)(int, int, int));       /* 0x461090, ts_texture.c: void tex_ReloadAll(char, void (*)(int, int, int)) */
@@ -356,7 +355,7 @@ void d3_SetupFrustum(void);                                                     
 
 void d3_UpdateWorldMatrix(struct D3OBJECT *obj, struct D3OBJECT *camera, char force);                       /* 0x439870 */
 
-void d3_PointToRef(struct XOBJ *obj, struct XOBJ *ref, float *in, float *out);             /* 0x458b20 */
+void d3_PointToRef(struct D3OBJECT *obj, struct D3OBJECT *ref, struct D3VECTOR *in, struct D3VECTOR *out);             /* 0x458b20 */
 
 typedef struct D3TEXMAP {           /* d3_SetObjectAlpha: a texture and its replacement */
     D3TEXTURE *from;

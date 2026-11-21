@@ -833,7 +833,7 @@ int ai_OpenTransport(int rec);                                   /* 0x5af1a0, be
 char *strstr(); unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void);
 struct D3OBJECT;
 struct D3VECTOR;
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (d3_pose.c) */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (d3_pose.c) */
 unsigned char *gm_BuildQuery(int n, ...);                  /* 0x501190 (f3gm.c) */
 unsigned char *gm_BuildNext(void);                         /* 0x501030 (f3gm.c) */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); /* 0x453e80 (d3_vec.c) */
@@ -854,9 +854,8 @@ char d3_ForEachObject(struct D3SCENE *scene, struct D3OBJECT *obj, unsigned int 
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                /* 0x447300 (d3_interface.c) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0 (d3_interface.c) */
 int d3t_DropObject(); 
-struct XOBJ;
-void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (d3_pose.c) */
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (d3_pose.c) */
+void d3_LocalToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);  /* 0x458c10 (d3_pose.c) */
+void d3_DirToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);    /* 0x458810 (d3_pose.c) */
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
 extern const struct D3VECTOR4 d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); int gm_MayTakeJob(int k, int c);

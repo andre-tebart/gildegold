@@ -5036,7 +5036,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
             } else {
                 float radius, key;
 
-                d3_DirToWorld((struct XOBJ *)b->object, (float *)&d3_ZAxis, (float *)&dir);
+                d3_DirToWorld((struct D3OBJECT *)b->object, &d3_ZAxis, &dir);
                 rot.x = 0;
                 rot.y = 0;
                 rot.z = 0;

@@ -4,7 +4,6 @@
 #define UNK_43EAB0_H
 #include "d3_engine.h"                /* D3CLIP / D3SRCPOLY / D3PTRI */
 #include "d3.h"                       /* the D3 records and typedefs this header names */
-struct XOBJ;
 
 typedef struct D3FLTEX {            /* view of the texture slot (TSTEXTURE in ts_texture.h) */
     char name[0x40];                /* "*fltx1/2/4" for cache textures */

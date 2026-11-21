@@ -31,7 +31,6 @@
 #include "cm.h"
 #define tex_GetFrameF ((D3FLTEX *(*)(int, unsigned char))tex_GetFrame)  /* 0x460b00 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
 #define tex_FindF ((D3FLTEX *(*)(char *))tex_Find)  /* 0x45f980 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
-#define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (d3_pose.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 extern const char d3_ScrollPool[];
 
 /* 0xfe79fc / 0xfe7a00 / 0xfe7a04 are d3d_UsedTexFormat.pf2 (+0x2c) + 0x10 / 0x14 / 0x18. */
@@ -1381,7 +1380,7 @@ void d3fl_MakeLight(D3FLMAP *map)
                 map->ambient[0] = D3_L(ctx.light)->color.x * (1.0f / 255.0f);
                 map->ambient[1] = D3_L(ctx.light)->color.y * (1.0f / 255.0f);
                 map->ambient[2] = D3_L(ctx.light)->color.z * (1.0f / 255.0f);
-                d3_DirToWorldD(ctx.light, &d3_ZAxis, (D3VECTOR *)&dir);
+                d3_DirToWorld(ctx.light, &d3_ZAxis, (D3VECTOR *)&dir);
                 lp = map->light;
                 h = map->height;
                 kx = (map->negScale) * map->hscale * 2.0f;

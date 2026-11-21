@@ -1,7 +1,6 @@
 struct D3ANIMFRAME;
 struct D3VECTOR4;
 struct D3SURF;
-struct XOBJ;
 /* d3_light.c -- dynamic lighting of mesh objects ("d3_light:cache", "d3_light:rlight_object"), original file
    name unknown: 0x451e80..0x4538a0. One view of the objects for the whole TU: D3OBJECT with D3_L() for the
    fields d3.h does not name (rounds 11 mesh / d3x had two, unified in round 12 by worker geo). Names are ours. */

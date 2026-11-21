@@ -801,7 +801,7 @@ typedef struct TSTEXSIZE {          /* the parts of a texture slot (ts_texture.h
 
 #define d3s_ShadowPolyB ((void (*)(D3SPOLY *, unsigned char, int))d3s_ShadowPoly)  /* @original d3s_Project pushes the byte bpp unextended; d3s_ShadowPoly reads the whole slot as its first top index */
 
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                          /* 0x458810 */
+void d3_DirToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                          /* 0x458810 */
 unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                                           /* 0x439650 */
 char dd_FillSurface(LPDIRECTDRAWSURFACE4 surf, RECT *rect, DWORD color);                         /* 0x41e0a0 */
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                               /* 0x41de30 */

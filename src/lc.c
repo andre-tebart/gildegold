@@ -2264,7 +2264,7 @@ int ai_BuildingName(int id, char *out)
 
 struct D3OBJECT;
 struct D3VECTOR;
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (d3_pose.c) */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (d3_pose.c) */
 unsigned char *gm_BuildQuery(int n, ...);                  /* 0x501190 (f3gm.c) */
 unsigned char *gm_BuildNext(void);                         /* 0x501030 (f3gm.c) */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); /* 0x453e80 (d3_vec.c) */
@@ -2540,9 +2540,8 @@ int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, AIBLD *b)
 
 int d3t_DropObject(); 
 
-struct XOBJ;
-void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (d3_pose.c) */
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (d3_pose.c) */
+void d3_LocalToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);  /* 0x458c10 (d3_pose.c) */
+void d3_DirToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);    /* 0x458810 (d3_pose.c) */
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
 extern const struct D3VECTOR4 d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 
@@ -2559,7 +2558,7 @@ void ai_ObjectPosition(void *out, int plot)
     v[0] = 0;
     v[1] = 0;
     v[2] = 0;
-    d3_LocalToWorld((struct XOBJ *)plot, v, (float *)out);
+    d3_LocalToWorld((struct D3OBJECT *)plot, (struct D3VECTOR *)v, (struct D3VECTOR *)out);
     d3if_SelectScene(scene, 1);
 }
 /* 0x58fd90, the rotation angle of a plot record (123 B): d3if_SelectScene (0, 1) brackets the work; out[0..2] is
@@ -2580,7 +2579,7 @@ void ai_ObjectAngle(void *out_, int plot)
     out[0] = 0;
     out[1] = 0;
     out[2] = 0;
-    d3_DirToWorld((struct XOBJ *)plot, (float *)&d3_ZAxis, v);
+    d3_DirToWorld((struct D3OBJECT *)plot, &d3_ZAxis, (struct D3VECTOR *)v);
     out[1] = d3_VecAngle((struct D3VECTOR *)&d3_ZAxis, (struct D3VECTOR *)v);
     d3if_SelectScene(scene, 1);
 }

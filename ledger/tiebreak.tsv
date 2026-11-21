@@ -1047,7 +1047,7 @@ exe	0x00458b20	d3_PointToRef	unk_458810	c18afc63a5e3cdfa	no	byte	control=byte p1
 exe	0x00458c10	d3_LocalToWorld	unk_458810	7b9436ea32b62205	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00458ce0	d3_MatToWorld	unk_458810	aac71bbcbd9c728e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00458da0	d3_WorldMatrix	unk_458810	e9205fe1e72cbb58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00458e70	d3_EnvMapCoords	d3_vtx	aebe2fda3ddcecc8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b7de88da212393b9
+exe	0x00458e70	d3_EnvMapCoords	d3_vtx	60675f1d464b7ca4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f60881c6d2adee40
 exe	0x004591a0	d3_AnimBlendWeights	unk_4591a0	f1a14e930c55c886	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00459300	d3_TransformVerts	d3_vtx	09bc0972dca9c589	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x004598d0	d3_TransformNormals	unk_4591a0	88aafe0ff71f0e6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

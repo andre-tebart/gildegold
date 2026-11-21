@@ -5,7 +5,6 @@ struct SBBANK;
 struct D3VECTOR;
 struct D3TERRAIN;
 struct D3SM;
-struct XOBJ;
 struct D3SURF;
 /* ch.c -- characters ("ch_SetVisible(): invalid character", "ch_Create:Too many characters!"),
    original file name unknown. Starts at 0x402140 and continues past 0x4028a0. Field names unkXXX are
@@ -140,7 +139,7 @@ char d3_InflateScene(unsigned int flags);                                       
 void d3_SetObject078(D3OBJECT *obj, D3VECTOR *v);                                       /* 0x43b820 */
 char d3if_Show(struct D3OBJECT *obj, char show);                                               /* 0x4471b0 */
 char d3if_ShowTree(D3OBJECT *obj, char show);                                             /* 0x447300 */
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                           /* 0x458810 */
+void d3_DirToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                           /* 0x458810 */
 float d3_VecAngle(D3VECTOR *a, D3VECTOR *b);                                            /* 0x4539f0 */
 extern const D3VECTOR4 d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                          /* 0x45eeb0 */

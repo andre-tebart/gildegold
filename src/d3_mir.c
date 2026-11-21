@@ -21,7 +21,6 @@
 #include "ts_texture.h"
 #include "d3_pose.h"
 #define d3_TriNormalM ((void (*)(D3VECTOR *, D3PVERT *, D3PVERT *, D3VECTOR4 *))d3_TriNormal)  /* 0x454700 (d3_vec.h: D3VECTOR4 * x4): this unit passes the origin and its polygon vertices */
-#define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (d3_pose.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 
 #define D3M_SURF(o) ((D3MIRSURF *)(o)->info)
 #define D3M_PTS(mesh) ((mesh)->mirrorPoints)                     /* "d3_mir:MirroredPoints" */
@@ -469,7 +468,7 @@ found:
                 m->planes = 0;
             }
             if (m->flags.visible) {
-                d3_DirToRefD(obj, d3_Camera, &((D3SRCPOLY *)m->tri->src)->normal, &m->plane);
+                d3_DirToRef(obj, d3_Camera, &((D3SRCPOLY *)m->tri->src)->normal, &m->plane);
                 m->plane.w = m->plane.x * m->tri->v[0]->x + m->plane.y * m->tri->v[0]->y + m->plane.z * m->tri->v[0]->z;
                 m->planes = d3_MirCreatePlanes(m->obj, m->tex);
             }

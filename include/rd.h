@@ -3,7 +3,6 @@ struct PMAP;
 struct D3SCENE;
 struct D3TERRAIN;
 struct D3SM;
-struct XOBJ;
 /* Declarations of rd.c (0x4bc2e0..): places for animals (door dummies, free cells, dummy lookup), the
    vegetation map, roads. Names are ours. */
 #ifndef RD_H

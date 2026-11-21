@@ -1,4 +1,3 @@
-struct XOBJ;
 /* d3 engine types and functions as far as reconstructed.
    Field names unkXXX are byte offsets whose meaning is not known yet; pads keep the offsets exact.
    Function names are ours unless noted; the address is the function's location in GildeGold.exe. */
@@ -77,7 +76,8 @@ struct D3OBJECT {
                                        default view (sv_BorderCameraView) */
         D3VECTOR lightColor;        /* a light's colour (D3LOBJ.color, d3_light.h) */
     };
-    char pad068[0x10];
+    char pad068[0x4];
+    D3VECTOR pivot;                 /* 0x6c, the point the object's rotation turns about (d3_pose.c) */
     D3VECTOR posOffset;               /* 0x78 */
     D3VECTOR rotation;                /* 0x84, rotation angles in degrees; d3_SetObjectRot writes them */
     union {
@@ -172,8 +172,8 @@ typedef struct D3OBJINFO {
 
 void d3_TransformSurf(D3OBJECT *obj);                                                       /* 0x43d7c0 */
 char d3_RelightObject(struct D3OBJECT *obj);                                                       /* 0x453280 */
-void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);                             /* 0x458c10 */
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                          /* 0x458a20, writes out and the angles after it */
+void d3_LocalToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                             /* 0x458c10 */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                          /* 0x458a20, writes out and the angles after it */
 
 #define D3_MAX_SCENES 64
 

@@ -1726,7 +1726,7 @@ CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
         dir[0] = 0;
         dir[1] = 0.0f;
         dir[2] = 0;
-        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, loc);
+        d3_DirToWorld(o, &d3_ZAxis, (D3VECTOR *)loc);
         dir[1] = d3_VecAngle((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)loc);
         d3_SetObjectRot(ch->obj, (D3VECTOR *)dir);
         ch_PlaceOnGround(ch, 0);

@@ -65,8 +65,6 @@
 #include "bio.h"
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 #define d3_MirBeginFrameE ((void (*)(D3OBJECT *, D3OBJECT **))d3_MirBeginFrame)  /* 0x4554b0 (d3_mir.h: D3MIRROR *): this unit passes the mirror as its D3OBJECT ** view */
-#define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (d3_pose.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
-#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (d3_pose.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 /* The stock list head lives inside its 0xfc2e00 head sentinel (the original's +0x1fc relationship). As a
    separate COMMON pointer the linker would not keep it adjacent, so the loader would link the first object
    into one address while the readers start from another. */
@@ -458,7 +456,7 @@ void d3_UpdateWorldMatrix(D3OBJECT *obj, D3OBJECT *camera, char force)
     D3MATRIX m;
 
     if (!(obj->stateFlags & 0x80) || force) {
-        d3_WorldMatrixD(obj, 0, 0, D3_MESH(obj)->worldMatrix);
+        d3_WorldMatrix(obj, 0, 0, D3_MESH(obj)->worldMatrix);
         obj->stateFlags |= 0x80;
     }
     if (!(obj->flags & 1) || force || D3_MESH(obj)->camera != camera) {
@@ -2179,7 +2177,7 @@ void d3_TransformSurf(D3OBJECT *obj)
     if (info) {
         if (info != obj->info)
             obj->info = info;
-        d3_WorldMatrixD(obj, (obj->state & 0x80) ? 0 : d3_Camera, 0, buf);
+        d3_WorldMatrix(obj, (obj->state & 0x80) ? 0 : d3_Camera, 0, buf);
         D3_OPS(info)->Transform(obj, info, buf);
         obj->state |= 4;
     }
@@ -2204,7 +2202,7 @@ char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radi
 
     if (obj && (center || radius)) {
         if (!obj->type) {
-            d3_PointToRefD(obj, camera, &obj->pos, &c);
+            d3_PointToRef(obj, camera, &obj->pos, &c);
             r = D3_X(obj)->radius;
             ok = 1;
         } else {

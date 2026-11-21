@@ -48,8 +48,6 @@
 #include "ts_texture.h"
 #include "d3_pose.h"
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
-#define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (d3_pose.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
-#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (d3_pose.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
 void d3fl_FreeMap(D3FLMAP *map);  /* 0x43ff90, d3_fl.c; declared here because a d3_fl.h prototype perturbs d3_tools.c's d3t_UpdateSunRays */
 int d3fl_Prerender(D3FLMAP *map);  /* 0x446180, d3_fl.c; declared here for the same reason (a d3_fl.h prototype perturbs d3_tools.c) */
@@ -811,7 +809,7 @@ char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r)
 
     if (r && obj) {
         if (obj->type == 0) {
-            d3_PointToRefD(obj, d3_Camera, &obj->pos, &v);
+            d3_PointToRef(obj, d3_Camera, &obj->pos, &v);
             f = 1.0f / v.z;
             x = d3_ScaleX * v.x * f + d3_CenterX;
             y = d3_ScaleY * v.y * f + d3_CenterY;
@@ -1246,12 +1244,12 @@ void d3_WorldToParent(D3OBJECT *obj, float *pos, D3MATRIX *rot, D3VECTOR *outpos
         d3_MatToAngles((D3VECTOR4 *)rot, (D3VECTOR4 *)outrot);
         return;
     }
-    d3_WorldMatrixD(parent, 0, 0, &m);
+    d3_WorldMatrix(parent, 0, 0, &m);
     d3_MatInverse(&m, &w);
     outpos->x = w._31 * pos[2] + w._11 * pos[0] + w._21 * pos[1] + w._41;
     outpos->y = w._32 * pos[2] + w._12 * pos[0] + w._22 * pos[1] + w._42;
     outpos->z = w._33 * pos[2] + w._13 * pos[0] + w._23 * pos[1] + w._43;
-    d3_WorldMatrixD(parent, 0, 1, &m);
+    d3_WorldMatrix(parent, 0, 1, &m);
     d3_MatTranspose(&m, &w);
     d3_MatMul43(rot, &w, &m);
     d3_MatToAngles((D3VECTOR4 *)&m, (D3VECTOR4 *)outrot);
@@ -1298,12 +1296,12 @@ char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent)
         for (i = 0; i < 7; i++) {
             d3_PointToWorld(obj, &D3O_LIGHT(obj)->k[i].pos, (D3VECTOR *)&kpos[i]);
             d3_SetObjectRot(obj, &D3O_LIGHT(obj)->k[i].rot);
-            d3_WorldMatrixD(obj, 0, 1, &km[i]);
+            d3_WorldMatrix(obj, 0, 1, &km[i]);
         }
         d3_SetObjectRot(obj, &rot);
     }
     d3_PointToWorld(obj, &D3_X(obj)->pos, (D3VECTOR *)&pos);
-    d3_WorldMatrixD(obj, 0, 1, &m);
+    d3_WorldMatrix(obj, 0, 1, &m);
     d3_Unlink(obj);
     if (!parent)
         d3_LinkTop(obj);

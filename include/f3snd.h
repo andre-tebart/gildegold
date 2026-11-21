@@ -137,7 +137,7 @@ extern volatile unsigned long d3_Time;  /* 0x6333cc */
 
 int gm_ClockSeason(AITIME *c);                                                     /* 0x4fe350, the season */
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c */
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */

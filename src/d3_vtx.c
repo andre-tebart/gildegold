@@ -12,7 +12,7 @@
 #include "d3_vtx.h"
 #include "bio.h"
 
-/* d3_EnvMapCoords (was d3_pose.c: only 0x459300 calls it) works on the pose views of d3_pose.h; its
+/* d3_EnvMapCoords (was d3_pose.c: only 0x459300 calls it) works on d3_pose.h's mesh part views (XPART / XVERT); its
    prototypes there are for the other file. */
 #include "d3_pose.h"
 #include "d3_engine.h"
@@ -32,7 +32,7 @@
    locals = control; b as block locals: draft (slots). nv sum orders with a plain function d: 14..24 ins.
    climb round 1 on the block-local text: nothing. Left: the same order hunk as before (fr reloaded from
    part's slot after the fmul of v->u where the original loads it before the call's add esp,4). */
-void d3_EnvMapCoords(XOBJ *obj, XPART *part)
+void d3_EnvMapCoords(D3OBJECT *obj, XPART *part)
 {
     D3MATRIX m;
     D3VECTOR4 b;
@@ -48,7 +48,7 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
                 break;
         }
         if (i < n) {
-            d3_WorldMatrix((D3OBJECT *)obj, (obj->flags & 0x80) ? 0 : d3_Camera, 1, &m);
+            d3_WorldMatrix(obj, (obj->state & 0x80) ? 0 : d3_Camera, 1, &m);
             slot = d3anim_GetMainSlot(part);
             if (slot && (fr = &slot->data->frames[slot->frame]) != 0) {
                 v = part->keys;
@@ -95,7 +95,7 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 }
 
 /* the other files see D3OBJECT / D3LINFO */
-#define D3_ENVMAPCOORDS(o, p) d3_EnvMapCoords((XOBJ *)(o), (XPART *)(p))
+#define D3_ENVMAPCOORDS(o, p) d3_EnvMapCoords((o), (XPART *)(p))
 
 /* 0x4591a0, blend weights of the two key frames around the current time of an animation slot */
 #define UNK64(s) (*(float *)&(s)->time)

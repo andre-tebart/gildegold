@@ -973,7 +973,7 @@ int ai_RepairCost(struct AIBLD *b, int k);                                      
 int ai_PickBuildSite(AIPER *p, int name);                                           /* 0x4a4e70 */
 extern int d3_CurrentScene;             /* 0x633444 */
 char d3if_SelectScene(int index, char keep);                                        /* 0x4478e0 */
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                              /* 0x458a20 */                                                     /* 0x4a4680 */
+void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                              /* 0x458a20 */                                                     /* 0x4a4680 */
 
 #define G7_MASK(p) (((G5CH *)(p))->mask)
 

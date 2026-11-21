@@ -6,7 +6,6 @@
 #define UNK_40D680_H
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 
-struct XOBJ;
 struct D3VECTOR4;
 struct D3OBJECT;
 #include "evt.h"
