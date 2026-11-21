@@ -203,7 +203,6 @@ extern int d3_VertCount;                /* 0xfc2dc4 */
 extern int d3_DrawnVerts;              /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 /* a byte read as an int bitfield (mov dword; and 0xff): d3_Init passes d3_D3DActive so */
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
-struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
 extern unsigned char d3_MipSkip;          /* 0x63342c, d3_d3d.c */
 extern int d3_FrameCount;                    /* 0x63343c */
 extern unsigned int d3_SceneFlags;           /* 0x63349c */

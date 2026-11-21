@@ -710,7 +710,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
                 if (!(m->zMax < d3_MaxZ))
                     d3_MaxZ = (m->zMax);
             }
-            if (obj->objectFlags >> 2 & d3_Hardware & d3_ShadowMode.mode & 1) {
+            if (obj->objectFlags >> 2 & d3_Hardware & d3d_Config.shadows & 1) {
                 d3s_Count = 0;
                 d3s_UpdateObject(obj);
                 if (d3s_Count > 0)
@@ -767,7 +767,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
                 }
             }
         } else {
-            if ((obj->flags >> 1 | dirty) & obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
+            if ((obj->flags >> 1 | dirty) & obj->objectFlags >> 2 & d3d_Config.shadows & d3_Hardware & 1) {
                 d3s_Count = 0;
                 if (dirty)
                     d3s_UpdateObjectAt(obj);
@@ -1544,8 +1544,8 @@ void d3_Shutdown(void)
 
 void d3_ApplyGraphicsOptions(unsigned char a, unsigned char b, unsigned char c, unsigned char mode, int e)
 {
-    if (d3_ShadowMode.mode != mode || d3_MipSkip != c) {
-        d3_ShadowMode.mode = mode;
+    if (d3d_Config.shadows != mode || d3_MipSkip != c) {
+        d3d_Config.shadows = mode;
         d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, d3s_ResetShadows);
     }
     d3fl_SetMips(a);
@@ -2552,7 +2552,7 @@ void d3_Render(unsigned int mask, char flag)
         d3_ObjectsDrawn = 0;
         d3_ObjectsTested = 0;
         d3_ForEachObject(d3_DefaultScene, 0, mask, (D3OBJECTCB)d3_DrawObjectCB, 0);
-        if (D3_MESH(d3s_Object)->surf[0].info.ntris > 0 && d3_ShadowMode.mode)
+        if (D3_MESH(d3s_Object)->surf[0].info.ntris > 0 && d3d_Config.shadows)
             ((D3OBJECTCB)d3_DrawObjectCB)(d3s_Object, 0);
         for (ps = d3_ParHead; ps != &d3_ParEnd; ps = next) {
             next = ps->next;
@@ -2762,4 +2762,3 @@ int d3s_SpanLen;  /* 0xfe73a0 */
 unsigned short * d3s_Dst16;  /* 0xfe73b0 */
 int d3s_Area;  /* 0xfe73b8 */
 int d3s_Fill;  /* 0xfe75ac */
-/* d3_ShadowMode: view of d3d_Config (tools/data_views.py) */

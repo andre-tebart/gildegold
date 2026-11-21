@@ -75,7 +75,10 @@ typedef struct D3DCONFIG {          /* 12 bytes, render options; d3d_Config hold
     unsigned char subpixel : 1;
     unsigned char unk5 : 1;
     unsigned char mirrors : 1;      /* bit 6: mirror reflections drawn (d3_Render, d3_MirDrawObject) */
-    char pad01[3];
+    unsigned char unk7 : 1;
+    unsigned char shadows : 3;      /* 0x01 bits 0 .. 2, bit 0: object shadows on (d3_UpdateObject / d3_Render); set by
+                                       d3_ApplyGraphicsOptions */
+    char pad02[2];
     int fillmode;                   /* 0x04 */
     int mipfilter;                  /* 0x08 */
 } D3DCONFIG;
