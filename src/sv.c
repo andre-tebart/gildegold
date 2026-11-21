@@ -221,15 +221,14 @@ void sv_UpdateFramesPerTick(void)
     sv_TickFrames = 0;
 }
 /* 0x520ee0, registers sv_UpdateFramesPerTick as the tick callback (the period 0x47) and clears the selection flags
-   sv_SelectionFlags (0xc0 words) and the bomb records cm_Bombs (0x40 words) */
+   sv_SelectionFlags (one byte per character) and the bomb records cm_Bombs (0x40 words) */
 
 void sv_InitTick(void)
 {
     int i;
 
     tb_OpenFunction(sv_UpdateFramesPerTick, 0x47);
-    for (i = 0; i < 0xc0; i++)
-        sv_SelectionFlags[i] = 0;
+    memset(sv_SelectionFlags, 0, sizeof sv_SelectionFlags);
     for (i = 0; i < 0x40; i++)
         cm_Bombs[i] = 0;
 }
@@ -4917,7 +4916,6 @@ void sv_SendSelectedToBuilding(void)
     if (msg.type != 0)
         cm_SendLongMessage((char *)&msg);
 }
-#define sv_SelectionBytes (*(unsigned char (*)[0x300])&sv_SelectionFlags)  /* 0x75e920, the flags as the bytes they are, one per character */
 /* 0x52bec0, the selection's mouse handling (every frame): a held left button ends a rubber band (sv_EndBand) or,
    with the right button up, starts one in the player's own building (sv_StartBand). With characters selected a
    release sends them: with nothing clicked to the map cell under the pointer (d3sm_Pick on the default scene's
@@ -5057,7 +5055,7 @@ void sv_HandleSelectionMouse(void)
     for (j = 0; j < 768; j++) {
         c = &ai_Chars[j];
         if (c->model != 0) {
-            if (c->selected != sv_SelectionBytes[j] && ((CHARACTER *)c->model)->flags.fading == 0) {
+            if (c->selected != sv_SelectionFlags[j] && ((CHARACTER *)c->model)->flags.fading == 0) {
                 if (c->selected != 0)
                     d3t_SetGrey(((CHARACTER *)c->model)->obj, 1);
                 else
@@ -5072,7 +5070,7 @@ void sv_HandleSelectionMouse(void)
                     d2_AddPointerItem(c->picture, 1);
             }
         }
-        sv_SelectionBytes[j] = c->selected;
+        sv_SelectionFlags[j] = c->selected;
     }
     if (dm_L.rup != 0 && ai_SelectedCount != 0)
         sv_ClearSelection();
@@ -7623,7 +7621,7 @@ unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the op
 unsigned char sv_InMissionComplete = 0;  /* 0x6f23f1, 1 while sv_RunFrame plays ai_MissionCompleteSequence (no re-entry); sv's by use, see sv.c's lead comment */
 int sv_UnreadBss8 = 0;  /* 0x6f23f4, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 SVQUICKJUMP sv_QuickJump;  /* 0x75e8c0, the info panel's flag (sv_PanelFlag) and pending quick jump (sv_quickjump.h) */
-int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
+unsigned char sv_SelectionFlags[0x300];  /* 0x75e920, the mirror of the character selection flags (byte i per character of ai_Chars) */
 int sv_SkyScene;  /* 0x75ec20 */
 MSG sv_Message;  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
 unsigned short * sv_SelectedItem;  /* 0x75ec5c */
