@@ -6004,6 +6004,9 @@ the bytes no portable form gives.
 - **CRT objects and functions (`_pctype`, `__mb_cur_max`, `_isctype`, `errno` ..)**: never redeclare them in a
   unit; include the header (`<ctype.h>`) and use its macros (`isdigit`, `isspace`, `MB_CUR_MAX`). The
   redeclarations in f3init.c / io_text.c changed nothing when removed (another CRT declares them otherwise).
+- **Win32 API calls**: `#include <windows.h>`, never a hand-written `__declspec(dllimport) __stdcall` prototype.
+  windows.h's min / max are the same macros as stdlib.h's; including it (at the top, after the unit's own
+  headers, with or without WIN32_LEAN_AND_MEAN / NOMINMAX) left every function of hmt.c unchanged.
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

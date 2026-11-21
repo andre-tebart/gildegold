@@ -5,9 +5,9 @@
    0x4ac440.. starts at 0x600f60 right after poker.c's ("Blutrache" 0x600f54). Starts after the registration
    0x4abed0 that ends poker.c; ends with "_NACHRICHTEN_NEU_01" 0x601044 (the next block is hst.c's callback
    table). Names are ours.
-   Open: not included yet (dcp headers conflicts hmt HEADER): main.h; held by own declarations that differ from
-   the owner's: GetModuleFileNameA.
+   Open: not included yet (dcp headers conflicts hmt HEADER): main.h.
    unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl */
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,12 +34,6 @@
 #include "tr.h"
 #include "ch.h"
 #include "gv.h"
-
-/* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
-   emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
-__declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void *hModule, char *file, unsigned long size);  /* @vc6 winbase.h is not in this unit; its HMODULE is spelled void * here */
-__declspec(dllimport) unsigned long __stdcall GetPrivateProfileStringA(const char *sec, const char *key,
-                                                const char *def, char *buf, unsigned long size, const char *file);
 
 /* ai.h declares cm_AddFieldValues with an int field; the caller 0x4ac2f0 passes an unsigned short (no masking) */
 #define CM_AddFieldValuesShort ((void (*)(int, int, unsigned short, void *))cm_AddFieldValues)
