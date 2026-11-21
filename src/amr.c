@@ -2503,7 +2503,7 @@ found:
             ok[i] = 0;
     }
     if (o1->kind == 0) {
-        for (bl = AI_501190_2(1, 6); o1->kind == 0 && bl; bl = AI_BUILDNEXT()) {
+        for (bl = (AIBLDX *)gm_BuildQuery(1, 6); o1->kind == 0 && bl; bl = AI_BUILDNEXT()) {
             if (ai_BTypesT[bl->type].kind == 2 && (bl->flags5a & 2)
                 && ((bl->type == 4 && ok[0]) || (bl->type == 5 && ok[1]) || (bl->type == 6 && ok[2])
                     || (bl->type == 7 && ok[3]))) {
@@ -2540,7 +2540,7 @@ found:
             return 0;
         if (o1->ref == 7 && !ok[3])
             return 0;
-        for (bl = AI_501190_2(1, 6); o1->kind == 5 && bl; bl = AI_BUILDNEXT()) {
+        for (bl = (AIBLDX *)gm_BuildQuery(1, 6); o1->kind == 5 && bl; bl = AI_BUILDNEXT()) {
             if ((unsigned char)ai_BTypesT[bl->type].kind == o1->ref) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
                     if (j->u.id == bl->id) {

@@ -613,7 +613,7 @@ int ai_FindOwnBuilding(AIPX *p, AIBLD **out)
     AIBLD *b;
 
     if (p->kind != 3) {
-        b = AI_501190_5(2, 5, 0x21, 4, p->id);
+        b = (AIBLD *)gm_BuildQuery(2, 5, 0x21, 4, p->id);
         if (out)
             *out = b;
         if (b)
@@ -831,7 +831,7 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
             return 0x48;
         }
         if (s1->arg2 == 2 && s2->kind == 4) {
-            bl = AI_501190_5(2, 1, s2->ref2, 5, 0x1e);
+            bl = (AIBLD *)gm_BuildQuery(2, 1, s2->ref2, 5, 0x1e);
             if (bl) {
                 o = gm_Query(bl->objList, 2, 6, 0, 0x2a);
                 if (o) {

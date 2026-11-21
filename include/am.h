@@ -299,7 +299,6 @@ extern float ai_Unkf84cf4[8];           /* 0xf84cf4, the same scaled by 0x499f20
 #define AI_GOODX ((AIGOODX *)ai_Goods)
 #define AI_BLDX ((AIBLDX *)ai_Blds)
 /* ai.h declares gm_BuildQuery with two arguments, am.h above with three */
-#define AI_501190_2(a, b) ((AIBLDX *(*)(int, int))gm_BuildQuery)(a, b)
 #define AI_BUILDNEXT() ((AIBLDX *)gm_BuildNext())
 #define AI_501190_3(a, b, c) ((AIBLDX *)gm_BuildQuery(a, b, c))
 #define AI_JOBS1B() ((AIJOBX *)he_FindEvent(1, 0, 0x1b))
@@ -492,7 +491,6 @@ typedef char ai_AssertAIPX[sizeof(AIPX) == 0x21c ? 1 : -1];
 #define AIC ((AIPX *)ai_Chars)
 /* ai.h declares gm_FindById for another use; here it fills an int and takes three more */
 #define AI_4FEA50_4(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)
-#define AI_501190_5(a, b, c, d, e) ((AIBLD *(*)(int, int, int, int, int))gm_BuildQuery)(a, b, c, d, e)
 
 typedef AIARG AIARGX;                   /* 0x48e070..0x48f250 spell it so */
 
