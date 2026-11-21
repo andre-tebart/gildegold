@@ -1039,8 +1039,7 @@ void d3s_FreeShadows(struct D3OBJECT *obj);     /* 0x45ccd0, d3s.c */
 void d3_UpdateAll(unsigned char full);          /* 0x43b6e0, d3_engine.c */
 char d3if_SelectScene(int index, char keep);    /* 0x4478e0, d3_interface.c */
 void d3_ReloadMeshes(unsigned int mask, int type, void (*progress)(int a, int i, int n));  /* 0x43e090, d3_engine.c */
-void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned char mode, int e); /* 0x43c4e0 */
-#define d3_ApplyGraphicsOptionsB ((void (*)(unsigned char, unsigned char, unsigned char, unsigned char, int))d3_ApplyGraphicsOptions)  /* @original ai_ApplyGfxOptions (0x5d5d4d) pushes the floor option as a byte (mov dl, byte ptr; push edx) */
+void d3_ApplyGraphicsOptions(unsigned char a, unsigned char b, unsigned char c, unsigned char mode, int e); /* 0x43c4e0 */
 void ch_SetLowPoly(unsigned char mode);         /* 0x402af0, ch.c */
 void d3fl_SetMips(char a);                      /* 0x43f930, d3_fl.c */
 void ai_CheckBuildSites(void);                  /* 0x58fb60, lc.c */
@@ -1113,7 +1112,7 @@ void ai_ApplyGfxOptions(void)
         d3_ReloadMeshes(0x40, 3, 0);
         d3if_SelectScene(scene, 0);
     }
-    d3_ApplyGraphicsOptionsB(ai_GfxFloor, 0, 2 - ai_GfxTextureScale, changed, 0);
+    d3_ApplyGraphicsOptions(ai_GfxFloor, 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
         d3o_FogScale = 1.0 - ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {

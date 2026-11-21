@@ -1541,7 +1541,7 @@ void d3_Shutdown(void)
    and the shadow mode; a changed mode resets the object shadows, a changed shift flushes and reloads the
    textures (e = reload flag). */
 
-void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned char mode, int e)
+void d3_ApplyGraphicsOptions(unsigned char a, unsigned char b, unsigned char c, unsigned char mode, int e)
 {
     if (d3_ShadowMode.mode != mode || d3_MipSkip != c) {
         d3_ShadowMode.mode = mode;
