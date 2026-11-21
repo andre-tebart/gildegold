@@ -162,7 +162,10 @@ typedef struct D3IOPATH {           /* 0x44 bytes, the animation of an object (o
     int unk10;
     float pos[3];                   /* 0x14, the object's position and angles at the start */
     float rot[3];                   /* 0x20 */
-    D3IOANIMFLAGS flags;            /* 0x2c */
+    union {
+        D3IOANIMFLAGS flags;        /* 0x2c, field-wise */
+        D3ANIMFLAGS animFlags;      /* the same 12 bytes as d3anim_NextFrame takes them */
+    };
     float unk38;
     int unk3c;
     D3IOKEY *keys;                  /* 0x40 */

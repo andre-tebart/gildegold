@@ -26,7 +26,6 @@
 #include "ts_texture.h"
 #include "d3_vtx.h"
 #include "vfs.h"
-#define d3anim_NextFrameIo ((int (*)(D3IOANIMFLAGS, int, int, int, int))d3anim_NextFrame)  /* 0x4324e0 (d3_anim.h: D3ANIMFLAGS f): @original this unit passes its field-wise D3IOANIMFLAGS (12 bytes), as the original TU did */
 
 /* 0x44c510, sets the directory the stock objects are searched in */
 
@@ -808,7 +807,7 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
                 n = p->nkeys - 1;
                 p->key = n;
                 p->time = p->keys[n].time - 1;
-                p->next = d3anim_NextFrameIo(p->flags, n, 0, n, p->nkeys);
+                p->next = d3anim_NextFrame(p->animFlags, n, 0, n, p->nkeys);
             } else {
                 p->next = 1;
                 p->key = 0;
