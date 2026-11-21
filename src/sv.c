@@ -2041,7 +2041,6 @@ extern float sv_DayPhaseFrac;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
 const int sv_PhaseMinutes[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
 
-extern int ai_Unk623cc0[], ai_Unk623e10[];  /* 0x623cc0, 0x623e10 */
 int d2_GetWinObj();                     /* 0x475b80 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
@@ -2133,11 +2132,10 @@ typedef struct SVSKYKEY {               /* 0x10 bytes, a light key's colour in t
     float rgb[3];
     float val;
 } SVSKYKEY;
-#define sv_DayPhases     (*(SVDAYPHASE (*)[6])&sv_DayTables)  /* 0x623ba8, the day phases */
-#define sv_SkyKeys       (*(SVSKYKEY (*)[7])((char *)&sv_DayTables + 0x38))  /* 0x623be0, the sky lights' keys */
-#define sv_SkyKeysAlt    (*(SVSKYKEY (*)[7])((char *)&sv_DayTables + 0xa8))  /* 0x623c50, the same for the lights with objectFlags 0x10 */
-#define sv_SkyKeysWinter (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0x70))  /* 0x623d30, the keys in winter weather */
-#define sv_SkyKeysWinterAlt (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0xe0))  /* 0x623da0 */
+extern SVSKYKEY sv_SkyKeys[7];           /* 0x623be0, the sky lights' keys */
+extern SVSKYKEY sv_SkyKeysAlt[7];        /* 0x623c50, the same for the lights with objectFlags 0x10 */
+extern SVSKYKEY sv_SkyKeysWinter[7];     /* 0x623d30, the keys in winter weather */
+extern SVSKYKEY sv_SkyKeysWinterAlt[7];  /* 0x623da0 */
 /* 0x525490, the d3_ForEachObject callback over the sky scene's lights: copies the colours of the first 6 keys from the sky table
    (by sv_WinterWeather and the light's objectFlags 0x10) into the light's keys; returns 1 (go on) */
 
@@ -2271,8 +2269,8 @@ typedef struct SVLEVELCOLOR {           /* 0x10 bytes, the ambient colour of a l
     D3VECTOR amb;
     float pad;                          /* 0 in every record */
 } SVLEVELCOLOR;
-#define sv_LevelAmbient       (*(SVLEVELCOLOR (*)[7])&ai_Unk623cc0)  /* 0x623cc0, the ambient colours of the 7 light levels */
-#define sv_LevelAmbientWinter (*(SVLEVELCOLOR (*)[7])&ai_Unk623e10)  /* 0x623e10, the same in winter weather */
+extern SVLEVELCOLOR sv_LevelAmbient[7];        /* 0x623cc0, the ambient colours of the 7 light levels */
+extern SVLEVELCOLOR sv_LevelAmbientWinter[7];  /* 0x623e10, the same in winter weather */
 /* 0x525940, colours the default scene's sky for the weather: its lights' keys (sv_SetSkyLightColors), then the ambient colour of
    each of the 7 light levels from the level table (the winter one in winter weather) into the scene's levels, the current ambient
    colour and the engine's levels; only when the scene has a map */
@@ -7497,12 +7495,15 @@ SVSKYREC sv_SkyHeavy[3] = {
     { "sky_schwer_02", 3.0f, 0.8f, -0.25f },
     { "sky_dunkel_01", 3.0f, 0.8f, -0.25f },
 };
-/* 0x623ba8, the day tables: the 6 day phases (SVDAYPHASE, 10 bytes each, sv_FillDayPhases writes them from the season's
-   minutes; their int seconds sit at odd addresses, so the object is packed) and the sky key colours sv_SkyKeys (+0x38) /
-   sv_SkyKeysAlt (+0xa8); one object, the last phase's 4 pad bytes are the first key's colour */
-ALIGN1 char sv_DayTables[278] = { 4, 0, 64, 56, 0, 0, 0, 0, 0, 0, 6, 0, 96, 84, 0, 0, 0, 0, 0, 0, 12, 0, -64, -88, 0, 0, 0, 0, 0, 0, 16, 0, 0, -31, 0, 0, 0, 0, 0, 0, 18, 0, 32, -3, 0, 0, 0, 0, 0, 0, 19, 0, 48, 11, 1, 0, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, -18, 66, 0, 0, 15, 67, 0, 0, 90, 67, 0, 0, -81, 67, 0, 0, 85, 67, 0, 0, 52, 67, 0, 0, 32, 67, 0, -128, -69, 67, 0, 0, 127, 67, 0, 0, 78, 67, 0, 0, -10, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 57, 67, 0, 0, -84, 66, 0, -128, -1, 67, 0, 0, 34, 67, 0, 0, 1, 67, 0, 0, 69, 67, 0, 0, -93, 67, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0, -20, 67, 0, 0, -34, 66, 0, 0, 13, 67, 0, 0, 53, 67, 0, -128, -30, 67, 0, 0, 59, 67, 0, 0, 83, 67, 0, 0, 26, 67, 0, 0, -71, 67, 0, 0, 127, 67, 0, 0, 66, 67, 0, 0, -22, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 47, 67, 0, 0, 104, 66, 0, 0, -49, 67, 0, 0, 76, 67, 0, 0, 64, 67, 0, 0, 53, 67, 0, -128, -47, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0 };
-int ai_Unk623cc0[] = { 1104150528, 1097859072, 1116602368, 0, 1102577664, 1107820544, 1113325568, 0, 1116209152, 1112276992, 1110179840, 0, 1120272384, 1117519872, 1109393408, 0, 1116602368, 1113587712, 1108606976, 0, 1107820544, 1102053376, 1112539136, 0, 1104150528, 1097859072, 1116602368, 0, 1122500608, 1124270080, 1132396544, 1133019136, 1121452032, 1125056512, 1128792064, 1133969408, 1123680256, 1127284736, 1126170624, 1134592000, 1124990976, 1128726528, 1130168320, 1135247360, 1126629376, 1127153664, 1126957056, 1135411200, 1124990976, 1124728832, 1128792064, 1135706112, 1122107392, 1124270080, 1132396544, 1132691456, 1124401152, 1121976320, 1132396544, 1134592000, 1122893824, 1125384192, 1125122048, 1138425856, 1123287040, 1125253120, 1125122048, 1136361472, 1125318656, 1127612416, 1128595456, 1135706112, 1124597760, 1124139008, 1125122048, 1135083520, 1125777408, 1128267776, 1129185280, 1134264320, 1124401152, 1121976320, 1132396544, 1134428160 };  /* 0x623cc0 */
-int ai_Unk623e10[] = { 1099431936, 1097859072, 1116602368, 0, 1096810496, 1104674816, 1114112000, 0, 1096810496, 1102053376, 1114112000, 0, 1101004800, 1107296256, 1113325568, 0, 1101004800, 1103101952, 1114898432, 0, 1101004800, 1094713344, 1110966272, 0, 1099431936, 1097859072, 1116602368, 0 };  /* 0x623e10 */
+/* 0x623ba4, the 6 day phases (sv_FillDayPhases writes them from the season's minutes); packed 10-byte records whose
+   int seconds sit at even, not 4-aligned addresses */
+SVDAYPHASE sv_DayPhases[6] = { { 0, 4, 0, 14400 }, { 0, 6, 0, 21600 }, { 0, 12, 0, 43200 }, { 0, 16, 0, 57600 }, { 0, 18, 0, 64800 }, { 0, 19, 0, 68400 } };
+SVSKYKEY sv_SkyKeys[7] = { { { 133.0f, 131.0f, 255.0f }, 307.0f }, { { 119.0f, 143.0f, 218.0f }, 350.0f }, { { 213.0f, 180.0f, 160.0f }, 375.0f }, { { 255.0f, 206.0f, 123.0f }, 511.0f }, { { 255.0f, 185.0f, 86.0f }, 511.0f }, { { 162.0f, 129.0f, 197.0f }, 326.0f }, { { 133.0f, 131.0f, 255.0f }, 307.0f } };  /* 0x623be0, the sky lights' keys */
+SVSKYKEY sv_SkyKeysAlt[7] = { { { 133.0f, 112.0f, 255.0f }, 472.0f }, { { 111.0f, 141.0f, 181.0f }, 453.0f }, { { 187.0f, 211.0f, 154.0f }, 370.0f }, { { 255.0f, 194.0f, 117.0f }, 511.0f }, { { 255.0f, 175.0f, 58.0f }, 414.0f }, { { 204.0f, 192.0f, 181.0f }, 419.0f }, { { 133.0f, 112.0f, 255.0f }, 0.0f } };  /* 0x623c50, the same for the lights with objectFlags 0x10 */
+SVLEVELCOLOR sv_LevelAmbient[7] = { { { 26.0f, 15.0f, 71.0f }, 0.0f }, { { 23.0f, 34.0f, 55.0f }, 0.0f }, { { 68.0f, 51.0f, 43.0f }, 0.0f }, { { 99.0f, 78.0f, 40.0f }, 0.0f }, { { 71.0f, 56.0f, 37.0f }, 0.0f }, { { 34.0f, 22.0f, 52.0f }, 0.0f }, { { 26.0f, 15.0f, 71.0f }, 0.0f } };  /* 0x623cc0, the ambient colours of the 7 light levels */
+SVSKYKEY sv_SkyKeysWinter[7] = { { { 116.0f, 131.0f, 255.0f }, 273.0f }, { { 108.0f, 143.0f, 200.0f }, 302.0f }, { { 125.0f, 177.0f, 160.0f }, 321.0f }, { { 142.0f, 199.0f, 221.0f }, 341.0f }, { { 167.0f, 175.0f, 172.0f }, 346.0f }, { { 142.0f, 138.0f, 200.0f }, 355.0f }, { { 113.0f, 131.0f, 255.0f }, 263.0f } };  /* 0x623d30, the keys in winter weather */
+SVSKYKEY sv_SkyKeysWinterAlt[7] = { { { 133.0f, 112.0f, 255.0f }, 321.0f }, { { 119.0f, 148.0f, 144.0f }, 438.0f }, { { 122.0f, 146.0f, 144.0f }, 375.0f }, { { 147.0f, 182.0f, 197.0f }, 355.0f }, { { 136.0f, 129.0f, 144.0f }, 336.0f }, { { 154.0f, 192.0f, 206.0f }, 311.0f }, { { 133.0f, 112.0f, 255.0f }, 316.0f } };  /* 0x623da0 */
+SVLEVELCOLOR sv_LevelAmbientWinter[7] = { { { 17.0f, 15.0f, 71.0f }, 0.0f }, { { 14.0f, 27.0f, 58.0f }, 0.0f }, { { 14.0f, 22.0f, 58.0f }, 0.0f }, { { 20.0f, 32.0f, 55.0f }, 0.0f }, { { 20.0f, 24.0f, 61.0f }, 0.0f }, { { 20.0f, 12.0f, 46.0f }, 0.0f }, { { 17.0f, 15.0f, 71.0f }, 0.0f } };  /* 0x623e10, the ambient colours in winter weather */
 int sv_LampPhase = -1;  /* 0x623e80 */
 int sv_LoadSlider = -1;  /* 0x623e84, the object handle of the scene load's progress slider (sv_SceneLoadProgress), -1: none */
 int sv_PanelEnabled = 1;  /* 0x623e88 */

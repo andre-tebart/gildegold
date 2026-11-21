@@ -13,11 +13,12 @@ typedef struct SVSKYREC {               /* 0x4c bytes, a sky layer: the texture 
     float voffset;                      /* +0x48, -0.25 */
 } SVSKYREC;
 #pragma pack(push, 1)
-typedef struct SVDAYPHASE {             /* 10 bytes, a phase of the day in sv_DayTables (sv_FillDayPhases) */
-    char hour;                          /* +0 */
-    char min;                           /* +1 */
-    int sec;                            /* +2, the second of the day it starts at */
-    char pad6[4];                       /* +6, 0 (the last phase's are the first sky key's colour) */
+typedef struct SVDAYPHASE {             /* 10 bytes, a phase of the day in sv_DayPhases (sv_FillDayPhases) */
+    int unk0;                           /* +0, 0 in every record, no reader known (the table starts at 0x623ba4: six
+                                           records end exactly at the sky keys 0x623be0) */
+    char hour;                          /* +4 */
+    char min;                           /* +5 */
+    int sec;                            /* +6, the second of the day it starts at */
 } SVDAYPHASE;
 #pragma pack(pop)
 typedef struct SVACTIVITY {             /* 0x20 bytes, an activity of sv_Activities (sv_RegisterActivity; the he.c scripts
@@ -215,9 +216,7 @@ extern int sv_BarToggle;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
 extern SVSKYREC sv_SkyHeavy[3];                             /* 0x623ac0 */
-extern char sv_DayTables[278];                              /* 0x623ba8 */
-extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
-extern int ai_Unk623e10[];                                  /* 0x623e10 */
+extern SVDAYPHASE sv_DayPhases[6];                          /* 0x623ba4 */
 extern int sv_LampPhase;                                    /* 0x623e80 */
 extern int sv_LoadSlider;                                    /* 0x623e84 */
 extern int sv_PanelEnabled;                                    /* 0x623e88 */
