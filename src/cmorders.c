@@ -169,8 +169,8 @@ extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
 extern char * cm_HoverObject;
 extern int cm_FightPaused;
-extern int cm_FightDefender;
-extern int cm_FightAttacker;
+extern struct AICHAR *cm_FightDefender;
+extern struct AICHAR *cm_FightAttacker;
 extern char * cm_PickMarker;
 extern int cm_FightWinner;
 extern int cm_FightSettled;
@@ -230,8 +230,6 @@ typedef struct CMFIGHTREC {
                                        the AI side of a won raid takes the loot when random 0 .. 4 is above it */
 } CMFIGHTREC;
 #define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
-#define cm_FightAttackerC (*(AICHAR **)&cm_FightAttacker)  /* 0x6f0cec, cm_FightAttacker (cm.h: int) as the character it points to */
-#define cm_FightDefenderC (*(AICHAR **)&cm_FightDefender)  /* 0x6f0ce8, cm_FightDefender (cm.h: int) as the character it points to */
 
 /* 0x4d76a0, runs the orders of the fighters of the cutscene record rec (its 16 entries; until the fight has a winner):
    an entry whose last order message went out (orderSlot 1 or no longer pending) takes its next step by its state:
@@ -397,7 +395,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                         hit = 1;
                     else {
                         r = util_Random(0xff);
-                        if ((AICHAR *)c->bld == cm_FightDefenderC)
+                        if ((AICHAR *)c->bld == cm_FightDefender)
                             st = (int)(k->accuracy * 0.01 * c->sk83 * cm_DefenseFactor);
                         else
                             st = (int)(k->accuracy * 0.01 * c->sk83);
@@ -539,7 +537,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
             } else if (p->storeStep == 1) {
                 if (c->scene->actions != 0)
                     break;
-                if ((AICHAR *)c->bld == cm_FightAttackerC)
+                if ((AICHAR *)c->bld == cm_FightAttacker)
                     nm = "dummy_sp_OFF_WARENSAVE";
                 else
                     nm = "dummy_sp_DEF_WARENSAVE";

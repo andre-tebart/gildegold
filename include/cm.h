@@ -560,7 +560,7 @@ extern int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value (G1
 int cm_UpdateBombs();  /* 0x4ce300 */
 struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d0 */
 unsigned int cm_Random(unsigned int n);  /* 0x4e52f0, a random number below n */
-extern int cm_FightAttacker;  /* 0x6f0cec */
+extern struct AICHAR *cm_FightAttacker;  /* 0x6f0cec, the attacking side's leader */
 extern struct SBBANK *cm_BombSounds;  /* 0x6f0d14 */
 
 int cm_UpdateGrenades();  /* 0x4ce830 */
@@ -688,7 +688,7 @@ struct D3BGF * d3io_LoadObjectRef();  /* 0x44e190 */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
-extern int cm_FightDefender;  /* 0x6f0ce8 */
+extern struct AICHAR *cm_FightDefender;  /* 0x6f0ce8, the defending side's leader */
 extern int cm_FightWinner;  /* 0x6f0cf4 */
 extern struct SBBANK *cm_FightSounds;  /* 0x6f0d0c */
 extern struct SBBANK *cm_CrossbowSounds;  /* 0x6f0d10 */
