@@ -9,7 +9,6 @@
 #include "rt.h"
 #include "di_input.h"
 #include "data_views.h"
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original rt's calls push 4 arguments (as 139 of the original's call sites do) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, int, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c, unsigned char e): @original rt.c pushes the third argument as an int (byte-matched rt_UnloadAtPoint) */
 #include "d3_types.h"
 #include "ahm.h"
@@ -566,20 +565,7 @@ void rt_InitControls(int *out)
 }
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
-   point and rebuilds the marks on window win
-   @deep deep s39: proven byte under a declaration set (5 unused typedefs at the unit's start; dcp grade).
-   The two -1 registers (or edx,-1 / or eax,-1) came from the fills written as two element loops (for (i =
-   0; i < 3; i++) objs1[i] = -1; the same for objs2; memset(.., 0xff, ..) twice is the same code): 35 -> 6
-   ins, every code / regs hunk gone; then sel, selc, kind in the two pick loops (mov ebx,ecx before mov
-   edi,1): 6 -> 2. Built in the tree's declaration set 2 ins are left: the route-mark loop's hoisted loads
-   (the original loads win before cart). prior: tie-break sensitive: dcp headers sample gives 2 codegens in
-   32 samples, none better than built (draft 35 ins). One round of spellings for the two -1 webs (original:
-   objs1 stores from 'or edx,-1', objs2 from 'or eax,-1'; ours one 'or eax,-1'): objs1/objs2 interleaved
-   (35 ins, slots 2), objs2 first (35), chained a=b=c=-1 (37) / reversed chain (= control), objs2[k] =
-   objs1[k] (= control), gm_ListStock after the inits (50) or between them (41). Left: +0x147 code hunk
-   (the second -1 register and the rt_InitControls loop's ecx/eax for loadCtls/unloadCtls), regs eax->edx edx->ecx
-   after it, order hunks at +0x4e8/+0x523 (mov edi,1/2 after mov ebx,ecx in the original) and +0x653. Park
-   for the unit's declaration pass. (tiebreak: sensitive) */
+   point and rebuilds the marks on window win */
 
 void rt_EditPointDialog(RTPOINT *p, int *win)
 {
@@ -681,18 +667,18 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
         for (i = 0; i < 3; i++) {
             if (loadCtls[i][1] == -1 && p->loadSlots[i * 2] != 0) {
                 rt_OpenSlotControls(cart, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, loadCtls[i]);
-                d2_SetObjValue4(loadCtls[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
+                d2_SetObjValue(loadCtls[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
             }
             if (loadCtls[i][2] != -1)
-                d2_SetObjValue4(loadCtls[i][2], 0, a, d2_GetObjValue(loadCtls[i][1]));
+                d2_SetObjValue(loadCtls[i][2], 0, a, d2_GetObjValue(loadCtls[i][1]));
         }
         for (i = 0; i < 3; i++) {
             if (unloadCtls[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
                 rt_OpenSlotControls(cart, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, unloadCtls[i]);
-                d2_SetObjValue4(unloadCtls[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
+                d2_SetObjValue(unloadCtls[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
             }
             if (unloadCtls[i][2] != -1)
-                d2_SetObjValue4(unloadCtls[i][2], 0, a, d2_GetObjValue(unloadCtls[i][1]));
+                d2_SetObjValue(unloadCtls[i][2], 0, a, d2_GetObjValue(unloadCtls[i][1]));
         }
         if (d2_ClickedId != -1) {
             kind = 0;
@@ -788,7 +774,7 @@ void rt_CartSettingsDialog(AIOBJ *c, char *win)
     renew = btns[1];
     toggle = btns[2];
     d2_SetCaption(toggle, txt_PatrolToggle[c->patrolOn]);
-    d2_SetObjValue4(sl, 0, 4, c->patrolLevel);
+    d2_SetObjValue(sl, 0, 4, c->patrolLevel);
     d2_SetSliderFlags(sl, 0x82);
     d2_SetList(sl, 5, txt_PatrolLevel0, txt_PatrolLevel1, txt_PatrolLevel2, txt_PatrolLevel3, txt_PatrolLevel4);
     while (sv_RunFrame(rt_CartSettingsDialog, 0x657c7)) {

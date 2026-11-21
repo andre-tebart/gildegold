@@ -36,7 +36,7 @@
    the event 0x38 (HEEV38). The protection money
    0x62, its ask 0x63 and the audit 0x64 handlers (0x54ae20 .. 0x54b9b0) read AIJOB and their words typed too
    (HEPROTECTION, HEAUDIT). The head includes
-   rt.h (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
+   rt.h (rt_UnloadAtPointC keeps this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
    The event and message words are read typed (HM_I / U_I), except the kind-specific words over AIJOB's union the
    local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
@@ -82,7 +82,7 @@
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with: cm_SendSpawnCharacterR (the send slot kept),
    ai_PlagueMessageK (two arguments),
-   ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC, d2_SetObjValue2,
+   ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
@@ -605,7 +605,6 @@ int he_RegisterEventTypeA2();
 #include "mission.h"
 #include "rmsg.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -1538,7 +1537,7 @@ void he_ActivateSlot(int *sl)
     if (he_BarShown != -1) {
         if (he_ActiveSlot != 0) {
             if (he_ActiveSlot->obj != -1)
-                d2_SetObjValue2(he_ActiveSlot->obj, 0);
+                d2_SetObjValue(he_ActiveSlot->obj, 0);
             d2_SetViewEnabled(he_ActiveSlot->win, 0);
             if (HE_PAUSES(he_ActiveSlot->ev))
                 tb_Paused = 0;
@@ -1546,7 +1545,7 @@ void he_ActivateSlot(int *sl)
         }
         if (s != 0 && s->win != -1) {
             if (s->obj != -1)
-                d2_SetObjValue2(s->obj, 1);
+                d2_SetObjValue(s->obj, 1);
             d2_SetViewEnabled(s->win, 1);
             d2_RaiseViewWindows(s->win);
             if (HE_PAUSES(s->ev))
@@ -9141,7 +9140,7 @@ void he_RunDarkCorner(int ev)
     }
 }
 
-int mem_IsValid();
+int mem_IsValid(void *p);
 void par_Delete();
 
 /* 0x54fb50, a Ghidra miss: the init of the effect event: the object +0xac (0x4fea50) must have a scene record (+0x61) and the effect word +0xc2 a table record (0x5ba620) with a duration (+4): +0xb4 = now + that duration (0x4fe140), +0xb0 = 0, state 0; else the event is freed */

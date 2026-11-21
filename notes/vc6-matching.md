@@ -6046,6 +6046,16 @@ the bytes no portable form gives.
   `char *itoa(int value, char *buf, int radix)`), or give an unprototyped `f();` its true prototype when the
   calls push the same (he.c's amt_ChangeDistrictOpinion(char *c, int d, int v)). `dcp grade NAME` names a
   shift that works; probe with typedefs only to learn the range, never commit them.
+- **Call sites of one function push 2, 4 or 5 arguments (d2_SetObjValue)**: a varargs function. `void
+  d2_SetObjValue(int obj, ...)` with `va_start(ap, obj)` and the `va_arg` reads in each branch where the
+  parameters were read compiles byte (VC6 folds `ap` into `[esp+x]`); one prototype for every unit replaced 33
+  cast macros, the K&R `void f();` declarations (which conflict with a `...` prototype) and the call-site
+  @original comments. Removing that many casts moved four tie-break functions; compensated per unit by true
+  prototypes for K&R declarations above them (sv: d2_LoadBmpSurface / d2_GetPixelColour / d2_FindPic /
+  d2_CompareColour, main: ls_ReadSaveHeader / sv_RegisterNamePlate, he: mem_IsValid, lc: d2_GetWinObj /
+  cm_GetSlotState). Several sets of candidates per unit tried in one batch (one scratch script applying each
+  set, building, comparing the whole snapshot) found one in a round or two; dcp grade's "N unused typedefs"
+  number did not reproduce (stale row), so measure.
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
   definition must return int (`mov eax,edx` / `xor eax,eax`; unsigned short gives `mov ax,dx`), and
   `(unsigned short)util_Random(n)` gives `mov esi,eax; and esi,0xffff` (106 functions fall): the original's

@@ -73,7 +73,7 @@ void d2_RemoveObj(int obj);                                                     
 void d2_EnableViewObjects(int view, int on);                                             /* 0x4754d0 */
 int d2_CreateWinText(short x, short y, char *text, int win);                         /* 0x473650 */
 void d2_SetObjEnabled(int obj, int on);                                              /* 0x475e40 */
-void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, d2.c: the 5th parameter (value2) is pushed by 18 of the original call sites; rt.c's push 4 (d2_SetObjValue4 in its head) */
+void d2_SetObjValue(int obj, ...);                         /* 0x475cb0, d2.c */
 void d2_SetCaption(int obj, char *text);                                            /* 0x473540 */
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */
 void d2_SetList(int id, int n, ...);                                          /* 0x46bca0 */

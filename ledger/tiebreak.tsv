@@ -3299,7 +3299,7 @@ exe	0x00520f90	sv_CheckMoney	sv	369040c9dfc9252a	no	byte	control=byte p1=byte p2
 exe	0x00520fe0	sv_CheckCharacterFlag	sv	93c99582899a64e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00521040	sv_CheckGoodAmount	sv	d34de32db6b5807c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005210a0	sv_CheckStock	sv	0cb3eeebc05b007a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00521150	sv_MessageBox	sv	00c9e6d9e633bf3a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d8781dc03ebd17fa
+exe	0x00521150	sv_MessageBox	sv	bbc65e03f5469f85	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	0bef2fd479103eb6
 exe	0x00521410	sv_MessageBoxGreen	sv	89f3f6967677a059	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d57bf1e2f3a05b4d
 exe	0x005216a0	sv_MessageBoxYesNo	sv	3d4d2ede6e33122c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00521900	sv_OpenMessageBox	sv	5d6702f5abe829e5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4016,7 +4016,7 @@ exe	0x0057c560	ai_AlchemistHire	sv_t	f6587f2bda0309b9	no	byte	control=byte p1=by
 exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	a017fc4b59ffc961	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	1c79a0a2839098b6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	cb19a286f97393cd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0057cf90	ai_AlchemistWindow	sv_t	0f8ae006710a7fc1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b07b4db99b041969
+exe	0x0057cf90	ai_AlchemistWindow	sv_t	a6ab6021cc4e48b0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	75ae36b7e349d72a
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	4dd344bada7d3fe4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	2fcea238c0ac3039	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	f8a060bac0d9cb96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4250,7 +4250,7 @@ exe	0x0059fe40	ai_CitizenRightWindow	lc	f9d8b4d53b5386fa	no	byte	control=byte p1
 exe	0x005a0220	ai_OfficeApplicantsWindow	lc	26adfb6a11485b56	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a0590	ai_OfficeApplicationWindow	lc	993fa739afa0f7d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a07d0	ai_LawBookContact	lc	dd83b33a152cd33e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a0950	ai_GuildCashPayWindow	lc	073f3b41f2c06479	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a0950	ai_GuildCashPayWindow	lc	005729005abdeca5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	5e7604363552b3ca
 exe	0x005a0ca0	ai_GuildGiftCallback	lc	0e3e20650c68899d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a0f10	ai_GuildGiftEntry	lc	bf0b467f55d73fbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a1000	ai_GuildLevel1Window	lc	e56aa632d5069a51	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4376,7 +4376,7 @@ exe	0x005aa520	ai_FillVacantPersonnelRow	lc	56d051be4ba9a4ba	no	byte	control=byt
 exe	0x005aa700	ai_ShowBldCarts	lc	3370230506a06a20	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005aa9a0	ai_UpdateBldCarts	lc	ca66c69e4fb9d5c7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005aab80	ai_PersonnelBook	lc	856e8569f8217eb9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005ac110	ai_MercenaryBook	lcdom	721f16a1d9a720a5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9bdae9c79b45d024
+exe	0x005ac110	ai_MercenaryBook	lcdom	512f7767bd2af075	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	76f0189f22ece7e6
 exe	0x005ad000	ai_AskHelperBonus	lcdom	e62d838de9b3af95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	eb245f6a5444f9cc
 exe	0x005ad150	ai_HelperBook	lc	a681d7ba348c4a09	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005ae240	ai_BuyCartWindow	lcdom	385cb7de9499cc06	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
@@ -4491,11 +4491,11 @@ exe	0x005c1df0	ai_OpenAgendaMenu	lc	f40cbd2f49052c72	no	byte	control=byte p1=byt
 exe	0x005c1e10	ai_AgendaOfficeList	lcamt	e28c1caf8aca91a4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
 exe	0x005c2160	ai_OpenLawBook	lc	480efc4cbab8d9d8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c2410	ai_LawBookInfoWindow	lc	980cc77144fa3c54	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	213d2c8f42739f6d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
+exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	a1a7e0acb80c1c61	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	24940f456f3f0f38
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	882ab66010b0bb01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	b96922d120b44cea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
-exe	0x005c2a10	ai_ShowSettingGoods	lcamt	80efd62d81e42a09	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	47b0325554d52c51
+exe	0x005c2a10	ai_ShowSettingGoods	lcamt	4221d2c23ee133b0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	24940f456f3f0f38
 exe	0x005c2b90	ai_MasterLetterSettings	lc	d88621a20dc76c5e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c3200	ai_MasterLetterWindow	lc	2400265006fee361	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	36df523a9fabd53e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b1de023bb15040ae

@@ -18,8 +18,7 @@
    Open: not included yet (dcp headers conflicts cm HEADER): anm.h hmt.h hst.h rt.h menu.h;
    held by calls whose argument count differs from the definition (read the original's pushes):
    gv_PassSentence takes five arguments here (gv_PassSentenceK). ai_DecideTorture / ai_DecideTortureInstrument
-   and d2_SetObjValue's 2- and 4-argument calls use this unit's cast macros (ai_DecideTortureP /
-   ai_DecideTortureInstrumentP, d2_SetObjValue2 / d2_SetObjValue4).
+   use this unit's cast macros (ai_DecideTortureP / ai_DecideTortureInstrumentP).
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank,
    cm_MessageBox, cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_StartScript, cm_CutInfoById,
@@ -122,8 +121,6 @@ extern GAPDATA full_data_602568[];
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */

@@ -1127,7 +1127,7 @@ void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
     n = sc->kind;
     if (n < a)
         a = n;
-    d2_SetObjValue4(sc->kindSlider, 0, n, a);
+    d2_SetObjValue(sc->kindSlider, 0, n, a);
     d2_SetObjEnabled(sc->selBtn[1], sc->maxSel >= 1);
     d2_SetObjEnabled(sc->selBtn[2], sc->maxSel >= 2);
     d2_Objs[sc->selBtn[0]].highlighted = sc->selected == 0;

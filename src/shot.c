@@ -26,7 +26,6 @@ extern const unsigned __int64 gypsyFilter;
 extern const unsigned int ai_BuildingTypeMasks[6];
 #include "menu.h"
 #include "shot.h"
-#define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #include "sv_t.h"
 #include "lc.h"
 #include "data_views.h"
@@ -122,7 +121,7 @@ void cm_SendProofExecuted(int record, int character); /* 0x4c4ed0, cm.c: message
 void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5a, adds delta to the
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
-void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
+void d2_SetObjValue(int obj, ...); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
 char *itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj); void d2_MenuNavigate(int g); void d2_RaiseViewWindows(int view); void d2_RadioClear(int g);
 #pragma pack(push, 1)
@@ -160,7 +159,7 @@ void d2_SetObjWidth(int obj, short w);                               /* 0x46c260
 int d2_OpenInput(int x, int y, int w, int h, unsigned char flags);   /* 0x46a110 */
 void d2_RemoveObj(int obj);                                          /* 0x46e710 */
 void d2_SetObjFont(int obj, int font);                               /* 0x4760b0 */
-void d2_SetObjValue();                                               /* 0x475cb0, K&R: d2.c's definition takes 5 parameters, the call sites push 2, 4 or 5 */
+void d2_SetObjValue(int obj, ...);                                               /* 0x475cb0, d2.c (varargs: the call sites pass 1, 3 or 4 values) */
 void d2_SetObjMax(int obj, int v);                                   /* 0x475f40 */
 typedef struct D2FADEVIEW { unsigned char flags; char pad1[0x63]; } D2FADEVIEW;
 extern D2WIN d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */

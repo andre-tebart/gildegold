@@ -811,8 +811,6 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the range calls push four (0x5c2610 ai_ShowWorkSettingsPage: push *budget; push 0x2328; push 0x3e8; push eax; 0x5c2675: push eax; push 0x96; push 0x32; push esi) */
 
 /* dcp unit split: the declarations of lc before the moved functions */
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); int d2_OpenForm(); void d2_CentreViewWindows(int view);
@@ -1572,7 +1570,7 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(viewer->id, row->rec->id, 1));
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(viewer->id, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 1);
             d2_Objs[row->ctl[1]].interactive = 1;
         }
@@ -1689,7 +1687,7 @@ int ai_ShowOfficeRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
                 if (rows[i].rec->kind == 7)
                     d2_SetObjValue(rows[i].ctl[1], 0, 100, 0, 1);
                 else
-                    d2_SetObjValue4(rows[i].ctl[1], 0, 100, (int)gm_Liking(viewer->id, rows[i].rec->id, 1));
+                    d2_SetObjValue(rows[i].ctl[1], 0, 100, (int)gm_Liking(viewer->id, rows[i].rec->id, 1));
                 d2_SetObjEnabled(rows[i].ctl[1], 1);
                 d2_Objs[rows[i].ctl[1]].interactive = 1;
             }
@@ -1809,7 +1807,7 @@ int ai_AmountRow(int x, int y, int win, int font, LCAMOUNTROW *row, int titled)
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 0);
         }
         if (row->pickable != 0) {
@@ -1853,7 +1851,7 @@ int ai_DrawAmountRow(int x, int y, int win, LCAMOUNTROW *row)
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 0);
         }
         if (row->rec->partner == lc_CharRecs[ai_PlayerId].netId)
@@ -2970,9 +2968,9 @@ void ai_AmountLikingRows(AICHARREC *me, unsigned count, int *rows)
         chr = (AICHARREC *)*rows;
         if (chr != 0 && chr->id != 0xffff && rows[2] != -1) {
             if ((me->kind == 6 || me->kind == 7) && (chr->kind == 6 || chr->kind == 7))
-                d2_SetObjValue4(rows[2], 0, 100, 0);
+                d2_SetObjValue(rows[2], 0, 100, 0);
             else
-                d2_SetObjValue4(rows[2], 0, 100, (int)gm_Liking(me->id, chr->id, 1));
+                d2_SetObjValue(rows[2], 0, 100, (int)gm_Liking(me->id, chr->id, 1));
         }
         rows += 0xe;
     }
@@ -3801,7 +3799,7 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
     on = set.flags & 1;
     ctrl = d2_GetWinObj(win, 2, io_PrintText(0x194f, 0, charId, on + 0x1951));
     checks[0] = ctrl;
-    d2_SetObjValue2(ctrl, on);
+    d2_SetObjValue(ctrl, on);
     checks[1] = -1;
     checks[2] = -1;
     checks[3] = -1;
@@ -3810,24 +3808,24 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
         on = (set.flags >> 1) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1954, 0, charId, on + 0x1955));
         checks[1] = ctrl;
-        d2_SetObjValue2(ctrl, on);
+        d2_SetObjValue(ctrl, on);
         on = (set.flags >> 2) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1957, 0, charId, on + 0x1958));
         checks[2] = ctrl;
-        d2_SetObjValue2(ctrl, on);
+        d2_SetObjValue(ctrl, on);
         on = (set.flags >> 3) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x195a, 0, charId, on + 0x195b));
         checks[3] = ctrl;
-        d2_SetObjValue2(ctrl, on);
+        d2_SetObjValue(ctrl, on);
     }
     ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1953, charId, ai_OwnPlayer));
     *budgetCtrl = ctrl;
-    d2_SetObjValue4(ctrl, 1000, 9000, *budget);
+    d2_SetObjValue(ctrl, 1000, 9000, *budget);
     if (type->kind != 5 && setting != 0) {
         io_PrintText(0x42c2);
         ctrl = d2_WinOpenSlider(100, 300, 200, 0x32, 0x96, 0x7b, 0x1002, d2_LastWindow);
         *factorCtrl = ctrl;
-        d2_SetObjValue4(ctrl, 0x32, 0x96, (int)(setting->factor * 100.0f));
+        d2_SetObjValue(ctrl, 0x32, 0x96, (int)(setting->factor * 100.0f));
         return;
     }
     *factorCtrl = -1;
@@ -3980,7 +3978,7 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
             d2_Objs[pic].checked = slots[i].lock == 0;
             locks[i] = pic;
             sliders[i] = d2_WinOpenSlider(100, y, 200, 0, 0x64, 0x7b, 0x802, d2_LastWindow);
-            d2_SetObjValue4(sliders[i], 0, 0x64, slots[i].weight);
+            d2_SetObjValue(sliders[i], 0, 0x64, slots[i].weight);
             d2_SetObjEnabled(sliders[i], slots[i].lock == 0);
         } else {
             sliders[i] = -1;
@@ -4060,7 +4058,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
                     ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
                     for (i = 0; i < 7; i++)
                         if (sliders[i] != -1)
-                            d2_SetObjValue4(sliders[i], 0, 100, slots[i].weight);
+                            d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
                 }
             } else if (ai_MasterLetterPage == 0 && factorCtrl != -1 && d2_PointerObj == factorCtrl) {
                 ai_SetSettingFactor((int)bld, d2_GetObjValue(factorCtrl) * 0.01f);
@@ -4090,7 +4088,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
                         ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
                         for (i = 0; i < 7; i++)
                             if (sliders[i] != -1)
-                                d2_SetObjValue4(sliders[i], 0, 100, slots[i].weight);
+                                d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
                     }
                 }
             } else if (ai_MasterLetterPage == 0) {
@@ -4609,7 +4607,7 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
                     d2_Objs[rows[i].icon].greyed = usable == 0;
                     bar = d2_WinOpenSlider(0x8c, h + y + 4, 0x40, 0, 100, 0x75, 0x442, d2_LastWindow);
                     rows[i].bar = bar;
-                    d2_SetObjValue4(bar, 0, 100, liking);
+                    d2_SetObjValue(bar, 0, 100, liking);
                     d2_SetObjEnabled(bar, 0);
                     d2_MoveObj(d2_LastWindowPtr->x - (d2_Objs[bar].w - w) / 2 + 0x96, d2_LastWindowPtr->y + h + y + 4, bar);
                     step = 0x5a;
@@ -5440,7 +5438,7 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
         text = io_PrintText(0x1f4e);
         giveBtn = d2_GetWinObj(win, 1, text);
         closeBtn = d2_GetWinObj(win, 1, text + 1);
-        d2_SetObjValue4(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(most, ai_OwnPlayer),
+        d2_SetObjValue(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(most, ai_OwnPlayer),
                        gm_ConvertMoney(least, ai_OwnPlayer));
     }
     given = 0;
@@ -6215,7 +6213,7 @@ void ai_CityStatsPanel(void)
         d2_CreateWinText(0x19, i * 30 + 4, buf, d2_LastWindow);
         d2_Objs[obj].interactive = 1;
         d2_Objs[obj].checkable = 1;
-        d2_SetObjValue2(obj, checked);
+        d2_SetObjValue(obj, checked);
         for (k = 0; k < 10; k++)
             d2_PlotLine(d2_Wins[d2_LastWindow].w - 1, i * 30 + 9 + k, d2_Wins[d2_LastWindow].w - 0xb, i * 30 + 9 + k,
                         colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
@@ -6292,7 +6290,7 @@ void ai_PlayerComparePanel(void)
         ai_CentredText(buf, 0x36, LC_COMPARE_X(count, i) + 0x22, 300, 0x56);
         colour = min(max(((AICHARREC *)ai_Chars)[rank->id].ref54 - 0x59a, 0), 7);
         obj = d2_WinOpenSlider(0x5a, LC_COMPARE_X(count, i) + 7, 300, 0, 100, sliderPics[colour], 0x42, d2_LastWindow);
-        d2_SetObjValue4(obj, 0, 100, value);
+        d2_SetObjValue(obj, 0, 100, value);
         txt_Format(buf, "%i", rank->points);
         ai_CentredText(buf, 500, LC_COMPARE_X(count, i), 200, 0x55);
     }
@@ -7146,7 +7144,7 @@ int ai_LawPrivilegeWindow(AICHARREC *me, LCORDMSG *m)
             t = io_PrintText(0x13d0, word, 0x13d3);
             ctrl = d2_GetWinObj(win, 1, t);
             ctrl2 = d2_GetWinObj(win, 1, t + 1);
-            d2_SetObjValue4(ctrl, rec.min, rec.max, rec.cur);
+            d2_SetObjValue(ctrl, rec.min, rec.max, rec.cur);
             base = 0;
             break;
         case 1:
@@ -7402,7 +7400,7 @@ int ai_BewitchWindow(AICHARREC *ch)
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     slider = d2_GetWinObj(win, 1, io_PrintText(0x1db4, ch->id, ch->id));
-    d2_SetObjValue4(slider, 1, 5, 1);
+    d2_SetObjValue(slider, 1, 5, 1);
     d2_ClickedId = -1;
     do {
         if (d2_ClickedId != -1) {
@@ -8243,7 +8241,7 @@ int ai_PenanceWindow(AICHARREC *me, LCORDMSG *m)
         ok = d2_GetWinObj(win, 1, t + 1);
         cancel = d2_GetWinObj(win, 1, t + 2);
         slider = d2_GetWinObj(win, 1, t);
-        d2_SetObjValue4(slider, 1, 9, 1);
+        d2_SetObjValue(slider, 1, 9, 1);
         d2_ClickedId = -1;
         do {
             if (d2_ClickedId != -1) {

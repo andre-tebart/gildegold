@@ -1933,12 +1933,12 @@ void ai_GraveFogWindow(AIBLD *rec)
     d2_SetForm(win, 1);
     io_PrintText(0x40b7, 0x40b6, target->owner, target);
     factor1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-    d2_SetObjValue4(factor1, 0, 2, 0);
+    d2_SetObjValue(factor1, 0, 2, 0);
     d2_SetSliderFlags(factor1, 0x82);
     d2_SetLabel(factor1, txt_Ptrs[0x40bf]);
     d2_SetList(factor1, 3, txt_Ptrs[0x40c0], txt_Ptrs[0x40c1], txt_Ptrs[0x40c2]);
     factor2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-    d2_SetObjValue4(factor2, 0, 2, 0);
+    d2_SetObjValue(factor2, 0, 2, 0);
     d2_SetSliderFlags(factor2, 0x82);
     d2_SetLabel(factor2, txt_Ptrs[0x40c3]);
     d2_SetList(factor2, 3, txt_Ptrs[0x40c4], txt_Ptrs[0x40c5], txt_Ptrs[0x40c6]);
@@ -2607,7 +2607,7 @@ void ai_GraveHauntContact(AIBLD *rec)
     k = io_PrintText((char *)0x4099);
     btnPay = d2_GetWinObj(win, 2, k);
     btnLeave = d2_GetWinObj(win, 2, k + 1);
-    d2_SetObjValue4(slider, 4, 0xc, 4);
+    d2_SetObjValue(slider, 4, 0xc, 4);
     d2_ClickedId = -1;
     do {
         if (dm_L.rup != 0) {

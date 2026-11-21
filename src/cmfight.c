@@ -95,8 +95,6 @@ extern GAPDATA full_data_602568[];
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
@@ -882,7 +880,7 @@ void cm_OpenCharInfoWin(int a, char *c)
         sv_ValueBar(4, 4, gm_SkillPoints(c, 3), 0x4df);
         hp = (int)(gm_HealthRatio(c) * 100.0);
         bar = d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue4(bar, 0, 0x64, hp);
+        d2_SetObjValue(bar, 0, 0x64, hp);
         return;
     }
 }
@@ -1292,10 +1290,10 @@ void cm_UpdatePortraits()
         }
         if (c->selected != 0) {
             d2_AddPointerItem(c->picture, 1);
-            d2_SetObjValue2(cm_Portraits[i].portrait, 1);
+            d2_SetObjValue(cm_Portraits[i].portrait, 1);
             cm_SelectedCount++;
         } else
-            d2_SetObjValue2(cm_Portraits[i].portrait, 0);
+            d2_SetObjValue(cm_Portraits[i].portrait, 0);
         txt_FormatS(buf, "%1N1 %i%", cm_Portraits[i].c->id, (int)(gm_HealthRatio(cm_Portraits[i].c) * 100.0));
         d2_SetObjText(cm_Portraits[i].text, buf);
         w = (AIWEAPON *)cm_CharWeaponAny((char *)cm_Portraits[i].c);
@@ -4329,7 +4327,7 @@ void cm_FightFrame(char *r)
     CMCUTENTRY sl;
     CMCUTENTRY *q;
 
-    d2_SetObjValue4(cm_FightTimeBar, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
+    d2_SetObjValue(cm_FightTimeBar, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();

@@ -4416,7 +4416,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
             d2_Objs[t].w = d2_LastWindowPtr->w;
             d2_Objs[t].centred = 1;
             d2_SetObjFont(t, 0x54);
-            d2_SetObjValue4(slider, 0, 100, (int)(f * 100.0f));
+            d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
         }
         d2_SetObjEnabled(start, d2_Radios[group].sel != -1 && n != 0 && state == 0 ? 1 : 0);
         d2_SetObjEnabled(other, state == 0);
@@ -4602,7 +4602,7 @@ void ai_AlchemistWindow(unsigned char *obj)
     d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, w.win2);
     d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, w.win2);
     w.slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
-    d2_SetObjValue4(w.slider, 0, 100, (int)(rec->value * 100.0f));
+    d2_SetObjValue(w.slider, 0, 100, (int)(rec->value * 100.0f));
     txt_Format(line, (int)"%s %s", owner->first, owner->family);
     t = d2_CreateWinText(0, 0, line, w.win2);
     d2_Objs[t].w = d2_Wins[w.win2].w;
@@ -4662,7 +4662,7 @@ void ai_AlchemistWindow(unsigned char *obj)
             d2_Objs[t].w = d2_LastWindowPtr->w;
             d2_Objs[t].centred = 1;
             d2_SetObjFont(t, 0x54);
-            d2_SetObjValue4(prog, 0, 100, (int)(f * 100.0f));
+            d2_SetObjValue(prog, 0, 100, (int)(f * 100.0f));
         }
         if (state != lastState || d3_Time > lastClock + 0x32) {
             owner = (AICHAR *)ahm_OwnerChar(obj);
@@ -4677,7 +4677,7 @@ void ai_AlchemistWindow(unsigned char *obj)
             d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, w.win2);
             d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, w.win2);
             w.slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
-            d2_SetObjValue4(w.slider, 0, 100, (int)(rec->value * 100.0f));
+            d2_SetObjValue(w.slider, 0, 100, (int)(rec->value * 100.0f));
             txt_Format(line, (int)"%s %s", owner->first, owner->family);
             t = d2_CreateWinText(0, 0, line, w.win2);
             d2_Objs[t].w = d2_Wins[w.win2].w;
@@ -4845,7 +4845,7 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
     d2_SetForm(win, 1);
     v = io_PrintText(0x403a, 0x182, ai_OwnPlayer);
     field = d2_GetWinObj(win, 1, v);
-    d2_SetObjValue4(field, gm_ConvertMoney(tenth, ai_OwnPlayer), gm_ConvertMoney(points, ai_OwnPlayer),
+    d2_SetObjValue(field, gm_ConvertMoney(tenth, ai_OwnPlayer), gm_ConvertMoney(points, ai_OwnPlayer),
                     gm_ConvertMoney(tenth, ai_OwnPlayer));
     d2_SetForm(win, 2);
     v = io_PrintText(0x403b);

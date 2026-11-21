@@ -30,7 +30,6 @@ extern int gm_PlayerRecords[688];
 #include "d3_vec.h"
 #include "surf.h"
 #include "menu.h"
-#define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #include "sv_t.h"
 #include "lc.h"
 #include "data_views.h"
@@ -169,7 +168,7 @@ void cm_SendProofExecuted(int record, int character); /* 0x4c4ed0, cm.c: message
 void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5a, adds delta to the
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
-void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
+void d2_SetObjValue(int obj, ...); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
 char *itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 
 /* 0x5d34b0, the file selector window "menu\fileselector": lists the files of dir with the extension ext
@@ -212,7 +211,7 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
         okBtn = d2_GetWinObj(win, 3, io_PrintText(0x1ccc));
         d2_SetForm(win, 0);
         input = d2_GetWinObj(win, 0, 0);
-        d2_SetObjValue2(input, txt_DefaultFileName);
+        d2_SetObjValue(input, txt_DefaultFileName);
     }
     d2_SetForm(win, 1);
     for (i = 0; i < n; i++) {
@@ -237,7 +236,7 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
                         sv_PopRequest = 1;
                         ret = 1;
                     } else {
-                        d2_SetObjValue2(input, recs[i].name);
+                        d2_SetObjValue(input, recs[i].name);
                     }
                     break;
                 }
@@ -425,7 +424,7 @@ void d2_SetObjWidth(int obj, short w);                               /* 0x46c260
 int d2_OpenInput(int x, int y, int w, int h, unsigned char flags);   /* 0x46a110 */
 void d2_RemoveObj(int obj);                                          /* 0x46e710 */
 void d2_SetObjFont(int obj, int font);                               /* 0x4760b0 */
-void d2_SetObjValue();                                               /* 0x475cb0, K&R: d2.c's definition takes 5 parameters, the call sites push 2, 4 or 5 */
+void d2_SetObjValue(int obj, ...);                                               /* 0x475cb0, d2.c (varargs: the call sites pass 1, 3 or 4 values) */
 void d2_SetObjMax(int obj, int v);                                   /* 0x475f40 */
 
 /* d2.h's D2FADE (the fade record of 0x4767d0): only the flags byte is read here (bit 2 = done, the
@@ -767,7 +766,7 @@ int ai_EditText(int x, int y, char *text)
     ret = 0;
     id = d2_OpenInput(x, y, 0, d2_FontHeight, 1);
     d2_SetObjFont(id, 0x53);
-    d2_SetObjValue(id, text);  /* @original: this call site pushes 2 arguments (0x5d4500) against the 5-parameter definition */
+    d2_SetObjValue(id, text);
     d2_FocusInput(id);
     input = &d2_Objs[id].input;
     d2_Inputs[*input].w = 0x80;
@@ -1913,38 +1912,38 @@ void ai_OptionsGfxScreen(void)
         mode = dflt;
     if (dd_Has1152x864 != 0)
         mode = 2;
-    d2_SetObjValue4(res, 0, mode, ai_GfxResolution.word & 0xff);
+    d2_SetObjValue(res, 0, mode, ai_GfxResolution.word & 0xff);
     d2_SetSliderFlags(res, 0x82);
     d2_SetLabel(res, txt_Ptrs[0x1c67]);
     d2_SetList(res, 3, txt_Ptrs[0x1c73], txt_Ptrs[0x1c74], txt_Ptrs[0x1c75]);
-    d2_SetObjValue4(obj1, 0, 2, ai_GfxDetail);
+    d2_SetObjValue(obj1, 0, 2, ai_GfxDetail);
     d2_SetSliderFlags(obj1, 0x82);
     d2_SetLabel(obj1, txt_Ptrs[0x1c68]);
     d2_SetList(obj1, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj2, 0, 2, ai_GfxTextureScale);
+    d2_SetObjValue(obj2, 0, 2, ai_GfxTextureScale);
     d2_SetSliderFlags(obj2, 0x82);
     d2_SetLabel(obj2, txt_Ptrs[0x1c69]);
     d2_SetList(obj2, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj3, 0, 2, ai_GfxFloorLod);
+    d2_SetObjValue(obj3, 0, 2, ai_GfxFloorLod);
     d2_SetSliderFlags(obj3, 0x82);
     d2_SetLabel(obj3, txt_Ptrs[0x1c6a]);
     d2_SetList(obj3, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj4, 0, 1, ai_GfxFloor);
+    d2_SetObjValue(obj4, 0, 1, ai_GfxFloor);
     d2_SetSliderFlags(obj4, 0x82);
     d2_SetLabel(obj4, txt_Ptrs[0x1c6b]);
     d2_SetList(obj4, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
-    d2_SetObjValue4(obj5, 0, 1, ai_GfxLodHandling);
+    d2_SetObjValue(obj5, 0, 1, ai_GfxLodHandling);
     d2_SetSliderFlags(obj5, 0x82);
     d2_SetLabel(obj5, txt_Ptrs[0x1c6c]);
     d2_SetList(obj5, 2, txt_Ptrs[0x1c70], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj6, 0, 2, ai_GfxShadowDetail);
+    d2_SetObjValue(obj6, 0, 2, ai_GfxShadowDetail);
     d2_SetSliderFlags(obj6, 0x82);
     d2_SetLabel(obj6, txt_Ptrs[0x1c6d]);
     d2_SetList(obj6, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj7, 0x32, 100, 100 - (ai_GfxFog.word & 0xff));
+    d2_SetObjValue(obj7, 0x32, 100, 100 - (ai_GfxFog.word & 0xff));
     d2_SetSliderFlags(obj7, 0x882);
     d2_SetLabel(obj7, txt_Ptrs[0x1c6e]);
-    d2_SetObjValue4(obj8, 0, 2, ai_GfxCameraLimits);
+    d2_SetObjValue(obj8, 0, 2, ai_GfxCameraLimits);
     d2_SetSliderFlags(obj8, 0x82);
     d2_SetLabel(obj8, txt_Ptrs[0x1c6f]);
     d2_SetList(obj8, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
@@ -2024,19 +2023,19 @@ void ai_OptionsSfxScreen(void)
     msx = d2_GetWinObj(form, 1, 2);
     speech = d2_GetWinObj(form, 1, 3);
     freq = d2_GetWinObj(form, 1, 4);
-    d2_SetObjValue4(master, 0, 0x7f, ai_SoundOptions.masterVolume);
+    d2_SetObjValue(master, 0, 0x7f, ai_SoundOptions.masterVolume);
     d2_SetSliderFlags(master, 0x882);
     d2_SetLabel(master, txt_Ptrs[0x1c91]);
-    d2_SetObjValue4(sfx, 0, 0x7f, ai_SoundOptions.sfxVolume);
+    d2_SetObjValue(sfx, 0, 0x7f, ai_SoundOptions.sfxVolume);
     d2_SetSliderFlags(sfx, 0x882);
     d2_SetLabel(sfx, txt_Ptrs[0x1c92]);
-    d2_SetObjValue4(msx, 0, 0x7f, ai_SoundOptions.msxVolume);
+    d2_SetObjValue(msx, 0, 0x7f, ai_SoundOptions.msxVolume);
     d2_SetSliderFlags(msx, 0x882);
     d2_SetLabel(msx, txt_Ptrs[0x1c93]);
-    d2_SetObjValue4(speech, 0, 0x7f, ai_SoundOptions.voiceVolume);
+    d2_SetObjValue(speech, 0, 0x7f, ai_SoundOptions.voiceVolume);
     d2_SetSliderFlags(speech, 0x882);
     d2_SetLabel(speech, txt_Ptrs[0x1c94]);
-    d2_SetObjValue4(freq, 0, 4, ai_SoundOptions.msxFreq & 0xff);
+    d2_SetObjValue(freq, 0, 4, ai_SoundOptions.msxFreq & 0xff);
     d2_SetSliderFlags(freq, 0x82);
     d2_SetLabel(freq, txt_Ptrs[0x1c95]);
     d2_SetList(freq, 5, txt_Ptrs[0x1c87], txt_Ptrs[0x1c88], txt_Ptrs[0x1c89], txt_Ptrs[0x1c8a], txt_Ptrs[0x1c8b]);
@@ -2119,45 +2118,45 @@ void ai_OptionsGameScreen(void)
     panel1 = d2_GetWinObj(form, 1, 10);
     panel3 = d2_GetWinObj(form, 1, 11);
     help = d2_GetWinObj(form, 1, 12);
-    d2_SetObjValue4(speed, 0, 0xa0, ai_OptionSpeed);
+    d2_SetObjValue(speed, 0, 0xa0, ai_OptionSpeed);
     d2_SetSliderFlags(speed, 0x882);
     d2_SetLabel(speed, txt_Ptrs[0x1c96]);
-    d2_SetObjValue4(mouse, 0, 0x1f4, ai_OptionMouseSpeed);
+    d2_SetObjValue(mouse, 0, 0x1f4, ai_OptionMouseSpeed);
     d2_SetSliderFlags(mouse, 0x882);
     d2_SetLabel(mouse, txt_Ptrs[0x1c97]);
-    d2_SetObjValue4(scroll, 0, 100, ai_OptionScrollSpeed);
+    d2_SetObjValue(scroll, 0, 100, ai_OptionScrollSpeed);
     d2_SetSliderFlags(scroll, 0x882);
     d2_SetLabel(scroll, txt_Ptrs[0x1c98]);
-    d2_SetObjValue4(camera, 0, 100, ai_OptionCameraSpeed);
+    d2_SetObjValue(camera, 0, 100, ai_OptionCameraSpeed);
     d2_SetSliderFlags(camera, 0x882);
     d2_SetLabel(camera, txt_Ptrs[0x1c99]);
-    d2_SetObjValue4(sw0, 0, 1, ai_GameSwitches.word & 0xff);
+    d2_SetObjValue(sw0, 0, 1, ai_GameSwitches.word & 0xff);
     d2_SetSliderFlags(sw0, 0x82);
     d2_SetLabel(sw0, txt_Ptrs[0x1c9a]);
     d2_SetList(sw0, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_EnableObject(sw0, 0);
-    d2_SetObjValue4(sw2, 0, 1, ai_GameSwitches.byte[2]);
+    d2_SetObjValue(sw2, 0, 1, ai_GameSwitches.byte[2]);
     d2_SetSliderFlags(sw2, 0x82);
     d2_SetLabel(sw2, txt_Ptrs[0x1c9b]);
     d2_SetList(sw2, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
-    d2_SetObjValue4(sw3, 0, 1, ai_GameSwitches.byte[3]);
+    d2_SetObjValue(sw3, 0, 1, ai_GameSwitches.byte[3]);
     d2_SetSliderFlags(sw3, 0x82);
     d2_SetLabel(sw3, txt_Ptrs[0x1c9c]);
     d2_SetList(sw3, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
-    d2_SetObjValue4(panel, 0, 4, ai_GamePanel.word & 0xff);
+    d2_SetObjValue(panel, 0, 4, ai_GamePanel.word & 0xff);
     d2_SetSliderFlags(panel, 0x82);
     d2_SetLabel(panel, txt_Ptrs[0x1c9d]);
     d2_SetList(panel, 5, txt_Ptrs[0x1c76], txt_Ptrs[0x1c77], txt_Ptrs[0x1c78], txt_Ptrs[0x1c79], txt_Ptrs[0x1c7a]);
-    d2_SetObjValue4(panel1, 0, 1, ai_GamePanel.byte[1]);
+    d2_SetObjValue(panel1, 0, 1, ai_GamePanel.byte[1]);
     d2_SetSliderFlags(panel1, 0x82);
     d2_SetLabel(panel1, txt_Ptrs[0x1c9e]);
     d2_SetList(panel1, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_EnableObject(panel1, 0);
-    d2_SetObjValue4(help, 0, 1, ai_OptionPanelHelp.word & 0xff);
+    d2_SetObjValue(help, 0, 1, ai_OptionPanelHelp.word & 0xff);
     d2_SetSliderFlags(help, 0x82);
     d2_SetLabel(help, txt_Ptrs[0x1ca1]);
     d2_SetList(help, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
-    d2_SetObjValue4(panel3, 0, 1, ai_GamePanel.byte[3]);
+    d2_SetObjValue(panel3, 0, 1, ai_GamePanel.byte[3]);
     d2_SetSliderFlags(panel3, 0x82);
     d2_SetLabel(panel3, txt_Ptrs[0x1ca0]);
     d2_SetList(panel3, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
@@ -2334,8 +2333,7 @@ void ai_MessageFilterScreen(void)
         d2_Objs[id].picW = 0x78;
         d2_Objs[id].captionX = 0x1e;
         d2_Objs[id].captionY = 3;
-        d2_SetObjValue(id, he_IsMessageKindFiltered(i + 0x605) == 0); /* @original: this call site
-            pushes 2 arguments against the 5-parameter K&R definition (0x5d7fe5) */
+        d2_SetObjValue(id, he_IsMessageKindFiltered(i + 0x605) == 0);
         i++;
     } while (i < 9);
     pump = sv_RunFrame(ai_MessageFilterScreen, 0x677c7);
@@ -2838,7 +2836,7 @@ void ai_CurseWindow(int building)
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 2);
     slider = d2_WinOpenSlider(0x57, 7, 200, 0, 100, 0x7b, 2, d2_LastWindow);
-    d2_SetObjValue5(slider, 0, 5, 0, 1);
+    d2_SetObjValue(slider, 0, 5, 0, 1);
     d2_SetList(slider, 6, txt_Ptrs[0x41ca], txt_Ptrs[0x41cb], txt_Ptrs[0x41cc], txt_Ptrs[0x41cd], txt_Ptrs[0x41ce],
                txt_Ptrs[0x41cf]);
     d2_SetForm(form, 3);
@@ -2850,7 +2848,7 @@ void ai_CurseWindow(int building)
         v = d2_GetObjValue(slider);
         if (v >= limit)
             v = limit;
-        d2_SetObjValue5(slider, 0, limit, v, 1);
+        d2_SetObjValue(slider, 0, limit, v, 1);
         txt_Format(text, v + 0x41d0, target->id);
         d2_SetForm(form, 1);
         io_PrintText("$C");
@@ -2930,11 +2928,11 @@ void ai_CurseTargetWindow(int building)
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 2);
     share = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2, 10, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    d2_SetObjValue4(share, 0, 100, 0);
+    d2_SetObjValue(share, 0, 100, 0);
     d2_SetForm(form, 2);
     victim = d2_WinOpenSlider(0x57, 7, 200, 0, 100, 0x7b, 2, d2_LastWindow);
     gm_CurseTargetCount((char *)building);
-    d2_SetObjValue5(victim, 0, gm_CurseTargetCount((char *)building) - 1, 0, 1);
+    d2_SetObjValue(victim, 0, gm_CurseTargetCount((char *)building) - 1, 0, 1);
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41f6], txt_Ptrs[0x41f7]);
     do {
@@ -2946,13 +2944,13 @@ void ai_CurseTargetWindow(int building)
                 when.hour += ev->done ? 0 : 2;
                 elapsed = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&ai_Time);
                 total = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&when);
-                d2_SetObjValue4(share, 0, 100, (int)(min((float)elapsed / total, 1.0f) * 100.0f));
+                d2_SetObjValue(share, 0, 100, (int)(min((float)elapsed / total, 1.0f) * 100.0f));
             } else {
                 memcpy(&when, &ai_Time, sizeof(AITIME));
                 gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
                 when.hour = util_RandomU(2) + 0x15;
                 when.min = 0;
-                d2_SetObjValue4(share, 0, 100, 0);
+                d2_SetObjValue(share, 0, 100, 0);
             }
             d2_SetForm(form, 1);
             io_PrintText("$C");
@@ -3045,7 +3043,7 @@ void ai_HomageWindow(int building)
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 2);
     slider = d2_WinOpenSlider(0x57, 7, 200, 0, 100, 0x7b, 2, d2_LastWindow);
-    d2_SetObjValue5(slider, 2, 8, 2, 1);
+    d2_SetObjValue(slider, 2, 8, 2, 1);
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x420c], txt_Ptrs[0x420d]);
     do {

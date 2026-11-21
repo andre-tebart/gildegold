@@ -23,7 +23,6 @@
 #include "txt.h"
 #include "dd_vesa.h"
 #include "d2.h"
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the radio loop's two calls push only the object and the value (0x46c661 push 0; push eax, 0x46c66a push 1; push ecx, add esp, 8) */
 #include "shp_bank.h"
 #ifdef REA_FRAME_DUMP
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
@@ -1515,9 +1514,9 @@ void d2_RadioSelect(int g, int sel)
 
     for (i = 0; i < d2_Radios[g].n; i++)
         if (i != sel)
-            d2_SetObjValue2(d2_Radios[g].objs[i], 0);  /* @original: this call site pushes 2 arguments (0x46c661: push 0; push eax) against the 5-parameter definition */
+            d2_SetObjValue(d2_Radios[g].objs[i], 0);
         else
-            d2_SetObjValue2(d2_Radios[g].objs[i], 1);  /* @original: this call site pushes 2 arguments (0x46c66a: push 1; push ecx) against the 5-parameter definition */
+            d2_SetObjValue(d2_Radios[g].objs[i], 1);
     d2_Radios[g].sel = sel;
 }
 /* 0x46c6a0, the selected button of a radio button group */
@@ -5364,27 +5363,37 @@ int d2_InputStep(D2INPUT *in)
 }
 /* 0x475cb0, sets the value (and range) of an input / slider / counter object */
 
-void d2_SetObjValue(int obj, int a, int b, int c, int d)
+void d2_SetObjValue(int obj, ...)
 {
     D2OBJ *o;
     D2INPUT *in;
     int k, mn, mx, v;
     unsigned int fl;
+    va_list ap;
+    int a, b, c, d;
+    char *s;
 
     if (obj == -1)
         return;
     if (obj > 0x300)
         return;
     o = &d2_Objs[obj];
+    va_start(ap, obj);
     if (o->type == 0x41) {
         in = (D2INPUT *)o->data;
         if (in->flags & 1) {
-            if (strlen((char *)a) > 0xfe)
+            s = va_arg(ap, char *);
+            va_end(ap);
+            if (strlen(s) > 0xfe)
                 return;
-            strcpy(in->text, (char *)a);
+            strcpy(in->text, s);
             return;
         }
         if (in->flags & 2) {
+            a = va_arg(ap, int);
+            b = va_arg(ap, int);
+            c = va_arg(ap, int);
+            va_end(ap);
             in->minval = a;
             in->maxval = b;
             in->value = c;
@@ -5408,6 +5417,11 @@ void d2_SetObjValue(int obj, int a, int b, int c, int d)
         }
     }
     if (o->type == 0x45) {
+        a = va_arg(ap, int);
+        b = va_arg(ap, int);
+        c = va_arg(ap, int);
+        d = va_arg(ap, int);
+        va_end(ap);
         o->u.s.min = a;
         o->u.s.max = b;
         o->u.s.value = c;
@@ -5417,6 +5431,8 @@ void d2_SetObjValue(int obj, int a, int b, int c, int d)
             return;
         }
     } else if (o->checkable != 0 || o->interactive != 0) {
+        a = va_arg(ap, int);
+        va_end(ap);
         o->checked = a & 0xff;
         o->highlighted = a & 0xff;
     }

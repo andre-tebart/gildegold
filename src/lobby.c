@@ -56,7 +56,6 @@ extern int sv_PopRequest;
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
 
-#define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the lobby screen pushes 2 arguments (input, ch_EmptyName) */
 #define cm_JoinChar (*(CMJOIN *)((char *)&cm_LobbyRecords + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
 
 
@@ -187,7 +186,7 @@ int lobby_Screen(void)
     input = d2_GetWinObj(lobby_Form, 0, 0);
     d2_SetObjMax(input, 0x40);
     state = 0;
-    d2_SetObjValue2(input, ch_EmptyName);
+    d2_SetObjValue(input, ch_EmptyName);
     d2_Objs[input].w = 0x26c;
     d2_Inputs[d2_Objs[input].input].flags |= 0x200;
     d2_Inputs[d2_Objs[input].input].w = 0x26c;
@@ -204,7 +203,7 @@ int lobby_Screen(void)
         } else if (d2_FocusedInput == 0 || kb_Last == 0x1c) {
             state = 0;
             strcpy(name, (char *)d2_GetObjValue(input));
-            d2_SetObjValue2(input, ch_EmptyName);
+            d2_SetObjValue(input, ch_EmptyName);
             if (strlen(name) != 0) {
                 if (lobby_ChatTo != -1)
                     cm_LobbySendChat(lobby_ChatTo, name);
@@ -564,8 +563,8 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     }
     d2_SetForm(win, 6);
     exitBtn = d2_GetWinObj(win, 6, io_PrintText(0x7e));
-    d2_SetObjValue2(firstIn, init_PlayerProfile.firstName);
-    d2_SetObjValue2(familyIn, init_PlayerProfile.familyName);
+    d2_SetObjValue(firstIn, init_PlayerProfile.firstName);
+    d2_SetObjValue(familyIn, init_PlayerProfile.familyName);
     for (i = 0; i < 8; i++)
         if (d2_Objs[coats[i]].pic == init_PlayerProfile.coat) {
             d2_RadioSelect(coatGroup, i);

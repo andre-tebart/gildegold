@@ -284,7 +284,7 @@ void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned
 int d2_RemoveWindow(int win);                                                      /* 0x472ce0, 1 if the window was open */
 void d2_AddToDrawOrder(int obj, D2WIN *win);                                         /* 0x4730e0 */
 void d2_SetCaption(int obj, char *text);                                         /* 0x473540, button caption */
-void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, sets the value (and range) of an input / slider / counter object; the original's call sites that push 2 or 4 arguments use their unit's cast macro (d2_SetObjValue2 / 4) */
+void d2_SetObjValue(int obj, ...);                         /* 0x475cb0, sets the value (and range) of an input / slider / counter object: a string, or 1, 3 or 4 ints by its kind */
 void *d2_SetFont(int font);                                                    /* 0x476030, selects the font */
 void d2_FreeFades(void);                                                        /* 0x476b40 */
 struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                                  /* 0x478cc0, creates a surface */

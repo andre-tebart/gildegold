@@ -7,9 +7,8 @@
    d2_AddHitRectI), cm.h, rt.h, lc.h (the ai_ panels), anm.h, f3snd.h, sblib.h, menu.h (the option / save screens,
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
-   6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
-   @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
-   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHE) record the parameter types the original's
+   6 calls to re-grade). The
+   @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, ai_SwitchRoomI) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -92,8 +91,6 @@ extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 #define sv_D2Objs d2_Objs  /* 0xf8f080, the typed view d2.h gives it (D2OBJ *) */
 
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original sv_OpenBuildingPanel pushes 4 arguments (0x528a1e), as rt.c's calls */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original the checkbox / chat calls push two (0x524d64 sv_UpdateMemberList: 2 pushes, add esp, 8; 0x52fecc / 0x53008b sv_ChatConsole: 2 pushes) */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int sv_ViewShape;  /* 0x6f22c0 */
@@ -421,7 +418,7 @@ int sv_MessageBox(int text, unsigned flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) && bar != -1)
-            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
+            d2_SetObjValue(bar, 0, 500, d3_Time - t0);
         if ((flags & 4) && d3_Time > t0 + 500)
             sv_PopRequest = 1;
     }
@@ -488,7 +485,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) != 0 && bar != -1)
-            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
+            d2_SetObjValue(bar, 0, 500, d3_Time - t0);
         if ((flags & 4) != 0 && d3_Time > t0 + 500)
             sv_PopRequest = 1;
     }
@@ -558,7 +555,7 @@ int sv_MessageBoxYesNo(int text, unsigned flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) != 0 && bar != -1)
-            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
+            d2_SetObjValue(bar, 0, 500, d3_Time - t0);
         if ((flags & 4) != 0 && d3_Time > t0 + 500)
             sv_PopRequest = 1;
     }
@@ -693,7 +690,7 @@ void sv_SceneLoadProgress(int kind, int cur, int total)
         sv_LoadFrame = 0;
         h = d2_OpenSlider((int)(d3_ViewW * 0.5f + d3_ViewX - 205.0f), d2_ScreenH - 0x40, 0x190, 0, 0x190, 0x83, 0x42);
         sv_LoadSlider = h;
-        d2_SetObjValue4(h, 0, 0x190, 0);
+        d2_SetObjValue(h, 0, 0x190, 0);
         d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
         if (sv_LoadSlider == -1)
             goto lend;
@@ -701,9 +698,9 @@ void sv_SceneLoadProgress(int kind, int cur, int total)
     if (kind == 0 || sv_LoadFrame % 10 == 0)
         d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_BackSurf, 0, 0, d2_ScreenSurf);
     if (kind == 0) {
-        d2_SetObjValue4(sv_LoadSlider, 0, 0x190, cur * 200 / total);
+        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total);
     } else if (kind == 1) {
-        d2_SetObjValue4(sv_LoadSlider, 0, 0x190, cur * 200 / total + 200);
+        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total + 200);
         if (cur >= total - 1) {
             d2_RemoveObj(sv_LoadSlider);
             sv_LoadSlider = -1;
@@ -970,17 +967,17 @@ extern char d2_GfxDir[];             /* 0xf8ef80, the data directory */
 extern char sv_GroundplanColours[];
 extern int d3_CurrentScene;                /* 0x633444 */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
-struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */
-void d2_GetPixelColour();                     /* 0x4798f0 */
+struct D2SURF * d2_LoadBmpSurface(char *name);                     /* 0x478b50 */
+void d2_GetPixelColour(int x, int y, struct D2SURF *surf, unsigned char *rgb);                     /* 0x4798f0 */
 struct D2SURF; int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, struct D2SURF *surf);  /* 0x4799e0 */
 void ai_SwitchRoom(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
-int d2_FindPic();                     /* 0x468890 */
+int d2_FindPic(char *name);                     /* 0x468890 */
 char *strupr(char *);                     /* 0x5ea986 */
 #define ai_SwitchRoomI ((void (*)(int, int))ai_SwitchRoom)  /* @original: sv_UpdateGroundplan zero-extends the room word into an int argument (xor edx,edx / mov dx,[esi]) */
 extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here) */
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
-int d2_CompareColour();                     /* 0x478930 */
+int d2_CompareColour(char *a, char *b);                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research class of a building kind */
@@ -1946,9 +1943,9 @@ void sv_UpdateMemberList(unsigned char *g)
             sv_DrawBalanceBar(0x34, 4, ai_Chars[sv_MemberRows[n].chr], 3, 0x4f1);
         }
         if (((SVCHARREC *)ai_Chars[i])->selected != 0)
-            d2_SetObjValue2(sv_MemberRows[n].check, 1);
+            d2_SetObjValue(sv_MemberRows[n].check, 1);
         else
-            d2_SetObjValue2(sv_MemberRows[n].check, 0);
+            d2_SetObjValue(sv_MemberRows[n].check, 0);
     }
     for (n = 0; n < 0x20; n++) {
         r = &sv_MemberRows[n];
@@ -1970,9 +1967,9 @@ void sv_UpdateMemberList(unsigned char *g)
             continue;
         if (((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
             d2_AddPointerItem(sv_D2Objs[sv_MemberRows[n].check].pic, 1);
-            d2_SetObjValue2(sv_MemberRows[n].check, 1);
+            d2_SetObjValue(sv_MemberRows[n].check, 1);
         } else
-            d2_SetObjValue2(sv_MemberRows[n].check, 0);
+            d2_SetObjValue(sv_MemberRows[n].check, 0);
         im1 = -1;
         if (sv_MemberRows[n].icon[0] != -1) {
             d2_RemoveObj(sv_MemberRows[n].icon[0]);
@@ -3563,7 +3560,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
         sv_PanelHealthBar = -1;
     else {
         sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7b, 0x38, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
+        d2_SetObjValue(sv_PanelHealthBar, 0, 100, level);
     }
     if ((b->flags5a & 1) == 0 && b->type != 0x47 && b->type != 0x1d && b->type != 0x57) {
         cls = gm_BuildingClass(b->type);
@@ -3652,7 +3649,7 @@ void sv_OpenCartPanel(AIOBJ *c)
     if (*owner == ai_PlayerId)
         sv_PanelCartBtn = sv_AddPanelButton(x, 0xac, txt_PanelBtnCart);
     sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x66, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-    d2_SetObjValue4(sv_PanelHealthBar, 0, 100, c->fill);
+    d2_SetObjValue(sv_PanelHealthBar, 0, 100, c->fill);
     d2_SetForm(sv_PanelForm, 2);
     sv_PanelCartWin = d2_LastWindow;
     sv_PanelCartChar = (int)c->sceneObj;
@@ -3711,7 +3708,7 @@ void sv_OpenDefaultPanel(void)
         d2_SetForm(sv_PanelForm, 0);
         d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1, 0x4c, ((AIBLD *)ai_FallbackBuilding)->type + 0x427, d2_LastWindow);
         sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7a, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
+        d2_SetObjValue(sv_PanelHealthBar, 0, 100, level);
         sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
         if (((AIBLD *)ai_FallbackBuilding)->type == 0x1e) {
             sv_PanelPlantBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnKind1e);
@@ -3750,7 +3747,7 @@ void sv_OpenPersonPanel(AICHAR *c)
         d2_SetForm(sv_PanelForm, 0);
         x = (d2_Wins[d2_LastWindow].w - 0x30) >> 1;
         sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x6c, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue4(sv_PanelHealthBar, -127, 0x7f, opinion);
+        d2_SetObjValue(sv_PanelHealthBar, -127, 0x7f, opinion);
         kind = c->kind;
         if (kind == 5 || kind == 6 || kind == 7)
             d2_WinOpenPic(x - 8, 0x30, c->ref54, d2_LastWindow);
@@ -3828,7 +3825,7 @@ void sv_RefreshPanel(void)
         } else {
             io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[SV_SELBLD->playerSlot]);
         }
-        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
+        d2_SetObjValue(sv_PanelHealthBar, 0, 100, level);
         fl = SV_SELBLD->flags5aw;
         if ((fl & 4) != 0) {
             j = (AIJOB *)he_FindEvent(2, 0, 0x1c, 3, SV_SELBLD->id);
@@ -3989,7 +3986,7 @@ void sv_RefreshPanel(void)
     if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0)
         rt_EditCartRoute((AIOBJ *)sv_SelectedItem);
     if (sv_PanelHealthBar != -1)
-        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, SV_SELCART->fill);
+        d2_SetObjValue(sv_PanelHealthBar, 0, 100, SV_SELCART->fill);
     d2_SetForm(sv_PanelForm, 2);
     SV_CLEAR_PANEL_WIDGETS(i)
     d2_RemoveWindowObjects(d2_LastWindow, 1);
@@ -6744,7 +6741,7 @@ void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
-void d2_SetObjValue();                     /* 0x475cb0 */
+void d2_SetObjValue(int obj, ...);                     /* 0x475cb0 */
 void d2_SetObjFont();                     /* 0x4760b0 */
 int io_PrintText(char *fmt, ...);                     /* 0x515960 */
 int d2_GetWinObj();                     /* 0x475b80 */
@@ -6850,7 +6847,7 @@ void sv_ChatConsole(void)
             ids[i] = w;
             ((D2OBJ *)d2_Objs)[w].checkable = 1;
             ((D2OBJ *)d2_Objs)[w].user = &ai_CharsT[k];
-            d2_SetObjValue2(w, sv_ChatRecipients[i]);
+            d2_SetObjValue(w, sv_ChatRecipients[i]);
             i++;
         }
     }
@@ -6874,7 +6871,7 @@ void sv_ChatConsole(void)
             sprintf(msg.text, "$%iFF ", ai_CharsT[ai_PlayerId].ref54 - 0x59a);
             strcat(msg.text, (char *)d2_GetObjValue(ed));
             strcat(msg.text, "$A");
-            d2_SetObjValue2(ed, ch_EmptyName);
+            d2_SetObjValue(ed, ch_EmptyName);
             cm_SendChat(&msg);
             sv_PopRequest = 1;
         }

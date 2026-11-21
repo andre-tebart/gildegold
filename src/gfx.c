@@ -34,7 +34,6 @@
 #include "d2.h"
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the radio loop pushes 2 arguments (0x47868e / 0x478698: push 0 / push 1, push eax) */
 
 /* 0x476b90, adds amount to the item list drawn next to the pointer: the entry of picture id (first match, else
    the first free one); no effect when amount is 0 or the list is full (6 entries) */
@@ -851,9 +850,9 @@ void d2_MouseUpdate(void)
                     if (d2_Radios[i].objs[j] == d2_PointerObj) {
                         for (m = 0; m < d2_Radios[i].n; m++) {
                             if (d2_Radios[i].objs[m] != d2_PointerObj) {
-                                d2_SetObjValue2(d2_Radios[i].objs[m], 0);
+                                d2_SetObjValue(d2_Radios[i].objs[m], 0);
                             } else {
-                                d2_SetObjValue2(d2_Radios[i].objs[m], 1);
+                                d2_SetObjValue(d2_Radios[i].objs[m], 1);
                                 d2_Radios[i].sel = m;
                             }
                         }

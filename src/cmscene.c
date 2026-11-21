@@ -94,8 +94,6 @@ extern GAPDATA full_data_602568[];
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
@@ -3651,7 +3649,7 @@ void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
     t = io_PrintText(0x1aa6, ai_OwnPlayer);
     io_PrintText(0x1aa7);
     box = d2_GetWinObj(view, 0, t);
-    d2_SetObjValue4(box, lo, hi, lo);
+    d2_SetObjValue(box, lo, hi, lo);
     dlg = CUT_BOX();
     cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
@@ -5197,7 +5195,7 @@ int cm_DialogTimer(int dlg, int a, int c)
         v = (int)((1.0f - (float)(unsigned int)(d3_Time - cm_DialogStart) / cm_DialogLength) * 100.0f);
         v = v > 0 ? v : 0;
     }
-    d2_SetObjValue4(dlg, 0, 100, v);
+    d2_SetObjValue(dlg, 0, 100, v);
     return v;
 }
 /* 0x4e5470, a message box for the text id with the flags (2: "Messagebox_Autosize", 0x10: "_BIG", 0x20: "_VERY_BIG", 0x100: "_NONE_PERGA" (form 1), else "misc\\Messagebox";
@@ -5257,7 +5255,7 @@ int cm_MessageBox(int id, int flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) && slider != -1)
-            d2_SetObjValue4(slider, 0, 0x1f4, d3_Time - t0);
+            d2_SetObjValue(slider, 0, 0x1f4, d3_Time - t0);
         if ((flags & 4) && d3_Time > t0 + 0x1f4)
             sv_PopRequest = 1;
     }

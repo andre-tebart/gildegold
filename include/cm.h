@@ -578,7 +578,7 @@ struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct
 int d2_WinOpenSlider();  /* 0x46a960 */
 int d2_RemoveWindow();  /* 0x472ce0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);  /* 0x4731d0 */
-void d2_SetObjValue();  /* 0x475cb0 */
+void d2_SetObjValue(int obj, ...);  /* 0x475cb0 */
 int gm_SkillPoints();  /* 0x504e00 */
 extern int d2_LastWindow;  /* 0x6ed938 */
 extern int cm_SkipEvents;  /* 0x6f0d8c */
@@ -1031,7 +1031,7 @@ int ai_AmountLimit();  /* 0x5bd060 */
 int gm_ConvertMoney(int a, unsigned char k);  /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);  /* 0x5085f0 */
 int d2_GetObjValue();  /* 0x475980 */
-void d2_SetObjValue();  /* 0x475cb0 */
+void d2_SetObjValue(int obj, ...);  /* 0x475cb0 */
 void cm_ShowObjectScene(char *o, int id);  /* 0x4e2910 */
 
 int d2_ClearSurface(struct D2SURF *surf);  /* 0x4796c0 */
