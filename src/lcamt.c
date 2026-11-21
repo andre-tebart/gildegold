@@ -147,7 +147,7 @@ extern int ai_EspionageAmountCB();
 
 
 
-extern GAPDATA full_data_6f2450[];
+extern int ai_DebugHotkeys;
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern int d2_ClickedId;
@@ -157,8 +157,7 @@ extern struct D2PIC *d2_Pics;
 
 
 
-extern GAPDATA full_data_6f2450[];
-#define ai_DebugHotkeys (*(int *)&full_data_6f2450)  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_TavernContact) */
+extern int ai_DebugHotkeys;  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_TavernContact) */
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;

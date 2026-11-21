@@ -77,9 +77,6 @@
    Open: data: the shared float 0x5ebb40 (ai_FloatHundred, cm.c and he.c read it too) is the compiler's pooled
    100.0f: one copy in the image's constant pool, shared by 30 functions; a named array reproduces the loads but
    would add a second object, so its bytes stay in main.c's full_rdata gap block.
-   Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or main (the bss
-   there interleaves f3init, cm, main and am: cm's 0x6f244c before, main's main_DevMenu 0x6f245c after; only
-   this unit reads it).
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
    ai_EnterBuilding writes it), named in main.c's gap block.
    The Domizil goods' clock at 0x6f2f64 is LCSETTINGS lc_Settings; the transport window's cart rows are LCCARTROW,
@@ -253,7 +250,7 @@ extern int ai_EspionageAmountCB();
 
 
 
-extern GAPDATA full_data_6f2450[];
+extern int ai_DebugHotkeys;
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern int d2_ClickedId;
@@ -263,8 +260,7 @@ extern struct D2PIC *d2_Pics;
 
 
 
-extern GAPDATA full_data_6f2450[];
-#define ai_DebugHotkeys (*(int *)&full_data_6f2450)  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_TavernContact) */
+extern int ai_DebugHotkeys;  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_TavernContact) */
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
