@@ -2031,9 +2031,9 @@ void cm_SendSetJob(int id, int job)
     m.setJob.job = (unsigned char)job;
     cm_QueueSend(&m);
 }
-/* 0x4c59f0, message 0x49 with a text */
+/* 0x4c59f0, message 0x49 with a text: spawns a character; returns the send slot (cm_QueueSend) */
 
-void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s)
+int cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, int f, const char *s)
 {
     G17MSG m;
 
@@ -2045,7 +2045,7 @@ void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsig
     m.spawn.title = e;
     m.spawn.item = f;
     strcpy(m.spawn.text, s);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5a70, message 0x4a */
 

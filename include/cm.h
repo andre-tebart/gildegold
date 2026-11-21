@@ -264,7 +264,7 @@ int cm_SendOfficeRecord(AMTMSG *p);                                             
 int cm_SendDecisionValue(GVDECMSG *p);                                                   /* 0x4c5930 */
 void cm_SendCharClear(int a, int b, int c);                                          /* 0x4c5970 */
 void cm_SendSetJob(int id, int job);                                       /* 0x4c59b0 */
-void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s); /* 0x4c59f0 */
+int cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, int f, const char *s); /* 0x4c59f0 */
 void cm_SendFreeObject(int a);                                                        /* 0x4c5a70 */
 void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */

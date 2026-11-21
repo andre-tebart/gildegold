@@ -80,7 +80,7 @@
    trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
    message records through raw offsets
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
-   cast macros next to the includes keep the spellings the definitions disagree with: cm_SendSpawnCharacterR (the send slot kept),
+   cast macros next to the includes keep the spellings the definitions disagree with:
    ai_PlagueMessageK (two arguments),
    ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
@@ -608,7 +608,6 @@ int he_RegisterEventTypeA2();
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
-#define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, int, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void; f an int: he_AllocBrawl pushes 0x154 whole */
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30 with the list alone: @original he_AllocTheft pushes only the list (add esp, 4), as lc.c / sv.c call it */
 #define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders and he_AllocTransport read the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -6700,10 +6699,10 @@ void he_BeginPlague(int ev)
                     cm_SendLongMessage((char *)&msg);
                 }
             }
-            p->carriers[0] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
-            p->carriers[1] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
-            p->carriers[2] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
-            p->carriers[3] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[0] = cm_SendSpawnCharacter(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[1] = cm_SendSpawnCharacter(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[2] = cm_SendSpawnCharacter(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[3] = cm_SendSpawnCharacter(0xe, b->id, -1, 0x12, 0, 0, "PEST");
             p->home = b->id;
             gm_AddTime(&e->end, 0, 1, 0);
             e->exSlot = cm_SendExSetHE(0, ev);
@@ -8906,7 +8905,7 @@ void he_StartDarkCorner(int ev)
         cm_SendFieldDeltas();
     }
     cm_BeginGroup("Dunkle Ecke");
-    d->carrier = cm_SendSpawnCharacterR(0xe, bld->id, -1, 0, 0, 0, "DunkleEcke");
+    d->carrier = cm_SendSpawnCharacter(0xe, bld->id, -1, 0, 0, 0, "DunkleEcke");
     e->exSlot = cm_SendExSetHE(0, ev);
     cm_EndGroup("Dunkle Ecke");
 }
@@ -13268,7 +13267,7 @@ void he_AllocSabotage(int ev)
             e->from = b->id;
     }
     s->saboteur = -1;
-    s->slot = cm_SendSpawnCharacterR(0, e->from, -1, 0, 1, 0x174, "SABOTAGE");
+    s->slot = cm_SendSpawnCharacter(0, e->from, -1, 0, 1, 0x174, "SABOTAGE");
 }
 
 int ord_DispatchOrder(int id, char *c, int *m);
@@ -13636,7 +13635,7 @@ void he_AllocSpying(int ev)
         spawn = 1;
     cm_BeginGroup("Spionage");
     if (spawn != 0) {
-        s->spy = cm_SendSpawnCharacterR(0x11, tgt->id, -1, 0, 0, 0, "SPIONAGE");
+        s->spy = cm_SendSpawnCharacter(0x11, tgt->id, -1, 0, 0, 0, "SPIONAGE");
         e->exSlot = cm_SendExSetHE(0, ev);
     } else {
         e->end = s->until;
@@ -13800,7 +13799,7 @@ int ai_BrawlWin();
 
 /* 0x55a5f0, the allocation handler of the brawl event 26 (HEBRAWL, "PRUEGEL"; run handler he_RunBrawl): due now;
    without a hiring building (AIJOB.from -1) the first building of the kind 0x16, else 0xf, is taken; the thug is
-   spawned there (cm_SendSpawnCharacterR, "PRUEGEL"; its slot kept, no thug yet), and the building it goes to is
+   spawned there (cm_SendSpawnCharacter, "PRUEGEL"; its slot kept, no thug yet), and the building it goes to is
    the victim's home, else the victim's first building, else one of the gypsyFilter kinds the event's character
    picks (ai_PickActionBuilding, up to 100.0); none at all: the original reads the id through a null building */
 void he_AllocBrawl(AIJOB *e)
@@ -13820,7 +13819,7 @@ void he_AllocBrawl(AIJOB *e)
             e->from = b->id;
     }
     br->thug = -1;
-    br->slot = cm_SendSpawnCharacterR(0x11, e->from, -1, 0, 2, 0x154, "PRUEGEL");
+    br->slot = cm_SendSpawnCharacter(0x11, e->from, -1, 0, 2, 0x154, "PRUEGEL");
     victim = (AICHAR *)gm_FindChar(br->victim);
     if (victim->bld2 != 0)
         home = victim->bld2;
