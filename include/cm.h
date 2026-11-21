@@ -422,7 +422,7 @@ struct GVYARD *gv_GrowGraveyard(unsigned char *o);  /* 0x4eff50 */
 int ord_GetKindRecord();  /* 0x4f8890 */
 int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
-void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
+void gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own);  /* 0x502b60 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
 extern const struct D3VECTOR4 d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */

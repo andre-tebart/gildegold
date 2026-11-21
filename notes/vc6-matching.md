@@ -6029,6 +6029,10 @@ the bytes no portable form gives.
   ret`, with one push): the source called its own stub that LINK folded (/OPT:ICF); define it as an unlinked
   function below the caller with a local prototype (`int ch_CreateLowPolyBody(CHARACTER *ch) { return 0; }`,
   ch_SetLowPoly byte). Not a call of the folded target with too many arguments, and not a cast macro.
+- **Callers zero-extend a word (`xor ecx,ecx; mov cx,[..]; push ecx`) for a parameter the body uses as 16 bits**:
+  the parameter is `int` / `unsigned` (the body's 16-bit store and `!= 0xffff` compile the same), one prototype
+  for all units; gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own) replaced an unsigned short
+  definition, f3init's int prototype and two cast macros (every caller byte).
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

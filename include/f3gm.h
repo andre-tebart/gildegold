@@ -24,7 +24,7 @@ int gm_IsHomeType(unsigned char *b);            /* 0x502520, 1 for a home type *
 char *gm_FindCharacterByMaster(int m);          /* 0x50a810, the first kind 6 / 7 / 1 / 2 character with a job whose master (+0x16c) is m */
 void gm_ShowSlotObjects(int unused, int scene, int c);  /* 0x502a60, the scene objects of the character's five slots on */
 void gm_ShowBuildingObjects(unsigned char *b);  /* 0x502e30, for a building of the type 2: gm_ShowSlotObjects for every object of the kind 2 in its list (up to 32) */
-void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
+void gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own);  /* 0x502b60 */
 
 void gm_ClearBuildings(void);                   /* 0x4fe7f0, clears the 0x100 records of ai_Blds */
 float gm_Mix2(float u, float v);                /* 0x504e80 */

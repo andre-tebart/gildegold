@@ -4,7 +4,7 @@
    amt.h / rd.h, which do not compile into this unit (gv.h conflicts).
    Open: not included yet (dcp headers conflicts f3init HEADER): ai.h amt.h cm.h d2.h f3snd.h gfx.h hmt.h hst.h
    mission.h rmsg.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
-   amt_GetKind, amt_GetOffice, d2_ClearSurface, amt_GetFirstOffice, gm_AssignBuilding.
+   amt_GetKind, amt_GetOffice, d2_ClearSurface, amt_GetFirstOffice.
    unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl */
 struct VFSENTRY;
 struct D3OBJECT;
@@ -436,7 +436,6 @@ extern G15BK * ai_Bauplaetze;
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */
 void gv_ClearCrimes(void);           /* 0x4f4350, gv.c */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm.h */
-void gm_AssignBuilding(unsigned char *b, int place, int own);  /* 0x502b60, f3gm.c */  /* @original: f3gm.c defines `unsigned short place, unsigned own`; the caller below zero-extends the word load (xor/mov cx, no and mask) */
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
 void init_RoomNoOp(void);                                /* unlinked, folded into ai_MsgNoOp (below init_ShowBuildingScene) */
