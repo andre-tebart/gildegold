@@ -3754,7 +3754,6 @@ void cm_ShowObjectScene(char *o, int id)
 /* ai_Unk925538: view of cm_Parties (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */
-#define G28_HI (*(unsigned short *)((char *)&cut_RandState + 2))  /* 0x92c4e2 */
 
 
 /* 0x4e2bd0, d2_SetViewEnabled for the scene helpers: in the replay mode (cm_SkipEvents) the view is always disabled */
@@ -5110,8 +5109,8 @@ unsigned int cm_Random(unsigned int n)
     if (n == 0)
         return 0;
     cut_RandState = cut_RandState * 0x41c64e6d + 0x3039;
-    sprintf(buf, "cut_rnd: %i", G28_HI % 0x7fffu);
-    return (G28_HI % 0x7fffu) % n;
+    sprintf(buf, "cut_rnd: %i", (cut_RandState >> 16) % 0x7fffu);
+    return ((cut_RandState >> 16) % 0x7fffu) % n;
 }
 /* 0x4e5360, a random float in [0, 1) (logged "cut_rndfloat: %f") */
 
@@ -5120,8 +5119,8 @@ double cm_RandomFloat(void)
     char buf[0x40];
 
     cut_RandState = cut_RandState * 0x41c64e6d + 0x3039;
-    sprintf(buf, "cut_rndfloat: %f", (float)(G28_HI % 0x7fffu) * 3.0518509e-5f);
-    return (float)(G28_HI % 0x7fffu) * 3.0518509e-5f;
+    sprintf(buf, "cut_rndfloat: %f", (float)((cut_RandState >> 16) % 0x7fffu) * 3.0518509e-5f);
+    return (float)((cut_RandState >> 16) % 0x7fffu) * 3.0518509e-5f;
 }
 /* 0x4e53e0, the progress of the dialog dlg: with c set the clock 0x6333cc and the duration a are stored (and the window cleared, 0x475e40);
    else the left percent of the duration is the value; the slider (0x475cb0, 0 .. 100) is set to it, returned */
