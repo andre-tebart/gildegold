@@ -6081,6 +6081,27 @@ the bytes no portable form gives.
 - **Calls that push a promoted int (movsx) to a short parameter in the same unit as the definition, above it**
   (d2_CenterObj -> d2_MoveObj): the original unit had no prototype in scope at that call; the short definition
   is right (int params 20 -> 37 ins). No portable form: d2_MoveObjI stays @original (d2.c, gfx.c).
+- **Calls of an empty function that LINK folded with others (d3io_NoopCallback 0x44ee40, ai_MsgNoOp)**: each
+  calling unit gets its own unlinked empty function with the call's own prototype (main_Nothing,
+  d2_DrawNothing(x, y, surf, data) ..), defined at the END of the unit with a prototype at the top: an empty
+  body above its callers lets VC6 drop the calls (5 bytes per call, the callers fall to draft).
+- **A struct passed by value through another unit's view of it (CHANIMFLAGS / D3IOANIMFLAGS / CHCALPHA for
+  D3ANIMFLAGS / D3TEXFLAGS)**: make the view a union of its field view and the owner's type (anonymous struct /
+  union members) and pass `.anim` / `.f`; the D3IOFLAGS / D3BGFFLAGS unions already did this. Every caller
+  stayed byte (the field-wise locals keep their registers).
+- **Callers that pass a float's raw bits as an int constant (`push 0x3e800000`)**: write the float constant
+  (`0.25f`) to the float prototype; VC6 pushes float constants and float variables with integer moves
+  (d3t_CreateBlood, sv_PlaceCamera).
+- **A parameter the callers push but the body never reads, all callers agreeing (gv_PassSentence's judges,
+  ai_DecideTorture's plan, ai_PlagueMessage's building, init_StartNewGame)**: add it to the definition, unread;
+  the code is the same. Where a callback is called with (r, ctx) and tail-jumps on, both the callback and the
+  tail-jump targets take the pair (cm_DuelAskPlayer, cm_DuelRoundDialog).
+- **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
+  stays @original): util_Random (16-bit result), d3sm_GetVertex / d3sm_Pick / d3_ClipBox (char result read as
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_MoveObj / d2_CreateWindow /
+  d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
+  dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
+  reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
