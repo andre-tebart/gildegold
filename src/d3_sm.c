@@ -177,7 +177,7 @@ char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
             v->flags = (!(h->mask & (obj->stateFlags >> 2 & 3)) | ((obj->stateFlags & 0x20) == 0x20) << 1) << 1 | (obj->stateFlags & 0x10) == 0x10;
         }
         m = (D3SMMESH *)obj->info;
-        n = min(m->ntris, d3_SortMax - (int)d3_SortCount);
+        n = min(m->ntris, d3_Cfg.maxpolys - (int)d3_SortCount);
         for (tri = m->tris; n > 0; n--, tri++) {
             D3VECTOR4 nrm;
 

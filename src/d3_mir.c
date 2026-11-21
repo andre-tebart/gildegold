@@ -395,7 +395,7 @@ char d3_MirDrawObject(D3OBJECT *obj, D3MIRROR *m)
                 d3_MaxZ = max(d3_MaxZ, a->z);
             }
         }
-        n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);
+        n = min(s->info.ntris, d3_Cfg.maxpolys - (int)d3_SortCount);
         tex = m->tex;
         for (t = D3M_TRIS(D3_MESH(obj)); n > 0; n--, t++) {
             tt = t->tex;

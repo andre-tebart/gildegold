@@ -1983,7 +1983,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         d3_TriCount += npolys;
         d3_DrawnVerts += npoints;
         d3_VertCount += npoints;
-        npolys = min(npolys, (int)(d3_SortMax - d3_SortCount));
+        npolys = min(npolys, (int)(d3_Cfg.maxpolys - d3_SortCount));
         for (i = npolys, poly = t->wpolys; i > 0; i--, poly++)
             if (poly->flags & 0x80) {
                 reg = &map->regions[poly->region];
@@ -2687,7 +2687,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                     d3_TriCount += t->npolys;
                     d3_VertCount += t->npoints;
                     d3_DrawnVerts += t->npoints;
-                    npolys = min((unsigned int)t->npolys, d3_SortMax - d3_SortCount);
+                    npolys = min((unsigned int)t->npolys, d3_Cfg.maxpolys - d3_SortCount);
                     for (i = 0, poly = t->polys; i < npolys; i++, poly++)
                         if (poly->flags < 0) {
                             if ((tex = poly->tex) && tex->name[0] == '*' && !(c = tex->cache)->flag) {

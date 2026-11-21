@@ -306,7 +306,7 @@ void par_Draw(D3PARTSYS *ps)
                 v3->z = c.z;
             }
         }
-        n = min(ps->count * 2, d3_SortMax - (int)d3_SortCount);
+        n = min(ps->count * 2, d3_Cfg.maxpolys - (int)d3_SortCount);
         if (d3_Hardware) {
             for (t = PAR_TRIS(ps); n > 0; n--, t++) {
                 if (t->flags & 0x80) {

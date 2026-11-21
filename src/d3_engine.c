@@ -732,7 +732,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
             d3_MirBeginFrame(obj, &d3_Mirror);
             if (obj == d3s_Object || s->flags.f.b[0] < 0xff || (s->flags.f.b[2] & 1))
                 base = 0x4000;
-            n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);
+            n = min(s->info.ntris, d3_Cfg.maxpolys - (int)d3_SortCount);
             if (d3_Hardware) {
                 for (t = (D3PTRI *)s->info.tris; n > 0; n--, t++) {
                     if (t->flags & 0x80) {
@@ -2737,7 +2737,6 @@ D3SORTENT * d3_RadixSrc;  /* 0xfe73c0 */
 float d3_ViewH;  /* 0xfe73c4 */
 float d3_ViewW;  /* 0xfe73c8 */
 D3INITCFG d3_Cfg;  /* 0xfe73e0 */
-/* d3_SortMax: view of d3_Cfg (tools/data_views.py) */
 D3ANIMDATA d3anim_Tail; /* 0xfe7440, the end sentinel of the animation cache list (d3_anim.c): new animations are linked in before it */
 int d3_DrawnVerts;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 int d3_TextureSwitches;  /* 0xfe75b4 */

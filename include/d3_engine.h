@@ -430,9 +430,6 @@ extern unsigned int d3_LightGeneration;     /* 0x633b10, lightmap generation, D3
 extern unsigned int d3_LightKeyBudgetCulled;  /* 0x5fcc6c, per-frame key budget for culled lights */
 extern unsigned int d3_LightKeyBudgetVisible; /* 0x5fcc70, per-frame key budget for visible lights */
 extern unsigned int d3s_Count;     /* 0x633dc0, d3s.c: the shadow triangles d3s_UpdateObject produced (unsigned: d3_DrawObjectCB tests it with ja) */
-#ifndef DATA_VIEWS_H
-extern int d3_SortMax;                      /* 0xfe73f8 */
-#endif
 extern char d3_ClipInfo[64][0x68];          /* 0xfc3020 */
 void d3s_UpdateObject(D3OBJECT *obj);       /* 0x45ca20, d3s.c */
 void d3s_UpdateObjectAt(D3OBJECT *obj);     /* 0x45ca60, d3s.c */
@@ -502,7 +499,7 @@ typedef struct D3INITCFG {          /* 0x60 bytes, d3_Init's configuration (copi
     int mode;                       /* 0x0c, dd mode, 0: none */
     int d3d;                        /* 0x10, use Direct3D */
     int triple;                     /* 0x14, dd_SetMode's last argument (d3_Init reads its low byte) */
-    int maxpolys;                   /* 0x18, sort buffer entries (d3_SortMax) */
+    int maxpolys;                   /* 0x18, sort buffer entries (the draw functions clip to it) */
     int texcount;                   /* 0x1c */
     int maxhicol;                   /* 0x20 */
     int texParam;                   /* 0x24, tex_Init's 3rd argument */
