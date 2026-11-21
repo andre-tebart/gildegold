@@ -27,10 +27,10 @@ void d2_ShpBlit8(int x, int y, void *bits, D2SHP *s)
                 push edx
                 push ecx
                 push ebp
-                mov eax,dword ptr [ebp+0x8]
-                mov edx,dword ptr [ebp+0xc]
-                mov ebx,dword ptr [ebp+0x10]
-                mov ecx,dword ptr [ebp+0x14]
+                mov eax,x
+                mov edx,y
+                mov ebx,bits
+                mov ecx,s
                 mov edi,ebx
                 mov esi,ecx
                 mov ebx,edx
@@ -128,10 +128,10 @@ void d2_ShpBlit8To16(int x, int y, void *bits, D2SHP *s)
                 push edx
                 push ecx
                 push ebp
-                mov eax,dword ptr [ebp+0x8]
-                mov edx,dword ptr [ebp+0xc]
-                mov ebx,dword ptr [ebp+0x10]
-                mov ecx,dword ptr [ebp+0x14]
+                mov eax,x
+                mov edx,y
+                mov ebx,bits
+                mov ecx,s
                 mov edi,ebx
                 mov esi,ecx
                 shl eax,1
@@ -368,9 +368,9 @@ void d2_ShpDarken16(void *dst, int w, int h)
         push ecx
         push ebp
         mov d2_BlitW, edx
-        mov eax, [ebp+8]
-        mov ecx, [ebp+0xc]
-        mov ebx, [ebp+0x10]
+        mov eax, dst
+        mov ecx, w
+        mov ebx, h
         mov edi, eax
         xor ecx, ecx
         xor edx, edx

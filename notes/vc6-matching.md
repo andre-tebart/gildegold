@@ -6036,6 +6036,8 @@ the bytes no portable form gives.
 - **A common placed in another unit's .bss group**: define it (tentatively) in that one unit and declare it
   `extern` everywhere else; a second tentative definition in the using unit is not needed for the placement
   (d3s_EdgeX / d3s_EdgeY: d3_engine.c defines, d3s.c declares; placement unchanged).
+- **`__asm` reading the parameters (`mov eax,[ebp+8]`)**: name them (`mov eax,x`); VC6 assembles the name to
+  the same frame operand (d2_ShpBlit8, d2_ShpBlit8To16, d2_ShpBlit16ClipY / ClipXY, d2_ShpDarken16 byte).
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.
