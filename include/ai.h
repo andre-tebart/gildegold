@@ -204,6 +204,8 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     int savedA8;                        /* 0xa8, an int the save game keeps; no other reader known */
 } AIFIN;                                /* 0xac bytes, the 16 records of gm_PlayerRecords */
 
+extern AIFIN gm_PlayerRecords[16];     /* 0x7d5f80, the player records (gm_PlayerRecord finds a character's) */
+
 typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegetation records at AIBLD.plants (rd.h
                                            G15PLANT, the same 0x18-byte layout; ai.c includes rd.h now, so the readers
                                            can take G15PLANT) */

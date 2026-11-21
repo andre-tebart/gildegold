@@ -34,9 +34,6 @@ extern int gm_QueryDepth;
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
-extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
-#define gm_PlayerFins (*(AIFIN (*)[16])&gm_PlayerRecords)  /* 0x7d5f80, gm_PlayerRecords (f3gm.c: int[688]) as the 16 AIFIN records it holds */
-/* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
@@ -505,37 +502,37 @@ int ls_WritePlayerRecords(int f)
     int k;
 
     for (k = 0; k < 0x10; k++) {
-        LS_W(&gm_PlayerFins[k].w00, 2)
-        LS_W(gm_PlayerFins[k].family, 0x10)
-        LS_W(&gm_PlayerFins[k].incomeA, 4)
-        LS_W(&gm_PlayerFins[k].spyPaid, 4)
-        LS_W(&gm_PlayerFins[k].lootTakings, 4)
-        LS_W(&gm_PlayerFins[k].incomeC, 4)
-        LS_W(&gm_PlayerFins[k].missionMoney[0], 4)
-        LS_W(&gm_PlayerFins[k].missionMoney[1], 4)
-        LS_W(&gm_PlayerFins[k].missionMoney[2], 4)
-        LS_W(&gm_PlayerFins[k].missionMoney[3], 4)
-        LS_W(&gm_PlayerFins[k].upgradeSpent, 4)
-        LS_W(&gm_PlayerFins[k].renovationSpent, 4)
-        LS_W(&gm_PlayerFins[k].loansRepaid, 4)
-        LS_W(&gm_PlayerFins[k].costA, 4)
-        LS_W(&gm_PlayerFins[k].cartSpent, 4)
+        LS_W(&gm_PlayerRecords[k].w00, 2)
+        LS_W(gm_PlayerRecords[k].family, 0x10)
+        LS_W(&gm_PlayerRecords[k].incomeA, 4)
+        LS_W(&gm_PlayerRecords[k].spyPaid, 4)
+        LS_W(&gm_PlayerRecords[k].lootTakings, 4)
+        LS_W(&gm_PlayerRecords[k].incomeC, 4)
+        LS_W(&gm_PlayerRecords[k].missionMoney[0], 4)
+        LS_W(&gm_PlayerRecords[k].missionMoney[1], 4)
+        LS_W(&gm_PlayerRecords[k].missionMoney[2], 4)
+        LS_W(&gm_PlayerRecords[k].missionMoney[3], 4)
+        LS_W(&gm_PlayerRecords[k].upgradeSpent, 4)
+        LS_W(&gm_PlayerRecords[k].renovationSpent, 4)
+        LS_W(&gm_PlayerRecords[k].loansRepaid, 4)
+        LS_W(&gm_PlayerRecords[k].costA, 4)
+        LS_W(&gm_PlayerRecords[k].cartSpent, 4)
         if (ls_Version >= 0x10014) {
-            LS_W(&gm_PlayerFins[k].costB, 4)
-            LS_W(&gm_PlayerFins[k].roundFactors[0], 4)
-            LS_W(&gm_PlayerFins[k].roundFactors[1], 4)
-            LS_W(&gm_PlayerFins[k].missionMoney[4], 4)
-            LS_W(&gm_PlayerFins[k].saved64[0], 4)
-            LS_W(&gm_PlayerFins[k].saved64[1], 4)
-            LS_W(&gm_PlayerFins[k].officeSentences, 4)
+            LS_W(&gm_PlayerRecords[k].costB, 4)
+            LS_W(&gm_PlayerRecords[k].roundFactors[0], 4)
+            LS_W(&gm_PlayerRecords[k].roundFactors[1], 4)
+            LS_W(&gm_PlayerRecords[k].missionMoney[4], 4)
+            LS_W(&gm_PlayerRecords[k].saved64[0], 4)
+            LS_W(&gm_PlayerRecords[k].saved64[1], 4)
+            LS_W(&gm_PlayerRecords[k].officeSentences, 4)
         }
-        LS_W(&gm_PlayerFins[k].roundFactors[2], 4)
-        LS_W(gm_PlayerFins[k].jobByGroup, 0x11)
-        LS_W(&gm_PlayerFins[k].camAngle, 4)
-        LS_W(gm_PlayerFins[k].camPos, 0x10)
-        LS_W(gm_PlayerFins[k].camRot, 0xc)
-        LS_W(&gm_PlayerFins[k].savedA8, 4)
-        LS_W(&gm_PlayerFins[k].saved70, 4)
+        LS_W(&gm_PlayerRecords[k].roundFactors[2], 4)
+        LS_W(gm_PlayerRecords[k].jobByGroup, 0x11)
+        LS_W(&gm_PlayerRecords[k].camAngle, 4)
+        LS_W(gm_PlayerRecords[k].camPos, 0x10)
+        LS_W(gm_PlayerRecords[k].camRot, 0xc)
+        LS_W(&gm_PlayerRecords[k].savedA8, 4)
+        LS_W(&gm_PlayerRecords[k].saved70, 4)
     }
     return 1;
 }
@@ -1584,47 +1581,47 @@ int ls_ReadPlayerRecords(int f)
     int k, i, n;
 
     for (k = 0; k < 0x10; k++) {
-        LS_R(&gm_PlayerFins[k].w00, 2)
-        LS_R(gm_PlayerFins[k].family, 0x10)
-        LS_R(&gm_PlayerFins[k].incomeA, 4)
+        LS_R(&gm_PlayerRecords[k].w00, 2)
+        LS_R(gm_PlayerRecords[k].family, 0x10)
+        LS_R(&gm_PlayerRecords[k].incomeA, 4)
         if (ls_Version >= 0x1002c)
-            LS_R(&gm_PlayerFins[k].spyPaid, 4)
-        LS_R(&gm_PlayerFins[k].lootTakings, 4)
-        LS_R(&gm_PlayerFins[k].incomeC, 4)
-        LS_R(&gm_PlayerFins[k].missionMoney[0], 4)
-        LS_R(&gm_PlayerFins[k].missionMoney[1], 4)
-        LS_R(&gm_PlayerFins[k].missionMoney[2], 4)
-        LS_R(&gm_PlayerFins[k].missionMoney[3], 4)
-        LS_R(&gm_PlayerFins[k].upgradeSpent, 4)
-        LS_R(&gm_PlayerFins[k].renovationSpent, 4)
-        LS_R(&gm_PlayerFins[k].loansRepaid, 4)
-        LS_R(&gm_PlayerFins[k].costA, 4)
-        LS_R(&gm_PlayerFins[k].cartSpent, 4)
+            LS_R(&gm_PlayerRecords[k].spyPaid, 4)
+        LS_R(&gm_PlayerRecords[k].lootTakings, 4)
+        LS_R(&gm_PlayerRecords[k].incomeC, 4)
+        LS_R(&gm_PlayerRecords[k].missionMoney[0], 4)
+        LS_R(&gm_PlayerRecords[k].missionMoney[1], 4)
+        LS_R(&gm_PlayerRecords[k].missionMoney[2], 4)
+        LS_R(&gm_PlayerRecords[k].missionMoney[3], 4)
+        LS_R(&gm_PlayerRecords[k].upgradeSpent, 4)
+        LS_R(&gm_PlayerRecords[k].renovationSpent, 4)
+        LS_R(&gm_PlayerRecords[k].loansRepaid, 4)
+        LS_R(&gm_PlayerRecords[k].costA, 4)
+        LS_R(&gm_PlayerRecords[k].cartSpent, 4)
         if (ls_Version >= 0x10014) {
-            LS_R(&gm_PlayerFins[k].costB, 4)
-            LS_R(&gm_PlayerFins[k].roundFactors[0], 4)
-            LS_R(&gm_PlayerFins[k].roundFactors[1], 4)
-            LS_R(&gm_PlayerFins[k].missionMoney[4], 4)
-            LS_R(&gm_PlayerFins[k].saved64[0], 4)
-            LS_R(&gm_PlayerFins[k].saved64[1], 4)
-            LS_R(&gm_PlayerFins[k].officeSentences, 4)
+            LS_R(&gm_PlayerRecords[k].costB, 4)
+            LS_R(&gm_PlayerRecords[k].roundFactors[0], 4)
+            LS_R(&gm_PlayerRecords[k].roundFactors[1], 4)
+            LS_R(&gm_PlayerRecords[k].missionMoney[4], 4)
+            LS_R(&gm_PlayerRecords[k].saved64[0], 4)
+            LS_R(&gm_PlayerRecords[k].saved64[1], 4)
+            LS_R(&gm_PlayerRecords[k].officeSentences, 4)
         }
         if (ls_Version >= 0x10056) {
-            LS_R(&gm_PlayerFins[k].roundFactors[2], 4)
+            LS_R(&gm_PlayerRecords[k].roundFactors[2], 4)
         } else {
-            gm_PlayerFins[k].roundFactors[2] = 1.0f;
+            gm_PlayerRecords[k].roundFactors[2] = 1.0f;
         }
         if (ls_Version >= 0x10015) {
             n = (((ls_Version >= 0x10046) - 1) & 0xfffffffd) + 0x11;
             for (i = 0; i < n; i++)
-                LS_R(&gm_PlayerFins[k].jobByGroup[i], 1)
+                LS_R(&gm_PlayerRecords[k].jobByGroup[i], 1)
         }
-        LS_R(&gm_PlayerFins[k].camAngle, 4)
-        LS_R(gm_PlayerFins[k].camPos, 0x10)
-        LS_R(gm_PlayerFins[k].camRot, 0xc)
-        LS_R(&gm_PlayerFins[k].savedA8, 4)
+        LS_R(&gm_PlayerRecords[k].camAngle, 4)
+        LS_R(gm_PlayerRecords[k].camPos, 0x10)
+        LS_R(gm_PlayerRecords[k].camRot, 0xc)
+        LS_R(&gm_PlayerRecords[k].savedA8, 4)
         if (ls_Version >= 0x10018)
-            LS_R(&gm_PlayerFins[k].saved70, 4)
+            LS_R(&gm_PlayerRecords[k].saved70, 4)
     }
     return 1;
 }

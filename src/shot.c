@@ -6,7 +6,6 @@
    cannon constants 0x5eedf4..0x5eee1c follow menu.c's last literal 0x5eedf0.
    Open: the head region is menu.c's (dcp unit split copied the declarations the functions use).
    unit split from menu (dcp unit split); boundaries in decl/text.dcl */
-extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <ddraw.h>

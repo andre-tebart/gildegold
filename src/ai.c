@@ -13,7 +13,6 @@
    tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3; d3_CloneObject moves too); ai_CalcMeisterFernhaendler's slot match
    was lost the same way (debt, to AIMSG.payment).
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
-extern int gm_PlayerRecords[688];
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -341,7 +340,7 @@ void ai_MasterUpdate(AICHAR *c)
                     found = 0;
                     p = ai_Chars;
                     while (1) {
-                        if ((int)&p->kind >= (int)&gm_PlayerRecordBytes)
+                        if ((int)&p->kind >= (int)&ai_Chars[0x300].kind)
                             break;
                         if (p->id != 0xffff && p->bld == b && (p->kind == 1 || p->kind == 2))
                             found = 1;

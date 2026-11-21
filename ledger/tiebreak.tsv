@@ -1452,7 +1452,7 @@ exe	0x0047dd30	ai_WorkLoad	ai	2d5f60ff5088ba96	no	byte	control=byte p1=byte p2=b
 exe	0x0047dd70	ai_WorksForMaster	ai	4b31daeae3bded33	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0047dd90	ai_IsLocalMaster	ai	9420458f1ba77258	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0047ddf0	ai_FindPartner	ai	fbb61ebae10829f5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0047e360	ai_MasterUpdate	ai	4ba03207093d6d65	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0047e360	ai_MasterUpdate	ai	2c682cc83466b567	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	0cc0a0fc359f11aa
 exe	0x0047e560	ai_UpdateCharacters	ai	e691e36610d4f04e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0047e7f0	ai_CanAct	ai	006f184c9f583026	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0047e840	ai_IsLocalWorker	ai	0608bc97f314c8e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4342,7 +4342,7 @@ exe	0x005a8f90	ai_ShowFeudNews	lcmap	49be5e9be82b76a8	no	shape	sweep control=sha
 exe	0x005a9050	ai_ShowPartnerNews	lcmap	2cddbeb2541271a5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
 exe	0x005a9110	ai_ShowCharacterNews	lc	08d7e76e70e9a4db	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9170	ai_NotifyPlayerOfChar	lc	2b7876153bbf4da0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a91c0	ai_PlagueNews	lc	99e1cc2295e9e1ee	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7d41e6f0b56efc7
+exe	0x005a91c0	ai_PlagueNews	lcmap	00a8a603814808c1	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	2b019b71bff93498
 exe	0x005a9240	ai_PlagueMessage	lc	2a45302ba83297e7	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005a92b0	ai_PlagueMessageAll	lc	f6b1e9a18230cdec	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7d41e6f0b56efc7
 exe	0x005a9330	ai_SendSwapText	lc	5cf6657aa11cbfbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

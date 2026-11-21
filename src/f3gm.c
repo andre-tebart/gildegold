@@ -71,7 +71,6 @@ extern unsigned char he_Events[339968];
 #include "amt_types.h"
 
 #include "ai_types.h"
-extern int gm_PlayerRecords[688];
 extern int gm_TreeNodeCount;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
 void gm_FreeObjectExtra(unsigned short *o);
@@ -2620,7 +2619,6 @@ char ord_KindTable[] = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 50, 0, 0, 0, 0, 0, 12, 0,
 int gm_RichestYear = -1;  /* 0x61772c, the game year (ai_Time.year) of gm_FindRichest's last search */
 int gm_RichestWorth = -1000000;  /* 0x617730, the worth of gm_RichestChar (0xc80 when none was found) */
 float gm_BirthChance[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
-extern int gm_PlayerRecords[688];
 extern int gm_ClassBuilding[32];
 AIBLD *ai_Blds;  /* 0x889f74, the buildings ( */
 signed char ai_RelationMemory[768][768];  /* 0x889f80 */

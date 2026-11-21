@@ -64,7 +64,6 @@ extern unsigned char he_Events[339968];
 #include "amt_types.h"
 
 #include "ai_types.h"
-extern int gm_PlayerRecords[688];
 extern int gm_TreeNodeCount;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
 void gm_FreeObjectExtra(unsigned short *o);
@@ -3549,18 +3548,18 @@ void gm_KillSpieler(int c, int mode)
         sprintf(buf, "gm_KillSpieler: Killing Player <id = %i>, holding data", netId);
     }
 }
-/* 0x503e80, resets the character state: kills every one of the 0x300 characters for good (gm_KillSpieler mode 2), clears the 16 player records gm_PlayerRecords (0x2b ints each, the first word -1: free) and the three counters ai_CharCount / ai_NextCharNumber / ai_NextPlayerNumber */
+/* 0x503e80, resets the character state: kills every one of the 0x300 characters for good (gm_KillSpieler mode 2), clears the 16 player records gm_PlayerRecords (AIFIN, the first word 0xffff: free) and the three counters ai_CharCount / ai_NextCharNumber / ai_NextPlayerNumber */
 void gm_ResetCharacters(void)
 {
     int i;
-    short *rec;
+    AIFIN *rec;
 
     for (i = 0; i < 0x300; i++)
         gm_KillSpieler(i, 2);
     for (i = 0; i < 0x10; i++) {
-        rec = (short *)&gm_PlayerRecords[i * 0x2b];
-        memset(rec, 0, 0x2b * sizeof(int));
-        rec[0] = -1;
+        rec = &gm_PlayerRecords[i];
+        memset(rec, 0, sizeof(AIFIN));
+        rec->w00 = 0xffff;
     }
     ai_CharCount = 0;
     ai_NextCharNumber = 0;
@@ -5181,7 +5180,7 @@ void gm_RankPlayers(int *count, GMRANK *out)
                 (double)r->reputation, (double)r->talents, (double)r->office);
     }
 }
-/* 0x506430, the player record (gm_PlayerRecords, 0x2b ints each) of the character c: for the kinds 5 / 6 / 7 whose
+/* 0x506430, the player record (gm_PlayerRecords, AIFIN) of the character c: for the kinds 5 / 6 / 7 whose
    w050 has the top bit set its low 4 bits are the slot; 0 for any other character */
 
 short *gm_PlayerRecord(char *c)
@@ -5194,7 +5193,7 @@ short *gm_PlayerRecord(char *c)
     else
         slot = -1;
     if (slot >= 0 && slot < 0x10)
-        return (short *)&gm_PlayerRecords[slot * 0x2b];
+        return (short *)&gm_PlayerRecords[slot];
     return 0;
 }
 /* 0x506480, counts the character c's five active relatives (relatives[3] .. relatives[7] at +0x68: gm_FindChar
@@ -8164,7 +8163,6 @@ int gm_Opinion(int a, int b)
     return ai_Relations[a][b];
 }
 
-extern int gm_PlayerRecords[688];
 extern int gm_TreeNodeCount;
 extern GMBLOCK gm_StockBlocks[5];
 extern struct AIOBJ *ai_Objects;
@@ -8638,6 +8636,6 @@ AITIME ai_Time;  /* 0x770ae0, the game clock */
 AICHAR ai_Chars[768];  /* 0x770b80, the characters */
 AIBTYPE *ai_BTypes;  /* 0x7e3f30 */
 signed char ai_Relations[768][768];  /* 0x7e5360 */
-int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */
+AIFIN gm_PlayerRecords[16];  /* 0x7d5f80, the 16 player records */
 int gm_ClassBuilding[32];  /* 0x875360 */
 char ai_PlayerSlots[4][0x2f4];  /* 0x7e3f40, per player: starts with the name of its history file */

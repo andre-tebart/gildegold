@@ -42,12 +42,10 @@ extern int ai_TransportWindow();
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c */
 #include "menu_types.h"
-extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_5ff710[];
 
 extern GAPDATA full_data_5f320c[];
-extern int gm_PlayerRecords[688];
 extern int d2_ClickedForm;
 extern unsigned char ai_GameState;
 extern GAPDATA full_data_5fe7d0[];
@@ -67,7 +65,6 @@ extern char main_GamePath[];  /* 0x624690, main.c: the game directory */
 extern float gm_DayEndHours[];
 
 extern unsigned char ai_GameState;
-extern int gm_PlayerRecords[688];
 #include "cm_types.h"
 extern int d2_ClickedForm;
 #include "mission_types.h"
@@ -82,7 +79,6 @@ extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern const float gm_MoodRanges[476];
 extern const float gv_SaleShares[];
-extern int gm_PlayerRecords[688];
 
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 

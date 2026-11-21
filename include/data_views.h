@@ -15,9 +15,6 @@
 #define ai_Selected              (*(char (*)[132])((char *)&ai_Chars + 0x188))  /* 0x770d08 */
 #define ai_Unk770d8c             (*(char (*)[414196])((char *)&ai_Chars + 0x20c))  /* 0x770d8c */
 
-/* gm_PlayerRecords */
-#define gm_PlayerRecordBytes     (*(char (*)[2750])((char *)&gm_PlayerRecords + 0x2))  /* 0x7d5f82 */
-
 /* ai_PlayerSlots */
 #define ai_Unk7e3f80             (*(int *)((char *)&ai_PlayerSlots + 0x40))  /* 0x7e3f80 */
 #define ai_Unk7e3f84             (*(int *)((char *)&ai_PlayerSlots + 0x44))  /* 0x7e3f84 */

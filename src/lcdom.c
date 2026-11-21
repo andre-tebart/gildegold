@@ -246,7 +246,6 @@ extern struct D2PIC *d2_Pics;
 
 
 
-extern int gm_PlayerRecords[688];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -302,7 +301,6 @@ extern GAPDATA full_data_602568[];
 
 
 extern unsigned char kb_Last;
-extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
@@ -484,7 +482,6 @@ extern struct D2OBJ *d2_Objs;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_60d224[];
-extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern int d2_ClickedId;
 
@@ -533,7 +530,6 @@ extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_624204[];
-extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern struct AIBTYPE *ai_BTypes;

@@ -15,7 +15,6 @@
    Data: the four floor option bytes 0x6f35c8 .. 0x6f35cb are objects of their own (ai_GfxFloor, ai_GfxCameraLimits,
    ai_GfxFloorLod, ai_GfxCharDetail): ai_ApplyGfxOptions reads 0x6f35c9 as a byte (mov al, byte ptr) where a union gives a dword load.
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
-extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <ddraw.h>
@@ -1404,7 +1403,7 @@ void ai_LoadScreenImage(char *path)
 /* 0x5d73e0, is there a character that can be quicksaved (78 B): 0 -> no game (ai_GameState 0x6f25ac
    == 0); otherwise walks the character records (ai_Chars + 2, stride 0x21c) for a living player (kind
    6 / 7) that belongs to a scene party (partyId != -1); 0 if found, 1 when the walk passes
-   gm_PlayerRecordBytes 0x7d5f82 */
+   the last record (its kind byte at 0x7d5f82) */
 
 int ai_HasQuicksavePlayer(void)
 {
@@ -1420,7 +1419,7 @@ int ai_HasQuicksavePlayer(void)
             if (p->health > 0 && (p->kind == 6 || p->kind == 7) && p->partyId != -1)
                 return 0;
             p++;
-        } while ((int)p < (int)gm_PlayerRecordBytes);
+        } while ((int)p < (int)&ai_Chars[0x300].kind);
     }
     return r;
 }

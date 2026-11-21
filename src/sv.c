@@ -55,7 +55,6 @@ extern char * ai_PickedObject;
 extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
 extern struct AICHAR *ai_SceneChars[32];
-extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 
 

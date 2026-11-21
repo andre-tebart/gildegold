@@ -248,7 +248,6 @@ extern volatile unsigned long d3_Time;
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
 extern int di_Absolute;
-extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
 extern int d2_LastWindow;
 extern unsigned char ai_OwnPlayer;

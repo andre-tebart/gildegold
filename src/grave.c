@@ -53,7 +53,6 @@ typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (a
 #include "menu.h"
 #include "net.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-extern int gm_PlayerRecords[688];
 
 extern const float gv_SaleShares[];
 extern const float gv_GraveWear[];

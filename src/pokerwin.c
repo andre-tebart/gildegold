@@ -4,7 +4,6 @@
    (0x6f3500, between shot's ai_EffectState 0x6f3300 and menu's ai_Options 0x6f35c0: the groups in reverse link order).
    bprobe at 0x5d9c30 / 0x5d9de0 / 0x5d9f50: no change.
    unit 0x005d9de0..0x005dbc10; boundaries in decl/text.dcl */
-extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <ddraw.h>

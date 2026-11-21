@@ -250,7 +250,6 @@ extern struct D2PIC *d2_Pics;
 
 
 
-extern int gm_PlayerRecords[688];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -306,7 +305,6 @@ extern GAPDATA full_data_602568[];
 
 
 extern unsigned char kb_Last;
-extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
@@ -489,7 +487,6 @@ extern struct D2OBJ *d2_Objs;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_60d224[];
-extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern int d2_ClickedId;
 
@@ -538,7 +535,6 @@ extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_624204[];
-extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern struct AIBTYPE *ai_BTypes;
@@ -2367,7 +2363,7 @@ void ai_PlagueNews(void)
         if (c->kind == 6 || c->kind == 7)
             he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x600, local);
         c++;
-    } while ((int)&c->kind < (int)&gm_PlayerRecordBytes);
+    } while ((int)&c->kind < (int)&ai_Chars[0x300].kind);
 }
 /* 0x5a9240, a plague message (112 B; bld, the building he_RunPlague passes, is not read): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
    text 0x20ca + the value; a character of the kind 6 / 7 sends the text and the sound with the news 0x600 to its

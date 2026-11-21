@@ -8,7 +8,6 @@
    (ai_NumPlayersW): owner main or mission
    Open: 0x534040 is out of address order.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
-extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>

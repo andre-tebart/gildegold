@@ -29,7 +29,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "net.h"                     /* net_Conn: s is -1 (an invalid socket) when no network game runs */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 #include "ai_bld.h"                  /* AIBTYPE (ai_BTypes) */
 #include "ai_char.h"                 /* AICHAR (ai_Chars) */
