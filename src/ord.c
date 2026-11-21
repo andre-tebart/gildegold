@@ -33,9 +33,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
-/* ai_RatingBase as the int out[6] of the statistics record: the original moves the float's bits with a dword mov
-   (0x4f9e22), so the caller's record takes them as they are */
-#define ORD_RATINGBASE_BITS (*(int *)&ai_RatingBase)  /* 0x6f1b9c */
 
 /* the clock's hour as am.h / cm.h / amt.h declare it: a view of gv.h's ai_Time (0x770ae0 + 4), so it is not
    an object of its own in the data area */
@@ -2584,6 +2581,6 @@ float ord_GetStatistics(int *o)
     if (o == 0)
         return 0.0f;
     memcpy(o, &ord_Statistics, 0x28);
-    o[6] = ORD_RATINGBASE_BITS;
+    ((ORDSTATS *)o)->base = ai_RatingBase;
     return ((ORDSTATS *)o)->score;
 }
