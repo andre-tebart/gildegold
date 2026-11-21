@@ -6170,8 +6170,10 @@ the bytes no portable form gives.
   Data (view macros kept as @original): ai_NumPlayersW in main.c (main_PlayerCountDialog stores the count as a
   byte, `mov byte [g],2`, and reads it back as `mov eax,[g]; and eax,0xff` in the same function, main_ChooseCity
   likewise: a char global gives `xor ecx,ecx; mov cl,[g]`, so the unit reads one object at two widths).
-  main_PlayerIdInt in main.c is not (c) yet: only main_RoundReport's gm_CharacterIncomes call needs the unmasked
-  dword (likely an unsigned short parameter in main.c's view of the prototype).
+  hst_ListModeSet / hst_ListModeUse in hst.c (a label's 4-byte tag compared with the first four characters of
+  the 5-byte strings of `char hst_ListModes[2][5]`, the second at an odd address: no C type puts an int at +5;
+  the inline `*(int *)hst_ListModes[k]` compiles the same but is dcp's Q4 raw access, which wants the view).
+  main_PlayerIdInt is resolved (header drift, see "a unit-local prototype" below), not (c).
 - **A data view macro `#define NAME (*(T *)&datum)` is our type, not the original's** (the second cast-macro pass,
   data): the object was declared with a placeholder type (`char *`, `char [n][size]`, `int [n]`, `unsigned short *`
   for a record pointer) and the units that read records viewed it. Give the definition and every declaration the
@@ -6196,7 +6198,53 @@ the bytes no portable form gives.
 - **Two views that tile one block exactly are two objects** (ai_Unk75f280 int[576] = sv_MemberRows
   SVMEMBERROW[0x20] at +0 and sv_Frames SVFRAME[0x80] at +0x500): define both, in order, in the owner; dcp data map
   shows each common at its address. Move the record typedef the units copied into the types header (SVFRAME into
-  sv_types.h, seven copies went).
+  sv_types.h, seven copies went). Likewise he_QuickList (he_QuickList[0x100], he_AllocHandlers[0xa8],
+  gm_CarryRecs, he_Cursor), he_RunHandlers (+ he_GfxInfos, he_ApEvents), cm_LobbyRecords (cm_LobbyPlayers[8],
+  cm_JoinChar), cm_RequestedSaveName (char[0x40], main_LastLoadProgress, main_BookObject), the sky tables (seven
+  arrays) and cm_Fighters (AICHAR[32] + the 0x1000-byte cm_FightScratch the fight setup clears on its own).
+  - **Gaps are alignment first**: commons of 32 bytes and more sit at 64-byte steps (rooms 36 -> 64, 40 -> 64), so
+    a record shorter than its room is the whole object (GMCHARSTATS 0x68 in room 0x80, CMLOBBYPLAYER[8] 0x2b8 in
+    0x2c0); check the data map's room before inventing a tail object.
+  - **Views that overlap by a pad**: read the record the other way round. SVDAYPHASE's four zero bytes lead the
+    record (hour at +4), the table starts at 0x623ba4 in the four bytes the map gave the previous object as room,
+    and six records end exactly at the sky keys; the trailing-pad reading made the sixth overlap them.
+  - **Views that overlap by one element are index bases**: a table read at `base - 4 + 4 * i` for i = 1 .. n is
+    `T tab[n]` read `tab[i - 1]` (VC6 folds the -1; d3_ScrollSpeed[15], d3_AnimDiv[11]); a double at the block's
+    start that one function compares with is VC6's pooled literal: write `0.0001f` (dcp matches pooled constants
+    by value; d3_SnapEpsilon went, d3sm_Pick byte).
+  - **An address one past a table is not a datum** (gm_PlayerRecordBytes = 0x7d5f82 = the kind byte one past
+    ai_Chars): the original walked the records and VC6 strength-reduced to the field, so the end test is
+    `(int)&p->kind < (int)&ai_Chars[0x300].kind` (byte); `p < &ai_Chars[0x300]` costs 5 ins. Keep the `(int)`
+    casts where the original compares signed (`jl`; gm_UpdatePlayers, init_InitTown).
+  - **A char walk at a field offset** (`p = &tab[0][0xf2]; .. p - 0xf2; p += 0xf4`) is usually an indexed `for`
+    over the records (`&tab[i].id`, `&tab[i].used`; gv_WriteAvatars byte, a `T *p; p++` walk is shape).
+- **Dozens of unit-local placeholder declarations of one global** (`extern int gm_PlayerRecords[688]` in 29 units,
+  left from the unit fold for data_views.h): one declaration with the record type in the owner header, the local
+  copies go. The declaration-set shifts this causes are accepted as they fall (`dcp debt add` when the gate holds
+  a promoted byte); never compensated.
+- **A byte-initialised char array of records** (`char unk_Avatars[0x20][0xf4] = { bytes }`): generate the field
+  initialiser from the bytes (dwords as numbers, strings as literals with octal escapes for non-ASCII bytes, floats
+  as the shortest decimal that round-trips in float, integer floats as `920.0f`); the data map reproduces it.
+- **A record typedef copied into several units, or a header a unit cannot include** (CMFIGHTREC x5, f3snd.h's
+  G16TRACKHANDLES that he.c read through `snd_CurrentTrack`): move the typedef into the types header (cm_types.h)
+  or a new one (f3snd_types.h, included by f3snd.h), and read the field.
+- **A struct field read at two widths by two units** (D3ACTIVE's packed `int notextures` at 0x63345d: ecmd.c
+  stores a dword, d3_engine.c tests the byte): the packed struct was ours; define the bytes as globals
+  (d3_D3DActive, d3_NoTextures) and let the dword writer declare `extern int` with `@original why` (as cm_Bombs).
+- **A unit-local prototype instead of a view of the argument** (main_PlayerIdInt: main_RoundReport pushes the
+  unsigned short ai_PlayerId as an unmasked dword, the code of a call through an `unsigned short` parameter):
+  main.c declares `int gm_CharacterIncomes(unsigned short id, ..)` with `@original why`; the owner header's
+  `unsigned id` prototype went because its only other caller is the defining unit (no unit sees two). The
+  definition keeps `unsigned id` (an unsigned short definition is draft: it masks the id itself).
+- **An int handle or `unsigned short *` global read once as a record**: cast the value at the read
+  (`((D3OBJECT *)ai_ClickedObject)->name`, `((struct AIOBJ *)sv_PanelShown)->objId`) as the other units do; a
+  view of the global (`*(T **)&g`) goes. dcp's Q4 counts `*(T *)datum` (a datum read as another type) as raw and
+  wants a view for it, but not a pointer value cast to a record.
+- **The high word of an unsigned global** (G28_HI): `(cut_RandState >> 16)` is the same `mov ax, word ptr [g+2]`.
+- **A record pointer global typed `char *` with casts at every reader** (ai_PlayerBuilding / ai_FallbackBuilding:
+  114 `(AIBLD *)` casts, 23 views): type it `AIBLD *`, retype the locals that only hold it, and cast where a
+  callee's prototype still takes `char *` / `unsigned char *` (the callee is the debt). Compare VC6's per-unit
+  warning counts before and after (`dcp build --units`): no implicit pointer conversion may be added.
 - **A pointer global tested and cleared through an int view** (`d3t_CamMoveI`): the pointer compares and stores
   the same; a chained `a = b = 0` over an int and a pointer is two statements in the store order (b first).
 - **A float global copied as its bits** (`o[6] = *(int *)&ai_RatingBase`): VC6 copies a float variable with integer
