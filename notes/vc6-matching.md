@@ -3961,8 +3961,11 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   above the zero register's `xor` and an unrelated struct-copy store, which then sink behind `mov ecx,0x14 /
   xor eax,eax / lea edi`. Read through the plain view `gypsyFilterValue` (`*(unsigned __int64 *)&gypsyFilter`)
   the original's order comes back (ai_FeastWindow byte; flip.py hit the deleted ai_AmountMenu(&cfg) call, the
-  next probe was the volatile). Suspect it in every gypsy window whose only hunk is the filter loads against
-  the memset (ai_SermonWindow's note describes exactly that).
+  next probe was the volatile). The volatile is gone now (menu.h, lcmap.c's definition, he / he_b / shot): its
+  defining unit lcmap.c has no reader, so nothing there folds it, and dropping it moved no function of the eight
+  including units (every grade and dist equal); ai_FeastWindow and he's two callers are byte with the plain
+  `gypsyFilter`. ai_SermonWindow did not move: its filter hunk is not the volatile. Do not put `volatile` on a
+  read-only global to keep it out of immediates when its readers are in other units: extern alone does that.
 - **Zeros as declaration initializers do not join the zero candidate**: `int done = 0; AICHARREC *guests[4] =
   {0, 0, 0, 0};` (not `{0}`: that is a memset) took ai_FeastWindow's 0 piece below a pointer parameter's
   priority, so 0 got ebp and the parameter edi as in the original (58 -> 4 ins).

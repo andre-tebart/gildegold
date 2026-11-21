@@ -22,7 +22,7 @@ extern int gm_PlayerRecords[688];
 #include "surf.h"
 /* the unit's first .rdata constant (before the header's, in address order): the filter of the gypsy windows, the
    flags and kind he and lc pass to ai_PickActionBuilding too */
-extern const volatile unsigned __int64 gypsyFilter;
+extern const unsigned __int64 gypsyFilter;
 extern const unsigned int ai_BuildingTypeMasks[6];
 #include "menu.h"
 #include "shot.h"

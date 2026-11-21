@@ -43,8 +43,7 @@ struct D3SM;
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
-#define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, gypsyFilter read as a plain value (he_AllocSpying passes it by value, the high word loaded first) */
+extern const unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c */
 #include "menu_types.h"
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];

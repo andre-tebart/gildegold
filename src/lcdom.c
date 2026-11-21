@@ -33,7 +33,6 @@ struct D3SM;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
-#define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, @original the filter read as a plain value: menu.h's volatile view orders its loads after a memset of the config (ai_FeastWindow) */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -6112,7 +6111,7 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
     cfg.kind = 6;
     musik = 5;
     cfg.mode = 0x400;
-    cfg.filter = gypsyFilterValue;
+    cfg.filter = gypsyFilter;
     gm_AddTime(&when, 0x18, 0, 0);
     when.hour = 0x14;
     when.min = 0;

@@ -126,8 +126,7 @@ struct D3SM;
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
-#define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, gypsyFilter read as a plain value (he_AllocSpying passes it by value, the high word loaded first) */
+extern const unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c */
 #include "menu_types.h"
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
@@ -13620,7 +13619,7 @@ void he_AllocSpying(int ev)
     }
     gm_FindById(&tgt, 0, 0, s->target);
     if (tgt == 0) {
-        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, 0.0f, 100.0f, &s->target);
+        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, 0.0f, 100.0f, &s->target);
         gm_FindById(&tgt, 0, 0, s->target);
         if (tgt == 0) {
             e->exSlot = cm_SendExSetHEI(-1, ev);
@@ -13833,7 +13832,7 @@ void he_AllocBrawl(AIJOB *e)
     else
         home = (AIBLD *)gm_BuildQuery(1, 4, victim->id);
     if (home == 0) {
-        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, (int)home, 100.0f, &at) != 0)
+        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, (int)home, 100.0f, &at) != 0)
             home = (AIBLD *)gm_BuildQuery(1, 1, at);
     }
     br->meet = home->id;
