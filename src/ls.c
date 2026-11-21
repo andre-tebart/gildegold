@@ -32,7 +32,6 @@ int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
-/* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteCrimes();                     /* 0x4f28d0 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
@@ -314,7 +313,7 @@ void ls_RefsToIds(void)
             ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
     d3if_SelectScene(saved, 1);
-    for (p = cm_SendStates; (int)&p->value < (int)ls_RefTargets + 0x50000; p++) {
+    for (p = cm_SendStates; (int)&p->value < (int)&cm_SendStates[0x8000].value; p++) {
         if (p->value != 0) {
             if (p->kind == 1)
                 p->value = ((AICHAR *)p->value)->netId;
@@ -346,7 +345,7 @@ void ls_IdsToRefs(void)
             ((D3OBJECT *)b->object)->owner = b;
     }
     d3if_SelectScene(saved, 1);
-    for (p = cm_SendStates; (int)&p->value < (int)ls_RefTargets + 0x50000; p++) {
+    for (p = cm_SendStates; (int)&p->value < (int)&cm_SendStates[0x8000].value; p++) {
         if (p->value != 0) {
             if (p->kind == 1)
                 p->value = (int)gm_FindChar(p->value);
