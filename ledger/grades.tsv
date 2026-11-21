@@ -1846,7 +1846,7 @@ exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable
 exe	0x004ad3e0	hmt_Score	hmt	byte	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	byte	readable		
 exe	0x004ad580	hmt_DecideElection	hmt	byte	readable		
-exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable	deep	
+exe	0x004ad7a0	hmt_FillCouncils	hmt	byte	readable		
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
 exe	0x004adbb0	hmt_Create	hmt	byte	readable		
@@ -2577,7 +2577,7 @@ exe	0x004e3570	cm_RunSceneTicks	cmscene	byte	readable
 exe	0x004e3620	cm_PlaySpecialTrack	cmscene	byte	readable		
 exe	0x004e3640	cm_EndSpecialTrack	cmscene	byte	readable		
 exe	0x004e3650	cm_ApplySeason	cmscene	byte	readable		
-exe	0x004e36a0	cm_ResetCutInfos	cmscene	shape	readable	deep	
+exe	0x004e36a0	cm_ResetCutInfos	cmscene	byte	readable		
 exe	0x004e3750	cm_PartyAnswered	cmscene	byte	readable		
 exe	0x004e37a0	cm_ShowPartyTexts	cmscene	byte	readable		
 exe	0x004e3800	cm_PrevPartyMember	cmscene	byte	readable		
@@ -4379,7 +4379,7 @@ exe	0x005aa9a0	ai_UpdateBldCarts	lcdom	byte	readable
 exe	0x005aab80	ai_PersonnelBook	lcdom	draft	readable	deep	
 exe	0x005ac110	ai_MercenaryBook	lcdom	draft	readable	deep	
 exe	0x005ad000	ai_AskHelperBonus	lcdom	byte	readable		
-exe	0x005ad150	ai_HelperBook	lcdom	draft	readable	deep	
+exe	0x005ad150	ai_HelperBook	lcdom	byte	readable		
 exe	0x005ae240	ai_BuyCartWindow	lcdom	byte	readable		
 exe	0x005ae570	ai_SellCarts	lcdom	byte	readable		
 exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable		
@@ -4419,7 +4419,7 @@ exe	0x005b7690	ai_UpgradeBuilding	lcdom	byte	readable
 exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	byte	readable		
 exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	draft	readable	deep	
 exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable		
-exe	0x005b84f0	ai_BuildingWindow	lcdom	draft	readable	deep	
+exe	0x005b84f0	ai_BuildingWindow	lcdom	byte	readable		
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	byte	readable		
 exe	0x005b92e0	ai_LiquidateAssets	lcdom	draft	readable	deep	
 exe	0x005b9730	ob_HandleBepflanzung	lcdom	byte	readable		
