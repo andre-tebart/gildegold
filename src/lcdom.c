@@ -6939,6 +6939,7 @@ void ai_TechEffectsWindow(AIBLD *bld)
     int skill;
     int max;
     int pic;
+    AIBLD *found;
 
     bldId = bld->id;
     for (i = 0; i < 0x24; i++)
@@ -6986,7 +6987,8 @@ void ai_TechEffectsWindow(AIBLD *bld)
     }
     d2_ClickedId = -1;
     do {
-        if ((bld->flags5aw & 0x400) != 0 || gm_FindBuildingById(bldId) == 0)
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
             sv_PopRequest = 1;
         if (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == close))
             sv_PopRequest = 1;
