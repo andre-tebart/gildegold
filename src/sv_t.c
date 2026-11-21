@@ -19,8 +19,6 @@
    state record through the S / U_I byte-offset macros; the message (AIMSG, ai.h) is typed from
    ai_CabinetSpyWindow on, earlier senders and the contact-list records still use byte offsets; the cannon
    scene struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonBuildPanel.
-   Open: d2_CreatePicObj: d2.h declares int parameters, the original's callers here (and d2.c's) pass a short y
-   (ai_CannonBuildPanel through the cast macro d2_CreatePicObjS).
    The unit's .rdata: ai_Tutorial 0x5eec60 and ai_TutorialConst5, then its literal 400.0f 0x5eec68; the cannon
    object svcannon (0x57e230) and the graveyard object svgrave (0x582730) follow; the cannon scene, the cabinet and
    the graveyard parts of the description above are theirs.

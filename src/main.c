@@ -270,7 +270,7 @@ void main_PlayOutro(void);
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void ai_ClearTurnTable(void);           /* 0x587de0, sv_t.c: not in sv_t.h (adding it there moves sv_t's drafts ai_TutorialInitChapter3 / ai_TutorialInitChapter5) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-#define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
+#define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as menu.h) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original the text-only calls push two (0x532c9d main_EnterHostAddress: push buf; push obj; 0x53649d / 0x5364ac main_ChoosePlayer: push 0x75e5aa / 0x75e5ca; push obj) */

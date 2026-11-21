@@ -359,8 +359,8 @@ void d2_RadioClear(int g);                                  /* 0x46c600 */
 void d2_RadioSelect(int g, int sel);                        /* 0x46c630 */
 int d2_RadioGetSel(int g);                                  /* 0x46c6a0 */
 void d2_MenuNavigate(int g);                                   /* 0x46c6c0, keyboard / pointer navigation in a radio group */
-int d2_OpenPic(int x, int y, int pic);                    /* 0x46cb20, opens a picture object (d2.c: K&R, int x, y) */
-int d2_CreatePicObj(int x, int y, int pic);                    /* 0x46cd80, @original: the K&R definition is compiled against this int prototype, its callers in d2.c against a short one; C89 forbids the pair, the bytes need it */                    /* 0x46cd80 */
+int d2_OpenPic(short x, short y, int pic);                    /* 0x46cb20, opens a picture object */
+int d2_CreatePicObj(short x, short y, int pic);                    /* 0x46cd80, d2_OpenPic (short x, y: callers add in 16 bits and push unextended) */
 void d2_ShowPicture(int pic);                                 /* 0x46cfd0 */
 void d2_DrawPic(int x, int y, int pic, void *surf);       /* 0x46d040, draws a picture */
 void d2_DrawObjCaption(D2OBJ *o);                                /* 0x46d220, draws a caption */

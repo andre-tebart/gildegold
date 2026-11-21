@@ -1486,7 +1486,6 @@ void ai_ShotTableReset(void)
     }
 }
 
-#define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original ai_CannonBuildPanel subtracts the picture height in 16 bits and pushes it unextended (0x580b18 sub cx / push ecx): a short y, as d2.c's callers (d2_WinOpenPic) */
 
 /* 0x580a90, builds the cannon control panel of the scene sc (run = its effect slot): the two edge pictures (by the
    screen width 800 / 0x400 / other: 0x7cb / 0x7cc / 0x7cd at the top left, 0x7ce / 0x7cf / 0x7d0 at the bottom
@@ -1521,7 +1520,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
         base = 0x7d0;
     }
     sc->picL = d2_CreatePicObj(0, 0, pic);
-    sc->picR = d2_CreatePicObjS(0, d2_ScreenH - d2_Pics[base].h, base);
+    sc->picR = d2_CreatePicObj(0, d2_ScreenH - d2_Pics[base].h, base);
     sc->win_a4 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_bottom");
     d2_PlaceMainWindowF(sc->win_a4, 1);
     d2_SetForm(sc->win_a4, 0);

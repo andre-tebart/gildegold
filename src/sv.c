@@ -8,7 +8,7 @@
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
-   @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
+   @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
    d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
@@ -982,8 +982,6 @@ extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour();                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-int d2_CreatePicObj();                     /* 0x46cd80 */
-#define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original: sv_LoadGroundplan adds d2_ScreenW + x in 16 bits (a short x, as d2.c's callers) */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research class of a building kind */
 
@@ -1118,7 +1116,7 @@ loaded:
                 }
             }
             if (obj != 0 && (pic = gm_GoodPicture(obj)) != -1) {
-                sv_GroundplanButtons[n] = d2_CreatePicObjS(d2_ScreenW + x - 0x7e, y + 0x4c, pic);
+                sv_GroundplanButtons[n] = d2_CreatePicObj(d2_ScreenW + x - 0x7e, y + 0x4c, pic);
                 n++;
             }
         }
@@ -1329,19 +1327,19 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         d2_Objs[sv_ButtonPrivileges].style = 0x43;
         d2_Objs[sv_ButtonPrivileges].interactive = 1;
         d2_Objs[sv_ButtonPrivileges].font = 0x55;
-        sv_ButtonPlayerStats = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
+        sv_ButtonPlayerStats = d2_CreatePicObj(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
         d2_Objs[sv_ButtonPlayerStats].style = 0x43;
         d2_Objs[sv_ButtonPlayerStats].interactive = 1;
-        sv_ButtonMessages = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
+        sv_ButtonMessages = d2_CreatePicObj(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
         d2_Objs[sv_ButtonMessages].style = 3;
         d2_Objs[sv_ButtonMessages].interactive = 1;
-        sv_ButtonInventory = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
+        sv_ButtonInventory = d2_CreatePicObj(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
         d2_Objs[sv_ButtonInventory].style = 0x43;
         d2_Objs[sv_ButtonInventory].interactive = 1;
-        sv_PanelBuildingIcon = d2_CreatePicObjS(d2_ScreenW - 0x4a, 0xd6, 0x585);
+        sv_PanelBuildingIcon = d2_CreatePicObj(d2_ScreenW - 0x4a, 0xd6, 0x585);
         d2_Objs[sv_PanelBuildingIcon].style = 0x43;
         d2_Objs[sv_PanelBuildingIcon].interactive = 1;
-        sv_PanelCompass = d2_CreatePicObjS(d2_ScreenW - 0x48, 0xd7, 0x551);
+        sv_PanelCompass = d2_CreatePicObj(d2_ScreenW - 0x48, 0xd7, 0x551);
         d2_Objs[sv_PanelCompass].style = 0x43;
         d2_Objs[sv_PanelCompass].interactive = 1;
         d2_Objs[sv_PanelCompass].type = 8;
@@ -1420,9 +1418,9 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 sprintf(arms, "_STADTWAPPEN_%s", name);
                 pic = d2_FindPic(arms);
                 if (pic != -1)
-                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
+                    sv_ButtonCityStats = d2_CreatePicObj(d2_ScreenW - 0x6e, 0x5b, pic);
                 else
-                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
+                    sv_ButtonCityStats = d2_CreatePicObj(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
                 d2_Objs[sv_ButtonCityStats].style = 0x43;
                 d2_Objs[sv_ButtonCityStats].interactive = 1;
             }
@@ -4071,7 +4069,6 @@ int sv_ReturnZero(void)
 int d2_WinOpenPic(short x, short y, int pic, int win);                     /* 0x4731d0 */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 int d2_CreateScreenText(short x, short y, char *text);                     /* 0x473860 */
-int d2_CreatePicObj();                     /* 0x46cd80 */
 void d2_MoveObj(short x, short y, int obj);                     /* 0x46cda0 */
 void d2_DrawText(int x, int y, void *surf, char *text, unsigned char flags);                     /* 0x46f000 */
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags);                     /* 0x46f1a0 */

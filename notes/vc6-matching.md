@@ -4599,9 +4599,11 @@ How arguments are pushed, a call written in both arms, parameter and return type
 - **Callers of one function passing differently**: the prototype seen before a definition decides calls inside
   and after it; a redeclaration just before the definition lets earlier callers keep another (C4028 is a warning)
   (d2_Unk46cda0: int for d2_CenterObj, short for its recursion and 0x46f840).
-- **Thunk `mov ecx,[esp+8]; mov edx,[esp+4]; mov [esp+8],ecx; mov [esp+4],edx; jmp`**: K&R definition `int f(x,
-  y, pic) int x; int y; int pic; {..}` with a `short` header prototype (0x46cd80). New-style short parameters give
-  movsx, matching prototypes a bare jmp.
+- **Thunk `mov ecx,[esp+8]; mov edx,[esp+4]; mov [esp+8],ecx; mov [esp+4],edx; jmp`**: `short` parameters
+  passed on to a callee whose parameters are `short` too: `int d2_CreatePicObj(short x, short y, int pic) {
+  return d2_OpenPic(x, y, pic); }` with `int d2_OpenPic(short x, short y, int pic)` (byte; an `int` callee gives
+  movsx, matching int prototypes a bare jmp). Callers that add in 16 bits and push unextended see the same short
+  prototype; no K&R definition or cast macro is needed.
 - **Pass-through wrapper reloading / restoring its stack slots before the `jmp`**: `unsigned char` parameters in
   wrapper and callee. A `short` parameter passes a short expression without extension.
 - **Loop not strength-reduced** (`lea ecx,[i*8]; sub ecx,i; lea edx,[ecx*4+0xa]; push edx` per iteration, ours
@@ -6008,6 +6010,11 @@ the bytes no portable form gives.
   windows.h's min / max are the same macros as stdlib.h's; including it (at the top, after the unit's own
   headers, with or without WIN32_LEAN_AND_MEAN / NOMINMAX) left every function of hmt.c unchanged; likewise
   hst.c (GetTickCount) and rmsg.c (timeGetTime: windows.h brings mmsystem.h).
+- **One function, callers with different widths**: give every unit the owner's one prototype. d2_CreatePicObj's
+  K&R definition, its int header prototype, a conflicting short redeclaration in d2.c, `int d2_CreatePicObj();` in
+  five units and `d2_CreatePicObjS` cast macros in six all went for `short x, short y` in d2.h (byte everywhere).
+  Remove a redundant unprototyped `int f();` rather than turning it into a prototype: a new parameterised
+  declaration in a widely included header (cm.h) moves VC6's declaration-set tie-breaks in other units.
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

@@ -634,7 +634,6 @@ extern D2OBJ *d2_Objs;          /* 0xf8f080, 0x2ec bytes each (d2.c); this heade
 
 void cm_BuildPortraits();  /* 0x4cfc10 */
 void cm_ClosePortraits();  /* 0x4cfe70 */
-int d2_CreatePicObj();  /* 0x46cd80 */
 int d2_CreateWinText(short x, short y, char *text, int win);  /* 0x473650 */
 
 void cm_ClickSceneChar();  /* 0x4cfeb0 */

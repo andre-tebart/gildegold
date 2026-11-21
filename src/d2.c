@@ -43,7 +43,6 @@
 #include "ts_texture.h"
 #include "vfs.h"
 #include "shp.h"
-#define d2_OpenPicS ((int (*)(short, short, int))d2_OpenPic)  /* 0x46cb20 (K&R, int x, y): @original d2_CreatePicObj (0x46cd80, byte) was compiled against the short prototype */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -1667,10 +1666,7 @@ void d2_SubRefcount(int pic)
 }
 /* 0x46cb20, creates an object showing a picture at x, y */
 
-int d2_OpenPic(x, y, pic)
-int x;
-int y;
-int pic;
+int d2_OpenPic(short x, short y, int pic)
 {
     int n;
     D2OBJ *o;
@@ -1741,12 +1737,9 @@ int pic;
 }
 /* 0x46cd80, thunk */
 
-int d2_CreatePicObj(x, y, pic)
-short x;
-short y;
-int pic;
+int d2_CreatePicObj(short x, short y, int pic)
 {
-    return d2_OpenPicS(x, y, pic);
+    return d2_OpenPic(x, y, pic);
 }
 
 /* 0x46cda0, moves an object (and, for a window, the objects on it) to x, y and recomputes its clip rectangle */
@@ -4291,9 +4284,6 @@ void d2_AddToDrawOrder(int obj, D2WIN *win)
     }
     err_Message("Toby, wir haben ein Problem...");
 }
-
-/* the callers above pass shorts (see d2.h), the calls below take them too */
-int d2_CreatePicObj(short x, short y, int pic);  /* @original: K&R definition (movsx reads) with a short prototype for its callers (16-bit arithmetic in d2_WinOpenPic); C89 forbids the pair, the bytes need it */
 
 /* 0x4731d0, creates a picture object on a window (position scrolled in both directions) */
 int d2_WinOpenPic(short x, short y, int pic, int win)
