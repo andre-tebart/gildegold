@@ -3,13 +3,10 @@
    0x531670, main.c's program level code. Names are ours.
    Open: the start and the end rest on the .data order only.
    Open: head: d2.h is included (the d2 records through the SV* views, the SV_I / SV_W address macros with their
-   byte offsets and sv_D2Objs = d2_Objs as D2OBJ *), with gfx.h (d2_AddHitRect's int call goes through
-   d2_AddHitRectI), cm.h, rt.h, lc.h (the ai_ panels), anm.h, f3snd.h, sblib.h, menu.h (the option / save screens,
+   byte offsets and sv_D2Objs = d2_Objs as D2OBJ *), with gfx.h, cm.h, rt.h, lc.h (the ai_ panels), anm.h, f3snd.h, sblib.h, menu.h (the option / save screens,
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
-   6 calls to re-grade). The
-   @original cast macro d2_AddHitRectI records the parameter type the original's
-   calls show.
+   6 calls to re-grade).
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
    (0x6f25a4..): whose unit they are is open.
@@ -219,7 +216,6 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "gfx.h"
 #include "cm.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e90 movsx edx, [d2_ScreenW]; sub edx, 0x50; push edx): the short x of the definition narrows it to 16 bits, so the original unit saw an int prototype */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
 
@@ -738,7 +734,7 @@ void sv_BuildScreenLayout(int s)
     int *q;
 
     d2_SetClipRect(0, 0, (int)d2_ScreenW, (int)d2_ScreenH);
-    sv_AdvanceHit = d2_AddHitRectI(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
+    sv_AdvanceHit = d2_AddHitRect(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
     sv_BarWindow = d2_CreateWindow(4, 10, 0x288, 0x30, 0);
     d2_PlaceWindowScaled(sv_BarWindow, 1);
     if (sv_ViewShape != 0) {

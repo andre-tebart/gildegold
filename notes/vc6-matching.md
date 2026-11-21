@@ -6121,10 +6121,13 @@ the bytes no portable form gives.
   630 -> 635 ins elsewhere). pokerwin.c / shot.c's unused short prototypes went (dcp lint M5). dcp lint counts the
   calls as M7 (cmfight 2, main, menu, sv). A prototype in scope wins over a later K&R definition (composite
   type), so the owner header must not carry the short prototype.
+- **A short parameter only stored into a short field, its one caller pushing an int (`movsx; sub edx,0x50; push
+  edx`)**: the parameter is `int` (d2_AddHitRect(int x, int y, int w, int h, int user): the body's word stores
+  compile the same; sv_BuildScreenLayout byte, the d2_AddHitRectI cast went). Check what the body does with a
+  "short" parameter before calling the definition right.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_AddHitRect /
-  net_Connect (short parameters the callers push promoted, the short definition is right),
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers

@@ -92,7 +92,7 @@ struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int p
 
 void d2_FocusInput(int obj);                                         /* 0x478320, gives an input object the focus */
 void d2_MouseUpdate(void);                                            /* 0x4784c0, mouse handling of the gui */
-int d2_AddHitRect(short x, short y, short w, short h, int user);     /* 0x478890, adds a hit rectangle */
+int d2_AddHitRect(int x, int y, int w, int h, int user);     /* 0x478890, adds a hit rectangle */
 void d2_RemoveHitRect(int i);                                           /* 0x4788f0 */
 int d2_CompareColour(char *a, char *b);                                 /* 0x478930 */
 void d2_SetColour(D2RGB *c, unsigned char r, unsigned char g, unsigned char b);     /* 0x478960 */

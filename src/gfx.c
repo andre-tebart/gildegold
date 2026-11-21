@@ -911,7 +911,7 @@ void d2_CopyCaption(char *s)
 }
 /* 0x478890, adds a hit rectangle, returns its number or 0 if the table is full */
 
-int d2_AddHitRect(short x, short y, short w, short h, int user)
+int d2_AddHitRect(int x, int y, int w, int h, int user)
 {
     D2HIT *p;
     int i = d2_HitCount + 1;
