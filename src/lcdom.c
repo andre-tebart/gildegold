@@ -2548,8 +2548,8 @@ void ai_HelperBook(AIBLD *bld, char *model)
     AIJOB *job;
 
     nWorkers = 0;
-    sel = -1;
     dismissButton = -1;
+    sel = -1;
     radio = -1;
     fireMasterButton = -1;
     hireMasterButton = -1;
@@ -2606,8 +2606,8 @@ void ai_HelperBook(AIBLD *bld, char *model)
         d2_SetForm(*vp, 3);
         rows[i].view = *vp;
         rows[i].x = j % 2 * halfW + 0x10;
-        y = r * halfH + 0x11;
-        rows[i].y = y;
+        rows[i].y = r * halfH + 0x11;
+        y = rows[i].y;
         px = rows[i].x + 0x18;
         pic = d2_WinOpenPic(px, y, 0x5db, d2_LastWindow);
         rows[i].pic = pic;
@@ -2625,11 +2625,11 @@ void ai_HelperBook(AIBLD *bld, char *model)
         rows[i].ch = 0;
         d2_Objs[t].w = 0xa0;
         d2_Objs[t].centred = 1;
-        j++;
         rows[i].icon = -1;
         rows[i].slider = -1;
         for (k = 0; k < 6; k++)
             rows[i].ctrl28[k] = -1;
+        j++;
     }
     n = i;
     d2_SetForm(book->views[0], 3);
@@ -2701,12 +2701,12 @@ void ai_HelperBook(AIBLD *bld, char *model)
                             break;
                     if (job == 0) {
                         memset(&msg, 0, sizeof(msg));
-                        msg.fromId = bld->id;
                         msg.type = 7;
                         msg.flags = 1;
-                        msg.hireMaster = 1;
                         msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
                         msg.time = ai_Time;
+                        msg.hireMaster = 1;
                         if (gm_IsHomeType(bld) != 0)
                             msg.hireMasterRoom = -1;
                         else
@@ -2728,8 +2728,8 @@ void ai_HelperBook(AIBLD *bld, char *model)
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x31;
             msg.flags = 1;
-            msg.fromId = bld->id;
             msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.fromId = bld->id;
             msg.time = ai_Time;
             msg.arg[0] = masterRow.ch->netId;
             cm_SendLongMessage((char *)&msg);
