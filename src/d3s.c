@@ -397,7 +397,8 @@ void d3s_FillRows(int n)
         }
     }
 }
-/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel, its low byte)
+/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel, its low byte; defined old
+   style with int bpp, called through the unsigned char prototype below d3s_Project's TSTEXSIZE)
    @deep draft -> shape this session: the running min y is a local (ymin) and the bound is the shifted
    size parameter (size <<= 16; ymin = size): VC6 then hoists size - 1 out of the bounds loop as the
    original does (dec edx before it) and keeps ymin in ebp after the loops; poly->v[i] written at each use
@@ -419,7 +420,10 @@ void d3s_FillRows(int n)
    eax,[dd_Pitch] memory-operand forms at +0x1dc/+0x1fe; the two FillRows tails pop add esp,8 then add
    esp,4 where ours merges add esp,0xc. */
 
-void d3s_ShadowPoly(D3SPOLY *poly, int bpp, int size)
+void d3s_ShadowPoly(poly, bpp, size)
+D3SPOLY *poly;
+int bpp;
+int size;
 {
     int i, top, ymin;
     int a, b, c, y, n;
@@ -799,7 +803,7 @@ typedef struct TSTEXSIZE {          /* the parts of a texture slot (ts_texture.h
     unsigned char bpp;              /* 0x7c */
 } TSTEXSIZE;
 
-#define d3s_ShadowPolyB ((void (*)(D3SPOLY *, unsigned char, int))d3s_ShadowPoly)  /* @original d3s_Project pushes the byte bpp unextended; d3s_ShadowPoly reads the whole slot as its first top index */
+void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size);  /* 0x45a880, @original: defined above old style with int bpp (it reads the whole slot as its first top index, the low byte for d3s_Byte); d3s_Project calls it through this prototype, pushing the byte unwidened (mov al,[tex+0x7c]; push eax). VC6 takes both without a warning */
 
 void d3_DirToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR *out);                          /* 0x458810 */
 unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                                           /* 0x439650 */
@@ -1286,7 +1290,7 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
             dd_FillSurface(tex->surf, 0, 0);
             dd_Surface = dd_LockSurfaceFlags(tex->surf, 0x20);
             for (i = 0, p = (D3SPOLY *)mesh->tris; i < mesh->ntris; i++, p++)
-                d3s_ShadowPolyB(p, ((TSTEXSIZE *)tex)->bpp, ((TSTEXSIZE *)tex)->size);
+                d3s_ShadowPoly(p, ((TSTEXSIZE *)tex)->bpp, ((TSTEXSIZE *)tex)->size);
             dd_UnlockSurface(tex->surf);
             dd_Surface = 0;
             if (slot->cache->flag)

@@ -6136,10 +6136,15 @@ the bytes no portable form gives.
   do not include dd_vesa.h (d3_interface.c takes its records from the new dd_vesa_types.h, which dd_vesa.h
   includes; d3_engine.h's copy of the int prototype went). dd_vesa.c keeps `int r, g, b`. The dd_ClearB casts
   went (byte).
+- **A caller pushes a byte unwidened (`mov al,[tex+0x7c]; push eax`) to a function in the same unit whose body
+  reads that slot as a whole int (d3s_ShadowPoly's `top = bpp`, `mov ebx,[esp+0x1c]`) and its low byte
+  elsewhere**: an old-style definition with `int bpp` and a later prototype with `unsigned char bpp` that the
+  caller below sees. VC6 compiles both without a warning (the K&R definition makes no prototype, the later one
+  wins at the call); d3s_Project byte, the d3s_ShadowPolyB cast went. Not compatible types by the standard, so
+  each side carries `@original`.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), d3s_ShadowPoly (byte pushed to the int slot it
-  reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: the units saw another
