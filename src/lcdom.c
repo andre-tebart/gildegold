@@ -8740,8 +8740,8 @@ void ai_TrainingWindow(AIBLD *bld)
 
     type = &((AIBTYPE *)ai_BTypes)[bld->type];
     en2 = 0;
-    row = 0;
     n2 = 0;
+    row = 0;
     win = d2_OpenForm(0, 0, "special\\training");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);

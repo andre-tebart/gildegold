@@ -4439,7 +4439,7 @@ exe	0x005bae50	ai_UpdateEquipRows	lc	a96a236f13bfd73a	no	shape	control=shape p1=
 exe	0x005bb2d0	ai_GoodFitsBuilding	lc	ecb1035e7a7966dd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bb350	ai_EquipWindow	lc	49d237c45fe4b85e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bb950	ai_OpenTrainingRow	lc	91fd26a035faa8f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005bba00	ai_TrainingWindow	lcdom	b938a837c7c1818d	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	9eec08dc5ffe125e
+exe	0x005bba00	ai_TrainingWindow	lcdom	43326b9341c20a84	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	80bf61f72e610907
 exe	0x005bc0f0	ai_FreePicture	lc	13d9fef523489ccd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	5646dbf681dac72d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	75051ac3b789ade6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
