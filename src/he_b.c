@@ -527,7 +527,6 @@ typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a bui
     int proofs[3];                      /* 0x1c, the crime ids (CRIME.id) the last robbery took from it, -1: none (he_RunDarkCorner) */
     int year;                           /* 0x28, the year the job was started (he_StartDarkCorner copies ai_Time's year into it) */
 } HEJOBTABLE;
-#define ai_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (char[]) as the 0x200 CRIME records it holds */
 typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words over AIJOB's union (AIJOB has no name at
                                            +0xb0: a field there flips d3_CloneObject's bytes, the unit's lead comment) */
     char pad00[0xac];

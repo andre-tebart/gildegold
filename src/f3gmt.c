@@ -36,7 +36,6 @@ struct AICHAR;
 #include "data_views.h"
 #include "amt.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-extern char ai_Crimes[];
 #define GAPDATA __declspec(align(1)) unsigned char
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
@@ -2877,7 +2876,6 @@ void gm_ShowSlotObjects(int unused, int scene, int c)
 }
 
 /* ---- the character and building life cycle 0x502b60 .. 0x504510 (ROUGH drafts, written out of address order at the end of the file) ---- */
-#define GM_CRIMES ((CRIME *)ai_Crimes)  /* 0x91f700, ai_Crimes (cm.c, char[]) as its 0x200 CRIME records */
 extern int ai_Evidence[0x800][2];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
 extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 #ifndef TIME_VIEW_H
@@ -3504,8 +3502,8 @@ void gm_KillSpieler(int c, int mode)
             }
         }
         for (i = 0; i < 0x200; i++) {
-            if (GM_CRIMES[i].culprit == ch->netId) {
-                crime = GM_CRIMES[i].id;
+            if (ai_Crimes[i].culprit == ch->netId) {
+                crime = ai_Crimes[i].id;
                 for (j = 0; j < 0x800; j++) {
                     if (ai_Evidence[j][1] == crime) {
                         if (peer != 0 && peer->netId == ai_Evidence[j][0])
@@ -3514,9 +3512,9 @@ void gm_KillSpieler(int c, int mode)
                         ai_Evidence[j][0] = -1;
                     }
                 }
-                GM_CRIMES[i].victim = -1;
-                GM_CRIMES[i].culprit = -1;
-                GM_CRIMES[i].id = -1;
+                ai_Crimes[i].victim = -1;
+                ai_Crimes[i].culprit = -1;
+                ai_Crimes[i].id = -1;
             }
         }
         if (cnt != 0 && peer != 0 && peer != ch)
@@ -5692,7 +5690,7 @@ int gm_MayRemoveChar(ORDCHAR *c)
         if (0x300 - ai_CharCount < 0x20)
             return 1;
         for (i = 0; i < 0x200; i++) {
-            if (GM_CRIMES[i].victim == id && GM_CRIMES[i].state != 0)
+            if (ai_Crimes[i].victim == id && ai_Crimes[i].state != 0)
                 return 0;
         }
         return 1;

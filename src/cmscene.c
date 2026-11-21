@@ -1347,18 +1347,18 @@ void cm_RunTrial(G28REC *m)
     /* the crimes, grouped by the law broken */
     memset(groups, 0, sizeof(groups));
     for (nlist = 0; nlist < ncrimes; nlist++)
-        list[nlist] = ((CRIME *)ai_Crimes)[crimeIds[nlist]].id;
+        list[nlist] = ai_Crimes[crimeIds[nlist]].id;
     for (i = nlist; i < 32; i++)
         list[i] = -1;
     for (i = 0; i < ncrimes; i++) {
         if (groups[i] == -1)
             continue;
         groups[i] = 1;
-        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
+        crime = ai_Crimes[crimeIds[i]];
         for (j = i + 1; j < ncrimes; j++) {
             if (groups[j] == -1)
                 continue;
-            other = ((CRIME *)ai_Crimes)[crimeIds[j]];
+            other = ai_Crimes[crimeIds[j]];
             if (crime.law == other.law) {
                 groups[j] = -1;
                 groups[i]++;
@@ -1369,7 +1369,7 @@ void cm_RunTrial(G28REC *m)
         char text[0x100];
         AIDEC dec;
 
-        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
+        crime = ai_Crimes[crimeIds[i]];
         gv_GetTableRecord(crime.law, (int *)&dec);
         k = groups[i];
         sum += dec.guilt * severity;

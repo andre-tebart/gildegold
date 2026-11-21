@@ -544,7 +544,6 @@ extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Crimes[];
 
 extern int d2_ClickedId;
 
@@ -8697,7 +8696,7 @@ int ai_AccuseWindow(AICHARREC *me, AICHARREC *culprit)
     if (n < 1)
         return 0x60;
     for (i = 0; i < n; i++) {
-        crimes[i] = ((CRIME *)ai_Crimes)[ids[i]];
+        crimes[i] = ai_Crimes[ids[i]];
         open |= crimes[i].state == 1;
     }
     if (me == culprit)

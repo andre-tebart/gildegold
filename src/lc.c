@@ -651,7 +651,6 @@ extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Crimes[];
 
 extern int d2_ClickedId;
 

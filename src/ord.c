@@ -1957,7 +1957,7 @@ void ord_RebuildGridSums(void)
         }
     }
     for (n = 0; n < 0x200; n++) {
-        p = &((CRIME *)ai_Crimes)[n];
+        p = &ai_Crimes[n];
         if (p->state == 0 || p->id == -1)
             continue;
         r = *p;

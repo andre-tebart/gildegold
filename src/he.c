@@ -611,7 +611,6 @@ typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a bui
     int proofs[3];                      /* 0x1c, the crime ids (CRIME.id) the last robbery took from it, -1: none (he_RunDarkCorner) */
     int year;                           /* 0x28, the year the job was started (he_StartDarkCorner copies ai_Time's year into it) */
 } HEJOBTABLE;
-#define ai_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (char[]) as the 0x200 CRIME records it holds */
 typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words over AIJOB's union (AIJOB has no name at
                                            +0xb0: a field there flips d3_CloneObject's bytes, the unit's lead comment) */
     char pad00[0xac];
@@ -9050,9 +9049,9 @@ void he_RunDarkCorner(int ev)
             n = 0x200;
             i = 0;
             while (n != 0 && i < d->loot) {
-                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_Chars[bld->owner].netId
-                    && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
-                    loot[i++] = ai_CrimesT[idx].id;
+                if (ai_Crimes[idx].id != -1 && ai_Crimes[idx].state == 1 && ai_Crimes[idx].culprit != ai_Chars[bld->owner].netId
+                    && gm_CompareTime(&e->start, &ai_Crimes[idx].time) != 1)
+                    loot[i++] = ai_Crimes[idx].id;
                 n--;
                 idx = (idx + w) % 0x200;
             }
@@ -9098,9 +9097,9 @@ void he_RunDarkCorner(int ev)
             n = 0x200;
             i = 0;
             while (n != 0 && i < d->loot) {
-                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_Chars[bld->owner].netId
-                    && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
-                    loot[i++] = ai_CrimesT[idx].id;
+                if (ai_Crimes[idx].id != -1 && ai_Crimes[idx].state == 1 && ai_Crimes[idx].culprit != ai_Chars[bld->owner].netId
+                    && gm_CompareTime(&e->start, &ai_Crimes[idx].time) != 1)
+                    loot[i++] = ai_Crimes[idx].id;
                 n--;
                 idx = (idx + w) % 0x200;
             }

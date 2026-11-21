@@ -377,7 +377,7 @@ extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the mission
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy (14 bytes) */
 extern int cm_SaveAcks[][2];  /* 0x76fa20 */
 extern int ai_Evidence[0x800][2];  /* 0x91b6e0, pairs (character netId, crime id): the character holds evidence of the crime (0x4f3640) */
-extern char ai_Crimes[];  /* 0x91f700 */
+extern CRIME ai_Crimes[0x200];  /* 0x91f700, the crime records */
 extern CMCUTINFO cm_CutInfos[16];  /* 0x92cae0, the cutscene (fight) records */
 extern int cm_DayEndRequest;  /* 0xf31144 */
 extern int hst_SeedPending;  /* 0xf83650 */

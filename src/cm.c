@@ -3988,7 +3988,7 @@ int cm_ExAddStraftat(G17MSG *m, G17STAT *s)
         c = (AICHAR *)gm_FindChar(m->crime.culprit);
         if (c != 0 && c->kind == 6)
             ai_CountMissionEvent(c, 0x17);
-        rec = &((CRIME *)ai_Crimes)[slot];
+        rec = &ai_Crimes[slot];
         *rec = m->crime;
         rec->id = ai_NextCrimeId;
         sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_NextCrimeId,
@@ -4016,7 +4016,7 @@ int cm_ExAddStraftat(G17MSG *m, G17STAT *s)
             pos.z = ((D3OBJECT *)b->object)->pos.z;
         }
         for (j = (AIJOB *)he_FindEvent(1, 0, 0x18); j != 0; j = (AIJOB *)he_NextEvent()) {
-            if (j->id4 == ((CRIME *)ai_Crimes)[slot].culprit) {
+            if (j->id4 == ai_Crimes[slot].culprit) {
                 if (gv_AddEvidence(rec->id, ai_Chars[j->chr].netId) == 0)
                     break;
                 if (s != 0) {
@@ -6946,7 +6946,6 @@ extern int cm_SaveAcks[8][2];
 /* ai_CharSex: view of ai_Chars (tools/data_views.py) */
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
 extern int ai_Evidence[0x800][2];
-extern char ai_Crimes[0x5a00];
 extern int cm_SavedScene;
 extern int cm_DuelRight;
 extern int cm_DuelLeft;

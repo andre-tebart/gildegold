@@ -538,7 +538,6 @@ extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Crimes[];
 
 extern int d2_ClickedId;
 
@@ -5262,7 +5261,7 @@ void ai_EvidenceDetailsWindow(AICHARREC *me, AICHARREC *culprit)
     if (n < 1)
         return;
     for (i = 0; i < n; i++)
-        crimes[i] = ((CRIME *)ai_Crimes)[ids[i]];
+        crimes[i] = ai_Crimes[ids[i]];
     gv_SortCrimesByLaw(n, crimes);
     win = d2_OpenForm(0, 0, "privillegien\\Beweise_Details");
     d2_CentreViewWindows(win);

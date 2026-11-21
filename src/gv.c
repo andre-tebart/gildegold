@@ -16,7 +16,7 @@
    building's turn step (care wear, lease ends via gv_LeasePrice / gv_OrderExtendGrave, new dead).
    The laws and crimes (gv_Decisions, ai_Crimes, ai_Evidence, the sentences, the rank check) are gs.c's, the
    graveyard grave.c's; this unit keeps their record types (gv.h).
-   Open: gv_FindCrime and gv_EvidenceSlot still read ai_Crimes (cm.c's char[], the 0x2d-byte CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets.
+   Open: gv_EvidenceSlot still reads ai_Evidence (cm.c, the int pairs) through raw offsets.
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: gv_CrimeText, gv_PassSentence).
@@ -35,7 +35,6 @@
 #include "d3_tools.h"
 #include "data_views.h"
 #define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
-#define gv_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (cm.c: char[0x5a00]) as its 0x200 CRIME records */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
