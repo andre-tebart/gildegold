@@ -6,7 +6,7 @@
    G13TYPE.offerSpeech, G13MIS.progress / fulfilled stand on their users (the _AUFTRAEGE_VERGABE speech,
    ai_CountMissionEvent and the completion flag of he.c 0x56ce40). AIFIN.missionMoney (ai.h) holds the five saved
    money statistics of the player record the money conditions read (no writer in the build).
-   Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / gm_BuildQueryT views (type debt).
+   Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B view and (AIBLD *) casts of gm_BuildQuery (type debt).
    Open: not included yet (dcp headers conflicts mission HEADER): d2.h; held by own declarations that differ
    from the owner's: d2_Radios.
    unit of rea 8cef7d5b (src/game/unk_4b39f0.c); boundaries in decl/text.dcl */
@@ -464,7 +464,6 @@ int ai_ChooseMissionFrom(int n)
 }
 
 #define G13_B(c, off) (((unsigned char *)(c))[off])
-#define gm_BuildQueryT ((AIBLD *(*)(int, ...))gm_BuildQuery)  /* the variadic view (am.h repeats a 3-int one) */
 
 int ai_TimedCondition(int x, int ok, int y);                                          /* 0x4b5160 */
 
@@ -820,7 +819,7 @@ int ai_CondPlayerHoldsNoBuilding(AICHAR *c, G13TYPE *t)
 {
     AIBLD *b;
 
-    for (b = gm_BuildQueryT(1, 6); b != 0; b = gm_BuildNext()) {
+    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = gm_BuildNext()) {
         if (b->owner != 0xffff && ai_CharsT[b->owner].kind == 5)
             return 0;
     }
@@ -954,9 +953,9 @@ void ai_CharBuildingShare(AICHAR *c, int k, G13STAT *s)
 
     same = 0;
     if (k != 0)
-        b = gm_BuildQueryT(1, 5, k);
+        b = (AIBLD *)gm_BuildQuery(1, 5, k);
     else
-        b = gm_BuildQueryT(1, 6);
+        b = (AIBLD *)gm_BuildQuery(1, 6);
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         if (b->owner == c->id)
@@ -980,9 +979,9 @@ void ai_PlayerShare(int k, G13STAT *s)
 
     same = 0;
     if (k != 0)
-        b = gm_BuildQueryT(1, 5, k);
+        b = (AIBLD *)gm_BuildQuery(1, 5, k);
     else
-        b = gm_BuildQueryT(1, 6);
+        b = (AIBLD *)gm_BuildQuery(1, 6);
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         w = b->owner;
