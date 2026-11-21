@@ -5190,7 +5190,7 @@ int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *b = 0.0f;
     ord_GetStatistics(d);
     if (d[3] > (float)((p->mood[10][0] - 2.0) * 0.4f)) {
-        AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
+        ai_EvalCurrentNeed(a, b, i, (AIPER *)p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
         return 1;
@@ -5814,7 +5814,7 @@ int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIAR
     q = gm_TitleJob(p->id, 4);
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (ai_FindDarkCornerTarget(p, &s1, &s2) != 0) {
-            AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
+            ai_EvalCurrentNeed(a, b, i, (AIPER *)p, 0, o1, o2);
             *o1 = s1;
             *o2 = s2;
             *a *= 6.0f;
@@ -6065,7 +6065,7 @@ int ai_EvalChangeProfession(float *a, float *b, int i, G5CH *p, int f, AIARG *o1
             return 0;
         return ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
     }
-    AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
+    ai_EvalCurrentNeed(a, b, i, (AIPER *)p, 0, o1, o2);
     *a += *a;
     *b *= 3.0f;
     return 1;
@@ -6728,7 +6728,7 @@ int ai_EvalUpgradeGuild(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AI
     if (bl == 0)
         return 0;
     if (bl->level < util_Random(0x10) + 0x32) {
-        AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
+        ai_EvalCurrentNeed(a, b, i, (AIPER *)p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
         return 1;

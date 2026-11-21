@@ -393,7 +393,7 @@ int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void
 }
 /* 0x4a4ae0, eval callback: only the weights of the current need count */
 
-int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p)
+int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p, int f, void *x, void *y)
 {
     G5ACT *act;
     float d1;

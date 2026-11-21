@@ -884,8 +884,7 @@ int ai_ExecuteBlackmail(G5CH *p, AIARG *s1, AIARG *s2);                         
 int ai_DecideUsePrivileges(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d750 */
 int ai_ExecuteUsePrivileges(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d7d0 */
 float ord_GetStatistics(int *o);                                                   /* 0x4f9e00 */
-int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0, as in unk_4a3af0.h */
-#define AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2) ((int (*)(float *, float *, int, G5CH *, int, AIARG *, AIARG *))ai_EvalCurrentNeed)(a, b, i, p, f, o1, o2)  /* declared with 4 parameters */
+int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);                          /* 0x4a4ae0, as in unk_4a3af0.h */
 int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d7f0 */
 int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d8d0 */
 char * gm_PlayerSeat(int p);                                                      /* 0x504a80 */
@@ -968,7 +967,7 @@ void d3_PointToWorld(struct D3OBJECT *obj, struct D3VECTOR *in, struct D3VECTOR 
 
 int amt_GetKindLevel(int k);                                              /* 0x4e7c40 */
 extern const int ai_RingStrides[11];          /* 0x5ed180, the strides of the near ring cursor */
-int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */
+int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);                          /* 0x4a4ae0 */
 
 int gm_MayTakeJob(int k, int c);                                      /* 0x5020e0 */
 /* 0x4a5140 ai_CanBuildType is declared in am.h */
