@@ -5854,7 +5854,6 @@ void ai_RhetoricContact(int bld, int room)
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld);
 short * gm_FindChar(int id);
-#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's (unsigned char, char *) prototype */
 int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 /* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_EnterBuilding; the feast window
@@ -5971,7 +5970,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
                     if (sv_MessageBox(text, 1) != 0) {
                         ev->end = ai_Time;
                         ev->idbc = ai_Time.year;
-                        slot = cm_SendExSetHEI(1, ev);
+                        slot = cm_SendExSetHE(1, ev);
                         if (slot != -1)
                             do {
                                 if (cm_GetSlotState(slot) != 0)
@@ -5994,7 +5993,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
                         txt_Format(ask, 0x1a5b, 2, ch->id, pick->id);
                         if (sv_MessageBox(ask, 1) != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
                             ev->idbc = ai_Time.year;
-                            cm_SendExSetHEI(3, ev);
+                            cm_SendExSetHE(3, ev);
                             gm_SendMoneyDelta(player->netId, -2);
                             cm_SendRelations(pick->netId, ch->netId, -0x21, 1);
                             sv_PopRequest = 1;
@@ -12862,7 +12861,7 @@ void ai_KidnapStart(AIBLD *bld)
                 sv_MessageBox(ai_TextKidnapMessage, 0);
                 return;
             }
-            rec->exSlot = cm_SendExSetHEI(-1, (int)rec);
+            rec->exSlot = cm_SendExSetHE(-1, (int)rec);
         }
     }
     memset(&cfg, 0, sizeof(cfg));
@@ -13024,7 +13023,7 @@ void ai_HostageEscape(AIBLD *bld)
                 cm_SendChrGotoBuilding(ch->netId, placeBld, placeObj, 0, 0, "L\366segeld");
             for (ev = (LCRANSOMEVENT *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (LCRANSOMEVENT *)he_NextEvent())
                 if (ev->guild == bld->id && ch->netId == ev->victim) {
-                    ((AIJOB *)ev)->exSlot = cm_SendExSetHEI(-1, ev);
+                    ((AIJOB *)ev)->exSlot = cm_SendExSetHE(-1, ev);
                     break;
                 }
             txt_Format(text, 0x3feb);

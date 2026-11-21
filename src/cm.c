@@ -1483,9 +1483,9 @@ int cm_SendLongMessageText(char *msg, unsigned int len, void *extra)
     return cm_QueueSend(&m);
 }
 /* 0x4c4c60, message 0x1d about p (three AITIMEs, its name from cm_EventNames); p + 0xac as the long message.
-   Returns cm_QueueSend's result (the callers' slot; the key is read as a byte: unsigned char k) */
+   Returns cm_QueueSend's result (the callers' slot; the key is pushed as an int and stored as a byte) */
 
-int cm_SendExSetHE(unsigned char k, char *p)
+int cm_SendExSetHE(int k, char *p)
 {
     G17MSG m;
     AIJOB *ev;

@@ -931,7 +931,6 @@ void ai_PamphletWindow(int bld);
 #define PF_ONE_OF   0xf00000             /* one of these must hold */
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld);
 short * gm_FindChar(int id);
-#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's (unsigned char, char *) prototype */
 int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus /
                                            ai_AmountRow; cm.c CMAMOUNTROW) */
@@ -5843,7 +5842,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                         gm_AddTime(&ev->end, 0, 1, 0);
                     }
                     ev->pairDrawn = 0;
-                    ev->exSlot = cm_SendExSetHEI(0, ev);
+                    ev->exSlot = cm_SendExSetHE(0, ev);
                     cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, price);
                     sv_MessageBox(answer, 0);
                     sv_PopRequest = 1;
@@ -5851,7 +5850,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
             } else if (i == 3) {
                 txt_Format(closing, 0x1cfa, ((AICHARREC *)gm_FindChar(partner))->id);
                 ev->pairDrawn = 0;
-                ev->exSlot = cm_SendExSetHEI(0, ev);
+                ev->exSlot = cm_SendExSetHE(0, ev);
                 sv_MessageBox(closing, 0);
                 sv_PopRequest = 1;
             }
@@ -7505,7 +7504,7 @@ int ai_CounterEspionage(AICHARREC *me, LCORDMSG *m)
                 ret |= 0x10;
                 ev->end = ai_Time;
                 ev->stopped18 = ai_Time;
-                cm_SendExSetHEI(ev->stage, ev);
+                cm_SendExSetHE(ev->stage, ev);
                 msg.espionage.target = ((AICHARREC *)ai_Chars)[ev->chr].netId;
                 cm_SendLongMessage((char *)&msg);
             }
@@ -7538,7 +7537,7 @@ int ai_CounterEspionage(AICHARREC *me, LCORDMSG *m)
                         if (ev->id4 == me->netId) {
                             caught |= 1;
                             ev->end = ai_Time;
-                            cm_SendExSetHEI(0, ev);
+                            cm_SendExSetHE(0, ev);
                             msg.espionage.target = ((AICHARREC *)ai_Chars)[ev->chr].netId;
                             cm_SendLongMessage((char *)&msg);
                             txt_Format(p, 0x1db9, ev->chr);
@@ -10537,7 +10536,7 @@ int ai_UseGoodTributeClaim(AICHARREC *ch)
         if ((int)ch->netId == ev->idbc) {
             ai_ShowTributeClaimNews((int)ch, (int)ai_Chars[ev->chr]);
             ev->end = ai_Time;
-            cm_SendExSetHEI(-1, (char *)ev);
+            cm_SendExSetHE(-1, (char *)ev);
         }
         ev = (AIJOB *)he_NextEvent();
     }

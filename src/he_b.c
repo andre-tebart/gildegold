@@ -37,7 +37,6 @@ struct D3SM;
 #define GAPDATA __declspec(align(1)) unsigned char
 #define ai_PlagueMessageK ((void (*)(AICHAR *, AIBLD *))ai_PlagueMessage)  /* 0x5a9240 (lc.c: G8CHARREC *c): @original the caller here pushes two arguments (0x54a4ba..0x54a4bb, add esp,8): the character (read as the first) and the building (unused) */
 #define ai_DomizilMessageK ((void (*)(AICHAR *, AICHAR *, void *, int))ai_DomizilMessage)  /* 0x5a9c30 (lc.c: G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level; lc.c-local types the header cannot spell): @original the caller here pushes four arguments (0x56d492..0x56d495, add esp,0x10) */
-#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_RunMeeting) */
 
 
 extern int ai_TransportWindow();
@@ -2797,7 +2796,7 @@ void he_RunConstruction(int ev)
         if (c->payer != he_PlayerCh->netId) {
             ch = (AICHAR *)gm_FindChar(c->payer);
             if (ch == 0) {
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 break;
             }
             c->slot = cm_SendMoveGoods(-1, c->payer, ai_OwnPlayer, c->carry);
@@ -2807,7 +2806,7 @@ void he_RunConstruction(int ev)
         } else {
             c->slot = gm_AddToTreasuryI(c->carry);
         }
-        e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         break;
     case 1:
         e->exSlot = -1;
@@ -2816,16 +2815,16 @@ void he_RunConstruction(int ev)
         if (cm_GetSlotState(c->slot) == 0)
             break;
         if (cm_GetSlotState(c->slot) == 2) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         return;
     case 2:
         if (!(e->opts & 2))
             break;
         c->slot = cm_SendMessage10((unsigned char)c->bldType, c->payer, 0, 1);
-        e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         return;
     case 3:
         e->exSlot = -1;
@@ -2834,17 +2833,17 @@ void he_RunConstruction(int ev)
         if (cm_GetSlotState(c->slot) == 0)
             break;
         if (cm_GetSlotState(c->slot) == 2) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         bld = (AIBLD *)cm_GetSlotValue(c->slot);
         if (bld != 0) {
             c->bld = bld->id;
             e->from = bld->id;
-            e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+            e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 4:
         e->exSlot = -1;
@@ -2854,7 +2853,7 @@ void he_RunConstruction(int ev)
             return;
         }
         if (he_CreateConstruction(&c->rot, &c->pos, &bld->type, c->model, ev) == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             d3if_SelectScene(scene, 1);
             return;
         }
@@ -2878,7 +2877,7 @@ void he_RunConstruction(int ev)
         d3if_SelectScene(0, 1);
         gm_FindById((int *)&bld, 0, 0, c->bld);
         if (bld == 0 || lc_GetGebaeudeBauplatz(&site, bld) == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             d3if_SelectScene(scene, 1);
             return;
         }
@@ -2899,7 +2898,7 @@ void he_RunConstruction(int ev)
             }
         }
         if (nearest == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             d3if_SelectScene(scene, 1);
             return;
         }
@@ -2934,7 +2933,7 @@ void he_RunConstruction(int ev)
         d3if_SelectScene(0, 1);
         gm_FindById((int *)&bld, 0, 0, c->bld);
         if (lc_GetGebaeudeBauplatz(&site, bld) == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             d3if_SelectScene(scene, 1);
             return;
         }
@@ -3551,7 +3550,7 @@ void he_AllocAlchemistDay(AIJOB *e)
     d->bonus = 0;
     d->payloadB0 = -1;
     d->payloadB4 = -1;
-    e->exSlot = cm_SendExSetHEI(0, (char *)e);
+    e->exSlot = cm_SendExSetHE(0, (char *)e);
 }
 /* 0x56ddc0, true when the room `kind` of the building b (0x24b the alchemist's laboratory, 0x256 the cannon
    room, 0x266 the cabinet) is locked (a task runs in it): its object (0x4ffe90 (b->objList, 2, 6, 0, kind))
@@ -3596,7 +3595,7 @@ void he_RunAlchemistDay(int ev)
     if (e->opts & 4)
         return;
     if (c == 0 || ahm_HasRecord((char *)c) == 0 || e->stage == -2 || e->stage == -1) {
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
     rec = c->bld->ahm;
@@ -3607,13 +3606,13 @@ void he_RunAlchemistDay(int ev)
     if (d->bonus != 0) {
         ahm_SendAddValue((char *)c, (util_RandomF() + 1.0f) * 0.25f);
         d->bonus = 0;
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         return;
     }
     state = ahm_ResearchState(c->bld, &id, &done, 1);
     if ((util_RandomF() + 1.0f) * 0.25f > rec->value) {
         he_LabIncident(c, ev, c->bld, state);
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         return;
     }
     switch (state) {
@@ -3632,7 +3631,7 @@ void he_RunAlchemistDay(int ev)
         break;
     }
     ahm_SendAddValue((char *)c, delta);
-    cm_SendExSetHEI(0, ev);
+    cm_SendExSetHE(0, ev);
 }
 
 void ai_DomizilMessageTask(int param_1, int param_2, int param_3, unsigned short *param_4);
@@ -3781,12 +3780,12 @@ void he_AllocSecretRoom(AIJOB *e)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
     ((HESECRETROOM *)e)->walkSlot = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xd, ((HESECRETROOM *)e)->home, -1, 0x2d, 0, 0, "ASSASSIN");
-    e->exSlot = cm_SendExSetHEI(0, (char *)e);
+    e->exSlot = cm_SendExSetHE(0, (char *)e);
     return;
 taken:
     txt_Format(text, 0x3ff7, e->chr);
     he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5fa, 0);
-    e->exSlot = cm_SendExSetHEI(-1, (char *)e);
+    e->exSlot = cm_SendExSetHE(-1, (char *)e);
     he_FreeEvent((int *)e);
 }
 
@@ -3837,26 +3836,26 @@ void he_RunSecretRoom(int ev)
             s->agent = agent->netId;
             if (s->way == 3) {
                 e->end = ai_Time;
-                e->exSlot = cm_SendExSetHEI(6, ev);
+                e->exSlot = cm_SendExSetHE(6, ev);
                 return;
             }
             if ((bld = (AIBLD *)gm_BuildQuery(1, 1, s->target)) == 0) {
                 e->end = ai_Time;
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 return;
             }
             s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, "ASSASSIN");
-            cm_SendExSetHEI(1, ev);
+            cm_SendExSetHE(1, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 1:
         s->walkSlot = -1;
         agent = (AICHAR *)gm_FindChar(s->agent);
         if (agent == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (agent->scene->actions != 0) {
@@ -3866,18 +3865,18 @@ void he_RunSecretRoom(int ev)
         }
         if (gm_BuildQuery(1, 1, s->target) == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
         agent = (AICHAR *)gm_FindChar(s->agent);
         if (agent == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         victim = (AICHAR *)gm_FindChar(s->victim);
@@ -3910,30 +3909,30 @@ void he_RunSecretRoom(int ev)
                 e->end = ai_Time;
                 s->spyEvent = -1;
                 s->hunting = 0;
-                e->exSlot = cm_SendExSetHEI(6, ev);
+                e->exSlot = cm_SendExSetHE(6, ev);
                 break;
             case 4:
                 he_SecretRoomDomizil(bld->id, victim);
                 break;
             }
         }
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         break;
     case 4:
         agent = (AICHAR *)gm_FindChar(s->agent);
         e->end = ai_Time;
         if (agent == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, "ASSASSIN");
-        e->exSlot = cm_SendExSetHEI(5, ev);
+        e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
         agent = (AICHAR *)gm_FindChar(s->agent);
         if (agent == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (agent->scene->actions != 0) {
@@ -3964,18 +3963,18 @@ void he_RunSecretRoom(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, minutes / 60, minutes % 60, 0);
         cm_SendKillCharacter(s->agent, 1);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 6:
         if (gm_MinutesBetween(&e->start, &ai_Time) > 0x5a0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
             return;
         }
         agent = (AICHAR *)gm_FindChar(s->agent);
         if (agent == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if ((spy = (AIJOB *)he_FindNearestSpying(per, agent, s->spyEvent)) != 0) {
@@ -3986,7 +3985,7 @@ void he_RunSecretRoom(int ev)
             cm_SendChrGotoBuilding(agent->netId, s->target, -1, 0, 1, "Spy Killer");
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(7, ev);
+            e->exSlot = cm_SendExSetHE(7, ev);
         } else {
             kinds.s.lo = 0xa7f4c7a0;
             kinds.s.hi = 1;
@@ -3997,7 +3996,7 @@ void he_RunSecretRoom(int ev)
             cm_SendChrGotoBuilding(agent->netId, s->target, -1, 0, 1, "Spy Killer");
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0xf, 0);
-            e->exSlot = cm_SendExSetHEI(6, ev);
+            e->exSlot = cm_SendExSetHE(6, ev);
         }
         return;
     case 7:
@@ -4005,28 +4004,28 @@ void he_RunSecretRoom(int ev)
         agent = (AICHAR *)gm_FindChar(s->agent);
         if (agent == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (minutes > 0x5a0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
             return;
         }
         caught = he_SecretRoomCatchSpy(agent, ev, (AIJOB *)he_FindEvent(2, 0, 0x18, 1, s->spyEvent));
         if (caught == 0) {
             gm_AddTime(&e->end, 0, 6, 0);
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(7, ev);
+            e->exSlot = cm_SendExSetHE(7, ev);
             return;
         }
         if (caught == 1) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(6, ev);
+            e->exSlot = cm_SendExSetHE(6, ev);
             return;
         }
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(6, ev);
+        e->exSlot = cm_SendExSetHE(6, ev);
         return;
     }
 }
@@ -4041,9 +4040,9 @@ void he_AllocEvent9a(int ev)
     e->end = ai_Time;
     if (he_NoEvent9aFor(e->bldId, (AICHAR *)gm_FindChar(e->id2)) != 0) {
         gm_AddTime(&e->end, 0x18, 0, 0);
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
     }
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x56f040, frees the event record it is handed (he_FreeEvent): the alloc / run handler of the event types the
    game drops at once (5, 0x2d, 0x30, 0x4d, 0x7b) and the run handler of 0x29 / 0x9a */
@@ -4060,7 +4059,7 @@ void he_AllocDomizilEvent(AIJOB *e)
         return;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0x30, 0, 0);
-    e->exSlot = cm_SendExSetHEI(0, (char *)e);
+    e->exSlot = cm_SendExSetHE(0, (char *)e);
 }
 /* 0x56f0b0, the run of the domicile event 0x9b: any stage but 0 frees; stage 0 sends the text 0x4035 with the news
    0x5fb (its second text "_NACHRICHTEN_DOMIZIL_11") to the character partner1 when it exists, and the text 0x4036 with the
@@ -4329,7 +4328,7 @@ int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
         guard = (s->strength + 1) * 0.5f;
         skill = gm_GetSkill((char *)employer, 2);
         if (gm_GetSkill((char *)victim, 2) + guard > skill + spyBonus) {
-            spy->exSlot = cm_SendExSetHEI(-1, spy);
+            spy->exSlot = cm_SendExSetHE(-1, spy);
             txt_Format(text, 0x4028, victim->id);
             he_ShowNews(employer->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_10");
             txt_Format(text, 0x4029, employer->id);
@@ -4448,7 +4447,7 @@ void he_AllocHaunting(int ev)
             break;
     }
     if (r != 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         txt_Format(text, 0x4096, h->victim);
         he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5fa, 0);
         return;
@@ -4456,9 +4455,9 @@ void he_AllocHaunting(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
     if (h->haunter == -1)
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
     else {
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
         gm_SendMoneyDelta(ai_CharInts[e->chr][0], -h->paid);
     }
 }
@@ -4504,18 +4503,18 @@ void he_RunHaunting(int ev)
         bld = (AIBLD *)gm_BuildQuery(1, 1, h->home);
         if (bld == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         h->walkSlot = cm_SendChrGotoBuilding(haunter->netId, bld->id, -1, 0, 1, "HEIMSUCHUNG");
-        cm_SendExSetHEI(2, ev);
+        cm_SendExSetHE(2, ev);
         return;
     case 2:
         h->walkSlot = -1;
         if (haunter->scene->actions != 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 4, 0);
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         if (gm_BuildQuery(1, 1, h->home) != 0) {
@@ -4525,25 +4524,25 @@ void he_RunHaunting(int ev)
                 gm_AddTime(&e->end, 0x18, 0, 0);
                 ai_HauntingText((unsigned short *)&ai_CharsT[e->chr], (int)victim, (unsigned int)&e->end);
             }
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 3:
         if (haunter->bld == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         h->walkSlot = cm_SendChrGotoBuilding(haunter->netId, haunter->bld->id, -1, 0, 0, "HEIMSUCHUNG");
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 4:
         if (haunter->bld == 0) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (haunter->scene->actions != 0) {
@@ -4553,14 +4552,14 @@ void he_RunHaunting(int ev)
         }
         e->end = ai_Time;
         sv_MoveToGroup(0, 0, haunter->id, 0);
-        e->exSlot = cm_SendExSetHEI(5, ev);
+        e->exSlot = cm_SendExSetHE(5, ev);
         years = h->paid >> 1;
         if (years < 1)
             years = 1;
         e->end.year += years + 1;
         return;
     case 5:
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -4587,7 +4586,7 @@ void he_AllocDecay(int ev)
             txt_Format(text, 0x40a2, per->id);
             he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5fa, 0);
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -4764,7 +4763,7 @@ void he_AllocPlunder(int ev)
     p->at = 0;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
@@ -5427,7 +5426,7 @@ void he_RunGraveTraining(int ev)
     he_FreeEvent((int *)ev);
 }
 /* 0x571f60, the alloc of the meeting event 0x90: stage 0, then paused -> nothing; the due clock = now; another
-   running event 0x90 of the building (from) -> exSlot = cm_SendExSetHEI(-1, ev) and return; else the message 0x91
+   running event 0x90 of the building (from) -> exSlot = cm_SendExSetHE(-1, ev) and return; else the message 0x91
    (to the netId, from the building bldId, the clock, flags 0xa, arg 0 = the id, arg 1 = -1, arg 2 = unkb0) is
    sent, unkb4 / unkb0 are capped at 2, unkb8 = 0, the money -((unkb4 + 2) * (unkb0 + 2)) is taken from the
    character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE)
@@ -5455,7 +5454,7 @@ void he_AllocMeeting(int ev)
     e->end = ai_Time;
     for (r = he_FindEvent(2, 0, 0x90, 3, e->from); r != 0; r = he_NextEvent()) {
         if ((int)r != ev) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
@@ -5476,7 +5475,7 @@ void he_AllocMeeting(int ev)
         m->radius = 2;
     gm_SendMoneyDelta(ai_CharInts[e->chr][0], -((m->kind + 2) * (m->radius + 2)));
     gm_AddTime(&e->end, 0, 5, 0);
-    cm_SendExSetHEI(0, ev);
+    cm_SendExSetHE(0, ev);
 }
 
 
@@ -5672,7 +5671,7 @@ void he_RunMeeting(int ev)
     e->end = ai_Time;
     bld = (AIBLD *)gm_BuildQuery(1, 1, p->bld);
     if (bld == 0) {
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
     if (e->stage != 0)
@@ -5681,12 +5680,12 @@ void he_RunMeeting(int ev)
         he_SpreadMeetingDisease(bld, p->radius, p->kind, p->rounds);
         gm_AddTime(&e->end, 0, 0x1e, 0);
         p->rounds = p->rounds + 1;
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         return;
     }
     e->stage = -1;
     gm_AddTime(&e->end, 0x16, 0, 0);
-    cm_SendExSetHEI(-1, ev);
+    cm_SendExSetHE(-1, ev);
 }
 /* 0x5726a0, the alloc of the meeting scene event 0x91: stage 0 */
 void he_AllocMeetingScene(int ev)
@@ -6149,28 +6148,28 @@ void he_RunCouncil(int ev)
     case 0:
         hmt_Update();
         gm_AddTime(&e->end, 2, 0, 0);
-        cm_SendExSetHEI(1, ev);
+        cm_SendExSetHE(1, ev);
         return;
     case 1:
         hmt_Begin();
         gm_AddTime(&e->end, 2, 0, 0);
-        cm_SendExSetHEI(2, ev);
+        cm_SendExSetHE(2, ev);
         return;
     case 2:
         hmt_Election();
         gm_SetTime(&e->end, 0x16, 0, 0);
-        cm_SendExSetHEI(3, ev);
+        cm_SendExSetHE(3, ev);
         return;
     case 3:
         hmt_ClearOffices();
         gm_SetTime(&e->end, 6, 5, 0);
         e->end.year = e->end.year + 1;
-        cm_SendExSetHEI(4, ev);
+        cm_SendExSetHE(4, ev);
         return;
     case 4:
         hmt_DecideElection();
         gm_SetTime(&e->end, 0xa, 0, 0);
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         return;
     }
 }
@@ -6235,13 +6234,13 @@ void he_AllocGypsyApproach(int ev)
     e->end = ai_Time;
     per = (AICHAR *)gm_FindChar(g->figure);
     if (per == 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     b = per->bld2;
     x = b != 0 ? b->id : -1;
     gv_Accuse(0x1c, 1, e->netId, per->netId, x);
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 void he_GypsyApproach(char *pl, char *per, int a);  /* 0x5736d0 */
@@ -6270,7 +6269,7 @@ void he_RunGypsyApproach(int ev)
     e->end = ai_Time;
     per = (AICHAR *)gm_FindChar(g->figure);
     if (per == 0 || ai_CharsT[e->chr].id == 0xffff) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     pl = &ai_CharsT[e->chr];
@@ -6280,11 +6279,11 @@ void he_RunGypsyApproach(int ev)
         gm_AddTime(&e->end, 0x18, 0, 0);
         e->end.hour = 6;
         e->end.min = (util_Random(4) & 0xffff) * 0xf + 5;
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
         he_GypsyFee(pl, g->approach);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -6643,7 +6642,7 @@ void he_AllocTrialScene(int ev)
         e->end.hour = util_Random(2) + 0x13;
     }
     e->end.min = 0;
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 
@@ -6775,7 +6774,7 @@ void he_RunTrialScene(int ev)
     }
     if (e->stage == 1 && !(e->opts & 4)) {
         he_TrialPayment(ev);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
     }
 }
 /* 0x574550, the alloc of the event 0xa1 (a meeting of up to four figures +0x8c ..): when one of them is in the building +0x10

@@ -9,7 +9,7 @@
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
    @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
-   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHEI) record the parameter types the original's
+   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHE) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -1607,8 +1607,7 @@ int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int gm_ClockSeason(AITIME *c);         /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
-int cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
-#define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
+int cm_SendExSetHE(int k, char *p);                     /* 0x4c4c60 */
 void he_FreeEvent();                     /* 0x53e1f0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 int cm_SendFieldValues(void);                     /* 0x4c49e0 */
@@ -1699,7 +1698,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
             sv_CountGroupMembers((char *)old);
             if (sv_UsedGroupSlots((char *)old) <= 0) {
                 old->time = ai_Time;
-                cm_SendExSetHEI(-1, (char *)old);
+                cm_SendExSetHE(-1, (char *)old);
             }
             break;
         case 0x48:
@@ -1707,7 +1706,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         case 0x75:
         case 0xa1:
             if (sv_UsedGroupSlots((char *)old) <= 0)
-                cm_SendExSetHEI(-1, (char *)old);
+                cm_SendExSetHE(-1, (char *)old);
             break;
         case 0x16:
         case 0x88:

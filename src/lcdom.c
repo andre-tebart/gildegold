@@ -907,7 +907,7 @@ typedef struct LCTREENODE {        /* a node of f3gm's research tree layout gm_T
 extern char gm_TreeNodes[3328];    /* 0x76fde0, LCTREENODE[64] (f3gm.c) */
 extern int ai_Difficulty;          /* 0x6f23fc, the game difficulty 0 .. 4 (ai.h) */
 int gm_BuildKindObjects(char *b);
-char *itoa(int, char *, int);
+char *itoa(int value, char *buf, int radix);
 int ai_SearchResourceWindow(AIBLD *bld);
 int ai_ExtractResourceWindow(AIBLD *bld);
 void ob_HandleBepflanzung(AIBLD *bld);
@@ -921,7 +921,6 @@ int ai_AmountMenu(); void ai_TalentWindow(struct AIBLD *bld, int room, int talen
 void ai_PamphletWindow(int bld);
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld);
 short * gm_FindChar(int id);
-#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's (unsigned char, char *) prototype */
 int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus /
                                            ai_AmountRow; cm.c CMAMOUNTROW) */
@@ -3051,7 +3050,7 @@ void ai_TransportOrderDue(AIOBJ *cart)
     while (ev != 0) {
         if (ev->u.id == cart->objId) {
             ev->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         ev = (AIJOB *)he_NextEvent();
@@ -5115,7 +5114,7 @@ int ai_EspionageAmountCB(AICHARREC *ch)
             txt_Format(text, 0x42c1, ch->id);
             if (sv_MessageBox(text, 0x101) != 0) {
                 ev->end = ai_Time;
-                ev->exSlot = cm_SendExSetHEI(-1, ev);
+                ev->exSlot = cm_SendExSetHE(-1, ev);
             }
             return 0;
         }
@@ -5853,7 +5852,7 @@ void ai_PamphletWindow(int bld)
    the row loop keeps n (the form 2n-1 / 2n, the loop bound n < 5) and its own row index i for ctl[i] /
    evIds[i] (VC6 strength-reduces i to the byte offset ebx and keeps n in memory as the original); i with
    the bound i < 4 = control (merged into n), i < 4 && ev first 109. Left: the original caches -1 in ebx
-   (or ebx,-1; the memsets' eight stores, d2_ClickedId = ebx, the compares, push ebx to cm_SendExSetHEI,
+   (or ebx,-1; the memsets' eight stores, d2_ClickedId = ebx, the compares, push ebx to cm_SendExSetHE,
    re-made after the fill loop) where ours materializes it per use: c2trace const#0#1 (10 refs, lines
    5879-5928) prio -236, cut where ev#1 takes ebp. memset(.., -1, ..) at either site = control; climb round
    1: refresh = d3_Time + 500 between the two memsets 55 ins (not kept, order only). prior: Reconstructed
@@ -5928,7 +5927,7 @@ void ai_NoticeBoardWindow(void)
                 ev = (AIJOB *)he_FindEvent(1, 1, evIds[i]);
                 if (ev != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
                     ev->end = ai_Time;
-                    slot = cm_SendExSetHEI(-1, ev);
+                    slot = cm_SendExSetHE(-1, ev);
                     while (slot != -1 && cm_GetSlotState(slot) == 0)
                         sv_RunFrame(0, 0x677c7);
                     if (cm_GetSlotState(slot) == 1)
@@ -7082,7 +7081,7 @@ void ai_FireFightingWindow(AIBLD *bld)
                     if (ev->bldId == bld->id)
                         break;
                 if (ev != 0) {
-                    ev->exSlot = cm_SendExSetHEI(-1, ev);
+                    ev->exSlot = cm_SendExSetHE(-1, ev);
                     sv_MessageBox(txt_Ptrs[0x17f7], 4);
                 }
                 sv_PopRequest = 1;

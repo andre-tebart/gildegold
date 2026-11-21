@@ -80,8 +80,8 @@
    trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
    message records through raw offsets
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
-   cast macros next to the includes keep the spellings the definitions disagree with: cm_SendExSetHEI (an int key,
-   the return kept), cm_SendSpawnCharacterR (the send slot kept), ai_PlagueMessageK (two arguments),
+   cast macros next to the includes keep the spellings the definitions disagree with: cm_SendSpawnCharacterR (the send slot kept),
+   ai_PlagueMessageK (two arguments),
    ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC, d2_SetObjValue2,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
@@ -120,7 +120,6 @@ struct D3SM;
 #define GAPDATA __declspec(align(1)) unsigned char
 #define ai_PlagueMessageK ((void (*)(AICHAR *, AIBLD *))ai_PlagueMessage)  /* 0x5a9240 (lc.c: G8CHARREC *c): @original the caller here pushes two arguments (0x54a4ba..0x54a4bb, add esp,8): the character (read as the first) and the building (unused) */
 #define ai_DomizilMessageK ((void (*)(AICHAR *, AICHAR *, void *, int))ai_DomizilMessage)  /* 0x5a9c30 (lc.c: G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level; lc.c-local types the header cannot spell): @original the caller here pushes four arguments (0x56d492..0x56d495, add esp,0x10) */
-#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_RunMeeting) */
 
 
 extern int ai_TransportWindow();
@@ -3155,7 +3154,7 @@ void he_EndEventNow(int r)
 {
     ((AIJOB *)r)->end = ai_Time;
     if ((((AIJOB *)r)->opts & 2) != 0)
-        cm_SendExSetHEI(-1, r);
+        cm_SendExSetHE(-1, r);
 }
 /* 0x541250, sets the character slot (AIJOB.chr, +0x8) of the event record and its netId (+0xc), -1 for 0xffff */
 
@@ -3362,7 +3361,7 @@ void he_AllocStammtisch(int r)
         s = util_Random(4);
         m->meeting.hour = s + 0x13;
         m->state = 1;
-        e->exSlot = cm_SendExSetHEI(0, r);
+        e->exSlot = cm_SendExSetHE(0, r);
     }
 }
 
@@ -3535,13 +3534,13 @@ void he_RunStammtisch(int r)
     gm_FindById(&bld, 0, 0, m->innId);
     if (bld == 0) {
         gm_AddTime(&e->end, 0, 5, 0);
-        cm_SendExSetHEI(-1, r);
+        cm_SendExSetHE(-1, r);
         return;
     }
     table = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12d);
     if (table == 0) {
         gm_AddTime(&e->end, 0, 5, 0);
-        cm_SendExSetHEI(-1, r);
+        cm_SendExSetHE(-1, r);
         return;
     }
     if (bld->owner != 0xffff && (boss = &ai_CharsT[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
@@ -3556,7 +3555,7 @@ void he_RunStammtisch(int r)
         } else {
             if (gm_MinutesBetween(&ai_Time, &m->meeting) > 0) {
                 gm_AddTime(&e->end, 1, 0, 0);
-                cm_SendExSetHEI(0, r);
+                cm_SendExSetHE(0, r);
                 return;
             }
             he_StammtischCommand('exec', bld, table, -1);
@@ -3567,7 +3566,7 @@ void he_RunStammtisch(int r)
         }
         m->meeting.min = 0;
         m->meeting.hour = util_Random(4) + 0x13;
-        cm_SendExSetHEI(0, r);
+        cm_SendExSetHE(0, r);
         return;
     }
     if (m->state == 0) {
@@ -3585,7 +3584,7 @@ void he_RunStammtisch(int r)
     gm_AddTime(&m->meeting, 0x18, 0, 0);
     m->meeting.min = 0;
     m->meeting.hour = util_Random(4) + 0x13;
-    cm_SendExSetHEI(0, r);
+    cm_SendExSetHE(0, r);
 }
 /* 0x542490, a Ghidra miss (disassembled): the event of the building `from`: sets its end clock to a day ahead at 7:00;
    with the building gone it is posted again (key -1), else a building without an object of kind 0x1b5 gets one
@@ -3604,7 +3603,7 @@ void he_AllocTavern(int r)
     e->end.min = 0;
     gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0) {
-        cm_SendExSetHEI(-1, r);
+        cm_SendExSetHE(-1, r);
         return;
     }
     if (gm_Query((void *)bld->objList, 1, 0, 0x1b5) == 0) {
@@ -3614,7 +3613,7 @@ void he_AllocTavern(int r)
         cm_SendObject1b5(bld->id, v.block);
     }
     e->exSlot = -1;
-    cm_SendExSetHEI(0, r);
+    cm_SendExSetHE(0, r);
 }
 
 int ai_ChooseObjectTarget();
@@ -3645,13 +3644,13 @@ void he_RunTavern(int r)
     e->exSlot = -1;
     gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0) {
-        cm_SendExSetHEI(-1, r);
+        cm_SendExSetHE(-1, r);
         return;
     }
     if (bld->owner == 0xffff) {
         gm_AddTime(&e->end, 0x18, 0, 0);
         e->end.hour = 7;
-        cm_SendExSetHEI(0, r);
+        cm_SendExSetHE(0, r);
         return;
     }
     t = (HETAVERNOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
@@ -3660,32 +3659,32 @@ void he_RunTavern(int r)
         if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
             if (t != 0 && t->hired != 0) {
                 gm_AddTime(&e->end, 1, 0, 0);
-                e->exSlot = cm_SendExSetHEI(1, r);
+                e->exSlot = cm_SendExSetHE(1, r);
             } else {
                 gm_AddTime(&e->end, 0x18, 0, 0);
                 e->end.hour = 7;
-                e->exSlot = cm_SendExSetHEI(0, r);
+                e->exSlot = cm_SendExSetHE(0, r);
             }
         } else {
             if (t != 0) {
                 if (ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
                     gm_AddTime(&e->end, 1, 0, 0);
-                    e->exSlot = cm_SendExSetHEI(1, r);
+                    e->exSlot = cm_SendExSetHE(1, r);
                 } else {
                     gm_AddTime(&e->end, 0x18, 0, 0);
                     e->end.hour = 7;
-                    e->exSlot = cm_SendExSetHEI(0, r);
+                    e->exSlot = cm_SendExSetHE(0, r);
                 }
             } else {
                 gm_AddTime(&e->end, 0x18, 0, 0);
                 e->end.hour = 7;
-                e->exSlot = cm_SendExSetHEI(0, r);
+                e->exSlot = cm_SendExSetHE(0, r);
             }
         }
         return;
     case 1:
         gm_AddTime(&e->end, util_RandomU(2) + 1, 0, 0);
-        e->exSlot = cm_SendExSetHEI(2, r);
+        e->exSlot = cm_SendExSetHE(2, r);
         return;
     case 2:
         if (t != 0 && t->hired != 0) {
@@ -3721,7 +3720,7 @@ void he_RunTavern(int r)
         }
         gm_AddTime(&e->end, 0x18, 0, 0);
         e->end.hour = 7;
-        e->exSlot = cm_SendExSetHEI(0, r);
+        e->exSlot = cm_SendExSetHE(0, r);
     }
 }
 /* 0x542960, the alloc handler of the offer event 0x2c between the figures partner1 (+0xac) and partner2 (+0xb0):
@@ -3758,7 +3757,7 @@ void he_AllocOffer(int ev)
                     txt_Format(buf, 0x1bbe, p->id, q->id);
                     he_ShowNews(p->netId, p->netId, buf, 0, 0x5f5, (char *)0);
                     e->end = ai_Time;
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
+                    e->exSlot = cm_SendExSetHE(-1, ev);
                     return;
                 }
                 if (o->clock.year <= f2->clock.year) {
@@ -3771,7 +3770,7 @@ void he_AllocOffer(int ev)
             r = (int)he_NextEvent();
         }
         o->offer = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(e->partner1, e->partner2, e->id, 1);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x542b60, a Ghidra miss (disassembled): the run handler of the wedding offer event (see 0x542960; HEOFFER). Stage 0
@@ -3830,7 +3829,7 @@ void he_RunWeddingOffer(int r)
                 he_ShowNews(g2->netId, g2->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
             if (g5 != 0 && (g5->kind == 6 || g5->kind == 7))
                 he_ShowNews(g5->netId, g5->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
-            cm_SendExSetHEI(1, r);
+            cm_SendExSetHE(1, r);
             return;
         }
         if (ok == 2) {
@@ -3840,7 +3839,7 @@ void he_RunWeddingOffer(int r)
             }
             e->end = ai_Time;
             e->end.min += 2;
-            cm_SendExSetHEI(-1, r);
+            cm_SendExSetHE(-1, r);
         }
         return;
     case 1:
@@ -3862,7 +3861,7 @@ void he_RunWeddingOffer(int r)
         gm_AddTime(&m.time, 0, 0x2d, 0);
         cm_SendNewParty(&m);
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, r);
+        e->exSlot = cm_SendExSetHE(-1, r);
         return;
     }
 }
@@ -3887,11 +3886,11 @@ void he_AllocQuarrel(int ev)
     if ((fl & 2) != 0) {
         if (a == 0 || b == 0) {
             e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0x30, 0, 0);
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         cm_SendRelations(b->netId, a->netId, -20, 1);
         if (a->kind == 6 || a->kind == 7) {
             txt_Format(buf, 0x175a, b->id, b->id);
@@ -3931,7 +3930,7 @@ void he_RunQuarrel(int ev)
     b = (AICHAR *)gm_FindChar(e->partner2);
     if (b == 0 || a == 0) {
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (e->stage == 0) {
@@ -3941,7 +3940,7 @@ void he_RunQuarrel(int ev)
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
     }
 }
 /* 0x5432f0, a Ghidra miss (disassembled): the run handler of the master exam event ("Meisterpruefung") of the three
@@ -4061,7 +4060,7 @@ void he_AllocFeast(int ev)
                 }
             }
         }
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
     }
 }
 
@@ -4094,7 +4093,7 @@ void he_RunFeast(int ev)
     gm_FindById(&bld, 0, 0, e->from);
     if (bld != 0 && (table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17)) == 0) {
         e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
     switch (e->stage) {
@@ -4131,12 +4130,12 @@ void he_RunFeast(int ev)
             he_ShowNews(((AICHAR *)g.leader)->netId, -1, text, 0x20, 0x5fd, ch_EmptyName);
         }
         e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
     case 1:
         e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -4268,7 +4267,7 @@ void he_RunFeastExam(int ev)
                 for (i = 0; i < 4; i++)
                     if (feast->festGuests[i] == cand->netId) {
                         feast->festGuests[i] = -1;
-                        cm_SendExSetHEI(0, ev);
+                        cm_SendExSetHE(0, ev);
                         break;
                     }
             }
@@ -4309,7 +4308,7 @@ void he_RunFeastExam(int ev)
                 for (i = 0; i < 4; i++)
                     if (feast->festGuests[i] == cand->netId) {
                         feast->festGuests[i] = -1;
-                        cm_SendExSetHEI(0, ev);
+                        cm_SendExSetHE(0, ev);
                         break;
                     }
             }
@@ -4341,7 +4340,7 @@ void he_AllocTribute(int ev)
     coll = (AICHAR *)gm_FindChar(e->idbc);
     if (coll == 0) {
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (he_FindEvent(1, 0, 0x35) != 0) {
@@ -4350,7 +4349,7 @@ void he_AllocTribute(int ev)
         while (he_NextEvent() != 0);
         if (n > 4) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             ai_ShowTributeDelayedNews((int)&ai_CharsT[e->chr]);
             return;
         }
@@ -4368,12 +4367,12 @@ void he_AllocTribute(int ev)
     e->tributeLeft = 0x300;
     if (ai_InventoryHas(coll, 0x15c) != 0) {
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         ai_ShowTributeClaimNews((int)coll, (int)&ai_CharsT[e->chr]);
         return;
     }
     ai_ShowTributeCollectNews((int)coll);
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 /* ---- drafted out of address order (the big 0x53f6b0 / 0x541b40 / 0x5437c0 are still missing above this point; move the functions below into address order when those exist) ---- */
@@ -4405,7 +4404,7 @@ void he_RunTribute(int ev)
     e->exSlot = -1;
     if (coll == 0) {
         gm_AddTime(&e->end, 0, 1, 0);
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
     if (owner != 0)
@@ -4427,7 +4426,7 @@ void he_RunTribute(int ev)
         return;
     }
     gm_AddTime(&e->end, 0, 1, 0);
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x544550, draws the three picks of the pair event 0x41 for the partners a and b (its handlers 0x544630 /
    0x544840): twelve values from half a's level (gm_CharLevel) on, shuffled; the first three go to pairPick with the
@@ -4468,7 +4467,7 @@ void he_AllocCourtship(int ev)
     if (a == 0 || b == 0 || a->sex == b->sex) {
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (a->relatives[0] != -1) {
@@ -4489,7 +4488,7 @@ void he_AllocCourtship(int ev)
         if (r->partner2 == a->netId) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
@@ -4504,7 +4503,7 @@ void he_AllocCourtship(int ev)
     he_DrawPairPicks(ev, a, b);
     e->pairDone = 0;
     e->exSlot = -1;
-    cm_SendExSetHEI(0, ev);
+    cm_SendExSetHE(0, ev);
 }
 
 unsigned int ai_MarriageTest(int param_1, int param_2);
@@ -4546,7 +4545,7 @@ void he_RunCourtship(int ev)
         if (a == 0 || b == 0 || a->sex == b->sex) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
@@ -4558,7 +4557,7 @@ void he_RunCourtship(int ev)
             if (r == -0x405) {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 txt_Format(gave, 0x42f6, b->id);
                 he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
                 return;
@@ -4566,7 +4565,7 @@ void he_RunCourtship(int ev)
             if (r == -0x406) {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 txt_Format(gave, 0x42f7, b->id);
                 he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
                 return;
@@ -4631,7 +4630,7 @@ void he_RunCourtship(int ev)
             if (e->pairRound >= e->pairRounds) {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
             if (a->kind == 6) {
@@ -4651,7 +4650,7 @@ void he_RunCourtship(int ev)
             e->pairDrawn = 1;
             he_DrawPairPicks(ev, a, b);
             e->exSlot = -1;
-            cm_SendExSetHEI(0, ev);
+            cm_SendExSetHE(0, ev);
             return;
         case 1:
             cm_BeginGroup("werbung");
@@ -4667,7 +4666,7 @@ void he_RunCourtship(int ev)
             cm_EndGroup("werbung");
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(5, ev);
+            e->exSlot = cm_SendExSetHE(5, ev);
             return;
         case 5:
             /* each other's relatives[0]: the original tests both, bitwise (and edx, eax; test dl, 1) */
@@ -4734,19 +4733,19 @@ void he_RunCourtship(int ev)
                 e->end = party.time;
                 e->pairDone = 1;
                 e->exSlot = -1;
-                cm_SendExSetHEI(4, ev);
+                cm_SendExSetHE(4, ev);
                 cm_SendNewParty(&party);
                 return;
             }
         case 4:
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         default:
             return;
         }
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
     }
 }
 /* 0x5455e0, the alloc handler of the random-message event 0x42 (ai_PostRandomMessages wraps a random message in
@@ -4820,7 +4819,7 @@ void he_AllocPatrol(int ev)
     e->patrolStep = 0;
     e->patrolRound = 0;
     e->patrolWait = -1;
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x545840, a Ghidra miss (disassembled): the run handler of the patrol event 0x43 (he_AllocPatrol); each stage
    posts the next one with cm_SendExSetHE, due after gm_AddTime (hours, minutes, seconds). While none of the four
@@ -4860,7 +4859,7 @@ void he_RunPatrol(int ev)
     }
     if (gone == 4) {
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (e->stage == -2) {
@@ -4875,7 +4874,7 @@ void he_RunPatrol(int ev)
         if (b == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
@@ -4893,14 +4892,14 @@ void he_RunPatrol(int ev)
         sprintf(line, "GOTO_TARGET: %i", b->id);
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 1:
         b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolStart);
         if (b == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x146);
@@ -4934,7 +4933,7 @@ void he_RunPatrol(int ev)
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         sprintf(line, "GOTO_START: %i", b->id);
         return;
     case 2:
@@ -4945,28 +4944,28 @@ void he_RunPatrol(int ev)
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 0x400:
         for (i = 0; i < 4; i++) {
             if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
                 && c->scene->actions != 0) {
                 gm_AddTime(&e->end, 0, 4, 0);
-                e->exSlot = cm_SendExSetHEI(0x400, ev);
+                e->exSlot = cm_SendExSetHE(0x400, ev);
                 return;
             }
         }
         e->end = ai_Time;
         e->patrolWait = -1;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
         if (e->patrolStep <= 3 && e->patrolWay[e->patrolStep] != -1) {
             if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
             b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolWay[e->patrolStep]);
@@ -4974,7 +4973,7 @@ void he_RunPatrol(int ev)
             if (b == 0) {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
             for (i = 0; i < 4; i++) {
@@ -4995,21 +4994,21 @@ void he_RunPatrol(int ev)
             }
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             sprintf(line, "GOTO_NEXT: %i", b->id);
             return;
         }
         if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
         e->patrolStep = 0;
         e->patrolRound++;
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
         return;
     }
 }
@@ -5025,11 +5024,11 @@ void he_AllocRaid(int ev)
         if (gm_BuildQuery(1, 1, e->raidTarget) == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0, 1);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0, 1);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x5461c0, a Ghidra miss (disassembled): the run handler of the raid event 0x44 ("Razzia"; the raiders are ids[],
@@ -5077,7 +5076,7 @@ void he_RunRaid(int ev)
         if (b == 0 || b->owner == 0xffff) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 8; i++) {
@@ -5094,7 +5093,7 @@ void he_RunRaid(int ev)
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 1:
         if ((e->opts & 2) == 0)
@@ -5103,7 +5102,7 @@ void he_RunRaid(int ev)
         if (home == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0x146);
@@ -5125,7 +5124,7 @@ void he_RunRaid(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 2:
         if ((e->opts == 0) & 2)
@@ -5140,9 +5139,9 @@ void he_RunRaid(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
         if (idle)
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
         else
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 3:
         if ((e->opts & 2) == 0)
@@ -5291,7 +5290,7 @@ void he_AllocFight(int ev)
     if (a == 0 || (a->flags1c8 & 0x100) != 0 || b == 0 || (b->flags1c8 & 0x200) != 0) {
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (e->id3 != 0) {
@@ -5378,7 +5377,7 @@ void he_RunFight(int ev)
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case -1:
     case -2:
@@ -5422,10 +5421,10 @@ void he_DuelAccepted(int ev, AICHAR *p2, AICHAR *p3)
         txt_Format(buf, 0x1d82, p2->id, &e->end, p2->id);
         he_ShowNews(p3->netId, -1, buf, 0, 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
     }
-    cm_SendExSetHEI(2, ev);
+    cm_SendExSetHE(2, ev);
 }
 
-void amt_ChangeDistrictOpinion();
+void amt_ChangeDistrictOpinion(char *c, int d, int v);  /* 0x4ea550, amt.c */
 int ai_DrawAmountRow();
 
 /* 0x5472d0, a Ghidra miss (disassembled): the challenge of the insult event ("Special\Beleidigung") is declined
@@ -5460,7 +5459,7 @@ void he_DuelDeclined(int ev, AICHAR *p, AICHAR *q)
     amt_ChangeDistrictOpinion(q, district, -9 - (int)(gm_GetSkill(p, 4) * 8.0f) - (unsigned short)util_Random(8));
     cm_SendRelations(p->netId, q->netId, -0x14, 1);
     ((AIJOB *)ev)->end = ai_Time;
-    cm_SendExSetHEI(-1, ev);
+    cm_SendExSetHE(-1, ev);
 }
 /* 0x547430, a Ghidra miss (disassembled): the run handler of the duel challenge event 0x46 (its alloc handler
    0x547170): duelId names the duel event, its partner1 the challenger p, partner2 the challenged q. With the
@@ -5487,7 +5486,7 @@ void he_RunDuelChallenge(int ev)
             he_ReleaseSlot(ev);
         if (duel != 0) {
             duel->end = ai_Time;
-            cm_SendExSetHEI(-1, (int)duel);
+            cm_SendExSetHE(-1, (int)duel);
         }
         he_FreeEvent((int *)ev);
         return;
@@ -5568,7 +5567,7 @@ void he_AllocInsult(int ev)
         if ((a->flags1c8 & 0x400) != 0 || (b->flags1c8 & 0x400) != 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
@@ -5593,7 +5592,7 @@ void he_AllocInsult(int ev)
         gm_AddTime(&e->end, 0x18, 0, 0);
         e->end.hour = 6;
         e->end.min = 0x1e;
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         cm_SendSetField(a->netId, 0x1c8, 4, 0x400, 0);
         cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
         return;
@@ -5611,7 +5610,7 @@ void he_AllocInsult(int ev)
             txt_Format(text, 0x1d83, b->id, &e->end, b->id);
             he_ShowNews(a->netId, a->netId, text, 0, 0x5fa, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
         }
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     }
     district = 0;
@@ -5638,7 +5637,7 @@ void he_AllocInsult(int ev)
     cm_SendRelations(b->netId, a->netId, -0x14, 1);
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 2, 0);
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x547ba0, a Ghidra miss (disassembled): the run handler of the insult event 0x47 (he_AllocInsult), once its cm
    slot is answered: stage 2 (the insulted challenged) posts a fight party of kind 4 between partner1 (a) and
@@ -5683,7 +5682,7 @@ void he_RunInsult(int ev)
             cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 1:
         if ((e->opts & 2) == 0)
@@ -5696,7 +5695,7 @@ void he_RunInsult(int ev)
             cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case -2:
     case -1:
@@ -5709,7 +5708,7 @@ void he_RunInsult(int ev)
                 cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         }
         he_FreeEvent((int *)ev);
         return;
@@ -5790,7 +5789,7 @@ void he_AllocInsultNews(int ev)
             a = (AICHAR *)gm_FindChar(e->partner1);
             if (a == 0 || b == 0) {
                 e->end = ai_Time;
-                cm_SendExSetHEI(-1, ev);
+                cm_SendExSetHE(-1, ev);
                 return;
             }
             if (b->kind == 6 || b->kind == 7) {
@@ -5798,7 +5797,7 @@ void he_AllocInsultNews(int ev)
                 he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
             }
         }
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
     }
 }
 
@@ -5829,7 +5828,7 @@ void he_RunInsultNews(int ev)
             return;
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     he_FreeEvent((int *)ev);
@@ -6252,7 +6251,7 @@ void he_RunRepostEvent(int ev)
             return;
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     he_FreeEvent((int *)ev);
@@ -6420,14 +6419,14 @@ void he_StartTrialEvent(int ev)
                 found = (AIJOB *)he_NextEvent();
             } else {
                 e->end = ai_Time;
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 return;
             }
         } while (found != 0);
     }
     e->stage = 0;
     e->rounds = 0;
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x549430, a Ghidra miss (disassembled): the run handler of the trial event 0x5e (the character e->chr's trial
    with the teacher, a character found by its netId): stage -2 / -1 frees it; nothing while it is not started or
@@ -6460,13 +6459,13 @@ void he_RunTrialEvent(int ev)
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, 0x1a9b, c->id);
         e->rounds++;
         e->end.hour += 0x18;
-        cm_SendExSetHEI(e->rounds >= 3, ev);
+        cm_SendExSetHE(e->rounds >= 3, ev);
         he_AddApEvent(teacher->id, text, 0, -t->cost);
         return;
     case 1:
@@ -6482,13 +6481,13 @@ void he_RunTrialEvent(int ev)
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, 0x1a9c, c->id, (c->sex != 0 ? 0x18f : 0x130) + t->job);
         he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
         e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -6508,7 +6507,7 @@ void he_StartNextTrialStep(int ev)
                 found = (AIJOB *)he_NextEvent();
             } else {
                 e->end = ai_Time;
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 return;
             }
         } while (found != 0);
@@ -6546,7 +6545,7 @@ void he_RunTrialSteps(int ev)
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         ai_ApplyTrialStep(c, t->skill[0]);
@@ -6562,7 +6561,7 @@ void he_RunTrialSteps(int ev)
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, 0x1a9f, c->id);
@@ -6571,7 +6570,7 @@ void he_RunTrialSteps(int ev)
         if (fin != 0)
             fin->taught++;
         e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
+        cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -6708,14 +6707,14 @@ void he_BeginPlague(int ev)
             p->carriers[3] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
             p->home = b->id;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             ai_PlagueNews();
             return;
         }
         n--;
         i = (i + 1) % 0x100;
     } while (n != 0);
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 
 int sv_IsAtDoor();
@@ -6736,7 +6735,7 @@ void he_StartPlague(int ev)
     while (found != 0) {
         if (found != e) {
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         found = (AIJOB *)he_NextEvent();
@@ -6744,7 +6743,7 @@ void he_StartPlague(int ev)
     e->stage = 5;
     e->end = e->start;
     e->exSlot = -1;
-    cm_SendExSetHEI(5, ev);
+    cm_SendExSetHE(5, ev);
 }
 /* 0x54a020, a Ghidra miss (disassembled; 1720 B): the run handler of the plague event 0x59 ("Pest"): stage -1 / -2
    stops and kills the four carriers when the event is freed with the option 2, and frees it; nothing while it is
@@ -6805,7 +6804,7 @@ void he_RunPlague(int ev)
             carrier++;
         }
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         break;
     case 1:
         n = 0x100;
@@ -6828,7 +6827,7 @@ void he_RunPlague(int ev)
         p->walk = (p->step + k) % 0x100;
         if (o == 0) {
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, "EvtPest: next target = %G", o);
@@ -6845,13 +6844,13 @@ void he_RunPlague(int ev)
         }
         gm_AddTime(&e->end, 0, n > 0 ? 5 : 0x14, 0);
         p->target = o->id;
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         break;
     case 2:
         gm_FindById(&o, 0, 0, p->target);
         gm_AddTime(&e->end, 0, 5, 0);
         if (o == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
@@ -6859,7 +6858,7 @@ void he_RunPlague(int ev)
             if (c != 0 && sv_IsAtDoor(c, o) == 0) {
                 e->stage = 2;
                 gm_AddTime(&e->end, 0, 5, 0);
-                e->exSlot = cm_SendExSetHEI(2, ev);
+                e->exSlot = cm_SendExSetHE(2, ev);
                 return;
             }
         }
@@ -6911,7 +6910,7 @@ void he_RunPlague(int ev)
         if (--p->left <= 0) {
             gm_FindById(&o, 0, 0, p->home);
             if (o == 0) {
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 return;
             }
             n = 0;
@@ -6926,16 +6925,16 @@ void he_RunPlague(int ev)
                 carrier++;
             }
             gm_AddTime(&e->end, 0, n > 0 ? 1 : 10, 0);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         break;
     case 3:
         gm_AddTime(&e->end, 0, 5, 0);
         gm_FindById(&o, 0, 0, p->home);
         if (o == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
@@ -6943,11 +6942,11 @@ void he_RunPlague(int ev)
             if (c != 0 && sv_IsAtDoor(c, o) == 0) {
                 e->stage = 3;
                 gm_AddTime(&e->end, 0, 5, 0);
-                e->exSlot = cm_SendExSetHEI(3, ev);
+                e->exSlot = cm_SendExSetHE(3, ev);
                 return;
             }
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         break;
     }
 }
@@ -7214,7 +7213,7 @@ void he_RunProtectionAsk(int ev)
             e->stage = 3;
             q->answer = 1;
             p->end = now;
-            cm_SendExSetHEI(3, p);
+            cm_SendExSetHE(3, p);
             cm_SendSetField(b->id, 0x5a, 2, 0x100, 0);
             cm_SendMoveGoodsUnchecked(ai_CharsT[p->chr].netId, ai_CharsT[b->owner].netId, 0, q->amount);
             if (q->home != -1) {
@@ -7225,7 +7224,7 @@ void he_RunProtectionAsk(int ev)
             e->stage = 3;
             q->answer = 0;
             p->end = now;
-            cm_SendExSetHEI(3, p);
+            cm_SendExSetHE(3, p);
         }
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
@@ -7248,7 +7247,7 @@ void he_StartProtection(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
         e->stage = 1;
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
     }
 }
 /* 0x54b1e0, a Ghidra miss: the run handler of the protection money event 0x62 ("Schutzgeld", HEPROTECTION: the
@@ -7272,7 +7271,7 @@ void he_StartProtection(int ev)
    msg as a block local, memset(.., sizeof(AIMSG)), every fill order (p1-0-.. = 8 with order 20), climb
    round 1 (155 mutants: nothing). prior: Read all of it against the original and rewrote it typed (AIJOB /
    HEPROTECTION / AIMSG / AIBLD / AICHAR): fixed the meaning errors - stage 3 goes to stage 4 with
-   cm_SendExSetHEI(4) (the original's ebx = 4, not 1), the AIMSG fields (to +8, fromId +0xc, time, flags
+   cm_SendExSetHE(4) (the original's ebx = 4, not 1), the AIMSG fields (to +8, fromId +0xc, time, flags
    +0x36, arg[0]; no store at +0x34), the owner's sel / mood[11][2] at stride 0x21c (was 0x14), the roll's
    direction (!(mood * 0.001f > util_RandomF()): test ah,5 / jnp), the refused / other branches as two full
    copies, text[0x200] (frame 0x2fc equal). 580 = 580 instructions, the frame and switch table equal. Left,
@@ -7314,7 +7313,7 @@ void he_RunProtection(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
         e->stage = -1;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     switch (e->stage) {
@@ -7325,14 +7324,14 @@ void he_RunProtection(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 10, 0);
         e->stage = 2;
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
         if (c->scene->actions != 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 4, 0);
             e->stage = 2;
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         q->amount = (int)((float)gm_EquipmentValue((unsigned char *)b, 100) * 0.065f);
@@ -7350,7 +7349,7 @@ void he_RunProtection(int ev)
             gm_AddTime(&e->end, 3, 0, 0);
             e->stage = 3;
             q->answer = 2;
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
         e->end = ai_Time;
@@ -7362,7 +7361,7 @@ void he_RunProtection(int ev)
             q->answer = (unsigned short)util_Random(2);
         else
             q->answer = 1;
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
         if (q->answer == 1) {
@@ -7376,7 +7375,7 @@ void he_RunProtection(int ev)
             e->start = ai_Time;
             gm_AddTime(&e->end, 0x30, 0, 0);
             e->stage = 4;
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
             txt_Format(text, 0x1a8d, b->owner, b, q->amount);
             he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
             return;
@@ -7385,7 +7384,7 @@ void he_RunProtection(int ev)
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 5, 0);
             e->stage = 4;
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
             txt_Format(text, 0x1a8e, b->owner, b);
             he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
             return;
@@ -7393,7 +7392,7 @@ void he_RunProtection(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 5, 0);
         e->stage = 4;
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         txt_Format(text, 0x1a8f, b->owner, b);
         he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
         return;
@@ -7409,7 +7408,7 @@ void he_RunProtection(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 2, 0);
         e->stage = -1;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -7521,7 +7520,7 @@ void he_StartGathering(int ev)
         e->start = ai_Time;
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54bec0, a Ghidra miss: the run handler of the patrol gathering event 0x65 ("Patrol", HEGATHERING: the figures
@@ -7575,27 +7574,27 @@ void he_RunGathering(int ev)
             }
         }
         gm_AddTime(&e->end, 0, 5, 0);
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
         for (i = 0; i < 6; i++) {
             c = (AICHAR *)gm_FindChar(e->ids[i]);
             if (c != 0 && c->scene != 0 && c->scene->actions != 0) {
                 gm_AddTime(&e->end, 0, 4, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
         }
         e->start = ai_Time;
         gm_AddTime(&e->end, 0, 10, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
         giveUp = e->start;
         gm_AddTime(&giveUp, 0x18, 0, 0);
         if (gm_CompareTime(&ai_Time, &giveUp) > 0) {
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(5, ev);
+            e->exSlot = cm_SendExSetHE(5, ev);
             return;
         }
         q = (AIJOB *)he_FindEvent(1, 0, 0x48);
@@ -7642,7 +7641,7 @@ void he_RunGathering(int ev)
                 g->partySlot = cm_SendNewParty(&party);
                 e->stage = 3;
                 gm_AddTime(&e->end, 0, 10, 0);
-                e->exSlot = cm_SendExSetHEI(3, ev);
+                e->exSlot = cm_SendExSetHE(3, ev);
                 return;
             }
         }
@@ -7651,29 +7650,29 @@ void he_RunGathering(int ev)
             d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
             he_CharacterBehavior(e, (float *)&pos);
         }
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 3:
         gm_AddTime(&e->end, 0, 1, 0);
         if (cm_GetSlotState(g->partySlot) == 0) {
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
         r = (int *)cm_GetSlotValue(g->partySlot);
         if (r == 0) {
-            e->exSlot = cm_SendExSetHEI(5, ev);
+            e->exSlot = cm_SendExSetHE(5, ev);
             return;
         }
         g->party = *r;
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 4:
         gm_AddTime(&e->end, 0, 5, 0);
         if (cm_PartyById(g->party) != 0) {
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(5, ev);
+        e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
         for (id = e->ids, k = 6; k != 0; k--, id++) {
@@ -7689,7 +7688,7 @@ void he_RunGathering(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -7818,7 +7817,7 @@ void he_StartAuctionEvent(int ev)
         gm_AddTime(&e->end, 0x18, 0, 0);
         e->end.hour = 9;
         e->end.min = 0;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54c8e0, a Ghidra miss: the run handler of the auction event 0x67 (HEAUCTION: the building +0xac, the start
@@ -7848,7 +7847,7 @@ void he_RunAuctionEvent(int ev)
     case 0:
         b = (AIBLD *)gm_BuildQuery(1, 1, a->bld);
         if (b == 0) {
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, 0x11be, b, a->price);
@@ -7859,7 +7858,7 @@ void he_RunAuctionEvent(int ev)
         e->end.year++;
         e->end.hour = 0xd;
         e->end.min = 0x1e;
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
         memset(best, -1, sizeof(best));
@@ -7918,7 +7917,7 @@ void he_RunAuctionEvent(int ev)
         else
             e->end = ai_Time;
         gm_AddTime(&e->end, 0x18, 0, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -8320,7 +8319,7 @@ void he_StartBard(int ev)
         b->rec = (unsigned short)hmt_RecordCount();
         b->script = -1;
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54da80, the run handler of the bard event: stage 0 draws the song's subject (an hmt record and its text) and
@@ -8356,7 +8355,7 @@ void he_RunBard(int ev)
         e->end.year += (unsigned short)util_Random(4) + 3;
         e->end.hour = 0xa;
         e->end.min = 0;
-        cm_SendExSetHEI(1, ev);
+        cm_SendExSetHE(1, ev);
         e->exSlot = -1;
         return;
     case 1:
@@ -8368,7 +8367,7 @@ void he_RunBard(int ev)
                 he_ShowNews(ai_CharsT[i].netId, e->id, text, 0, 0x601, ch_EmptyName);
         }
         gm_AddTime(&e->end, 0, 5, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
         e->end = ai_Time;
@@ -8418,7 +8417,7 @@ void he_RunBard(int ev)
             e->gfx = 0;
         }
         if ((e->opts & 2) != 0)
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
         e->exSlot = -1;
         return;
     }
@@ -8438,7 +8437,7 @@ void he_StartPopulation(int ev)
         e->end = ai_Time;
         p->count = 0;
         p->chance = 0.0f;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54dec0, the run handler of the population event: stage 1 rates the town (ord_GetStatistics: the free room
@@ -8471,7 +8470,7 @@ void he_RunPopulation(int ev)
         p->step = 0.0f;
         p->count = 0;
         gm_AddTime(&e->end, 0, 0, 5);
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         break;
     case 1:
         ord_GetStatistics((int *)&st);
@@ -8481,24 +8480,24 @@ void he_RunPopulation(int ev)
         gm_AddTime(&e->end, 1, 0, 0);
         if (st.col[3] < 0.1) {
             p->chance = (2.0f - st.score) * p->chance;
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             break;
         }
         if (st.col[3] > 0.3) {
             p->chance = (float)fabs((st.score + 1.0f) * p->chance);
             p->step = (float)fabs(p->step);
-            e->exSlot = cm_SendExSetHEI(6, ev);
+            e->exSlot = cm_SendExSetHE(6, ev);
             break;
         }
         e->end = ai_Time;
         e->end.hour = 0xf;
-        e->exSlot = cm_SendExSetHEI(7, ev);
+        e->exSlot = cm_SendExSetHE(7, ev);
         break;
     case 2:
         if (ai_Time.hour >= 0x14) {
             e->end = ai_Time;
             e->end.min++;
-            e->exSlot = cm_SendExSetHEI(7, ev);
+            e->exSlot = cm_SendExSetHE(7, ev);
             return;
         }
         if (util_RandomF() > p->chance) {
@@ -8506,25 +8505,25 @@ void he_RunPopulation(int ev)
             p->slot = cm_SendCreateCharacter(0xff, -1, -1, util_Random(0xc) + 0xf, -1, 0, 0, 2);
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0, 1);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             break;
         }
         p->chance -= p->step;
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         break;
     case 3:
         if (cm_GetSlotState(p->slot) == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0, 1);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             break;
         }
         if (cm_GetSlotState(p->slot) == 2) {
             gm_AddTime(&e->end, 1, 0, 0);
             p->slot = -1;
-            e->exSlot = cm_SendExSetHEI(6, ev);
+            e->exSlot = cm_SendExSetHE(6, ev);
             return;
         }
         c = (AICHAR *)cm_GetSlotValue(p->slot);
@@ -8534,7 +8533,7 @@ void he_RunPopulation(int ev)
         if (c == 0) {
             gm_AddTime(&e->end, 1, 0, 0);
             p->slot = -1;
-            e->exSlot = cm_SendExSetHEI(6, ev);
+            e->exSlot = cm_SendExSetHE(6, ev);
             return;
         }
         found = 0;
@@ -8558,13 +8557,13 @@ void he_RunPopulation(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
         p->count++;
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         break;
     case 6:
         if (ai_Time.hour >= 0x14) {
             e->end = ai_Time;
             e->end.min++;
-            e->exSlot = cm_SendExSetHEI(7, ev);
+            e->exSlot = cm_SendExSetHE(7, ev);
             return;
         }
         if (util_RandomF() > p->chance) {
@@ -8582,13 +8581,13 @@ void he_RunPopulation(int ev)
             p->slot = -1;
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0x1e, 0);
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
         p->chance -= p->step;
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
-        e->exSlot = cm_SendExSetHEI(6, ev);
+        e->exSlot = cm_SendExSetHE(6, ev);
         break;
     case 7:
         b = 0;
@@ -8625,16 +8624,16 @@ void he_RunPopulation(int ev)
             e->end.year++;
             e->end.min = 0;
             e->end.hour = 6;
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             break;
         }
         if (e->end.hour < 0xf) {
             e->end = ai_Time;
             e->end.min++;
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             break;
         }
-        e->exSlot = cm_SendExSetHEI(7, ev);
+        e->exSlot = cm_SendExSetHE(7, ev);
         break;
     }
 }
@@ -8658,11 +8657,11 @@ void he_StartLover(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
     if (lover == 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if ((lover->flags1c8 & HE_LOVER_FLAG) != 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     cm_BeginGroup("Alloc_Geliebte");
@@ -8672,7 +8671,7 @@ void he_StartLover(int ev)
     l->rounds = 0;
     l->pay = 2;
     e->idbc = -1;
-    e->exSlot = cm_SendExSetHEI(2, ev);
+    e->exSlot = cm_SendExSetHE(2, ev);
 }
 /* 0x54e890, the run handler of the lover event ("Geliebte"): stage 2 waits for the posting (cm_GetSlotState: 1 goes
    on, 2 ends it); while the keeper lives, every day the keeper pays the lover (an AP event of -pay with the news
@@ -8711,7 +8710,7 @@ void he_RunLover(int ev)
         return;
     if (lover == 0) {
         gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     if (e->stage == 2) {
@@ -8720,12 +8719,12 @@ void he_RunLover(int ev)
             return;
         if (h == 1) {
             gm_AddTime(&e->end, 0, 2, 0);
-            cm_SendExSetHEI(0, ev);
+            cm_SendExSetHE(0, ev);
             return;
         }
         if (h == 2) {
             gm_AddTime(&e->end, 0, 2, 0);
-            cm_SendExSetHEI(-1, ev);
+            cm_SendExSetHE(-1, ev);
         }
         return;
     }
@@ -8734,12 +8733,12 @@ void he_RunLover(int ev)
             cm_SendSetField(lover->netId, 0x1c8, 4, 0, HE_LOVER_FLAG);
             cm_SendRelations(keeper->netId, lover->netId, (-2 - l->rounds) * 5, 1);
             gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (e->stage == 3) {
             e->end = ai_Time;
-            cm_SendExSetHEI(0, ev);
+            cm_SendExSetHE(0, ev);
             return;
         }
         if (lover->sex == 1)
@@ -8749,12 +8748,12 @@ void he_RunLover(int ev)
         he_AddApEvent(e->chr, text, -l->pay, 0);
         l->rounds++;
         gm_AddTime(&e->end, 0x18, 0, 0);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
         return;
     }
     cm_SendSetField(lover->netId, 0x1c8, 4, 0, HE_LOVER_FLAG);
     gm_AddTime(&e->end, 0, 2, 0);
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x54eb80, a Ghidra miss: the figure record test of the street simulation: alive, kind below 10, and (0x47e840 or 0x47e7f0 non zero) */
 
@@ -8890,13 +8889,13 @@ void he_StartDarkCorner(int ev)
     gm_AddTime(&e->end, 0, 1, 0);
     for (o = (AIJOB *)he_FindEvent(1, 0, 0x74); o != 0; o = (AIJOB *)he_NextEvent()) {
         if (o->id != e->id && ((HEDARKCORNER *)o)->victim == d->victim) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
     gm_FindById(&bld, 0, 0, d->victim);
     if (bld == 0 || (jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c)) == 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     {
@@ -8909,7 +8908,7 @@ void he_StartDarkCorner(int ev)
     }
     cm_BeginGroup("Dunkle Ecke");
     d->carrier = cm_SendSpawnCharacterR(0xe, bld->id, -1, 0, 0, 0, "DunkleEcke");
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
     cm_EndGroup("Dunkle Ecke");
 }
 /* 0x54f160, the run handler of the "Dunkle Ecke" robbery event 0x74 (HEDARKCORNER): stage 0 waits for the carrier
@@ -8955,11 +8954,11 @@ void he_RunDarkCorner(int ev)
         if (cm_GetSlotState(d->carrier) == 1) {
             d->carrier = ((AICHAR *)cm_GetSlotValue(d->carrier))->netId;
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
         gm_AddTime(&e->end, 0x18, 0, 0);
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 1:
         idx = d->cursor;
@@ -8982,7 +8981,7 @@ void he_RunDarkCorner(int ev)
         d->cursor = (d->step + idx) % 0x100;
         if (bld == 0) {
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, (int)"Dunkle Ecke: next target = %G", bld);
@@ -8992,29 +8991,29 @@ void he_RunDarkCorner(int ev)
             cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Dunkle Ecke");
             gm_AddTime(&e->end, 0, 5, 0);
             d->target = bld->id;
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 2:
         gm_FindById(&bld, 0, 0, d->target);
         gm_AddTime(&e->end, 0, 5, 0);
         if (bld == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         c = (AICHAR *)gm_FindChar(d->carrier);
         if (c == 0) {
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (sv_IsAtDoor(c, bld) == 0) {
             e->stage = 2;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         d->steps--;
@@ -9027,29 +9026,29 @@ void he_RunDarkCorner(int ev)
             d->steps = 0;
         gm_FindById(&bld, 0, 0, d->victim);
         if (bld == 0 || bld->owner == 0xffff) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (d->steps <= 0) {
             cm_SendChrStop(c->netId);
             cm_SendChrGotoBuilding(c->netId, bld->id, d->amount, 0, 0, "Dunkle Ecke");
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 3:
         gm_AddTime(&e->end, 0, 5, 0);
         gm_FindById(&bld, 0, 0, d->victim);
         if (bld == 0 || bld->owner == 0xffff) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         c = (AICHAR *)gm_FindChar(d->carrier);
         if (c != 0 && sv_IsAtDoor(c, bld) == 0) {
             e->stage = 3;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
         d->loot = MAX(MIN(d->loot, 3), 0);
@@ -9088,12 +9087,12 @@ void he_RunDarkCorner(int ev)
             txt_Format(text, 0x18aa);
             he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         break;
     case 4:
         gm_FindById(&bld, 0, 0, d->victim);
         if (bld == 0 || bld->owner == 0xffff) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         d->loot = 0;
@@ -9137,7 +9136,7 @@ void he_RunDarkCorner(int ev)
             he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         }
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -9860,7 +9859,7 @@ void he_StartWalk(int ev)
         e->end = ai_Time;
         e->end.hour = 0xb;
         e->end.min = 0;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10162,7 +10161,7 @@ void he_RunWalk(int ev)
             e->end.hour = (unsigned short)n;    /* n is 0 here */
             e->end.year = e->end.year + 1;
         }
-        cm_SendExSetHEI(0, ev);
+        cm_SendExSetHE(0, ev);
         return;
     }
     for (i = 0; i < 10; i++) {
@@ -10182,7 +10181,7 @@ void he_RunWalk(int ev)
             break;
         }
     }
-    cm_SendExSetHEI(0, ev);
+    cm_SendExSetHE(0, ev);
 }
 /* 0x551d00, the alloc handler of the six-group event (type 0x7d, the run handler 0x551d70 walks its six figure
    groups at +0xb0): gm_Shuffled fills the six ids and each is incremented (0 -> the first figure), the due time
@@ -10414,7 +10413,7 @@ void he_StartDue(int ev)
 
     if ((e->opts & 4) == 0) {
         e->end = e->start;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10436,7 +10435,7 @@ void he_RunDelay(int ev)
     d->days = d->days - 1;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0x18, 0, 0);
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x5525a0, the run handler of the conversion event 0x81 (its alloc handler he_StartDue): while it has rounds and
    characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
@@ -10477,14 +10476,14 @@ void he_RunConversion(int ev)
     if (cnt < n) {
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 5, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     cv->rounds--;
     cv->left -= n;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0x18, 0, 0);
-    e->exSlot = cm_SendExSetHEI(0, ev);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x5527c0, the stage-0 start handler of the skill-bonus event 0x82 (its run handler 0x552820; GMSKILLEV in
    f3gm_types.h holds the bonus words): unless its option 4 says it is not started yet, the due clock is now + the
@@ -10498,7 +10497,7 @@ void he_StartSkillBonus(int ev)
     if ((e->opts & 4) == 0) {
         e->end = ai_Time;
         gm_AddTime(&e->end, b->hours, 0, 0);
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x552820, the run handler of the skill-bonus event 0x82 (its start handler he_StartSkillBonus): the states -1 / -2
@@ -10517,7 +10516,7 @@ void he_RunSkillBonus(int ev)
     if ((e->opts & 4) != 0)
         return;
     e->end = ai_Time;
-    e->exSlot = cm_SendExSetHEI(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x552880, the start handler of the applicants event 0x86 (its run handler he_RunApplicants): unless its option 4
    says it is not started yet, the due clock is now at 17:00, moved a day on when it was already past 17:00; the
@@ -10539,7 +10538,7 @@ void he_StartApplicants(int ev)
         a->maxKind = 0x1b;
         a->applicant[0] = -1;
         a->applicant[1] = -1;
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10580,7 +10579,7 @@ void he_RunApplicants(int ev)
             ap->maxKind = 0x1b;
             ap->applicant[0] = -1;
             ap->applicant[1] = -1;
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             return;
         }
         ap->office = amt_GetOpenOffice(ap->maxKind);
@@ -10592,7 +10591,7 @@ void he_RunApplicants(int ev)
             ap->maxKind = 0x1b;
             ap->applicant[0] = -1;
             ap->applicant[1] = -1;
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             return;
         }
         ap->applicant[0] = amt_CreateApplicant(ap->office);
@@ -10631,7 +10630,7 @@ void he_RunApplicants(int ev)
         if (done == 2) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(0, ev);
+            e->exSlot = cm_SendExSetHE(0, ev);
             return;
         }
         break;
@@ -10639,7 +10638,7 @@ void he_RunApplicants(int ev)
         return;
     }
     e->end = ai_Time;
-    e->exSlot = cm_SendExSetHEI(1, ev);
+    e->exSlot = cm_SendExSetHE(1, ev);
 }
 
 int ai_TutorialSetHost();
@@ -11123,7 +11122,7 @@ int he_DetectAttack(int p)
     w->attackId = d->ev->id;
     best->end = ai_Time;
     gm_AddTime(&best->end, 0, 8, 0);
-    cm_SendExSetHEI(0x400, best);
+    cm_SendExSetHE(0x400, best);
     return 1;
 }
 /* 0x553cc0, 1 unless the building `p` has a protection money event 0x62 that was paid (HEPROTECTION.victim is its
@@ -11832,7 +11831,7 @@ void he_TransportFromHome(int ev)
                 else
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
             }
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
         }
     }
     d3if_SelectScene(sc, 1);
@@ -11919,7 +11918,7 @@ void he_TransportToHome(int ev)
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, 0);
             }
         }
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
     }
     d3if_SelectScene(sc, 1);
 }
@@ -12046,7 +12045,7 @@ void he_TransportStadtStadt(int ev)
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
             }
             t->at = t->goal;
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             if (ch->actions == 0 && t->rounds > 6 && d3_VecEqual(&ch->obj->pos, &t->lastPos, 100.0f) == 0)
                 sprintf(err, "he_TransportStadtStadt(): character-action not attached but target should be reached : %s",
                         txt_Ptrs[0x48e + to->type * 14]);
@@ -12141,7 +12140,7 @@ void he_TransportHomeHome(int ev)
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, 0);
             }
         }
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
     } else if (t->started != 0 && t->rounds > 0x10) {
         ch = (CHARACTER *)tr->sceneObj;
         if (ch != 0 && ch->actions == 0) {
@@ -12206,7 +12205,7 @@ void he_RunTransport(int ev)
             return;
         t->slotE8 = -1;
         gm_AddTime(&e->end, 0, 0, 1);
-        e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         return;
     case 1: {
         AIOBJ *o;
@@ -12218,7 +12217,7 @@ void he_RunTransport(int ev)
             if (t->route != -1 && cm_GetSlotState(t->route) == 0)
                 return;
             if (t->route != -1 && cm_GetSlotState(t->route) == 2) {
-                e->exSlot = cm_SendExSetHEI(-1, ev);
+                e->exSlot = cm_SendExSetHE(-1, ev);
                 break;
             }
             t->route = -1;
@@ -12243,7 +12242,7 @@ void he_RunTransport(int ev)
                     txt_Format(text, 0x1c46, o->id * 2 + 0x9a8);
                     he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, 0);
                     cm_SendFreeObject(o->objId);
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
+                    e->exSlot = cm_SendExSetHE(-1, ev);
                     return;
                 }
             }
@@ -12284,15 +12283,15 @@ void he_RunTransport(int ev)
         cm_SendExSysMessage(4, &m);
         if (ai_PlayerBuilding == (char *)b || ai_FallbackBuilding == (char *)b)
             sb_PlaySample((struct SBBANK *)snd_TransportBank, "Karrenrumpeln_r", 1, 0x3f, 0x7f, 0, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
         if ((e->opts & 2) == 0)
             return;
         if (t->quiet != 0)
-            e->exSlot = cm_SendExSetHEI(4, ev);
+            e->exSlot = cm_SendExSetHE(4, ev);
         else
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 4:
         if ((e->opts & 2) == 0)
@@ -12302,14 +12301,14 @@ void he_RunTransport(int ev)
         if (b->type == 0x47)
             pl = (char)b->playerSlot;
         rt_UnloadAtPointC((char *)tr, pl);
-        e->exSlot = cm_SendExSetHEI(5, ev);
+        e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
         if ((e->opts & 2) == 0)
             return;
         p = rt_PointAt(tr->route, tr->routeIdx);
         if (p == 0 || (b = (AIBLD *)gm_FindBuildingById(p->buildingId)) == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (ai_IsBuildingOpen((unsigned char *)b, 0, 0) != 0) {
@@ -12317,7 +12316,7 @@ void he_RunTransport(int ev)
             if (b->type == 0x47)
                 pl = (char)b->playerSlot;
             rt_LoadAtPoint(tr, pl);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         e->end = ai_Time;
@@ -12326,11 +12325,11 @@ void he_RunTransport(int ev)
     case -2:
         he_SetEventChar(ev, *ai_PlayerChar);
         if (t->at == guards->id)
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
         else if (t->at == to->id)
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         else if (t->at == from->id)
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case -1:
         c = (AIOBJ *)gm_Query(0, 2, 7, 1, t->cart);
@@ -13599,7 +13598,7 @@ void he_AllocSpying(int ev)
     s->spy = -1;
     victim = (AICHAR *)gm_FindChar(s->victim);
     if (victim == 0) {
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     s->cursor = (unsigned short)util_Random(0x100);
@@ -13610,7 +13609,7 @@ void he_AllocSpying(int ev)
     gm_AddTime(&e->end, 0, 1, 0);
     for (o = (AIJOB *)he_FindEvent(1, 0, 0x18); o != 0; o = (AIJOB *)he_NextEvent()) {
         if (e->chr == o->chr && o->id != e->id && ((HESPYING *)o)->victim == s->victim) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (((HESPYING *)o)->spy != -1)
@@ -13621,7 +13620,7 @@ void he_AllocSpying(int ev)
         ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, 0.0f, 100.0f, &s->target);
         gm_FindById(&tgt, 0, 0, s->target);
         if (tgt == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
@@ -13641,10 +13640,10 @@ void he_AllocSpying(int ev)
     cm_BeginGroup("Spionage");
     if (spawn != 0) {
         s->spy = cm_SendSpawnCharacterR(0x11, tgt->id, -1, 0, 0, 0, "SPIONAGE");
-        e->exSlot = cm_SendExSetHEI(0, ev);
+        e->exSlot = cm_SendExSetHE(0, ev);
     } else {
         e->end = s->until;
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
     }
     cm_EndGroup("Spionage");
 }
@@ -13696,12 +13695,12 @@ void he_RunSpying(int ev)
             cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, s->fee);
             sv_MoveToGroup(0, 0, c->id, (char *)ev);
             e->end = ai_Time;
-            e->exSlot = cm_SendExSetHEI(1, ev);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
         s->spy = -1;
         e->end = s->until;
-        e->exSlot = cm_SendExSetHEI(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 1:
         idx = s->cursor;
@@ -13724,7 +13723,7 @@ void he_RunSpying(int ev)
         s->cursor = (s->step + idx) % 0x100;
         if (bld == 0) {
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         txt_Format(text, (int)"Spionage: next target = %G", bld);
@@ -13734,56 +13733,56 @@ void he_RunSpying(int ev)
             cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
             gm_AddTime(&e->end, 0, 5, 0);
             s->at = bld->id;
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 2:
         gm_FindById(&bld, 0, 0, s->at);
         gm_AddTime(&e->end, 0, 5, 0);
         if (bld == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         c = (AICHAR *)gm_FindChar(s->spy);
         if (c == 0) {
             gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (sv_IsAtDoor(c, bld) == 0) {
             e->stage = 2;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(2, ev);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
         gm_FindById(&bld, 0, 0, s->target);
         if (bld == 0 || bld->owner == 0xffff) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         if (gm_CompareTime(&s->until, &ai_Time) == -1) {
             cm_SendChrStop(c->netId);
             cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        e->exSlot = cm_SendExSetHEI(1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 3:
         gm_AddTime(&e->end, 0, 5, 0);
         gm_FindById(&bld, 0, 0, s->target);
         if (bld == 0 || bld->owner == 0xffff) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         c = (AICHAR *)gm_FindChar(s->spy);
         if (c != 0 && sv_IsAtDoor(c, bld) == 0) {
             e->stage = 3;
             gm_AddTime(&e->end, 0, 5, 0);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
         c = (AICHAR *)gm_FindChar(s->victim);
@@ -13791,11 +13790,11 @@ void he_RunSpying(int ev)
             txt_Format(text, 0x1734, c->id);
             he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5fa, 0);
         }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 4:
         gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -14147,7 +14146,7 @@ void he_RunTheft(AIJOB *e)
                     msg.arg[2] = t->bld;
                     msg.arg[4] = t->loot;
                     cm_SendLongMessage((char *)&msg);
-                    e->exSlot = cm_SendExSetHEI(-1, e);
+                    e->exSlot = cm_SendExSetHE(-1, e);
                     cm_SendSetField(b->id, 0x5a, 2, 0, 2);
                 }
             }
@@ -14705,7 +14704,7 @@ void he_RunKredit(int ev)
                 if (partner == 0) {
                     txt_Format(text, 0x18e7, l->amount);
                     he_ShowNews(owner->netId, -1, text, 0, 0x5ff, 0);
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
+                    e->exSlot = cm_SendExSetHE(-1, ev);
                     return;
                 }
                 due = l->amount * (l->interest * 0.01);
@@ -15365,7 +15364,7 @@ void he_RunPromotion(int ev)
         if (e->dropSlot != -1 && cm_GetSlotState(e->dropSlot) == 0)
             return;
         e->dropSlot = -1;
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
         if (c->scene == 0) {
@@ -16779,7 +16778,7 @@ void he_RunRansomDemand(AIJOB *ev)
     case 3:
         for (r = (HEEV3D *)he_FindEvent(1, 0, 0x3d); r != 0; r = (HEEV3D *)he_NextEvent()) {
             if (r->victim == x->victim) {
-                ev->exSlot = cm_SendExSetHEI(-1, ev);
+                ev->exSlot = cm_SendExSetHE(-1, ev);
                 break;
             }
         }
@@ -17404,7 +17403,7 @@ void he_RunAmbush(AIJOB *ev)
             if (n != 0)
                 x->skill /= n;
             else {
-                ev->exSlot = cm_SendExSetHEI(-1, ev);
+                ev->exSlot = cm_SendExSetHE(-1, ev);
                 x->skill = 0;
                 return;
             }
@@ -17532,14 +17531,14 @@ void he_RunAmbush(AIJOB *ev)
             gm_AddTime(&ev->end, 0, (unsigned short)util_Random(5) + 10, 0);
             return;
         }
-        ev->exSlot = cm_SendExSetHEI(-1, ev);
+        ev->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 2:
         if (cm_GetSlotState(x->partySlot) == 0)
             return;
         p = (int *)cm_GetSlotValue(x->partySlot);
         if (p == 0) {
-            ev->exSlot = cm_SendExSetHEI(1, ev);
+            ev->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
         x->party = *p;
@@ -18045,7 +18044,7 @@ void he_RunBurn(AIJOB *ev)
                     }
                 }
             } else if ((ev->opts & 2) != 0) {
-                ev->exSlot = cm_SendExSetHEI(-1, ev);
+                ev->exSlot = cm_SendExSetHE(-1, ev);
                 return;
             }
             ev->end = ai_Time;
@@ -18135,7 +18134,7 @@ void he_RunBurn(AIJOB *ev)
             }
         }
         if (x->duration <= 0 || b == 0)
-            ev->exSlot = cm_SendExSetHEI(-1, ev);
+            ev->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case -2:
     case -1: {

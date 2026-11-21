@@ -6036,6 +6036,20 @@ the bytes no portable form gives.
 - **A common placed in another unit's .bss group**: define it (tentatively) in that one unit and declare it
   `extern` everywhere else; a second tentative definition in the using unit is not needed for the placement
   (d3s_EdgeX / d3s_EdgeY: d3_engine.c defines, d3s.c declares; placement unchanged).
+- **Callers push an int constant (`push -2`), the body reads one byte (`mov cl,[esp+k]`)**: an `int` parameter
+  stored into a byte field compiles the same as an `unsigned char` one; cm_SendExSetHE(int k, char *p) for every
+  unit replaced eight cm_SendExSetHEI casts and two inline casts (byte).
+- **Every function-pointer cast at a call site is declarations (its prototype scope's parameters count in the
+  declaration set)**: removing a unit's cast uses shifts the tie-break of the sensitive functions after them
+  (tiebreak.tsv `sensitive=yes`; ai_BuildingDetailWindow, he_RunBurglary fell after cm_SendExSetHEI went).
+  Restore the count with a real improvement above them: name an unnamed prototype's parameters (lcdom's
+  `char *itoa(int value, char *buf, int radix)`), or give an unprototyped `f();` its true prototype when the
+  calls push the same (he.c's amt_ChangeDistrictOpinion(char *c, int d, int v)). `dcp grade NAME` names a
+  shift that works; probe with typedefs only to learn the range, never commit them.
+- **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
+  definition must return int (`mov eax,edx` / `xor eax,eax`; unsigned short gives `mov ax,dx`), and
+  `(unsigned short)util_Random(n)` gives `mov esi,eax; and esi,0xffff` (106 functions fall): the original's
+  units saw a 16-bit return type. util_RandomU / util_RandomS stay @original.
 - **`__asm` reading the parameters (`mov eax,[ebp+8]`)**: name them (`mov eax,x`); VC6 assembles the name to
   the same frame operand (d2_ShpBlit8, d2_ShpBlit8To16, d2_ShpBlit16ClipY / ClipXY, d2_ShpDarken16 byte).
 
