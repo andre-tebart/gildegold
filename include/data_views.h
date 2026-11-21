@@ -22,9 +22,6 @@
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */
 
-/* d3d_UsedCard */
-#define d3d_Caps98d              (*(unsigned char *)((char *)&d3d_UsedCard + 0x30d))  /* 0xfe798d */
-
 /* d3_ParEnd */
 #define d3_ParTail               (*(struct D3PARTSYS **)((char *)&d3_ParEnd + 0x318))  /* 0xfb9598 */
 

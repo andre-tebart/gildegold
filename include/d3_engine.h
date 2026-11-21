@@ -242,9 +242,6 @@ extern float d3_SavedZFar;                  /* 0xfe73bc, d3_ZFar while the fog i
 extern float d3_FogEnd2;                    /* 0xfc5340 */
 extern float d3_FogStart1;                  /* 0xfc29bc */
 extern D3COLORU d3_fog_color;               /* 0x6334a0 */
-#ifndef DATA_VIEWS_H
-extern unsigned char d3d_Caps98d;           /* 0xfe798d, bit 5 = fog supported */
-#endif
 extern struct D3SM *d3sm_Shadow;                  /* 0x633df8 */
 
 typedef struct D3RELOADCTX {        /* context of d3_ReloadMeshCB */

@@ -43,6 +43,7 @@ extern unsigned char d3_NoTextures;  /* 0x63345d, defined below; ecmd.c declares
 #include "d3_light.h"
 #include "data_views.h"
 #include "d3_d3d.h"
+#include "dd_vesa_types.h"
 #include "d3_fl.h"
 #include "d3_int_io.h"
 #include "d3_interface.h"
@@ -840,7 +841,7 @@ void d3_SetFog(float start, float end, D3COLOR color)
 {
     char on;
 
-    if (d3_Hardware && (d3d_Caps98d & 0x20)) {
+    if (d3_Hardware && d3d_UsedCard.info.fogvertex) {
         if (start < end) {
             on = 1;
             d3_SetFogRange(start, end);
@@ -2640,7 +2641,6 @@ D3SCENE *d3_DefaultScene = d3_Scenes;  /* 0x5fb5b0, the current scene (d3.h) */
    which the interface's scene select saves and restores; d3d_SetConfig reads only the first three) */
 char d3_DefaultD3DConfig[] = { 94, 1, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };  /* 0x5fb5b4 */
 int d3if_SceneState1 = 15;  /* 0x5fb5c4, the scene pair's second dword (d3_interface.c's write-only state) */
-/* d3d_Caps98d: view of d3d_UsedCard (tools/data_views.py) */
 char d3_EditorMode = 0;  /* 0x633438, editor / tool mode (reasoned guess: the ortho view cameras, the type-6 lights
                             and the on=0 relight; only ever set 0 in this build) */
 int d3_FrameCount = 0;  /* 0x63343c */
