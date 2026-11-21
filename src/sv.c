@@ -8,7 +8,7 @@
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade). The
-   @original cast macros (d2_PutPixelRGBc, ai_SwitchRoomI) record the parameter types the original's
+   @original cast macros (d2_PutPixelRGBc) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -970,11 +970,10 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface(char *name);                     /* 0x478b50 */
 void d2_GetPixelColour(int x, int y, struct D2SURF *surf, unsigned char *rgb);                     /* 0x4798f0 */
 struct D2SURF; int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, struct D2SURF *surf);  /* 0x4799e0 */
-void ai_SwitchRoom(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
+void ai_SwitchRoom(int index, unsigned room);                                /* 0x59e0a0 */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int d2_FindPic(char *name);                     /* 0x468890 */
 char *strupr(char *);                     /* 0x5ea986 */
-#define ai_SwitchRoomI ((void (*)(int, int))ai_SwitchRoom)  /* @original: sv_UpdateGroundplan zero-extends the room word into an int argument (xor edx,edx / mov dx,[esi]) */
 extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here) */
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour(char *a, char *b);                     /* 0x478930 */
@@ -1210,7 +1209,7 @@ void sv_UpdateGroundplan(unsigned flags)
                             && ai_ScriptQuery(0x19, (int)ai_PlayerBuilding, 0, obj->id) == 1
                             && !(ai_CharsT[ai_PlayerId].heldRounds > 0)) {
                             if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_PlayerBuilding, &obj->id, 0) & 0x4000)
-                                ai_SwitchRoomI(-1, obj->id);
+                                ai_SwitchRoom(-1, obj->id);
                         } else if (obj != 0)
                             d2_CopyCaption((char *)txt_ObjectNames[obj->id][0]);
                     }
@@ -5824,7 +5823,7 @@ void sv_HandleRightClick(unsigned fl)
                 if (ai_PlayerBuilding == 0 || room == 0 || room == sv_PanelShown)
                     sv_PanelShown = 0;
                 else
-                    ai_SwitchRoomI(-1, *room);
+                    ai_SwitchRoom(-1, *room);
             } else if (ai_FallbackBuilding != 0 || ai_PlayerBuilding != 0) {
                 ai_FallbackBuilding = 0;
                 ai_PlayerBuilding = 0;

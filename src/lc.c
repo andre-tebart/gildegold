@@ -9375,7 +9375,7 @@ void ai_MoneyLenderContact(AIBLD *bld, int room)
    0x6f229c - 0x6f22a4 + 1 count, the room matrices 0x43b790 / 0x43b860 (0xfc2dec + 0 / + 0x10), the counters
    0x6f22cc / 0x6f22d0 = 0 and the sound "RaumWechseln_s" (0x426fa0) */
 
-void ai_SwitchRoom(int index, unsigned short room)
+void ai_SwitchRoom(int index, unsigned room)
 {
     unsigned short *p;
     int i;
