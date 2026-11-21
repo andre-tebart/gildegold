@@ -2404,11 +2404,11 @@ void ai_PlagueNews(void)
         c++;
     } while ((int)&c->kind < (int)&gm_PlayerRecordBytes);
 }
-/* 0x5a9240, a plague message (112 B): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
+/* 0x5a9240, a plague message (112 B; bld, the building he_RunPlague passes, is not read): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
    text 0x20ca + the value; a character of the kind 6 / 7 sends the text and the sound with the news 0x600 to its
    netId */
 
-void ai_PlagueMessage(G8CHARREC *c)
+void ai_PlagueMessage(G8CHARREC *c, void *bld)
 {
     char local[64];
     int v;

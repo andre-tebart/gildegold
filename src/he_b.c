@@ -35,8 +35,6 @@ struct D3SM;
 #include "evt.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-#define ai_PlagueMessageK ((void (*)(AICHAR *, AIBLD *))ai_PlagueMessage)  /* 0x5a9240 (lc.c: G8CHARREC *c): @original the caller here pushes two arguments (0x54a4ba..0x54a4bb, add esp,8): the character (read as the first) and the building (unused) */
-#define ai_DomizilMessageK ((void (*)(AICHAR *, AICHAR *, void *, int))ai_DomizilMessage)  /* 0x5a9c30 (lc.c: G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level; lc.c-local types the header cannot spell): @original the caller here pushes four arguments (0x56d492..0x56d495, add esp,0x10) */
 
 
 extern int ai_TransportWindow();
@@ -1167,7 +1165,7 @@ void ai_PlagueNews(void);
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
 void amt_ChangeDistrictOpinion();
 int sv_IsAtDoor();
-void ai_PlagueMessage(int param_1);
+void ai_PlagueMessage(struct G8CHARREC *c, void *bld);
 float util_RandomF2();
 int ls_GetLanguage();
 int ai_IsLocalWorker();
@@ -3293,7 +3291,7 @@ void he_AllocRecipeResearch(int ev)
     he_FreeEvent((int *)ev);
 }
 
-void ai_DomizilMessage(int param_1, int param_2, int param_3);
+void ai_DomizilMessage(struct G8CHARREC *to, struct G8CHARREC *c, struct G8OBJ *obj, int level);
 
 /* 0x56d3d0, the run handler of the research event 0x95 (alloc he_AllocRecipeResearch): without its character or the
    character's alchemist record the event ends (stage -2); stages -2 / -1 free it; outside the day hours of the season
@@ -3323,7 +3321,7 @@ void he_RunRecipeResearch(int ev)
             o = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b);
             to = (AICHAR *)gm_FindChar(e->netId);
             if (to != 0)
-                ai_DomizilMessageK(to, c, o, r->recipe);
+                ai_DomizilMessage((struct G8CHARREC *)to, (struct G8CHARREC *)c, (struct G8OBJ *)o, r->recipe);
             ahm_SendAddPlace((char *)c, r->recipe);
             sv_MoveToGroup(0, 0, c->id, 0);
             he_FreeEvent((int *)ev);

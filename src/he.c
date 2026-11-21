@@ -80,9 +80,7 @@
    trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
    message records through raw offsets
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
-   cast macros next to the includes keep the spellings the definitions disagree with:
-   ai_PlagueMessageK (two arguments),
-   ai_DomizilMessageK (four), util_RandomU,
+   cast macros next to the includes keep the spellings the definitions disagree with: util_RandomU,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
@@ -118,8 +116,6 @@ struct D3SM;
 #include "evt.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-#define ai_PlagueMessageK ((void (*)(AICHAR *, AIBLD *))ai_PlagueMessage)  /* 0x5a9240 (lc.c: G8CHARREC *c): @original the caller here pushes two arguments (0x54a4ba..0x54a4bb, add esp,8): the character (read as the first) and the building (unused) */
-#define ai_DomizilMessageK ((void (*)(AICHAR *, AICHAR *, void *, int))ai_DomizilMessage)  /* 0x5a9c30 (lc.c: G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level; lc.c-local types the header cannot spell): @original the caller here pushes four arguments (0x56d492..0x56d495, add esp,0x10) */
 
 
 extern int ai_TransportWindow();
@@ -6715,7 +6711,7 @@ void he_BeginPlague(int ev)
 }
 
 int sv_IsAtDoor();
-void ai_PlagueMessage(int param_1);
+void ai_PlagueMessage(struct G8CHARREC *c, void *bld);
 float util_RandomF2();
 /* 0x549f70, the alloc handler of the plague event 0x59 ("Pest", he_RunPlague): opts bit 2 leaves it alone; another
    running 0x59 event (skipping itself) ends it at the clock now, posted as failed (cm_SendExSetHE -1, its slot
@@ -6895,7 +6891,7 @@ void he_RunPlague(int ev)
                 if ((unsigned short)util_Random(0x100) == 0)
                     gm_CatchPlague(owner);
                 if (any)
-                    ai_PlagueMessageK(owner, o);
+                    ai_PlagueMessage((struct G8CHARREC *)owner, o);
                 for (i = 0; i < m; i++) {
                     if (value[i] < 1000.0f)
                         he_CharIllness(e, &ai_CharsT[ids[i]], owner, o, 1, value[i]);
@@ -19675,7 +19671,7 @@ void he_RunTrainShare();
 void he_AllocAlchemistDay();
 void he_RunAlchemistDay();
 void snd_PlayFavourComment(void);
-void ai_DomizilMessage(int param_1, int param_2, int param_3);
+void ai_DomizilMessage(struct G8CHARREC *to, struct G8CHARREC *c, struct G8OBJ *obj, int level);
 void ai_DomizilMessageResearchKind(int param_1, int param_2, int param_3, int param_4);
 void ai_DomizilMessageResearch(int param_1, int param_2, int param_3, int param_4);
 void ai_DomizilMessageTask(int param_1, int param_2, int param_3, unsigned short *param_4);
