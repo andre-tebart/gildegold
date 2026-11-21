@@ -1032,7 +1032,7 @@ void rt_EditCartRoute(AIOBJ *c)
    cart into the building's stock (market 0x1c: its stock 0x1db, warehouse 10: 0x500ec0), bought by player pl at
    the building's price when it is not the cart owner's */
 
-void rt_UnloadAtPoint(char *c, int pl)
+void rt_UnloadAtPoint(char *c, char pl)
 {
     RTPOINT *q;
     char *b;

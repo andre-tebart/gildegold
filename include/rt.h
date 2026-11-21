@@ -112,7 +112,7 @@ int rt_FindMark(RTPOINT *p);
 void rt_RemoveMark(int i);
 void rt_HighlightRoute(RTPOINT *p, struct LCMAPWIN *m);
 void rt_EditCartRoute(struct AIOBJ *c);
-void rt_UnloadAtPoint(char *c, int pl);
+void rt_UnloadAtPoint(char *c, char pl);
 void rt_LoadAtPoint(struct AIOBJ *c, char pl);
 int rt_SaveRoutes(void *f);
 int rt_LoadRoutes(void *f);

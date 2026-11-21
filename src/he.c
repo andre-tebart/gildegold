@@ -36,7 +36,7 @@
    the event 0x38 (HEEV38). The protection money
    0x62, its ask 0x63 and the audit 0x64 handlers (0x54ae20 .. 0x54b9b0) read AIJOB and their words typed too
    (HEPROTECTION, HEAUDIT). The head includes
-   rt.h (rt_UnloadAtPointC keeps this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
+   rt.h and d3_tools.h / d3_snd.h / sblib.h.
    The event and message words are read typed (HM_I / U_I), except the kind-specific words over AIJOB's union the
    local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
@@ -82,7 +82,7 @@
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with:
    ai_PlagueMessageK (two arguments),
-   ai_DomizilMessageK (four), util_RandomU, rt_UnloadAtPointC,
+   ai_DomizilMessageK (four), util_RandomU,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
@@ -604,7 +604,6 @@ int he_RegisterEventTypeA2();
 #include "amt.h"
 #include "mission.h"
 #include "rmsg.h"
-#define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -12296,7 +12295,7 @@ void he_RunTransport(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
         if (b->type == 0x47)
             pl = (char)b->playerSlot;
-        rt_UnloadAtPointC((char *)tr, pl);
+        rt_UnloadAtPoint((char *)tr, pl);
         e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
