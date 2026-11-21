@@ -1467,7 +1467,7 @@ exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	readable	deep
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	readable	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	readable	deep	
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	readable	deep	
-exe	0x00482f00	ai_CalcMeisterRaeuber	ai	shape	readable		byte+readable -> shape+readable at 46d8c66e: tie-break: ai_Blds typed AIBLD * (the view ai_BldsT went); its text reads ai_Blds for ai_BldsT, and dcp's sweep proves the same text byte under another declaration set (1 unused typedef at the unit's start) [waits for: ai.c's declaration set (G.tiebreak)]
+exe	0x00482f00	ai_CalcMeisterRaeuber	ai	byte	readable		
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	readable		
 exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	byte	readable		
 exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable		
@@ -2509,7 +2509,7 @@ exe	0x004d8b50	cm_DrawFightTime	cmscene	byte	readable
 exe	0x004d8c40	cm_DeleteSceneChars	cmscene	byte	readable		
 exe	0x004d8c70	cm_StackPicture	cmscene	byte	readable		
 exe	0x004d8cb0	cm_TallyStack	cmscene	byte	readable		
-exe	0x004d8e20	cm_RunCouncilSession	cmscene	draft	readable		
+exe	0x004d8e20	cm_RunCouncilSession	cmscene	byte	readable		
 exe	0x004da9e0	cm_AskDeposeVote	cmscene	byte	readable		
 exe	0x004dab50	cm_AskElectVote	cmscene	byte	readable		
 exe	0x004dada0	cm_SessionAskPlayer	cmscene	byte	readable		
@@ -3771,7 +3771,7 @@ exe	0x00561190	he_RunRansom	he	byte	readable
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	byte	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
-exe	0x00561a20	he_RunBurglary	he	shape	readable	deep	byte+readable -> shape+readable at 4d97586c: tie-break: sv_Frames / sv_MemberRows split from ai_Unk75f280 and SVFRAME moved into sv_types.h (the unit's duplicate typedef went); the text is unchanged and dcp's sweep proves it byte under another declaration set [waits for: the unit's declaration set (G.tiebreak)]
+exe	0x00561a20	he_RunBurglary	he	byte	readable		
 exe	0x005628e0	he_RunBuildingSpying	he	shape	readable	deep	
 exe	0x00563070	he_AllocAmbush	he	byte	readable		
 exe	0x005630f0	he_RunAmbush	he	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 2d1aacbb: promote --accept-falls
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		shape+readable -> draft+readable at 2d1aacbb: promote --accept-falls
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4505,7 +4505,7 @@ exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	byte	readable		
 exe	0x005c4100	ai_LawSelectionEntry	lcamt	byte	readable		
 exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
-exe	0x005c5310	ai_CharInfoPanel	lcamt	shape	readable	deep	byte+readable -> shape+readable at 4d97586c: tie-break: sv_Frames / sv_MemberRows split from ai_Unk75f280 and SVFRAME moved into sv_types.h (the unit's duplicate typedef went); the text is unchanged and dcp's sweep proves it byte under another declaration set [waits for: the unit's declaration set (G.tiebreak)]
+exe	0x005c5310	ai_CharInfoPanel	lcamt	byte	readable		
 exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
 exe	0x005c64c0	ai_FindCandidateIds	lcamt	byte	readable		
 exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
