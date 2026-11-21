@@ -89,9 +89,6 @@ extern ORDCHAR *gm_RichestChar;
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte
    ord_ResetStatistics memset would zero whatever the COMMON linker put inside it (it hit ai_BTypes). */
-#define ai_Unk91b648 (gm_IncomeHistory + 0xc8)   /* 0x91b648, row 2 */
-#define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
-#define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
 #include "f3gm_carry.h"            /* GMCARRYSPEC, GMCARRYREC, gm_CarryRecs */
 #pragma pack(push, 1)
 /* an entry of gm_CollectCarried's list (0x1e bytes) */
@@ -165,7 +162,7 @@ void gm_StatisticsScreen(void)
     d2_SetPointerSprite(0, 0);
     d2_SetForm(f, 0);
     for (i = 0; i < 0x11; i++)
-        io_PrintText("Runde %i:   %T$N", ai_Time.year - 0x10 + i, ((int *)gm_IncomeHistory)[i]);
+        io_PrintText("Runde %i:   %T$N", ai_Time.year - 0x10 + i, gm_IncomeHistory[0][i]);
     do {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
@@ -234,7 +231,7 @@ int gm_IncomeKind1(unsigned id, GMINCOME *out, unsigned char flags)
             gm_NetMsgCount++;
         }
         if (flags & 2)
-            gm_IncomeRows[0][16] += n;
+            gm_IncomeHistory[0][16] += n;
     }
     return 1;
 }
@@ -272,7 +269,7 @@ int gm_IncomeKind2(unsigned id, GMINCOME *out, unsigned char flags)
             gm_NetMsgCount++;
         }
         if (flags & 2)
-            gm_IncomeRows[1][16] += n;
+            gm_IncomeHistory[1][16] += n;
     }
     return 1;
 }
@@ -319,7 +316,7 @@ int gm_IncomeKind3(unsigned id, GMINCOME *out, unsigned char flags)
         }
         if (flags & 2) {
             ORD_CHARS[id].v1a8 = 0;
-            gm_IncomeRows[2][16] += n;
+            gm_IncomeHistory[2][16] += n;
         }
     }
     return 1;
@@ -366,7 +363,7 @@ int gm_IncomeKind4(unsigned id, GMINCOME *out, unsigned char flags)
             gm_NetMsgCount++;
         }
         if (flags & 2)
-            gm_IncomeRows[3][16] += n;
+            gm_IncomeHistory[3][16] += n;
     }
     return 1;
 }
@@ -402,7 +399,7 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
             gm_NetMsgCount++;
         }
         if (flags & 2)
-            gm_IncomeRows[4][16] += n;
+            gm_IncomeHistory[4][16] += n;
     }
     return 1;
 }
@@ -672,16 +669,16 @@ void gm_EndDayIncomes(unsigned flags)
         ORDBLD *list[8];
     } u;
 
-    memmove(gm_IncomeRows[0], gm_IncomeRows[0] + 1, 16 * sizeof(int));
-    memmove(gm_IncomeRows[1], gm_IncomeRows[1] + 1, 16 * sizeof(int));
-    memmove(gm_IncomeRows[2], gm_IncomeRows[2] + 1, 16 * sizeof(int));
-    memmove(gm_IncomeRows[3], gm_IncomeRows[3] + 1, 16 * sizeof(int));
-    memmove(gm_IncomeRows[4], gm_IncomeRows[4] + 1, 16 * sizeof(int));
-    gm_IncomeRows[0][16] = 0;
-    gm_IncomeRows[1][16] = 0;
-    gm_IncomeRows[2][16] = 0;
-    gm_IncomeRows[3][16] = 0;
-    gm_IncomeRows[4][16] = 0;
+    memmove(gm_IncomeHistory[0], gm_IncomeHistory[0] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeHistory[1], gm_IncomeHistory[1] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeHistory[2], gm_IncomeHistory[2] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeHistory[3], gm_IncomeHistory[3] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeHistory[4], gm_IncomeHistory[4] + 1, 16 * sizeof(int));
+    gm_IncomeHistory[0][16] = 0;
+    gm_IncomeHistory[1][16] = 0;
+    gm_IncomeHistory[2][16] = 0;
+    gm_IncomeHistory[3][16] = 0;
+    gm_IncomeHistory[4][16] = 0;
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         gm_CharacterIncomes(i, &u.inc, flags);

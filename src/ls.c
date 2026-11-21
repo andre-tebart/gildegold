@@ -973,11 +973,11 @@ int ls_WriteStatistics(int f)
         LS_W(&ord_StatisticsHistory[i].score, 4)
         LS_W(&ord_StatisticsHistory[i].base, 4)
     }
-    LS_W(gm_IncomeHistory, 0x44)
-    LS_W(gm_IncomeHistory + 0x44, 0x44)
-    LS_W(gm_IncomeHistory + 0x88, 0x44)
-    LS_W(gm_IncomeHistory + 0xcc, 0x44)
-    LS_W(gm_IncomeHistory + 0x110, 0x44)
+    LS_W(gm_IncomeHistory[0], 0x44)
+    LS_W(gm_IncomeHistory[1], 0x44)
+    LS_W(gm_IncomeHistory[2], 0x44)
+    LS_W(gm_IncomeHistory[3], 0x44)
+    LS_W(gm_IncomeHistory[4], 0x44)
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
             LS_W(&ai_Grid[i][j].a, 2)
@@ -2157,11 +2157,11 @@ int ls_ReadStatistics(int f)
         LS_R(&ord_StatisticsHistory[i].score, 4)
         LS_R(&ord_StatisticsHistory[i].base, 4)
     }
-    LS_R(gm_IncomeHistory, 0x44)
-    LS_R(gm_IncomeHistory + 0x44, 0x44)
-    LS_R(gm_IncomeHistory + 0x88, 0x44)
-    LS_R(gm_IncomeHistory + 0xcc, 0x44)
-    LS_R(gm_IncomeHistory + 0x110, 0x44)
+    LS_R(gm_IncomeHistory[0], 0x44)
+    LS_R(gm_IncomeHistory[1], 0x44)
+    LS_R(gm_IncomeHistory[2], 0x44)
+    LS_R(gm_IncomeHistory[3], 0x44)
+    LS_R(gm_IncomeHistory[4], 0x44)
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
             LS_R(&ai_Grid[i][j].a, 2)

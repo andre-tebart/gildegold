@@ -1664,7 +1664,7 @@ int ord_PrivilegeDialog(char *text, int mode, int arg)
 void ord_ResetStatistics(void)
 {
     memset(&ord_MessageRecord, 0, 0x24);
-    memset(gm_IncomeHistory, 0, 0x154);
+    memset(gm_IncomeHistory, 0, sizeof(gm_IncomeHistory));
     memset(gm_CharacterStatistics, 0, 0x68);
     memset(ai_Grid, 0, 0x600);
     memset(ord_StatisticsHistory, 0, 0x140);

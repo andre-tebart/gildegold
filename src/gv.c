@@ -1141,5 +1141,5 @@ char unk_Avatars[0x20][0xf4] = { { 110, 101, 86, 109, 77, 97, 118, 101, 110, 0, 
 AITIME gv_LastTime = {0};  /* 0x6f0e38, the game time ai_Time of the last effect step (gv_UpdateEffects) */
 GVEFFARG gv_EffectArgs[8] = {0};  /* 0x6f0e48, the argument of each effect slot's default callback */
 GVEFFECT gv_Effects[8] = {0};  /* 0x6f1008, 8 slots of */
-char gm_IncomeHistory[0x154];  /* 0x91b580, the 17-round history of the five income sums (rows of */
+int gm_IncomeHistory[5][17];  /* 0x91b580, the 17-round history of the five income sums (five rows of 17 ints; [row][16] is the current sum) */
 extern GVCANNON gv_Cannon;

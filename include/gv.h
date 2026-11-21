@@ -644,7 +644,7 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4f
 
 /* the tables 0x4f82a0 clears */
 extern ORDMSGREC ord_MessageRecord;     /* 0x91b480, the record the messages carry */
-extern char gm_IncomeHistory[];         /* 0x91b580, the 17-round history of the five income sums (rows of
+extern int gm_IncomeHistory[5][17];       /* 0x91b580, the 17-round history of the five income sums (rows of
                                             0x44 bytes, the running sums behind them) */
 extern char gm_CharacterStatistics[];            /* 0x91b500 */
 extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of the last 16 rounds */
