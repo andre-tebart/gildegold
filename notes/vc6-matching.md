@@ -6025,6 +6025,10 @@ the bytes no portable form gives.
   prototype; never an `unsigned long` prototype for a float parameter (d3_LoadScene byte). A 4-byte struct
   argument likewise: d3_SetFog takes `D3COLOR color` (d3_SetFogSet passes the struct, d3if_SelectScene the
   union's `.c`, the definition stores `d3_fog_color.c = color`), no cast macro to another prototype.
+- **A call with more arguments than its folded target takes** (the original calls sv_ReturnZero, `xor eax,eax;
+  ret`, with one push): the source called its own stub that LINK folded (/OPT:ICF); define it as an unlinked
+  function below the caller with a local prototype (`int ch_CreateLowPolyBody(CHARACTER *ch) { return 0; }`,
+  ch_SetLowPoly byte). Not a call of the folded target with too many arguments, and not a cast macro.
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

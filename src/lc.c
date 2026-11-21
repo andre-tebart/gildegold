@@ -97,7 +97,6 @@
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 
-#define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
 #define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original the production columns' input pictures pass x = k * 0x31 + 0x11 as a short (no movsx, computed afresh per call: no strength reduction), as sv.c / svtip.c do */

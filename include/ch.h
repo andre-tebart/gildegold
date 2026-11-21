@@ -146,7 +146,7 @@ extern const D3VECTOR4 d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                          /* 0x45eeb0 */
 void err_Message(char *msg);                                                            /* 0x4222b0 */
 int d3t_ReleaseObjectTextures(D3OBJECT *obj);                                           /* 0x411b70 */
-int sv_ReturnZero(void);                                                       /* 0x52a040, @original: takes nothing (sv.c), but ch_SetLowPoly pushes ch (0x402b6b: push esi; call); creates the low-poly body? */
+int sv_ReturnZero(void);                                                       /* 0x52a040 */
 extern int ch_LowPoly;              /* 0x631064, 2 - the ch_SetLowPoly mode */
 struct D3OBJECT; struct D3IFSCENE; char d3if_MoveObject(struct D3OBJECT *obj, struct D3IFSCENE *from, struct D3IFSCENE *to);                           /* 0x447fd0, moves obj to another scene */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */

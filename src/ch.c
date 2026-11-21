@@ -3,8 +3,7 @@
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
    cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
-   Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
-   from the definition (read the original's pushes): sv_ReturnZero.
+   Open: not included yet (dcp headers conflicts ch HEADER): sv.h.
    unit of rea 8cef7d5b (src/game/ch.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdarg.h>
@@ -432,6 +431,7 @@ CHARACTER *ch_FindByObject(D3OBJECT *obj)
             return ch_List[i];
     return 0;
 }
+int ch_CreateLowPolyBody(CHARACTER *ch);  /* unlinked, below */
 /* 0x402af0, 0/1 create the low-poly bodies, 2 deletes them */
 
 void ch_SetLowPoly(unsigned char mode)
@@ -451,13 +451,21 @@ void ch_SetLowPoly(unsigned char mode)
                     ch->lowPolyBody = 0;
                 }
             } else if ((mode == 0 || mode == 1) && !ch->lowPolyBody) {
-                sv_ReturnZero(ch);
+                ch_CreateLowPolyBody(ch);
                 ch_UpdateLowPoly(ch);
             }
         }
     }
     ch_LowPoly = 2 - mode;
     d3if_SelectScene(cur, 1);
+}
+
+/* unlinked: returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040, where the original's call in
+   ch_SetLowPoly points (0x402b6b: push esi; call). The name is a guess from the call site: it would create the
+   missing low-poly body before ch_UpdateLowPoly shows it */
+int ch_CreateLowPolyBody(CHARACTER *ch)
+{
+    return 0;
 }
 /* 0x402ba0, ch_Updatelowpoly: shows the body or the low-poly body and keeps the latter in sync */
 
