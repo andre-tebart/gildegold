@@ -32,18 +32,6 @@ struct AICHAR;
 #include "amt.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define GAPDATA __declspec(align(1)) unsigned char
-/* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
-   0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
-   its own memory and the block writer/reader (gm_LoadTables, ls_ReadPlayerSlots, ls_WritePlayerSlots) would then
-   write over whatever the COMMON linker placed inside the 0xd4d0-byte span. */
-#define init_StockBlocks (*(char (*)[0xd4c0])((char *)gm_StockBlocks + 0x10))  /* 0x7d6a70, the records of block 0 */
-/* 0x7d6a90 .. 0x7d6aa8 are views into stock block 0 (the record fields the price code reads), not
-   separate COMMON symbols: they start inside init_StockBlocks[0] and are indexed with the same
-   0x2a90 stride as the blocks. */
-#define ai_Unk7d6a90 (*(char (*)[4])((char *)init_StockBlocks + 0x20))      /* 0x7d6a90 */
-#define ai_Unk7d6a94 (*(char (*)[12])((char *)init_StockBlocks + 0x24))     /* 0x7d6a94 */
-#define ai_Unk7d6aa0 (*(char (*)[8])((char *)init_StockBlocks + 0x30))      /* 0x7d6aa0 */
-#define ai_Unk7d6aa8 (*(char (*)[54408])((char *)init_StockBlocks + 0x38))  /* 0x7d6aa8 */
 #define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
 #define GM_TABLE_A(p) (ai_PlayerSlots[p].inhabitants)  /* the player slot's first yearly table */
 #define GM_TABLE_B(p) (ai_PlayerSlots[p].splendour)  /* its second yearly table */
@@ -652,7 +640,7 @@ void gm_InitPlayerRecord(int p)
     char *pc;
 
     for (i = 0; i < 0x55; i++) {
-        g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
+        g = &gm_StockBlocks[p].goods[i];
         t = &((GMSTOCK *)gm_DefaultStock)[i];
         pc = (char *)ai_Goods + g->item * 0x41;
         g->v00c = t->v00c;
@@ -678,7 +666,6 @@ int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 
 /* the goods record n (0x80 bytes) of the player p */
-#define GM_GOODS(p, n) (init_StockBlocks + (p) * 0x2a90 + (n) * 0x80)
 
 
 void gm_SyncMarket(unsigned p);
@@ -710,7 +697,7 @@ void gm_SyncMarket(unsigned p)
     ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ai_MarketBuilding == 0)
         return;
-    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
+    stock = gm_StockBlocks[p].goods;
     if (p == ai_OwnPlayer) {
         for (i = 0; i < 0x55; i++)
             stock[i].amount = 0;
@@ -738,7 +725,7 @@ void gm_SyncMarket(unsigned p)
         }
         for (i = 0; i < 0x55; i++) {
             rec = stock[i];
-            g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
+            g = &gm_StockBlocks[p].goods[i];
             o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
             if (o != 0) {
                 o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
@@ -830,7 +817,7 @@ void gm_RefreshGoodsLists(unsigned p)
     ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ai_MarketBuilding == 0)
         return;
-    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
+    stock = gm_StockBlocks[p].goods;
     if (p != ai_OwnPlayer)
         return;
     for (i = 0; i < 0x55; i++)
@@ -891,7 +878,7 @@ void gm_RandomMarketShake(int unused)
     if (util_Random(2) != 0) {
         for (n = util_Random(2); n > 0; n--) {
             k = util_Random(0x54);
-            g = (GMSTOCK *)(init_StockBlocks + ai_OwnPlayer * 0x2a90) + k;
+            g = &gm_StockBlocks[ai_OwnPlayer].goods[k];
             if (g->item != 0 && g->amount != 0) {
                 rec = *g;
                 if (util_Random(1) != 0) {
@@ -1093,15 +1080,15 @@ float gm_StockPrice(int p, int n)
 float gm_GoodsValue(int p, unsigned id)
 {
     int i;
-    unsigned short *q;
+    GMSTOCK *q;
 
     i = 0;
-    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
+    q = gm_StockBlocks[p].goods;
     do {
-        if (*q == id)
+        if (q->item == id)
             return gm_StockPrice(p, i);
         i++;
-        q += 0x40;
+        q++;
     } while (i < 0x55);
     return -1.0f;
 }
@@ -1110,15 +1097,15 @@ float gm_GoodsValue(int p, unsigned id)
 char *gm_FindGoods(int p, unsigned id)
 {
     int i;
-    unsigned short *q;
+    GMSTOCK *q;
 
     i = 0;
-    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
+    q = gm_StockBlocks[p].goods;
     do {
-        if (*q == id)
-            return init_StockBlocks + i * 0x80 + p * 0x2a90;
+        if (q->item == id)
+            return (char *)&gm_StockBlocks[p].goods[i];
         i++;
-        q += 0x40;
+        q++;
     } while (i < 0x55);
     return 0;
 }
@@ -3126,7 +3113,7 @@ unsigned short *gm_AllocRaum(unsigned char *b, unsigned n)
         }
     }
     if ((o->type >= 0x92 && o->type <= 0x97) || o->type == 0x2db) {
-        s = (GMSTOCK *)(init_StockBlocks + ai_OwnPlayer * 0x2a90);
+        s = gm_StockBlocks[ai_OwnPlayer].goods;
         g = (ORDOBJ *)gm_Query((void *)o->list, 1, 0, 0x116);
         if (g != 0) {
             g->cap[0] = 0xc;
@@ -6243,15 +6230,15 @@ float gm_ItemPrice(int item, unsigned char n)
 float gm_GoodsPrice(unsigned id, unsigned char p)
 {
     int i;
-    unsigned short *r;
+    GMSTOCK *r;
 
     i = 0;
-    r = (unsigned short *)(init_StockBlocks + p * 0x2a90);
+    r = gm_StockBlocks[p].goods;
     do {
-        if (*r == id)
-            return ((GMSTOCK *)(init_StockBlocks + p * 0x2a90 + i * 0x80))->price;
+        if (r->item == id)
+            return gm_StockBlocks[p].goods[i].price;
         i++;
-        r += 0x40;
+        r++;
     } while (i < 0x55);
     return gm_ItemPrice(id, 100);
 }
