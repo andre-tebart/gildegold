@@ -1900,7 +1900,6 @@ void ai_LayoutMarketGoodsList(int view, int part, int pointer, int bld)
                 d2_SetPointerItem(ai_ProdGoods2[k].good + 0xdf, d2_GetObjValue(ai_ProdGoods2[k].check));
     }
 }
-#define d2_CreateWinTextS ((int (*)(short, short, char *, int))d2_CreateWinText)  /* @original ai_ShowProdSlot passes 16-bit x / y (mov ax, word ptr / add ax, 0x40; push eax) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);  /* 0x46a960 (d2.h) */
 int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.h) */
 
@@ -1953,7 +1952,7 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
                                       : gm_GoodsPrice(slot->good, ai_OwnPlayer) * bld->priceFactor),
                             ai_OwnPlayer, text);
             if (slot->priceText == -1)
-                slot->priceText = d2_CreateWinTextS(slot->x + 0x10, slot->y + 0x40, text, d2_LastWindow);
+                slot->priceText = d2_CreateWinText(slot->x + 0x10, slot->y + 0x40, text, d2_LastWindow);
             else
                 d2_SetObjText(slot->priceText, text);
             d2_Objs[slot->priceText].w = 0x2d;
@@ -1965,7 +1964,7 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
                                                     : gm_GoodsPrice(slot->good, ai_OwnPlayer) * 0.9),
                             ai_OwnPlayer, text);
             if (slot->buyPriceText == -1)
-                slot->buyPriceText = d2_CreateWinTextS(slot->x + 0x10, slot->y + 0x49, text, d2_LastWindow);
+                slot->buyPriceText = d2_CreateWinText(slot->x + 0x10, slot->y + 0x49, text, d2_LastWindow);
             else
                 d2_SetObjText(slot->buyPriceText, text);
             d2_Objs[slot->buyPriceText].w = 0x2d;
@@ -2970,7 +2969,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
 
 int ai_RunAllows();
 int d2_SetForm(int view, int n); int d2_GetViewWin(); int io_PrintText(char *fmt, ...);
-int d2_WinOpenPic(short x, short y, int pic, int win); void d2_SetObjFont(); void d2_SetObjText();  /* d2_CreateWinText: d2.h's prototype; ai_ShowProdSlot's 16-bit calls go through d2_CreateWinTextS */
+int d2_WinOpenPic(short x, short y, int pic, int win); void d2_SetObjFont(); void d2_SetObjText();
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 void txt_Format(char *out, int id0, ...);
 int gm_CharCurrency(char *c, char p); int gm_BuildingClass(int kind); int gm_MayTakeJob(int k, int c);
@@ -8735,10 +8734,10 @@ void ai_ExchangeWindow(AIBLD *bank)
     d2_SetForm(win, 0);
     sv_OpenWindowFrame(d2_LastWindow, 0x73b, 0x73f);
     d2_SetForm(win, 0);
-    bankText = d2_CreateWinTextS(d2_Objs[bankUp].x - d2_LastWindowPtr->x + 2,
+    bankText = d2_CreateWinText(d2_Objs[bankUp].x - d2_LastWindowPtr->x + 2,
                                  d2_Objs[bankUp].h - d2_LastWindowPtr->y + d2_Objs[bankUp].y + 2, ch_EmptyName,
                                  d2_LastWindow);
-    ownText = d2_CreateWinTextS(d2_Objs[ownUp].x - d2_LastWindowPtr->x + 2,
+    ownText = d2_CreateWinText(d2_Objs[ownUp].x - d2_LastWindowPtr->x + 2,
                                 d2_Objs[ownUp].h - d2_LastWindowPtr->y + d2_Objs[ownUp].y + 2, ch_EmptyName,
                                 d2_LastWindow);
     d2_Objs[bankText].font = 0x54;
@@ -9096,10 +9095,10 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
     bankDown = d2_GetWinObj(win, 0, 0);
     d2_GetWinObj(win, 0, 4);
     d2_SetForm(win, 0);
-    bankText = d2_CreateWinTextS(d2_Objs[bankUp].x - d2_LastWindowPtr->x + 2,
+    bankText = d2_CreateWinText(d2_Objs[bankUp].x - d2_LastWindowPtr->x + 2,
                                  d2_Objs[bankUp].h - d2_LastWindowPtr->y + d2_Objs[bankUp].y + 2, ch_EmptyName,
                                  d2_LastWindow);
-    playerText = d2_CreateWinTextS(d2_Objs[playerUp].x - d2_LastWindowPtr->x + 2,
+    playerText = d2_CreateWinText(d2_Objs[playerUp].x - d2_LastWindowPtr->x + 2,
                                    d2_Objs[playerUp].h - d2_LastWindowPtr->y + d2_Objs[playerUp].y + 2, ch_EmptyName,
                                    d2_LastWindow);
     d2_Objs[bankText].font = 0x54;
