@@ -28,7 +28,6 @@ extern D2WIN d2_Wins[];
 #include "ch.h"
 #include "err.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 struct AITIME;
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */
@@ -112,7 +111,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
         rec = (unsigned char *)tmp;
         strcpy(CH_NAME(rec), txt_PseudoCharName);
     }
-    if ((char *)rec == ai_PlayerCharC) {
+    if ((char *)rec == (char *)ai_PlayerChar) {
         strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
         if (c == 2)
             strcat(out, "'s");
@@ -289,7 +288,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
         rec = (unsigned char *)tmp;
         strcpy(CH_NAME(rec), txt_PseudoCharName);
     }
-    if ((char *)rec == ai_PlayerCharC) {
+    if ((char *)rec == (char *)ai_PlayerChar) {
         strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
         if (c == 2)
             strcat(out, "s");

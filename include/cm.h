@@ -164,7 +164,7 @@ extern int cm_NetFlags;                /* 0x6f2594, flags */
 extern unsigned cm_LoadSize;           /* 0xa68d28, size of the load buffer */
 extern char *cm_LoadBuf;              /* 0xf31140, the load buffer ("cm_LoadBuf") */
 extern unsigned cm_LoadReceived;           /* 0xf81220, bytes in it */
-extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
+extern struct AICHAR *ai_PlayerChar;    /* 0x6f1bf8, the player's character */
 
 int cm_MessageSize(G17MSG *m);                                                     /* 0x4c3180 */
 void ai_InitStates(void);                                                         /* 0x4c3480 */

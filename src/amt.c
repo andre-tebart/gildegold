@@ -33,7 +33,6 @@ extern int gm_PlayerRecords[688];
 #include "err.h"
 #include "d3_pose.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #pragma pack(push, 1)
 typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
     union {
@@ -1837,7 +1836,7 @@ void amt_ElectDeputies(void)
     it = gm_BuildQuery(1, 5, 4);
     while (it != 0 && n < 16) {
         id = ((AMTBLDVIEW *)it)->owner;
-        if (id != 0xffff && id != *ai_PlayerChar && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
+        if (id != 0xffff && id != ai_PlayerChar->id && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
             total++;
             ch = (char *)&ai_Chars[id];
             k = ((AMTCHARVIEW *)ch)->rank;
@@ -1857,7 +1856,7 @@ void amt_ElectDeputies(void)
     it = gm_BuildQuery(1, 5, 0x10);
     while (it != 0 && n < 16) {
         id = ((AMTBLDVIEW *)it)->owner;
-        if (id != 0xffff && id != *ai_PlayerChar && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
+        if (id != 0xffff && id != ai_PlayerChar->id && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
             total++;
             ch = (char *)&ai_Chars[id];
             k = ((AMTCHARVIEW *)ch)->rank;
@@ -2123,11 +2122,11 @@ void amt_CalcZuenfte(unsigned int kind)
             strupr(gb + 2);
             sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, gb);
             m.type = 0xd;
-            m.to = amt_PlayerAiChar->netId;
+            m.to = ai_PlayerChar->netId;
             m.fromId = -1;
             m.time = ai_Time;
             m.flags = 2;
-            m.arg[0] = amt_PlayerAiChar->netId;
+            m.arg[0] = ai_PlayerChar->netId;
             m.arg[1] = bld;
             m.arg[2] = 0;
             m.buildPos[0] = pos.x;

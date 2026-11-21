@@ -34,8 +34,6 @@
 #include "d3_types.h"                 /* D3COLOR, for d3_tools.h */
 #include "d3_tools.h"
 #include "data_views.h"
-#define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
@@ -760,7 +758,7 @@ void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
             if (h.recs[i].mode == 1) {
                 msg.type = 0x4f;
                 if (hit->owner == 0xffff)
-                    msg.to = gv_PlayerAiChar->netId;
+                    msg.to = ai_PlayerChar->netId;
                 else
                     msg.to = ai_Chars[hit->owner].netId;
                 msg.fromId = hit->id;

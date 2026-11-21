@@ -519,7 +519,6 @@ int he_RegisterEventTypeA2();
 #include "rmsg.h"
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
-#define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
                                            +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
@@ -1411,7 +1410,7 @@ void he_RunIncomeEvent(AIJOB *ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (bld->owner != 0xffff && &ai_Chars[bld->owner] != he_PlayerCh)
+    if (bld->owner != 0xffff && &ai_Chars[bld->owner] != ai_PlayerChar)
         owner = &ai_Chars[bld->owner];
     switch (ev->stage) {
     case 0:
@@ -2138,7 +2137,7 @@ void he_RunTrade(AIJOB *ev)
     chr = 0;
     if (ev->stage == -2) {
         ev->stage = 0;
-        he_SetEventChar(ev, he_PlayerCh->id);
+        he_SetEventChar(ev, ai_PlayerChar->id);
     }
     if (t->moveSlot != -1) {
         if (cm_GetSlotState(t->moveSlot) == 0) {
@@ -2772,7 +2771,7 @@ void he_RunConstruction(int ev)
             break;
         if (!(e->opts & 2))
             break;
-        if (c->payer != he_PlayerCh->netId) {
+        if (c->payer != ai_PlayerChar->netId) {
             ch = (AICHAR *)gm_FindChar(c->payer);
             if (ch == 0) {
                 e->exSlot = cm_SendExSetHE(-1, ev);
@@ -5591,7 +5590,7 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
             hi = 1 << ((unsigned char)bt->kind - 0x20);
         else
             lo = 1 << (unsigned char)bt->kind;
-        if (rec->owner == 0xffff || rec->owner == *ai_PlayerChar)
+        if (rec->owner == 0xffff || rec->owner == ai_PlayerChar->id)
             continue;
         if (rec->object == 0)
             continue;

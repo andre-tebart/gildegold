@@ -216,7 +216,6 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "gfx.h"
 #include "cm.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
 
 void sv_UpdateFramesPerTick(void)
@@ -3489,7 +3488,7 @@ void sv_RefreshBanners(void)
     while (o != 0) {
         if (o->owner != 0xffff)
             c = &ai_Chars[o->owner];
-        if (c != 0 && (char *)c != ai_PlayerCharC && ((t = c->kind) == 6 || t == 7 || t == 5) && (o->flags5a & 1) == 0) {
+        if (c != 0 && (char *)c != (char *)ai_PlayerChar && ((t = c->kind) == 6 || t == 7 || t == 5) && (o->flags5a & 1) == 0) {
             sv_RemoveBanners((char *)o);
             sv_CreateBanners((char *)o);
         }
@@ -3541,7 +3540,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
     d2_SetForm(sv_PanelForm, 0);
     sv_PanelBldPic = d2_WinOpenPic((d2_Wins[d2_LastWindow].w - 0x30) >> 1, 0x48, b->type + 0x427, d2_LastWindow);
     ((D2OBJ *)d2_Objs)[sv_PanelBldPic].interactive = 1;
-    if (b->owner != 0xffff && b->owner != *ai_PlayerChar)
+    if (b->owner != 0xffff && b->owner != ai_PlayerChar->id)
         ((D2OBJ *)d2_Objs)[sv_PanelBldPic].user = &ai_Chars[b->owner];
     if (b->type == 0x47 || b->type == 0x1d || b->type == 0x57)
         sv_PanelHealthBar = -1;

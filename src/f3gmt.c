@@ -146,8 +146,6 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 void *ai_ProdSetting(void *bld);    /* 0x5a8560 */
 extern struct D2COLKEY d2_TransparentColour;  /* 0x6f0454, shp.c (the type in shp.h) */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: unk_LoadIconNames stores the key byte by byte (mov byte [0x6f0455], 0xff; [0x6f0454] and [0x6f0456] = bl), not through the D2COLKEY word gb */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-#define GM_PLAYERCH (*(ORDCHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar as the character record it points to */
 
 /* dcp unit split: the declarations of f3gm before the moved functions */
 struct AMTKIND; int amt_GetKind(int k, struct AMTKIND *out);                   /* 0x4e6f80 */
@@ -2967,7 +2965,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own)
             cnt--;
         } while (cnt != 0);
         ch = &ORD_CHARS[own];
-        if ((char *)ch != ai_PlayerCharC && bd->object != 0 && ((t = ch->kind) == 6 || t == 7 || t == 5)) {
+        if ((char *)ch != (char *)ai_PlayerChar && bd->object != 0 && ((t = ch->kind) == 6 || t == 7 || t == 5)) {
             scn = d3_CurrentScene;
             d3if_SelectScene(0, 1);
             sv_RemoveBanners(b);
@@ -5250,7 +5248,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
     for (j = 0; j < 0x100; j++) {
         bl = &((ORDBLD *)ai_Blds)[j];
         if (bl->type != 0 && gm_BuildingClass(bl->type) == 2 && bl->owner == ca->id)
-            gm_AssignBuilding((unsigned char *)bl, *ai_PlayerChar, *ai_PlayerChar);
+            gm_AssignBuilding((unsigned char *)bl, ai_PlayerChar->id, ai_PlayerChar->id);
     }
     sa = ca->id;
     worth = gm_GetWorth(sa);
@@ -5371,21 +5369,21 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
     taken = 0;
     if (gv_FindHeldEntry(dead, (unsigned char **)&s, (int *)&e) != 0) {
         gv_OrderBury((int *)dead, (char *)s, e->size, gv_EntryIndex((char *)s->block65, (int *)e));
-        if (heir != 0 && heir != GM_PLAYERCH && e->id == dead->netId)
+        if (heir != 0 && heir != ai_PlayerChar && e->id == dead->netId)
             gv_OrderSetGraveHolder((int *)heir, (char *)s, e->size, gv_EntryIndex((char *)s->block65, (int *)e));
     }
     s = (ORDBLD *)gm_BuildQuery(1, 4, dead->id);
     while (s != 0) {
         k = gm_BuildingClass(s->type);
         if (k == 2)
-            cm_SendOwnership(s->id, GM_PLAYERCH->netId, GM_PLAYERCH->netId);
+            cm_SendOwnership(s->id, ai_PlayerChar->netId, ai_PlayerChar->netId);
         else {
             cm_SendOwnership(s->id, heir->netId, heir->netId);
             taken = 1;
         }
-        if (heir == GM_PLAYERCH && k != 2 && (s->flags5a & 1) == 0) {
+        if (heir == ai_PlayerChar && k != 2 && (s->flags5a & 1) == 0) {
             m.type = 0x1b;
-            m.to = GM_PLAYERCH->netId;
+            m.to = ai_PlayerChar->netId;
             m.fromId = -1;
             m.flags = 2;
             m.arg0 = s->id;
@@ -5396,7 +5394,7 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
                 if (c->bld == s && c->netId != dead->netId) {
                     memset(&m, 0, sizeof(m));
                     m.type = 0x31;
-                    m.to = GM_PLAYERCH->netId;
+                    m.to = ai_PlayerChar->netId;
                     m.fromId = s->id;
                     m.flags = 1;
                     m.time = ai_Time;
@@ -5408,7 +5406,7 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
         blds[n++] = s;
         s = (ORDBLD *)gm_BuildNext();
     }
-    if (heir != GM_PLAYERCH) {
+    if (heir != ai_PlayerChar) {
         int kind;               /* the kind a heir with a building gets */
 
         k = gm_CharSumAmounts((char *)dead);
@@ -5422,7 +5420,7 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
         cm_SendFieldDeltas();
     }
     if (heir->kind != 6 && heir->kind != 7) {
-        if ((dead->kind == 6 || dead->kind == 7 || dead->kind == 5) && heir == GM_PLAYERCH) {
+        if ((dead->kind == 6 || dead->kind == 7 || dead->kind == 5) && heir == ai_PlayerChar) {
             for (i = 0; i < 0x300; i++) {
                 c = &ORD_CHARS[i];
                 if ((c->kind == 6 || c->kind == 7) && c->netId != dead->netId) {
@@ -5508,7 +5506,7 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
     own = c->bld2;
     n = 0;
     bestv = 0;
-    pl = GM_PLAYERCH;
+    pl = ai_PlayerChar;
     b = (ORDBLD *)gm_BuildQuery(1, 3, c->id);
     while (b != 0) {
         h = 0;
@@ -5542,7 +5540,7 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
 
             cm_SendOwnership(h->id, pl->netId, pl->netId);
             m.type = 0x1b;
-            m.to = GM_PLAYERCH->netId;
+            m.to = ai_PlayerChar->netId;
             m.fromId = -1;
             m.flags = 2;
             m.arg0 = h->id;
@@ -5553,7 +5551,7 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
                 if (t->bld == h && t->netId != c->netId) {
                     memset(&m, 0, sizeof(m));
                     m.type = 0x31;
-                    m.to = GM_PLAYERCH->netId;
+                    m.to = ai_PlayerChar->netId;
                     m.fromId = h->id;
                     m.flags = 1;
                     m.time = ai_Time;
@@ -8619,7 +8617,7 @@ char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend int
 int gm_QueryUnreadBss = 0;  /* 0x6f1bec, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 ORDBLD *gm_BQCursor = 0;  /* 0x6f1bf0, the current building of the query */
 ORDOBJ *gm_QueryCursor = 0;  /* 0x6f1bf4, the current record */
-unsigned short * ai_PlayerChar = 0;  /* 0x6f1bf8 */
+AICHAR *ai_PlayerChar = 0;  /* 0x6f1bf8, the player's character */
 unsigned short gm_KindObjCount;  /* 0x76fdc4, common: tentative as in the original (the common block past LIBC's
                                     .bss; gm_BuildKindObjects keeps it in a word register only when VC6 does not
                                     know its place) */

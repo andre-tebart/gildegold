@@ -4361,7 +4361,7 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
         ownerOk = bld->owner != me->id && bld->owner != 0xffff;
         break;
     case 7:
-        ownerOk = bld->owner != me->id && bld->owner != *ai_PlayerChar && bld->owner != 0xffff;
+        ownerOk = bld->owner != me->id && bld->owner != ai_PlayerChar->id && bld->owner != 0xffff;
         break;
     }
     if ((cfg->option14 & 1) && bld->owner != 0xffff) {
@@ -4438,7 +4438,7 @@ int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
         ownerOk = bld->owner != me->id && bld->owner != 0xffff;
         break;
     case 7:
-        ownerOk = bld->owner != me->id && bld->owner != *ai_PlayerChar && bld->owner != 0xffff;
+        ownerOk = bld->owner != me->id && bld->owner != ai_PlayerChar->id && bld->owner != 0xffff;
         break;
     }
     if ((cfg->option14 & 1) && bld->owner != 0xffff) {

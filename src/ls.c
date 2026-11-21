@@ -15,7 +15,6 @@ struct D3TERRAIN;
 #include "txt.h"
 #include "data_views.h"
 #include "ls.h"
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
@@ -149,7 +148,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     vfs_fwrite(&ai_NextEventId, 4, 1, f);
     vfs_fwrite(&ai_Time, 0xe, 1, f);
     vfs_fwrite(&ai_OwnPlayer, 1, 1, f);
-    vfs_fwrite(ai_PlayerCharC + 4, 4, 1, f);
+    vfs_fwrite(&ai_PlayerChar->netId, 4, 1, f);
     vfs_fwrite(&ai_NextCharNumber, 4, 1, f);
     vfs_fwrite(&ai_NextPlayerNumber, 4, 1, f);
     vfs_fwrite(&ai_CharCount, 4, 1, f);
@@ -1251,13 +1250,13 @@ int ls_LoadGame(int name, int kind)
         return 0;
     gm_ResetCharacters();
     ch_DeleteAll();
-    ai_PlayerCharC = 0;
+    ai_PlayerChar = 0;
     ai_JudgeCatholic = 0;
     ai_JudgeProtestant = 0;
     init_FreeScenes();
     if (ls_ReadSaveHeader(h, (int *)&ls_LoadedHeader) == 0 || ls_LoadedHeader.version > 0x1005a || ls_LoadedHeader.version < 0x10026
         || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(&ai_Time, 0xe)
-        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
+        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerChar, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         goto close;
     if (ls_Version >= 0x10022)
@@ -2418,8 +2417,8 @@ int ls_FixupAfterLoad(void)
     AIOBJ *o, *last;
     AIJOB *j;
 
-    ai_PlayerCharC = (char *)gm_FindChar((int)ai_PlayerCharC);
-    if (ai_PlayerCharC == 0)
+    ai_PlayerChar = (AICHAR *)gm_FindChar((int)ai_PlayerChar);
+    if (ai_PlayerChar == 0)
         return 0;
     ai_MarketBuilding = (AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ls_Version >= 0x10017) {
@@ -2610,12 +2609,12 @@ int ls_ReceiveGame(void)
         cm_LoadBuf = 0;
         return 0;
     }
-    ai_PlayerCharC = 0;
+    ai_PlayerChar = 0;
     ls_ReadSaveHeader(h, (int *)&hdr);
     if ((hdr.flags & 2) == 0 || hdr.version > 0x1005a)
         LS_LOADFAIL
     if (!LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(&ai_Time, 0xe)
-        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
+        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerChar, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         LS_LOADFAIL
     ai_TimeCopyT = ai_Time;

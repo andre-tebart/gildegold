@@ -334,7 +334,7 @@ void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 int cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern struct AIBLD *ai_Blds;           /* 0x889f74, 256 records of 0xa9 bytes */
-extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
+extern struct AICHAR *ai_PlayerChar;    /* 0x6f1bf8, the player's character */
 extern const struct D3VECTOR4 d3_Origin;     /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern const struct D3VECTOR d3_ZeroRot;      /* 0x5ebbb4, (0, 0, 0), d3_vec.c */
 

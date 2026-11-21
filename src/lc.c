@@ -3566,7 +3566,7 @@ void ai_TechTreeWindow(int bld, int room)
                             ok = 0;
                             factor = (float)(ai_Difficulty * 0.25 + 0.5);
                             cost = (int)((int)gm_ItemPrice(i, 100) * factor);
-                            if (b->owner != *ai_PlayerChar) {
+                            if (b->owner != ai_PlayerChar->id) {
                                 if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0)
                                     ok = 1;
                                 txt_Format(text, 0x1a, cost, bld, i * 2 + 0x9a8);
@@ -3580,7 +3580,7 @@ void ai_TechTreeWindow(int bld, int room)
                                 goto redraw;
                             ai_CampaignStep(0x2b, bld, 0, i);
                             cm_BeginGroup("upgrade");
-                            if (b->owner != *ai_PlayerChar) {
+                            if (b->owner != ai_PlayerChar->id) {
                                 cm_SendMoveGoods(-1, ai_CharInts[b->owner][0], ai_OwnPlayer, cost);
                                 prec = (int *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
                                 if (prec != 0)

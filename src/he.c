@@ -8,7 +8,7 @@
    the running income 3, the production, searches, trade, construction and the 0x88 .. 0xa4 events below are its.
    (no @bytes: the block after he_TransportStadtStadt's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    The event record is AIJOB (0x14c bytes, he_Jobs over he_Events), the message record AIMSG (both in ai_types.h,
-   readable without ai.h); the buildings and characters are AIBLD / AICHAR (ai_bld.h / ai_char.h, he_PlayerCh), the
+   readable without ai.h); the buildings and characters are AIBLD / AICHAR (ai_bld.h / ai_char.h, ai_PlayerChar), the
    carts AIOBJ (ai_types.h), the carried-goods records GMCARRYREC (f3gm_carry.h), the goods prototypes GMGOOD
    (f3gm_types.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the event create / free / search, the
    gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
@@ -603,7 +603,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
-#define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
                                            +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
@@ -2345,7 +2344,7 @@ void he_PostEvent2b(void)
             m.type = 0x2b;
             m.time = ai_Time;
             m.flags = 2;
-            m.to = he_PlayerCh->netId;
+            m.to = ai_PlayerChar->netId;
             m.fromId = b->id;
             m.tavern.mode = 0;
             cm_SendLongMessage((char *)&m);
@@ -2360,7 +2359,7 @@ void he_PostPlayerEvents86a2(void)
     if (he_FindEvent(1, 0, 0x86) == 0) {
         memset(&m, 0, sizeof(m));
         m.type = 0x86;
-        m.to = he_PlayerCh->netId;
+        m.to = ai_PlayerChar->netId;
         m.fromId = -1;
         m.flags = 2;
         m.time = ai_Time;
@@ -2369,7 +2368,7 @@ void he_PostPlayerEvents86a2(void)
     if (he_FindEvent(1, 0, 0xa2) == 0) {
         memset(&m, 0, sizeof(m));
         m.type = 0xa2;
-        m.to = he_PlayerCh->netId;
+        m.to = ai_PlayerChar->netId;
         m.fromId = -1;
         m.flags = 2;
         m.time = ai_Time;
@@ -2500,7 +2499,7 @@ void he_TopUpCharMoney(void)
     for (i = 0, b = ai_Blds; i < 0x100; i++, b++) { \
         if (b->type != 0) { \
             bt = &ai_BTypes[b->type]; \
-            if (bt->kind == (k) && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) \
+            if (bt->kind == (k) && (b->owner == 0xffff || b->owner == ai_PlayerChar->id)) \
                 break; \
         } \
     }
@@ -2585,7 +2584,7 @@ void he_SpawnFounders(void)
             bt = &ai_BTypes[b->type];
             if (bt->kind < 0x21) {
                 cnt[bt->kind]++;
-                if (b->owner == 0xffff || b->owner == *ai_PlayerChar)
+                if (b->owner == 0xffff || b->owner == ai_PlayerChar->id)
                     own[bt->kind]++;
                 else if (bt->kind == 7) {
                     if (ai_Chars[b->owner].b00c == 0)
@@ -2873,7 +2872,7 @@ void he_SpawnFounders(void)
                 for (i = 0, b = ai_Blds; i < 0x100; i++, b++) {
                     if (b->type != 0) {
                         bt = &ai_BTypes[b->type];
-                        if (bt->kind == 7 && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) {
+                        if (bt->kind == 7 && (b->owner == 0xffff || b->owner == ai_PlayerChar->id)) {
                             HE_OFFER_FOUND(7);
                             break;
                         }
@@ -2995,11 +2994,11 @@ void he_PostEvent67(void)
         b = (AIBLD *)gm_BuildQuery(1, 0, 0x1e);
         c = (AIBLD *)gm_BuildQuery(1, 0, 0x1f);
         n = 0;
-        if (a != 0 && a->owner == *ai_PlayerChar)
+        if (a != 0 && a->owner == ai_PlayerChar->id)
             cand[n++] = a;
-        if (b != 0 && b->owner == *ai_PlayerChar)
+        if (b != 0 && b->owner == ai_PlayerChar->id)
             cand[n++] = b;
-        if (c != 0 && c->owner == *ai_PlayerChar)
+        if (c != 0 && c->owner == ai_PlayerChar->id)
             cand[n++] = c;
         if (n != 0) {
             pick = util_Random(n);
@@ -3008,7 +3007,7 @@ void he_PostEvent67(void)
             amt = (int)((f->earnings + f->daySum) * (((5 - dec.cur) * 0.1f + 0.7f) * 0.5f));
             m.type = 0x67;
             m.time = ai_Time;
-            m.to = he_PlayerCh->netId;
+            m.to = ai_PlayerChar->netId;
             m.fromId = f->id;
             m.arg[0] = f->id;
             m.arg[1] = f->daySum + amt;
@@ -3110,7 +3109,7 @@ void he_PostEvent73(void)
     if (r != 0)
         he_FreeEvent((int *)r);
     m.type = 0x73;
-    m.to = he_PlayerCh->netId;
+    m.to = ai_PlayerChar->netId;
     m.fromId = -1;
     m.flags = 1;
     m.time = ai_Time;
@@ -3529,7 +3528,7 @@ void he_RunStammtisch(int r)
         cm_SendExSetHE(-1, r);
         return;
     }
-    if (bld->owner != 0xffff && (boss = &ai_Chars[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
+    if (bld->owner != 0xffff && (boss = &ai_Chars[bld->owner]) != 0 && boss != ai_PlayerChar && boss->health != 0
         && boss->kind != 0xf) {
         if (m->state == 1) {
             he_StammtischCommand('new ', bld, table, -1);
@@ -5963,7 +5962,7 @@ void he_RunMasterExamFee(int ev)
         }
         if (d2_ClickedForm == e->slot->win && d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
-                cm_SendMoveGoods(he_PlayerCh->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, (int)(gm_GetWorth(e->chr) * 0.03f));
+                cm_SendMoveGoods(ai_PlayerChar->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, (int)(gm_GetWorth(e->chr) * 0.03f));
                 gm_ChangeRelationToJobs(e->chr, 8);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
@@ -6038,7 +6037,7 @@ void he_RunMasterExamPay(int ev)
             if (d2_ClickedId == 0) {
                 memset(&m, 0, sizeof(m));
                 fee = ((HEEXAMPAY *)e)->fee;
-                cm_SendMoveGoodsUnchecked(he_PlayerCh->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, fee);
+                cm_SendMoveGoodsUnchecked(ai_PlayerChar->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, fee);
                 m.type = 0x56;
                 m.fromId = -1;
                 m.to = ai_CharInts[e->chr][0];
@@ -11254,7 +11253,7 @@ void he_RunSale(int ev)
 
             D3_ZERO(&msg, sizeof(msg));
             msg.type = 0x2a;
-            msg.to = he_PlayerCh->netId;
+            msg.to = ai_PlayerChar->netId;
             msg.fromId = b->id;
             msg.arg[0] = b->id;
             msg.flags = 2;
@@ -12302,7 +12301,7 @@ void he_RunTransport(int ev)
         gm_AddTime(&e->end, 0, 0xf, 0);
         return;
     case -2:
-        he_SetEventChar(ev, *ai_PlayerChar);
+        he_SetEventChar(ev, ai_PlayerChar->id);
         if (t->at == guards->id)
             e->exSlot = cm_SendExSetHE(1, ev);
         else if (t->at == to->id)
@@ -16084,7 +16083,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         break;
     case -2:
     case -1:
-        he_SetEventChar((int)ev, *ai_PlayerChar);
+        he_SetEventChar((int)ev, ai_PlayerChar->id);
         ev->stage = 0;
         return;
     default:
@@ -16093,7 +16092,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
 
 
     if (gm_CharCurrency((char *)ai_PlayerChar, ai_OwnPlayer) < HE_SUPERVISOR_MONEY)
-        cm_SendMoveGoods(he_PlayerCh->netId, -1, ai_OwnPlayer, HE_SUPERVISOR_MONEY);
+        cm_SendMoveGoods(ai_PlayerChar->netId, -1, ai_OwnPlayer, HE_SUPERVISOR_MONEY);
 
     for (i = 0; i < 0x55; i++) {
 

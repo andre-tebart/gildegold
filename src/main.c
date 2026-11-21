@@ -3892,7 +3892,7 @@ void main_UpdateFigures(void)
 void ord_InitMessageRecord(int a, float b, float c, float d);
 int sv_MessageBox();
 
-#define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
+#define MAIN_ME ai_PlayerChar  /* the player's character (ai_PlayerChar: unsigned short *) */
 
 /* A character as main_SettleRound copies it: the four work-setting fields (AICHAR.flags1b4 .. +0x1c3) are one
    AIWORKSET there. The member cannot be declared in ai_char.h: any new member moves tie-break-sensitive

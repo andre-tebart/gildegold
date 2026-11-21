@@ -18,8 +18,6 @@
 #include "d3_types.h"                 /* D3COLOR, for d3_tools.h */
 #include "d3_tools.h"
 #include "data_views.h"
-#define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
@@ -687,7 +685,7 @@ int gv_BuryCharacter(int *p)
     char ch;
 
     gm_FindById((int *)&bld, 0, 0, p[2]);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -772,7 +770,7 @@ int gv_ReserveGrave(GVORDER *m)
     int i;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -839,7 +837,7 @@ int gv_ExtendGrave(GVORDER *m)
     GVENTRY *e;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -901,7 +899,7 @@ int gv_SetGraveHolder(GVORDER *m)
     id = -1;
     key = 0xffff;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -955,7 +953,7 @@ int gv_OpenSize(GVORDER *m)
     GVYARD *g;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1019,7 +1017,7 @@ int gv_AdjustEntry(GVORDER *m)
     int v;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1063,7 +1061,7 @@ int gv_AddNewDead(unsigned char *p)
     int n;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || (char *)&ai_Chars[bld->owner] == ai_PlayerCharC)
+    if (bld == 0 || bld->owner == 0xffff || (char *)&ai_Chars[bld->owner] == (char *)ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1111,7 +1109,7 @@ int gv_MoveGrave(GVMOVE *m)
     if (c == 0)
         return -6;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1173,7 +1171,7 @@ int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
     GVRAISE m;
 
     owner = ((AIBLD *)o)->owner;
-    if (owner != 0xffff && owner != *ai_PlayerChar && entry != -1) {
+    if (owner != 0xffff && owner != ai_PlayerChar->id && entry != -1) {
         m.bld = ((AIBLD *)o)->id;
         m.size = size;
         m.entry = (unsigned char)entry;
@@ -1205,7 +1203,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
     if (m->kind != 0x1b && m->kind != 0x1c)
         return (unsigned)-6;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == ai_PlayerChar)
         return (unsigned)-1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return (unsigned)-2;
@@ -1350,7 +1348,7 @@ int gv_DecayRaisedDead(AICHAR *c)
 
     if (c != 0 && c->kind == 0x14 && c->health != 0) {
         bld = c->bld;
-        if (bld == 0 || bld->owner == 0xffff || bld->owner == *ai_PlayerChar) {
+        if (bld == 0 || bld->owner == 0xffff || bld->owner == ai_PlayerChar->id) {
             cm_SendFloatDelta(c->netId, 0x1c, -1000.0f);
         } else {
             loss = c->f014 - gv_PreserveRate((char *)bld) * 50.0f;
@@ -1599,7 +1597,7 @@ void gv_GraveyardTurn(char *o)
     paid = 0;
     sum = 0;
     h = -1;
-    if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
+    if (bld->owner != 0xffff && bld->owner != ai_PlayerChar->id)
         pl = &ai_Chars[bld->owner];
     e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
     while (e != 0) {
@@ -1697,7 +1695,7 @@ GVENTRY *gv_FindWornEntry(AIBLD *bld, unsigned char m)
     GVENTRY *e;
 
     best = 0;
-    if (bld->owner != 0xffff && bld->owner != gv_PlayerAiChar->id
+    if (bld->owner != 0xffff && bld->owner != ai_PlayerChar->id
         && gm_Query(bld->objList, 2, 4, 0x1f8, 6) != 0) {
         for (e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff); e != 0;
              e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, (int *)e, gv_EntryIsUsed, 0xff)) {

@@ -167,7 +167,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
 #define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
@@ -2666,7 +2665,7 @@ int cm_CheckTableRequest(G17MSG *m)
         k = b->owner;
         if (k != 0xffff) {
             c = &ai_Chars[k];
-            if (c != 0 && c != (AICHAR *)ai_PlayerChar && c->health != 0 && c->kind != 0xf)
+            if (c != 0 && c != ai_PlayerChar && c->health != 0 && c->kind != 0xf)
                 return 1;
         }
         return gm_Query((void *)b->objList, 2, 6, 0, 0x12d) == 0;
@@ -5948,7 +5947,7 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
             return 1;
         if (b->owner != 0xffff) {
             ch = &ai_Chars[b->owner];
-            if (ch != 0 && (char *)ch != ai_PlayerCharC && ch->health != 0 && ch->kind != 0xf)
+            if (ch != 0 && (char *)ch != (char *)ai_PlayerChar && ch->health != 0 && ch->kind != 0xf)
                 return 1;
         }
         q = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x12d);

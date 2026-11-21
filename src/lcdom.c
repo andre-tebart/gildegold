@@ -6460,7 +6460,7 @@ void ai_RenovationWindow(AIBLD *bld)
                     points = missing;
                     cost = costAll;
                 }
-                if (bld->owner == *ai_PlayerChar) {
+                if (bld->owner == ai_PlayerChar->id) {
                     treasury = (AIROOM *)gm_ClassTreasury(bld);
                     if (treasury == 0 || sv_CheckStock((short *)treasury, treasury->list, cost, ai_OwnPlayer) == 0)
                         continue;

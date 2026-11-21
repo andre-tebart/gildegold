@@ -235,7 +235,6 @@ typedef struct INIT_TERRAIN {
 #include "data_views.h"
 #include "d3_snd.h"
 #include "sblib.h"
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 /* the object list of init_LoadSiteScene (0x510770): the count, the objects by name and the name substring the
    d3_ForEachObject callback init_CollectSiteObject keeps (a D3OBJECT's name is at its +0x00) */
@@ -1843,7 +1842,7 @@ void init_OpenTown(void)
             cm_AddFieldDelta(4, 1, 0x69, &v);
             cm_SendFieldDeltas();
             cl = INIT_BTYPE(b);
-            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
+            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerChar)->netId, ((INIT_CHAR *)ai_PlayerChar)->netId);
             cm_SendMessage3d(b, 1, INIT_BTYPE(b)[0x230], cl[0x223]);
             cm_SendMessage3d(b, 0, INIT_BTYPE(b)[0x22f], 0);
             cm_SendMessage3d(b, 0, INIT_BTYPE(b)[0x22f], 0);
@@ -1961,7 +1960,7 @@ void init_OpenTown(void)
                 init_Betrieb((INIT_BLD *)b);
             }
         } else if (cls[*cl] == 0 && o == 0xffff) {
-            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
+            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerChar)->netId, ((INIT_CHAR *)ai_PlayerChar)->netId);
         }
     }
     cm_EndSendGroup();
@@ -1978,12 +1977,12 @@ void init_OpenTown(void)
             INIT_AIMSG m2;
 
             m2.type = 0x1b;
-            m2.to = ((INIT_CHAR *)ai_PlayerCharC)->netId;
+            m2.to = ((INIT_CHAR *)ai_PlayerChar)->netId;
             m2.fromId = -1;
             m2.flags = 2;
             m2.arg[0] = ((INIT_BLD *)b)->id;
             m2.arg[1] = gm_EquipmentValue((unsigned char *)b, (char)((INIT_BLD *)b)->level);
-            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
+            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerChar)->netId, ((INIT_CHAR *)ai_PlayerChar)->netId);
             cm_SendLongMessage((char *)&m2);
         }
         b = (char *)gm_BuildNext();
@@ -2174,9 +2173,9 @@ int init_InitTown(char *city)
     }
     cm_BeginSendGroup();
     ch = (INIT_CHAR *)cm_GetSlotValue(bank);
-    ai_PlayerCharC = (char *)ch;
+    ai_PlayerChar = (AICHAR *)ch;
     strcpy(ch->name, "STADT");
-    cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerCharC)->netId, -1, ai_OwnPlayer, 200000000);
+    cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerChar)->netId, -1, ai_OwnPlayer, 200000000);
     i = cm_SendGroupState();
     while (i == 0) {
         cm_FlushSendQueue();
@@ -2189,7 +2188,7 @@ int init_InitTown(char *city)
     p = init_SlotCurrency;
     do {
         if (*p != 0)
-            cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerCharC)->netId, -1, i, 200000000);
+            cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerChar)->netId, -1, i, 200000000);
         p += 0x17a;
         i++;
     } while ((int)p < (int)INIT_SLOT_CURRENCY_END);
@@ -2204,7 +2203,7 @@ int init_InitTown(char *city)
     }
     h = gm_BuildQuery(1, 5, 0x1c);
     while (h != 0) {
-        gm_AssignBuilding(h, ((INIT_CHAR *)ai_PlayerCharC)->id, ((INIT_CHAR *)ai_PlayerCharC)->id);
+        gm_AssignBuilding(h, ((INIT_CHAR *)ai_PlayerChar)->id, ((INIT_CHAR *)ai_PlayerChar)->id);
         h = gm_BuildNext();
     }
     gm_UpdatePlayers();

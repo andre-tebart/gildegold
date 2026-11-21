@@ -1038,7 +1038,7 @@ int ai_CommandFest(int a, int b, char *fmt)
     if (atoi(fmt + 1) > 0) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x53;
-        msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+        msg.to = ai_PlayerChar->netId;
         msg.fromId = -1;
         msg.flags = 1;
         msg.thiefClass = 0;     /* @original a byte store at 0x58 (the field's name is the thief message's) */
@@ -1082,7 +1082,7 @@ int ai_CommandUprising(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 1;
@@ -1109,7 +1109,7 @@ int ai_CommandFire(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x4e;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.fromId = -1;
     msg.car = -1;
     msg.flags = 1;
@@ -1128,7 +1128,7 @@ int ai_CommandTornado(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x50;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.fromId = -1;
     msg.car = -1;
     msg.flags = 2;
@@ -1591,7 +1591,7 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
     m = max(min(m, n / 3), 1);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x81;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.ch = rel;
     msg.fromId = -1;
     msg.flags = 2;
@@ -1612,7 +1612,7 @@ int ai_CommandRiot(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 0;
@@ -1652,7 +1652,7 @@ int ai_CommandBreakGuildSeats(int a, int b, char *fmt)
     atoi(fmt + 1);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x80;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.fromId = -1;
     msg.flags = 2;
     msg.car = 4;
@@ -1830,7 +1830,7 @@ int ai_CommandRemoteTradeRaider(int a, int b, char *fmt)
     if (n > 0) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x51;
-        msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+        msg.to = ai_PlayerChar->netId;
         msg.fromId = -1;
         msg.flags = 0x12;
         ((unsigned char *)&msg.arg[0])[0] = (unsigned char)n;
@@ -1942,7 +1942,7 @@ int ai_CommandComments(void)
             hst_KeyNext = pos + 6;
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x52;
-            msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+            msg.to = ai_PlayerChar->netId;
             msg.car = pos - hst_KeyFirst;
             msg.fromId = -1;
             msg.flags = 0x12;
@@ -1971,7 +1971,7 @@ int ai_CommandPlague(int a, int b, char *fmt)
     n = max(min(10, n), 1);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x59;
-    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
+    msg.to = ai_PlayerChar->netId;
     msg.car = n;
     msg.fromId = -1;
     msg.flags = 2;
