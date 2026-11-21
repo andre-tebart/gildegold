@@ -7440,7 +7440,7 @@ void ai_DarkCornerTable(AIBLD *bld, AIOBJ *room)
 int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
 struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
 int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); void d2_EnableViewObjects();
-#define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
+int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: one push, no player slot */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 void ai_BardWindow(void); void ai_NoticeBoardWindow(void);
@@ -7917,7 +7917,7 @@ void ai_WineCellarWindow(void)
 
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\weinkeller");
     own = gm_GetGoodsValue(ai_Chars[ai_PlayerId]);
-    cellar = gm_SumListAmountsL((void *)((AIROOM *)sv_PanelShown)->list);
+    cellar = gm_SumListMoney((void *)((AIROOM *)sv_PanelShown)->list);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
@@ -9031,7 +9031,6 @@ int ai_MoneyMessengerWindow(AIBLD *bank, int good, int amount, unsigned char pla
 }
 
 int gm_SumListAmounts(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
-#define gm_SumListAmounts1 ((int (*)(void *))gm_SumListAmounts)  /* @original ai_MoneyExchangeWindow pushes only the list (the player byte is unused) */
 int gm_BuildingClass(); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);
 void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
@@ -9113,7 +9112,7 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
     sv_ButtonRow(d2_LastWindow, 0, buttons, 2, txt_Ptrs[0x1906], txt_Ptrs[0x3fd6]);
     feesButton = buttons[0];
     exchangeButton = buttons[1];
-    if (gm_SumListAmounts1((void *)bank->objList) <= 0) {
+    if (gm_SumListMoney((void *)bank->objList) <= 0) {
         d2_SetForm(win, 5);
         io_PrintText(0x190a, bank);
     }

@@ -6937,6 +6937,23 @@ int gm_SumListAmounts(void *list, unsigned char p)
     }
     return s;
 }
+
+/* unlinked: gm_SumListAmounts without the player it does not read; LINK folds it (/OPT:ICF) into gm_SumListAmounts,
+   0x509e30 (the same code), where the original's one-push calls of he_AllocTheft, ai_WineCellarWindow and
+   ai_MoneyExchangeWindow point (add esp, 4) */
+int gm_SumListMoney(void *list)
+{
+    int s;
+    ORDOBJ *o;
+
+    s = 0;
+    o = (ORDOBJ *)gm_Query(list, 1, 4, 9);
+    while (o) {
+        s += o->count;
+        o = (ORDOBJ *)gm_QueryNext();
+    }
+    return s;
+}
 /* 0x509e60, the amount of the character c's objects of the prototype word of the player 0x6f1bc5 */
 
 int gm_GetGoodsValue(char *c)

@@ -82,7 +82,7 @@
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with:
    ai_PlagueMessageK (two arguments),
-   ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC,
+   ai_DomizilMessageK (four), util_RandomU, rt_UnloadAtPointC,
    ai_PickActionBuildingI, gm_NearestBuildingK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
@@ -608,7 +608,7 @@ int he_RegisterEventTypeA2();
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
-#define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30 with the list alone: @original he_AllocTheft pushes only the list (add esp, 4), as lc.c / sv.c call it */
+int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
 #define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders and he_AllocTransport read the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
@@ -14088,7 +14088,7 @@ void he_AllocTheft(AIJOB *e)
         }
     }
     if (bt->kind == 5 && master != 0 && master->kind != 6 && master->kind != 7
-        && (n = gm_SumListAmountsL((void *)b->objList)) != 0)
+        && (n = gm_SumListMoney((void *)b->objList)) != 0)
         cm_SendMoveGoods(master->netId, b->id, ai_OwnPlayer, n);
     e->exSlot = -1;
 }

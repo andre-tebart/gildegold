@@ -6069,6 +6069,18 @@ the bytes no portable form gives.
   d3snd_*I: 40 casts, every function unchanged). Where one API's int handles reach many units (the voice
   banks of snd_PlayVoice / snd_QueueVoice), a data cast at the hand-over inside the owner beats a function
   cast.
+- **A parameter the body never reads, pushed by some callers and not by others (gm_SumListAmounts' player
+  byte: am / aip push 2, he / lc push 1)**: varargs would promote the byte at the 2-push sites (movzx), so
+  the one-push callers call an unlinked twin with the same body and one parameter (`/* unlinked: .. LINK folds
+  it (/OPT:ICF) into gm_SumListAmounts, 0x509e30 */ int gm_SumListMoney(void *list)`); the calls stay byte.
+  Keep `folds it (/OPT:ICF) into NAME, 0xADDR` on one line of the comment.
+- **A cast macro whose type is the callee's own prototype** (gm_TitleJobI, gm_CharLevelS, gm_AddHealthS,
+  d2_CreateWinTextS, d3_AttachAnimF: left from an older header): drop it; scratchpad same.py lists them.
+- **A function that returns its send slot (cm_QueueSend's eax) declared void**: `int f(..) { ..; return
+  cm_QueueSend(&m); }` is the same code (cm_SendCartRoute, cm_SendMakeGoods, cm_SendSpawnCharacter).
+- **Calls that push a promoted int (movsx) to a short parameter in the same unit as the definition, above it**
+  (d2_CenterObj -> d2_MoveObj): the original unit had no prototype in scope at that call; the short definition
+  is right (int params 20 -> 37 ins). No portable form: d2_MoveObjI stays @original (d2.c, gfx.c).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
