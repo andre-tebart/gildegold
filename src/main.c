@@ -3138,7 +3138,9 @@ void main_RundenBeginn(void)
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
-#define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, @original why: main_RoundReport pushes ai_PlayerId to gm_CharacterIncomes (unsigned id) as an unmasked dword load; Open: likely this unit saw an unsigned short parameter (header drift: a unit-local prototype instead of this view, with f3gm.h's out of view) */
+int gm_CharacterIncomes(unsigned short id, GMINCOME *out, unsigned char flags);  /* 0x4fa4b0, @original why: f3gm.c
+   defines `unsigned id` (it masks the id itself); main_RoundReport pushes ai_PlayerId as an unmasked dword (byte-matched), the
+   code of a call through an unsigned short parameter (an unsigned / int one gives movzx); no header declares it */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
 #define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_Chars[ai_PlayerId].netId; (m).time = ai_Time; } while (0)
@@ -3698,7 +3700,7 @@ void main_RoundReport(void)
             income += t;
         }
         /* the character's other incomes */
-        if (gm_CharacterIncomes(main_PlayerIdInt, &inc, 0) != 0) {
+        if (gm_CharacterIncomes(ai_PlayerId, &inc, 0) != 0) {
             i = 0;
             do {
                 if (inc.kind[i] == 0)
