@@ -161,7 +161,6 @@ typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of
     D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
     int x, y;                       /* 0x08, the target cell */
 } CMGRENADE;
-#define cm_GrenadesT (*(CMGRENADE (*)[32])&cm_Grenades)  /* 0x935a00, cm_Grenades (char[512]) as the 32 records */
 typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs */
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */
@@ -6961,7 +6960,6 @@ extern CMPORTRAIT cm_Portraits[6];
 extern G18POP cm_DamagePops[16];
 extern char cm_Fighters[21376];
 extern struct D3OBJECT *cm_FlagObjects[32];
-extern char cm_Grenades[512];
 extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
 extern G18LOG cm_LobbyChat[15];

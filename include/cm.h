@@ -563,7 +563,6 @@ struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d
 unsigned int cm_Random(unsigned int n);  /* 0x4e52f0, a random number below n */
 extern int cm_FightAttacker;  /* 0x6f0cec */
 extern struct SBBANK *cm_BombSounds;  /* 0x6f0d14 */
-extern char cm_Grenades[];  /* 0x935a00 */
 
 int cm_UpdateGrenades();  /* 0x4ce830 */
 int cm_ObjectOwner(char *c);  /* 0x4ceb70 */

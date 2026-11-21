@@ -138,7 +138,6 @@ typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of
     D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
     int x, y;                       /* 0x08, the target cell */
 } CMGRENADE;
-#define cm_GrenadesT (*(CMGRENADE (*)[32])&cm_Grenades)  /* 0x935a00, cm_Grenades (char[512]) as the 32 records */
 typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs */
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */

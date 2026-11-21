@@ -138,7 +138,6 @@ typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of
     D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
     int x, y;                       /* 0x08, the target cell */
 } CMGRENADE;
-#define cm_GrenadesT (*(CMGRENADE (*)[32])&cm_Grenades)  /* 0x935a00, cm_Grenades (char[512]) as the 32 records */
 typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs */
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */
@@ -180,7 +179,7 @@ CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
 G18POP cm_DamagePops[16];  /* 0x9304c0 */
 char cm_Fighters[21376];  /* 0x930600 */
 struct D3OBJECT *cm_FlagObjects[32];  /* 0x935980 */
-char cm_Grenades[512];  /* 0x935a00 */
+CMGRENADE cm_Grenades[32];  /* 0x935a00, the thrown bombs */
 int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 float cm_FightCellScale;  /* 0x935d00 */
 int cm_CharInfoWins[32];  /* 0x935d20 */
@@ -663,13 +662,13 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
     rot.z = 0;
     g = (struct D3SM *)d3_DefaultScene->hmap;
     for (i = 0; i < 32; i++) {
-        if (cm_GrenadesT[i].obj != 0)
+        if (cm_Grenades[i].obj != 0)
             continue;
         pos.x = p->x;
         pos.y = p->y + 60.0;
         pos.z = p->z;
-        cm_GrenadesT[i].obj = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ob_BOMBE");
-        cm_GrenadesT[i].obj->objectFlags |= 4;
+        cm_Grenades[i].obj = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ob_BOMBE");
+        cm_Grenades[i].obj->objectFlags |= 4;
         d3sm_GetVertex(g, x, y, (D3VECTOR *)&d);
         d.x -= p->x;
         d.y -= p->y;
@@ -705,10 +704,10 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
         keys[0].time = 0x12;
         keys[1].time = 0x12;
         keys[2].time = 1;
-        cm_GrenadesT[i].anim = d3anim_CreatePath(cm_GrenadesT[i].obj, af, 4, keys);
-        cm_GrenadesT[i].x = x;
-        cm_GrenadesT[i].y = y;
-        return &cm_GrenadesT[i];
+        cm_Grenades[i].anim = d3anim_CreatePath(cm_Grenades[i].obj, af, 4, keys);
+        cm_Grenades[i].x = x;
+        cm_Grenades[i].y = y;
+        return &cm_Grenades[i];
     }
     return 0;
 }
@@ -735,7 +734,7 @@ int cm_UpdateGrenades()
     cnt = 0;
     w = (AIWEAPON *)ai_FindWeaponRecord(0x176);
     for (i = 0; i < 32; i++) {
-        rec = &cm_GrenadesT[i];
+        rec = &cm_Grenades[i];
         if (rec->obj == 0)
             continue;
         cnt++;
@@ -761,8 +760,8 @@ int cm_UpdateGrenades()
         d3t_CreateExplosion(0, (D3VECTOR *)&a, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
         /* @original the cell index reads x through the table and y through rec: written this way VC6 keeps the
            index as one value for both arrays */
-        if (((D3FLMAP *)d3_Terrain)->types[cm_GrenadesT[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] != 0) {
-            ((D3FLMAP *)d3_Terrain)->height[cm_GrenadesT[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] -= 5;
+        if (((D3FLMAP *)d3_Terrain)->types[cm_Grenades[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] != 0) {
+            ((D3FLMAP *)d3_Terrain)->height[cm_Grenades[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] -= 5;
             ((D3FLMAP *)d3_Terrain)->types[rec->x + rec->y * ((D3FLMAP *)d3_Terrain)->size] = 0;
             d3fl_MakeDivide((D3FLMAP *)d3_Terrain);
             d3fl_MakeLight((D3FLMAP *)d3_Terrain);
@@ -2005,7 +2004,7 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     }
     memset(&cm_FightersT[32], 0, 0x1000);
     memset(cm_Bombs, 0, sizeof(cm_Bombs));
-    memset(cm_Grenades, 0, 0x200);
+    memset(cm_Grenades, 0, sizeof(cm_Grenades));
     memset(cm_Fighters, 0, 32 * sizeof(AICHAR));
     for (i = 0; i < 32; i++)
         cm_FightersT[i].id = 0xffff;
