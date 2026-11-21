@@ -34,8 +34,6 @@ void gm_ClockToDate(struct AITIME *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c:
 int gm_Season(char *d);                 /* 0x4fe330, f3gm.c: the season of a calendar record */
 
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern int __mb_cur_max;                /* 0x62e3a0, the CRT multibyte state (MB_CUR_MAX of ctype.h) */
-extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table (the 0x100 entry values) */
 /* 0x5142e0, the display name of the town called name (the player's town, "General"/"Stadt" of the game INI): the first text of the town's "_STADTAUSWAHL_<NAME>_INFO" group of the text table (txt_FindKey finds its number), else the given name itself; copied to out. Returns 1. */
 int io_TownDisplayName(char *name, char *out)
 {

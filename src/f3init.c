@@ -386,14 +386,11 @@ extern INIT_ANIMSET init_ClassAnims[19];
 extern int ai_MapSize;
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
-extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
-extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
 #include "menu_types.h"
 #include "ch.h"
 #include "f3gm.h"
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
-int _isctype(int c, int mask);
 extern int init_StatusForm;
 /* 0x75e5a0, the player profile of the character creation: main_ChoosePlayer reads it from game.INI ([Network]
    Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_CreateStartCouple

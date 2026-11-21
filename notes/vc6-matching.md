@@ -6001,6 +6001,9 @@ the bytes no portable form gives.
   see "Varargs, inline, intrinsics, asm").
 - **`test byte [f+0xc],0x10` on a FILE**: `feof(f)` (VC6's stdio.h macro `(f)->_flag & _IOEOF`), `ferror(f)` for
   0x20; never `f->_flag & 0x10` (unk_LoadIconNames, main_PreloadSound byte).
+- **CRT objects and functions (`_pctype`, `__mb_cur_max`, `_isctype`, `errno` ..)**: never redeclare them in a
+  unit; include the header (`<ctype.h>`) and use its macros (`isdigit`, `isspace`, `MB_CUR_MAX`). The
+  redeclarations in f3init.c / io_text.c changed nothing when removed (another CRT declares them otherwise).
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.
