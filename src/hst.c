@@ -2012,7 +2012,6 @@ int ai_CommandInventoryPlus(G12ARG *args, int k, char *fmt)
 int hst_TextFirst = -1;  /* 0x601058, first text of the history file */
 int hst_TextLast = -1;  /* 0x60105c, last text of the history file */
 int hst_TextCurrent = -1;  /* 0x601060, the current text */
-extern char ai_PlayerSlots[4][0x2f4];
 unsigned char hst_TextsOn = 0;  /* 0x6f0724, history texts on */
 
 /* 0x4b1d20, resets the lists hst_Lists and opens the player's history texts "historie\text_H_<name>"
@@ -2031,7 +2030,7 @@ void hst_LoadPlayerTexts(void)
     }
     hst_TextFirst = -1;
     hst_TextLast = -1;
-    sprintf(path, "historie\\text_H_%s", ai_PlayerSlots[ai_OwnPlayer]);
+    sprintf(path, "historie\\text_H_%s", ai_PlayerSlots[ai_OwnPlayer].name);
     if (txt_Files[txt_FindFile(path)].buf == 0 && !txt_ReloadTextFile(path)) {
         hst_TextsOn = 0;
         return;
@@ -2059,7 +2058,7 @@ void hst_ResetPlayerTexts(void)
             hst_Lists[i].e[j].v = 0xffff;
         }
     }
-    sprintf(path, "historie\\text_H_%s", ai_PlayerSlots[ai_OwnPlayer]);
+    sprintf(path, "historie\\text_H_%s", ai_PlayerSlots[ai_OwnPlayer].name);
     txt_FreeFile(path);
     hst_TextFirst = -1;
     hst_TextLast = -1;
@@ -2652,13 +2651,13 @@ int hst_ParseDate(int k, int mode, int *year, char *name)
     } else if (mode & 2) {
         switch (known) {
         case 0:
-            txt_Format(name, (int)"%s, %i %s %i", ai_PlayerSlots[ai_OwnPlayer] + 0x20, date.day, date.month + 0x4f, date.year);
+            txt_Format(name, (int)"%s, %i %s %i", ai_PlayerSlots[ai_OwnPlayer].townName, date.day, date.month + 0x4f, date.year);
             break;
         case 1:
-            txt_Format(name, (int)"%s, %s %i", ai_PlayerSlots[ai_OwnPlayer] + 0x20, date.month + 0x4f, date.year);
+            txt_Format(name, (int)"%s, %s %i", ai_PlayerSlots[ai_OwnPlayer].townName, date.month + 0x4f, date.year);
             break;
         case 2:
-            txt_Format(name, (int)"%s, %i", ai_PlayerSlots[ai_OwnPlayer] + 0x20, date.year);
+            txt_Format(name, (int)"%s, %i", ai_PlayerSlots[ai_OwnPlayer].townName, date.year);
             break;
         }
     }
@@ -2878,7 +2877,6 @@ void hst_YearlyHistory(int cmd)
     }
 }
 
-extern char ai_PlayerSlots[4][0x2f4];
 char hst_Key[0x20];  /* 0xf83520, the key to look for */
 G12ROW hst_Lists[4];  /* 0xf83540 */
 int hst_SeedPending;  /* 0xf83650 */

@@ -277,7 +277,6 @@ extern struct AIBLD *ai_MarketBuilding;
 extern int ai_PermsDirty;
 extern char * sv_SelectedObject;
 
-extern char ai_PlayerSlots[4][0x2f4];
 
 
 
@@ -310,7 +309,6 @@ extern struct D2OBJ *d2_Objs;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -322,7 +320,6 @@ extern int d2_ClickedId;
 
 extern int d2_ClickedId;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -351,7 +348,6 @@ extern int d2_LastWindow;
 
 extern unsigned char kb_Last;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -493,7 +489,6 @@ extern int d2_ClickedId;
 
 extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char cm_EventNames[115][0x20];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -579,7 +574,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
 extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
-extern char ai_PlayerSlots[4][0x2f4];
 extern struct D2SURF *rt_MapSurface;
 extern char ch_EmptyName[1];
 extern int ai_SabotageCallback();
@@ -633,7 +627,6 @@ extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern GAPDATA full_data_5fe7d0[];
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -7567,9 +7560,9 @@ void ai_CityInfoWindow(AIBLD *city, int unused)
             d2_SetForm(win, 1);
             io_PrintText(0x1a11);
             d2_SetForm(win, 5);
-            io_PrintText(0x1a14, ai_PlayerSlots[city->playerSlot], gm_StockBlocks[city->playerSlot].demandIndex);
+            io_PrintText(0x1a14, ai_PlayerSlots[city->playerSlot].name, gm_StockBlocks[city->playerSlot].demandIndex);
             bg = &d2_Wins[d2_Views[win].wins[2]];
-            sprintf(text, "Wappen128_ns_Stadt_%s", ai_PlayerSlots[city->playerSlot]);
+            sprintf(text, "Wappen128_ns_Stadt_%s", ai_PlayerSlots[city->playerSlot].name);
             d2_SetBackgroundTexture(text, bg->id);
             bg->alpha = 0;
             start = d3_Time;
@@ -7662,16 +7655,16 @@ void ai_MapTableScreen(void)
     objs[2] = 0;
     objs[3] = 0;
     for (i = 0; i < 3; i++) {
-        objs[i] = ai_CreateCityPoint(ai_PlayerSlots[i + 1]);
-        sprintf(objs[i]->name, "stadt_%s", ai_PlayerSlots[i + 1]);
-        sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1], 0);
+        objs[i] = ai_CreateCityPoint(ai_PlayerSlots[i + 1].name);
+        sprintf(objs[i]->name, "stadt_%s", ai_PlayerSlots[i + 1].name);
+        sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1].name, 0);
     }
     d2_SetPointerSprite(0, 0);
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_MapTableScreen, 0x677d7) != 0) {
         ai_ClickedObject = 0;
         for (i = 0; i < 3; i++)
-            sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1], 0);
+            sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1].name, 0);
         r = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x60, 1);
         ai_PickedObject = (char *)r;
         if (dm_L.lup == 0 || r == 0) {
@@ -7808,7 +7801,7 @@ void ai_MarketStandListener(AIBLD *market)
     sv_RegisterNamePlate("ob_MARKTSTAND_OKKULT", (char *)txt_ObjectNames[0x2db][0], 0x10);
     sv_RegisterNamePlate("ob_SCHWARZES_BRETT", (char *)txt_ObjectNames[0x98][0], 0x10);
     sv_RegisterNamePlate("ob_TRIBUENE", txt_Tribune, 0x10);
-    if (strcmp(ai_PlayerSlots[ai_OwnPlayer], "Nuernberg") == 0) {
+    if (strcmp(ai_PlayerSlots[ai_OwnPlayer].name, "Nuernberg") == 0) {
         fleck1 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_01", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
         fleck2 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_02", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
         fleck3 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_03", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
@@ -8097,7 +8090,7 @@ void ai_CreditListWindow(AIBLD *bank)
     d2_Wins[d2_LastWindow].padr = 0x18;
     d2_Wins[d2_LastWindow].padb = 0x18;
     d2_SetForm(win, 1);
-    io_PrintText(0x18c9, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
+    io_PrintText(0x18c9, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
     d2_SetPointerSprite(0, 0);
     while (sv_RunFrame(ai_CreditListWindow, 0x677c7) != 0) {
         if (rebuild) {
@@ -8284,7 +8277,7 @@ void ai_CreditReleaseWindow(AIBLD *bank)
     io_PrintText(0x18e5);
     stock = gm_SumSlotAmounts((void *)bank->objList, ai_OwnPlayer);
     d2_SetForm(win, 2);
-    text = io_PrintText(0x18e6, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
+    text = io_PrintText(0x18e6, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
     interestCtl = d2_GetWinObj(win, 2, text);
     moneyCtl = d2_GetWinObj(win, 2, text + 1);
     d2_SetObjValue(interestCtl, 5, 0x28, bank->interest);
@@ -8399,7 +8392,7 @@ void ai_CreditGiverWindow(AIBLD *bank)
                 }
             }
             d2_SetForm(win, 2);
-            io_PrintText(0x18de, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
+            io_PrintText(0x18de, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
             if (count == 0)
                 io_PrintText(0x48d);
             gm_SortCharsByName(count, borrowers, 0);
@@ -8453,7 +8446,7 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
     }
     for (i = 0; i < n; i++) {
         for (j = i + 1; j < n; j++) {
-            own = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood;
+            own = ai_PlayerSlots[ai_OwnPlayer].moneyGood;
             if (rows[i].good == own)
                 strcpy(nameA, "AAAAAAAAA");
             else if (rows[i].good == 0)
@@ -8605,7 +8598,7 @@ void ai_ShowExchangeRows(LCEXCHROW *rows, int view, int form, int input)
         d2_Objs[rows[i].text].w = 0xbe;
         rows[i].name = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x3f, ch_EmptyName,
                                         d2_LastWindow);
-        txt_Format(text, "%s", ((GMPLAYERSLOT *)ai_PlayerSlots)[rows[i].player].name);
+        txt_Format(text, "%s", ai_PlayerSlots[rows[i].player].name);
         d2_SetObjText(rows[i].name, text);
         d2_SetObjFont(rows[i].name, 0x54);
         d2_Objs[rows[i].name].centred = 1;
@@ -8709,7 +8702,7 @@ void ai_ExchangeWindow(AIBLD *bank)
     d2_SetForm(win, 1);
     io_PrintText(0x18f5);
     d2_SetForm(win, 2);
-    io_PrintText(0x18f6, bank->messengerFee, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8,
+    io_PrintText(0x18f6, bank->messengerFee, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8,
                  bank->exchangeFee);
     d2_CopyCaption(txt_Ptrs[0x18f7]);
     d2_SetPointerSprite(0, 0);
@@ -8961,7 +8954,7 @@ int ai_MoneyMessengerWindow(AIBLD *bank, int good, int amount, unsigned char pla
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_WechselGeldbote");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1909, amount, good * 2 + 0x9a8, ((GMPLAYERSLOT *)ai_PlayerSlots)[player].name, player);
+    io_PrintText(0x1909, amount, good * 2 + 0x9a8, ai_PlayerSlots[player].name, player);
     while (sv_RunFrame(ai_MoneyMessengerWindow, 0x677c7) != 0) {
         if (dm_L.rup != 0 || d2_ClickedId == 1)
             sv_PopRequest = 1;
@@ -9037,8 +9030,8 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
         playerRows[i].good = 0;
     }
     for (i = 0; i < 4; i++) {
-        if (((GMPLAYERSLOT *)ai_PlayerSlots)[i].name[0] != 0) {
-            playerRows[i].good = ((GMPLAYERSLOT *)ai_PlayerSlots)[i].moneyGood;
+        if (ai_PlayerSlots[i].name[0] != 0) {
+            playerRows[i].good = ai_PlayerSlots[i].moneyGood;
             playerRows[i].player = i;
         }
     }
@@ -9089,7 +9082,7 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
         if (payment == 0)
             io_PrintText(0x1903);
         else
-            io_PrintText(0x1901, ((GMPLAYERSLOT *)ai_PlayerSlots)[payment->payer].name);
+            io_PrintText(0x1901, ai_PlayerSlots[payment->payer].name);
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         d2_ClearPointerItems();
@@ -10212,7 +10205,7 @@ void ai_CitizenRightWindow(AIBLD *b)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x19fe, me->id, 16000, &ai_PlayerSlots[ai_OwnPlayer][0x20]);
+    io_PrintText(0x19fe, me->id, 16000, ai_PlayerSlots[ai_OwnPlayer].townName);
     d2_ClickedId = -1;
     do {
         if (dm_L.rup != 0)
@@ -10563,7 +10556,7 @@ void ai_GuildCashPayWindow(AIBLD *bld)
     d2_SetForm(win, 1);
     io_PrintText(0x1a1a, amount);
     if (master) {
-        text = io_PrintText(0x1a1b, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
+        text = io_PrintText(0x1a1b, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
         ai_AmountLimit(0x640, worth, 0x20, &amount);
         d2_SetObjValue(d2_GetWinObj(win, 1, text), gm_ConvertMoney(0x640, ai_OwnPlayer),
                        gm_ConvertMoney(amount, ai_OwnPlayer), gm_ConvertMoney(0x640, ai_OwnPlayer));
@@ -11068,11 +11061,11 @@ void ai_DonationWindow(AIBLD *bld)
     d2_SetForm(win, 1);
     io_PrintText(0x1986);
     if (!ok) {
-        io_PrintText(0x1987, ai_PlayerId, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
+        io_PrintText(0x1987, ai_PlayerId, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
     } else {
         int amount;
 
-        v = io_PrintText(0x1988, ai_PlayerId, bld->owner, 0x48c, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
+        v = io_PrintText(0x1988, ai_PlayerId, bld->owner, 0x48c, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
         ai_AmountLimit(least, money, 0x20, &amount);
         slider = d2_GetWinObj(win, 1, v);
         d2_SetObjValue(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(amount, ai_OwnPlayer),

@@ -4148,7 +4148,7 @@ void ai_AlchemistCandidates(unsigned char *obj)
         }
     }
     if (n == 0) {
-        txt_Format(msg, 0x404a, ai_PlayerSlots[ai_OwnPlayer]);
+        txt_Format(msg, 0x404a, ai_PlayerSlots[ai_OwnPlayer].name);
         sv_MessageBoxGreen((int)txt_Ptrs[0x4039], (int)msg, 0);
         sv_CameraFollow();
         return;

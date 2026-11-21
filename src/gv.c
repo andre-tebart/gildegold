@@ -17,7 +17,7 @@
    The laws and crimes (gv_Decisions, ai_Crimes, ai_Evidence, the sentences, the rank check) are gs.c's, the
    graveyard grave.c's; this unit keeps their record types (gv.h).
    Open: gv_EvidenceSlot still reads ai_Evidence (cm.c, the int pairs) through raw offsets.
-   Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs).
+   Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (GMPLAYERSLOT).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: gv_CrimeText, gv_PassSentence).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
@@ -35,12 +35,6 @@
 #include "d3_tools.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
-    char pad00[0x54];
-    unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
-    char pad56[0x29e];
-} GVPLAYERREC;
-#define gv_PlayerRecs (*(GVPLAYERREC (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the player records */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "amt_types.h"
@@ -1147,6 +1141,5 @@ char unk_Avatars[0x20][0xf4] = { { 110, 101, 86, 109, 77, 97, 118, 101, 110, 0, 
 AITIME gv_LastTime = {0};  /* 0x6f0e38, the game time ai_Time of the last effect step (gv_UpdateEffects) */
 GVEFFARG gv_EffectArgs[8] = {0};  /* 0x6f0e48, the argument of each effect slot's default callback */
 GVEFFECT gv_Effects[8] = {0};  /* 0x6f1008, 8 slots of */
-/* ai_PlayerCity: view of ai_PlayerSlots (tools/data_views.py) */
 char gm_IncomeHistory[0x154];  /* 0x91b580, the 17-round history of the five income sums (rows of */
 extern GVCANNON gv_Cannon;

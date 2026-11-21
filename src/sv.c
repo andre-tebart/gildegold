@@ -87,8 +87,6 @@ extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 #define sv_D2Objs d2_Objs  /* 0xf8f080, the typed view d2.h gives it (D2OBJ *) */
 
-/* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int sv_ViewShape;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: sv_BuildScreenLayout clears the key byte by byte (mov byte [0x6f0454] / [0x6f0455] / [0x6f0456], bl), not through the D2COLKEY word gb */
@@ -950,7 +948,6 @@ void sv_DestroyScreen(void)
 
 extern struct AIGOOD *ai_Goods;              /* 0x91aaf0 */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 /* 0x479150, with d2.h's prototype (the 9 pushes of 0x522b38 agree: push 1, d2_ScreenSurf, 0x5b, d2_ScreenW - 0x6e, view, h, w, 0, 0) */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
@@ -1146,7 +1143,7 @@ void sv_UpdateGroundplan(unsigned flags)
         sv_GroundplanScene = d3_CurrentScene;
     }
     if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
-        strcpy(name, ai_PlayerSlots[ai_OwnPlayer]);
+        strcpy(name, ai_PlayerSlots[ai_OwnPlayer].name);
         strupr(name);
         sprintf(path, "_STADTWAPPEN_%s", name);
         pic = d2_FindPic(path);
@@ -1400,7 +1397,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             d2_MoveObj(d2_Wins[sv_BarWindow].x + (short)d2_TextDrawnW + 0x23d, 0x18, sv_ButtonCompare);
         if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
             if (sv_ButtonCityStats == -1) {
-                strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].name);
+                strcpy(name, ai_PlayerSlots[ai_OwnPlayer].name);
                 strupr(name);
                 sprintf(arms, "_STADTWAPPEN_%s", name);
                 pic = d2_FindPic(arms);
@@ -1416,7 +1413,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             } else if (sv_ButtonCityStats != -1)
                 d2_Objs[sv_ButtonCityStats].caption[0] = ch_EmptyName[0];
             d2_SetFont(0x56);
-            strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].townName);
+            strcpy(name, ai_PlayerSlots[ai_OwnPlayer].townName);
             d2_DrawTextBox(d2_ScreenW - 0x70, 0x5d, 0x68, 0x14, d2_ScreenSurf, name, 8);
             d2_AddDirty(d2_ScreenW - 0x70, 0x5d, d2_TextDrawnW, d2_TextDrawnH);
         } else if (sv_ButtonCityStats != -1) {
@@ -2176,8 +2173,8 @@ void sv_SetupWeather(struct AITIME *t, int reroll)
 
     gm_ClockToDate(t, date);
     season = sv_ClockSeason(t);
-    sv_CloudChance = ai_SeasonCloudChance[ai_OwnPlayer * 0xbd + season];
-    sv_SeasonClimate = ai_SeasonClimate[ai_OwnPlayer * 0xbd + season];
+    sv_CloudChance = ai_PlayerSlots[ai_OwnPlayer].rainChance[season];
+    sv_SeasonClimate = ai_PlayerSlots[ai_OwnPlayer].snowChance[season];
     if (reroll != 0) {
         if (season == 3) {
             sv_WinterWeather = (util_Random(100) < sv_CloudChance / 2) + 1;
@@ -3534,7 +3531,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
         else
             io_PrintText("$Z%s$A%s", name, b->type * 0xe + 0x48e);
     } else {
-        io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[b->playerSlot]);
+        io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[b->playerSlot].name);
     }
     d2_SetForm(sv_PanelForm, 0);
     sv_PanelBldPic = d2_WinOpenPic((d2_Wins[d2_LastWindow].w - 0x30) >> 1, 0x48, b->type + 0x427, d2_LastWindow);
@@ -3808,7 +3805,7 @@ void sv_RefreshPanel(void)
             else
                 io_PrintText("$Z%s$A%s", text, SV_SELBLD->type * 0xe + 0x48e);
         } else {
-            io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[SV_SELBLD->playerSlot]);
+            io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[SV_SELBLD->playerSlot].name);
         }
         d2_SetObjValue(sv_PanelHealthBar, 0, 100, level);
         fl = SV_SELBLD->flags5aw;

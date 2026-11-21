@@ -164,7 +164,6 @@ extern struct AIBLD *ai_MarketBuilding;
 extern int ai_PermsDirty;
 extern char * sv_SelectedObject;
 
-extern char ai_PlayerSlots[4][0x2f4];
 
 
 
@@ -197,7 +196,6 @@ extern struct D2OBJ *d2_Objs;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -209,7 +207,6 @@ extern int d2_ClickedId;
 
 extern int d2_ClickedId;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -238,7 +235,6 @@ extern int d2_LastWindow;
 
 extern unsigned char kb_Last;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -380,7 +376,6 @@ extern int d2_ClickedId;
 
 extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char cm_EventNames[115][0x20];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -465,7 +460,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
 extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
-extern char ai_PlayerSlots[4][0x2f4];
 extern struct D2SURF *rt_MapSurface;
 extern char ch_EmptyName[1];
 extern int ai_SabotageCallback();
@@ -519,7 +513,6 @@ extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern GAPDATA full_data_5fe7d0[];
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -3516,9 +3509,9 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
     d2_Objs[scrollBar].font = 0x54;
     d2_SetForm(win, 3);
     if (mode == 2)
-        io_PrintText(0xd0, ai_PlayerSlots[b->playerSlot]);
+        io_PrintText(0xd0, ai_PlayerSlots[b->playerSlot].name);
     else if (mode == 4)
-        io_PrintText(0xcf, ai_PlayerSlots[b->playerSlot]);
+        io_PrintText(0xcf, ai_PlayerSlots[b->playerSlot].name);
     else if (sv_PanelShown != 0 && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0)
         io_PrintText(*sv_PanelShown * 2 + 0x9a8);
     else if (canTrade == 0)
@@ -4354,7 +4347,7 @@ void ai_LoadTownMap(void)
     char path[0x104];
     D2SURF *bmp;
 
-    sprintf(path, "%sbmp\\maps\\%s.bmp", d2_GfxDir, ai_PlayerSlots[ai_OwnPlayer]);
+    sprintf(path, "%sbmp\\maps\\%s.bmp", d2_GfxDir, ai_PlayerSlots[ai_OwnPlayer].name);
     bmp = d2_LoadBmpSurface(path);
     if (bmp != 0) {
         D2SURF desc;
@@ -6348,7 +6341,7 @@ void ai_SellBuildingWindow(AIBLD *bld)
     value = gm_EquipmentValue(bld, bld->level);
     value = gm_ConvertMoney(value, ai_OwnPlayer);
     d2_SetForm(win, 2);
-    slider = d2_GetWinObj(win, 2, io_PrintText(0x17c5, bld, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8));
+    slider = d2_GetWinObj(win, 2, io_PrintText(0x17c5, bld, ai_PlayerSlots[ai_OwnPlayer].moneyGood * 2 + 0x9a8));
     d2_SetObjValue(slider, (int)(value * 0.5), (int)(value * 1.5), value);
     d2_SetPointerSprite(0, 0);
     sv_RunFrame(0, 0x677c7);

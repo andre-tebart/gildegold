@@ -110,7 +110,6 @@ extern GAPDATA full_data_602568[];
 #include "poker.h"
 #include "gfx.h"
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
                                        may not set it on a character that has it */
 typedef struct CMCUTTYPEMSG {      /* 0x7c bytes, the data of the system message 0x11 cm_RunSceneParty sends (cm_SendExSysMessage) */
@@ -2902,12 +2901,12 @@ int cm_ExMoveGoods(G17MSG *m, G17STAT *s)
         ai_NextObjectId = m->moveGoods.objectId;
     if (m->moveGoods.to != -1) {
         m->moveGoods.to = cm_ResolveId((int)m, m->moveGoods.to);
-        if (gm_TakeObjekt(m->moveGoods.to, ai_PlayerSlotsT[m->moveGoods.player].moneyGood, m->moveGoods.amount) == 0)
+        if (gm_TakeObjekt(m->moveGoods.to, ai_PlayerSlots[m->moveGoods.player].moneyGood, m->moveGoods.amount) == 0)
             return 1;
     }
     if (m->moveGoods.from != -1) {
         m->moveGoods.from = cm_ResolveId((int)m, m->moveGoods.from);
-        if (gm_AddObjekt(m->moveGoods.from, ai_PlayerSlotsT[m->moveGoods.player].moneyGood, m->moveGoods.amount) == 0)
+        if (gm_AddObjekt(m->moveGoods.from, ai_PlayerSlots[m->moveGoods.player].moneyGood, m->moveGoods.amount) == 0)
             return 1;
     }
     if (s != 0)
@@ -2923,11 +2922,11 @@ int cm_ExMoveGoodsUnchecked(G17MSG *m, G17STAT *s)
         ai_NextObjectId = m->moveGoods.objectId;
     if (m->moveGoods.to != -1) {
         m->moveGoods.to = cm_ResolveId((int)m, m->moveGoods.to);
-        gm_AddNegative(m->moveGoods.to, ai_PlayerSlotsT[m->moveGoods.player].moneyGood, m->moveGoods.amount);
+        gm_AddNegative(m->moveGoods.to, ai_PlayerSlots[m->moveGoods.player].moneyGood, m->moveGoods.amount);
     }
     if (m->moveGoods.from != -1) {
         m->moveGoods.from = cm_ResolveId((int)m, m->moveGoods.from);
-        gm_AddObjekt(m->moveGoods.from, ai_PlayerSlotsT[m->moveGoods.player].moneyGood, m->moveGoods.amount);
+        gm_AddObjekt(m->moveGoods.from, ai_PlayerSlots[m->moveGoods.player].moneyGood, m->moveGoods.amount);
     }
     if (s != 0)
         s->state = 1;
@@ -3097,7 +3096,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
                 return 1;
         }
         if (m->sell.price != 0) {
-            gm_AddObjekt(r1->netId, ai_PlayerSlotsT[m->sell.player].moneyGood, m->sell.count * m->sell.price);
+            gm_AddObjekt(r1->netId, ai_PlayerSlots[m->sell.player].moneyGood, m->sell.count * m->sell.price);
             if (ys != 0 && ys->type == 0x1db)
                 r1->v1a4 += m->sell.count * m->sell.price;
             else if (ys != 0 && ys->type == 0x1dc)
@@ -3129,7 +3128,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
         }
         cm_LastObjectId = o2->objId;
         if (m->sell.price != 0 && r2 != 0) {
-            gm_TakeObjekt(r2->netId, ai_PlayerSlotsT[m->sell.player].moneyGood, m->sell.count * m->sell.price);
+            gm_TakeObjekt(r2->netId, ai_PlayerSlots[m->sell.player].moneyGood, m->sell.count * m->sell.price);
             if (y2 != 0 && y2->type == 0x1db)
                 r2->v1a0 += m->sell.count * m->sell.price;
             else if (y2 != 0 && y2->type == 0x1dc)

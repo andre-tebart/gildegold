@@ -168,7 +168,6 @@ extern struct AIBLD *ai_MarketBuilding;
 extern int ai_PermsDirty;
 extern char * sv_SelectedObject;
 
-extern char ai_PlayerSlots[4][0x2f4];
 
 
 
@@ -201,7 +200,6 @@ extern struct D2OBJ *d2_Objs;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -213,7 +211,6 @@ extern int d2_ClickedId;
 
 extern int d2_ClickedId;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -242,7 +239,6 @@ extern int d2_LastWindow;
 
 extern unsigned char kb_Last;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -384,7 +380,6 @@ extern int d2_ClickedId;
 
 extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char cm_EventNames[115][0x20];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -470,7 +465,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
 extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
-extern char ai_PlayerSlots[4][0x2f4];
 extern struct D2SURF *rt_MapSurface;
 extern char ch_EmptyName[1];
 extern int ai_SabotageCallback();
@@ -524,7 +518,6 @@ extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern GAPDATA full_data_5fe7d0[];
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -1190,8 +1183,8 @@ void ai_BuildTownMap(LCMAPWIN *m)
     int n;
 
     hm = (struct D3SM *)d3_Scenes[0].hmap;
-    originX = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townX;
-    originY = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townY;
+    originX = ai_PlayerSlots[ai_OwnPlayer].townX;
+    originY = ai_PlayerSlots[ai_OwnPlayer].townY;
     for (i = 0; i < 0x100; i++) {
         m->marks[i].ctrl = -1;
         m->marks[i].bld = 0;
@@ -1247,7 +1240,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
         m->marks[i].cellZ = y;
         d2_MoveObj(d2_LastWindowPtr->x + x, d2_LastWindowPtr->y + y, m->marks[i].ctrl);
         if (m->marks[i].bld->type == 'G') {
-            strcpy(d2_Objs[m->marks[i].ctrl].caption, ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name);
+            strcpy(d2_Objs[m->marks[i].ctrl].caption, ai_PlayerSlots[m->marks[i].bld->playerSlot].name);
         } else {
             ai_FormatCityName((int)m->marks[i].bld, d2_Objs[m->marks[i].ctrl].caption);
         }
@@ -1282,7 +1275,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
             d2_Objs[m->marks[i].ctrl].style = 0x43;
             d2_Objs[m->marks[i].ctrl].capfont = 0x56;
             if (m->marks[i].bld->type == 'G') {
-                strcpy(d2_Objs[m->marks[i].ctrl].caption, ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name);
+                strcpy(d2_Objs[m->marks[i].ctrl].caption, ai_PlayerSlots[m->marks[i].bld->playerSlot].name);
             } else {
                 ai_FormatCityName((int)m->marks[i].bld, d2_Objs[m->marks[i].ctrl].caption);
             }
@@ -1569,8 +1562,8 @@ void ai_UpdateTownMap(LCMAPWIN *m)
     unsigned char kind;
 
     hm = (struct D3SM *)d3_Scenes[0].hmap;
-    originX = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townX;
-    originY = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townY;
+    originX = ai_PlayerSlots[ai_OwnPlayer].townX;
+    originY = ai_PlayerSlots[ai_OwnPlayer].townY;
     d2_LastWindow = m->screen;
     d2_LastWindowPtr = &d2_Wins[m->screen];
     win = d2_LastWindowPtr;
@@ -2269,7 +2262,7 @@ void ai_ShowPartingNews(unsigned short *cRec, unsigned short *pRec)
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
         txt_Format(ai_NewsText, 0x132f, c->id, util_Random(3) + (p->sex != 0 ? 0x1333 : 0x1330), p->id,
-                   util_Random(3) + 0x1336, ai_PlayerSlots[ai_OwnPlayer]);
+                   util_Random(3) + 0x1336, ai_PlayerSlots[ai_OwnPlayer].name);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }

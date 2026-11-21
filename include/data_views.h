@@ -15,17 +15,6 @@
 #define ai_Selected              (*(char (*)[132])((char *)&ai_Chars + 0x188))  /* 0x770d08 */
 #define ai_Unk770d8c             (*(char (*)[414196])((char *)&ai_Chars + 0x20c))  /* 0x770d8c */
 
-/* ai_PlayerSlots */
-#define ai_Unk7e3f80             (*(int *)((char *)&ai_PlayerSlots + 0x40))  /* 0x7e3f80 */
-#define ai_Unk7e3f84             (*(int *)((char *)&ai_PlayerSlots + 0x44))  /* 0x7e3f84 */
-#define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
-#define ai_Unk7e3ff8             (*(char (*)[80])((char *)&ai_PlayerSlots + 0xb8))  /* 0x7e3ff8 */
-#define ai_SeasonCloudChance             (*(int (*)[4])((char *)&ai_PlayerSlots + 0x108))  /* 0x7e4048 */
-#define ai_SeasonClimate             (*(int (*)[117])((char *)&ai_PlayerSlots + 0x118))  /* 0x7e4058 */
-#define ai_Unk7e422c             (*(char (*)[72])((char *)&ai_PlayerSlots + 0x2ec))  /* 0x7e422c */
-#define ai_Unk7e4274             (*(AIREC2F4 (*)[3])((char *)&ai_PlayerSlots + 0x334))  /* 0x7e4274 */
-#define init_SlotCurrency        (*(short (*)[0x46e])((char *)&ai_PlayerSlots + 0x348))  /* 0x7e4288 */
-
 /* d2_Wins */
 #define ai_Unkf8f128             (*(char (*)[20])((char *)&d2_Wins + 0x8))  /* 0xf8f128 */
 #define ai_Unkf8f13c             (*(int (*)[1][0xf1])((char *)&d2_Wins + 0x1c))  /* 0xf8f13c */

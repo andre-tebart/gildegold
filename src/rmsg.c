@@ -920,9 +920,9 @@ int ai_MsgCartFillDropType22(G14MSG *m)
     cm_AddFieldDelta(1, 1, 0x12, &v);
     cm_SendFieldDeltas();
     if (w->type == 0x47)
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot].name, ai_PlayerSlots[0].name);
     else
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name, ai_PlayerSlots[u->playerSlot].name);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
@@ -976,9 +976,9 @@ int ai_MsgJobTime(G14MSG *m)
     gm_FindById((int *)&u, 0, 0, j->id3);
     if (w != 0 && u != 0) {
         if (w->type == 0x47)
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0], s);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot].name, ai_PlayerSlots[0].name, s);
         else
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot], s);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name, ai_PlayerSlots[u->playerSlot].name, s);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     }
     return 0;
@@ -1023,10 +1023,10 @@ int ai_MsgJobEndPlayerType24(G14MSG *m)
     gm_FindById((int *)&w, 0, 0, j->id2);
     gm_FindById((int *)&u, 0, 0, j->id3);
     if (w->type == 0x47)
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0], ai_PlayerSlots[0]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot].name, ai_PlayerSlots[0].name, ai_PlayerSlots[0].name);
     else
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot],
-                     ai_PlayerSlots[u->playerSlot]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name, ai_PlayerSlots[u->playerSlot].name,
+                     ai_PlayerSlots[u->playerSlot].name);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     return 0;
 }
@@ -1077,9 +1077,9 @@ int ai_MsgJobEndPayType25(G14MSG *m)
     gm_FindById((int *)&u, 0, 0, j->id3);
     if (w != 0 && u != 0) {
         if (w->type == 0x47)
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0]);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name);
         else
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[u->playerSlot], v);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[u->playerSlot].name, v);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     }
     return 0;
@@ -1227,11 +1227,11 @@ int ai_MsgJobEndDateType29(G14MSG *m)
     gm_FindById((int *)&u, 0, 0, j->id3);
     if (w != 0 && u != 0) {
         if (w->type == 0x47)
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0], &t,
-                         ai_PlayerSlots[0]);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot].name, ai_PlayerSlots[0].name, &t,
+                         ai_PlayerSlots[0].name);
         else
-            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot], &t,
-                         ai_PlayerSlots[u->playerSlot]);
+            txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name, ai_PlayerSlots[u->playerSlot].name, &t,
+                         ai_PlayerSlots[u->playerSlot].name);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     }
     return 0;
@@ -1276,10 +1276,10 @@ int ai_MsgJobEndValueType2a(G14MSG *m)
     gm_FindById((int *)&w, 0, 0, j->id2);
     gm_FindById((int *)&u, 0, 0, j->id3);
     if (w->type == 0x47)
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0], s, ai_PlayerSlots[0]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot].name, ai_PlayerSlots[0].name, s, ai_PlayerSlots[0].name);
     else
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot], s,
-                     ai_PlayerSlots[u->playerSlot]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0].name, ai_PlayerSlots[u->playerSlot].name, s,
+                     ai_PlayerSlots[u->playerSlot].name);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     return 0;
 }

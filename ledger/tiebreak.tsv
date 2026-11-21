@@ -3198,11 +3198,11 @@ exe	0x0050f750	init_OpenBuilding	f3init	35b1554abb743765	no	shape	sweep control=
 exe	0x0050f910	init_OpenTown	f3init	374667a1c0e8397e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00510730	init_CollectSiteObject	f3init	85f1adfd854ea640	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00510770	init_LoadSiteScene	f3init	019c94648f9f1412	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	a8a5c40d0e203575
-exe	0x00510ad0	init_InitTown	f3init	60ee6a17f1d4029d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ba6e0a54166a795e
+exe	0x00510ad0	init_InitTown	f3init	664abb58f18e7411	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=190	ff2d07fb4a2e0c30
 exe	0x00510e20	init_ShowStatus	f3init	9757fbd7df608d1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00510e50	init_StartNetworkGame	f3init	cc1e40b2282504df	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005112d0	init_JoinNetworkGame	f3init	c4c939de6d04f58e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00511400	init_SetupNewGame	f3init	6c7503b822400714	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x00511400	init_SetupNewGame	f3init	1b0fc9dd4ab00706	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=190	ff2d07fb4a2e0c30
 exe	0x005115b0	init_CollectTorchObject	f3init	e57a18d9eb63c7ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00511600	init_StripTorches	f3init	4dcff251847a74c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005116b0	init_RebuildQuadTree	f3init	267007813a324882	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3239,7 +3239,7 @@ exe	0x00513970	init_ParseNumberList	f3init	fceee1088a45f08b	no	byte	control=byte
 exe	0x00513a20	init_LoadCityINI	f3init	e5112d1e7e1ffeb6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005142e0	io_TownDisplayName	io_text	d9b4c6e352fbd146	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00514360	io_TrailingDigits	io_text	ba71417bdfec03f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005143d0	io_CharacterName	io_text	e25dde30b3f19b28	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6bf680d9d4f65541
+exe	0x005143d0	io_CharacterName	io_text	184ec1362e0c3991	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cf1cdeabf4613ac6
 exe	0x00514e90	io_CharacterNameMarkup	io_text	8d21aea58f6a8244	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	09375d01d5cbd6dd
 exe	0x00515960	io_PrintText	io_text	fac42e805cd16f08	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft	
 exe	0x005176d0	txt_Format	io_text	38065f94fa412b96	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft	
@@ -3762,7 +3762,7 @@ exe	0x0055eba0	he_FindFigurePlace	he	768cae742040b8c0	no	byte	control=byte p1=by
 exe	0x0055ee40	he_PickNearBuilding	he	25cc32bc862f2eb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055efc0	he_RunRoutine	he	7a98157b712cce46	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	576301c200df8abc
 exe	0x0055fa20	he_AllocMarket	he	e1ad334b60ca8012	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0055fa90	he_RunMarketSupervisor	he	a50f6a3575bbd806	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	da364acd2019db4e
+exe	0x0055fa90	he_RunMarketSupervisor	he	5c51ded4ae7e69e5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	9e61b4ea6dea6b50
 exe	0x00560820	he_AllocEvent3c	he	7f58d4a0b86b6990	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00560900	he_RunKidnap	he	90cf44f5b67b5d16	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	14acdd61cb4cf9ac
 exe	0x00561130	he_AllocRansom	he	8e61b26054a9fa34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4250,7 +4250,7 @@ exe	0x0059fe40	ai_CitizenRightWindow	lc	f9d8b4d53b5386fa	no	byte	control=byte p1
 exe	0x005a0220	ai_OfficeApplicantsWindow	lc	26adfb6a11485b56	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a0590	ai_OfficeApplicationWindow	lc	993fa739afa0f7d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a07d0	ai_LawBookContact	lc	dd83b33a152cd33e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a0950	ai_GuildCashPayWindow	lc	f15b81eaf2ccc262	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	9b87498665a23767
+exe	0x005a0950	ai_GuildCashPayWindow	lc	e37a679a078610d4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4d81e82e58f40b60
 exe	0x005a0ca0	ai_GuildGiftCallback	lc	0e3e20650c68899d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a0f10	ai_GuildGiftEntry	lc	bf0b467f55d73fbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a1000	ai_GuildLevel1Window	lc	e56aa632d5069a51	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

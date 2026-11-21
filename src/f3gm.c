@@ -57,8 +57,8 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_Unk7d6aa0 (*(char (*)[8])((char *)init_StockBlocks + 0x30))      /* 0x7d6aa0 */
 #define ai_Unk7d6aa8 (*(char (*)[54408])((char *)init_StockBlocks + 0x38))  /* 0x7d6aa8 */
 #define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
-#define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
-#define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
+#define GM_TABLE_A(p) (ai_PlayerSlots[p].inhabitants)  /* the player slot's first yearly table */
+#define GM_TABLE_B(p) (ai_PlayerSlots[p].splendour)  /* its second yearly table */
 /* the building type i's byte +0x21 (ai.h AIBTYPE.extensions, the room upgrades it takes): GMBTYPE keeps it in its pad,
    because naming the field in f3gm_types.h moves sv_t's ai_TutorialInitChapter3 off byte (declaration-set tie-break) */
 #define GM_BTYPE_EXTENSIONS(i) (((unsigned char *)GM_BTYPE(i))[0x21])
@@ -2442,7 +2442,6 @@ unsigned gm_TreeNodeRank(int p);
 int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h);
 /* dcp unit split: the declarations that moved to f3gmt (copies: drop what f3gm does not use) */
 extern int f3gm_ObjectCount;
-extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 int gm_RemoveObject();                     /* 0x4ffff0 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);
 int gm_GoodsStock(int p, int i);                   /* 0x4ff950 */

@@ -50,7 +50,6 @@ struct D2SURF *rt_MapSaved = 0;  /* 0x6f074c, rt_EditCartRoute's copy of rt_MapS
 int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
-/* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
 RTMARK rt_Marks[8];  /* 0xf812a0 */
 
 /* 0x4bd950, appends a new point to list p (0 if it has 8 already) */
@@ -194,8 +193,8 @@ int rt_PutRouteMark(LCMAPWIN *win, int cart, RTPOINT *list, RTPOINT *p)
     int index;
 
     hmap = (D3SM *)d3_Scenes[0].hmap;
-    originX = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townX;
-    originY = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townY;
+    originX = ai_PlayerSlots[ai_OwnPlayer].townX;
+    originY = ai_PlayerSlots[ai_OwnPlayer].townY;
     b = (AIBLD *)gm_FindBuildingById(p->buildingId);
     if (b == 0)
         return -1;
@@ -1149,7 +1148,7 @@ void rt_LoadAtPoint(AIOBJ *c, char pl)
                 }
                 if (n > 0) {
                     if (gm_CharCurrency((char *)o, pl) < n * price) {
-                        io_TownDisplayName(ai_PlayerSlots[pl], name);
+                        io_TownDisplayName(ai_PlayerSlots[pl].name, name);
                         txt_Format(buf, 0x42f0, name, 0xc14, name, pl);
                         he_ShowNews(o->netId, -1, buf, 0, 0x5ef, ch_EmptyName);
                     }

@@ -37,9 +37,6 @@
 int ai_PlayerCountYear = -1;                  /* 0x5ffd1c */
 int ai_NumPlayerChars = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 extern char ai_DataPath[608];
-/* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
 
 #include "ls.h"
 #include "gv.h"
@@ -66,7 +63,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 /* 0x48e070, the class 0x1e building of the character p (a master, kind 3 excepted) in *out: 2 it has
    one, 1 it is a master without one (kind 5, or kind 2 / 4 with rank above 6), 0 neither. It also recounts
    the characters of the player kinds 5 / 6 / 7 (ai_NumPlayerChars) once per ai_Time.year. */

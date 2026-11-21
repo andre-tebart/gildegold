@@ -17,7 +17,6 @@ struct D3TERRAIN;
 #include "ls.h"
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -220,7 +219,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
         return 0;
     if (vfs_fwrite(&flags, 1, 1, f) <= 0)
         return 0;
-    slot = &ai_PlayerSlotsT[ai_OwnPlayer];
+    slot = &ai_PlayerSlots[ai_OwnPlayer];
     strcpy(hdr.player, slot->name);
     hdr.playerWords[0] = slot->mapX;
     hdr.playerWords[1] = slot->mapY;
@@ -877,7 +876,7 @@ int ls_WritePlayerSlots(int f)
         }
     }
     for (n = 0; n < 4; n++) {
-        slot = ai_PlayerSlots[n];
+        slot = (char *)&ai_PlayerSlots[n];
         LS_W(slot, 0x20)
         LS_W(slot + 0x40, 8)
         LS_W(slot + 0x48, 1)
@@ -2045,7 +2044,7 @@ int ls_ReadPlayerSlots(int f)
         }
     }
     for (b = 0; b < 4; b++) {
-        slot = ai_PlayerSlots[b];
+        slot = (char *)&ai_PlayerSlots[b];
         LS_R(slot, 0x20)
         LS_R(slot + 0x40, 8)
         LS_R(slot + 0x48, 1)
@@ -2083,13 +2082,13 @@ int ls_ReadPlayerSlots(int f)
         if (ls_Version >= 0x10037)
             LS_R(slot + 0x2ec, 8)
     }
-    sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0]);
+    sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0].name);
     strupr(buf);
     k = txt_FindKey(buf);
     if (k != -1)
-        strcpy(ai_PlayerSlots[0] + 0x20, txt_Ptrs[k]);
+        strcpy(ai_PlayerSlots[0].townName, txt_Ptrs[k]);
     else
-        strcpy(ai_PlayerSlots[0] + 0x20, ai_PlayerSlots[0]);
+        strcpy(ai_PlayerSlots[0].townName, ai_PlayerSlots[0].name);
     return 1;
 }
 /* 0x51f650, reads the two relation maps ai_Relations / ai_RelationMemory (n x n bytes, a row of 0x300: n = 0x100 below 0x1003a, 0x100 below 0x10042 else 0x300; the second map from 0x10036). Returns 1 */

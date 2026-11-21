@@ -174,7 +174,7 @@ typedef struct GMUMLAND {
     unsigned short objects[8];          /* 0x02, object prototypes (gm_FindObjectProto) */
 } GMUMLAND;
 
-/* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40, declared char[4][0x2f4]): the town the
+/* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40): the town the
    player plays in, read from its city file by init_LoadCityINI (the INI key names in quotes) */
 typedef struct GMPLAYERSLOT {
     char name[0x20];                    /* 0x00, "Stadtname" (ls_WriteSaveHeader copies it into LSHDR.player and
@@ -183,7 +183,7 @@ typedef struct GMPLAYERSLOT {
                                            "%s, %i %s %i", the statistics panel's text 0x1f0e with ai_Time) */
     int mapX;                           /* 0x40, "KartenPosition": the player's place on the map (am.c 0x4948f0 measures */
     int mapY;                           /* 0x44   gm_MapDistance from it to the other slots' places; the save header keeps both) */
-    unsigned char maxPlayers;           /* 0x48, "MaxPlayer" (saved in the save header, LSHDR.playerByte) */
+    char maxPlayers;                    /* 0x48, "MaxPlayer" (saved in the save header, LSHDR.playerByte; signed: init_SetupNewGame reads it with movsx) */
     unsigned char faith;                /* 0x49, "Glaube" */
     char pad04a[2];
     int historyStart;                   /* 0x4c, "HistorieStart" (the year) */

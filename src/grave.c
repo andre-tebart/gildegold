@@ -19,12 +19,6 @@
 #include "d3_tools.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
-    char pad00[0x54];
-    unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
-    char pad56[0x29e];
-} GVPLAYERREC;
-#define gv_PlayerRecs (*(GVPLAYERREC (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the player records */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "amt_types.h"
@@ -791,8 +785,8 @@ int gv_ReserveGrave(GVORDER *m)
         for (i = 0; i < gv_EntryCounts[m->size]; i++)
             e->grave[i].id = -1;
         if (m->price > 0) {
-            gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-            gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+            gm_AddNegative(c->netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood, m->price);
+            gm_AddObjekt(ai_Chars[bld->owner].netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood,
                          (int)(m->price * gv_SaleShares[m->size]));
             owner = &ai_Chars[bld->owner];
             if (c != owner && ai_Chars[bld->owner].kind == 6)
@@ -853,8 +847,8 @@ int gv_ExtendGrave(GVORDER *m)
         return -7;
     e->until += m->years;
     if (m->price > 0) {
-        gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-        gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+        gm_AddNegative(c->netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood, m->price);
+        gm_AddObjekt(ai_Chars[bld->owner].netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood,
                      (int)(m->price * gv_SaleShares[m->size]));
     }
     return 0;
@@ -1153,8 +1147,8 @@ moved:
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = m->objId;
     if (m->price > 0) {
-        gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-        gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+        gm_AddNegative(c->netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood, m->price);
+        gm_AddObjekt(ai_Chars[bld->owner].netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood,
                      (int)(m->price * gv_SaleShares[m->to]));
     }
     return 0;

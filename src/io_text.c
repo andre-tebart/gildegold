@@ -33,7 +33,6 @@ struct AITIME;
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */
 int gm_Season(char *d);                 /* 0x4fe330, f3gm.c: the season of a calendar record */
 
-extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 /* 0x5142e0, the display name of the town called name (the player's town, "General"/"Stadt" of the game INI): the first text of the town's "_STADTAUSWAHL_<NAME>_INFO" group of the text table (txt_FindKey finds its number), else the given name itself; copied to out. Returns 1. */
 int io_TownDisplayName(char *name, char *out)
 {
@@ -112,7 +111,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
         strcpy(CH_NAME(rec), txt_PseudoCharName);
     }
     if ((char *)rec == (char *)ai_PlayerChar) {
-        strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
+        strcpy(out, ai_PlayerSlots[ai_OwnPlayer].name);
         if (c == 2)
             strcat(out, "'s");
         return 1;
@@ -289,7 +288,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
         strcpy(CH_NAME(rec), txt_PseudoCharName);
     }
     if ((char *)rec == (char *)ai_PlayerChar) {
-        strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
+        strcpy(out, ai_PlayerSlots[ai_OwnPlayer].name);
         if (c == 2)
             strcat(out, "s");
         return 1;
@@ -664,7 +663,7 @@ int io_PrintText(char *fmt, ...)
             case 'w':
                 /* the argument is a player index: the city id (word +0x54) of its player slot picks the city
                    name (the text pairs from txt_Ptrs[0x9a8]) */
-                strcpy(tmp, txt_Field(txt_Ptrs[0x9a8 + ai_PlayerCity[va_arg(ap, int)][0] * 2], 1, 8));
+                strcpy(tmp, txt_Field(txt_Ptrs[0x9a8 + ai_PlayerSlots[va_arg(ap, int)].moneyGood * 2], 1, 8));
                 memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
                 memcpy(&buf[pos - 1], tmp, strlen(tmp));
                 break;
@@ -1298,7 +1297,7 @@ void txt_Format(char *out, int id0, ...)
             case 'w':
                 /* the argument is a player index: the city id (word +0x54) of its player slot picks the city
                    name (the text pairs from txt_Ptrs[0x9a8]) */
-                strcpy(tmp, txt_Field(txt_Ptrs[0x9a8 + ai_PlayerCity[va_arg(ap, int)][0] * 2], 1, 8));
+                strcpy(tmp, txt_Field(txt_Ptrs[0x9a8 + ai_PlayerSlots[va_arg(ap, int)].moneyGood * 2], 1, 8));
                 memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
                 memcpy(&buf[pos - 1], tmp, strlen(tmp));
                 break;

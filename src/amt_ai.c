@@ -38,9 +38,6 @@ G9SHOT ai_CannonShot = {0};  /* 0x6f0698 */
 int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
 extern int ai_WriteActionTable;
 extern char ai_DataPath[608];
-/* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
 G6RING ai_NearRing[32];  /* 0xf83c20 */
 extern char ai_ActionIniPath[260];
 extern int ai_EvalDepth;
@@ -75,7 +72,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 
 /* dcp unit split: the declarations of am before the moved functions */
 #undef AM_WRITE

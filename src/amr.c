@@ -35,9 +35,6 @@ extern int ai_PlayerCountYear;
 extern int ai_NumPlayerChars;
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 extern char ai_DataPath[608];
-/* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
 char ai_ActionIniPath[260];  /* 0xf83da0, the ini file of the actions */
 int ai_EvalDepth;  /* 0xf83ea4, the depth of the evaluation stack */
 AIACT ai_Actions[0x49];  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
@@ -72,7 +69,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 
 /* ---- 0x492fd0..0x494020 (was unk_490830.c): a random character generator, a dice duel between two
    characters (struct AGDUEL), two helpers that pick a character for a message ---- */
@@ -982,8 +978,8 @@ void ai_RollStudyOffers(AIC4 *ch, int *out)
     k = (int)(v * 0.025f);
     m = 0.0f;
     for (i = 0; i < 3; i++) {
-        f[i] = gm_MapDistance(ai_PlayerSlotsT[0].mapX, ai_PlayerSlotsT[0].mapY, ai_PlayerSlotsT[i + 1].mapX,
-                              ai_PlayerSlotsT[i + 1].mapY);
+        f[i] = gm_MapDistance(ai_PlayerSlots[0].mapX, ai_PlayerSlots[0].mapY, ai_PlayerSlots[i + 1].mapX,
+                              ai_PlayerSlots[i + 1].mapY);
         if (f[i] > m)
             m = f[i];
         out[i * 3 + 1] = t[i][0];

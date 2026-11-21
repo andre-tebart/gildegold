@@ -12,7 +12,6 @@ struct D3SURF;
 struct VFSDIR;
 struct D3SM;
 struct D3TERRAIN;
-extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -258,8 +257,6 @@ typedef struct INIT_TORCHLIST {
                                           while txt_Keys keeps its original address 0xfe7e40, and our link puts
                                           it at 0x6d0448 (build/link/exe/exe.map), which made the mask 0x6e8607
                                           and every id / parent lookup miss */
-#define INIT_PLAYER_SLOTS_END ((unsigned)&init_SlotCurrency + 0x888)   /* one past the player slot table 0x7e3f40 (0x2f4 bytes per slot) */
-#define INIT_SLOT_CURRENCY_END ((unsigned)&init_SlotCurrency + 0x8dc)  /* one past the currency words of the player slots 1 .. 3: the original's `cmp esi, 0x7e4b64` (0x510cf0) = init_SlotCurrency (0x7e4288) + 3 * 0x2f4, not &gm_Offers + 0x44 (that equals it only while gm_Offers follows the slot table at 0x7e4b20) */
 #define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
 #define INIT_CHARACTER_COUNT 0x300      /* ch.h's CH_MAX: the slots of the character list ch_List (0x1468ae0) */
 #define INIT_START_CHARACTERS_END ((int)&ai_Chars[16]) /* one past the 16th character record, compared signed (init_StartNewGame) */
@@ -271,7 +268,6 @@ typedef struct INIT_TORCHLIST {
 
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
 float gm_JobWage();
-extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindBuildingKind(char *name);    /* 0x502060, f3gm.c: the building kind of the name */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
@@ -341,8 +337,6 @@ int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 AICHAR *ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind 0xb */
-extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the four player slots */
 extern int cm_NetFlags;  /* 0x6f2594 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
@@ -423,7 +417,6 @@ int init_TownSounds[16];  /* 0x76fd80, the handles of the town's sounds (16 at m
 unsigned char * ai_SceneBuilding;  /* 0x76fdc0 */
 extern int ai_NBauplaetze;
 extern G15BK * ai_Bauplaetze;
-/* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */
 void gv_ClearCrimes(void);           /* 0x4f4350, gv.c */
@@ -612,11 +605,11 @@ void init_AllocSceneBuilding(int o)
                     u = strrchr((char *)o, '_') + 1;
                     strcpy(tail, u);
                     for (i = 1; i < 4; i++) {
-                        if (ai_PlayerSlots[i][0] == 0)
+                        if (ai_PlayerSlots[i].name[0] == 0)
                             break;
-                        if (stricmp(tail, ai_PlayerSlots[i]) == 0) {
+                        if (stricmp(tail, ai_PlayerSlots[i].name) == 0) {
                             b->player = i;
-                            strcpy(b->name, ai_PlayerSlots[i]);
+                            strcpy(b->name, ai_PlayerSlots[i].name);
                             break;
                         }
                     }
@@ -1497,7 +1490,7 @@ void init_StockMarketStalls(void)
         if (st != 0) {
             n = 0;
             for (i = 0; i < 0x10; i++) {
-                if (ai_PlayerSlotsT[owner].import[i] != 0)
+                if (ai_PlayerSlots[owner].import[i] != 0)
                     n++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
@@ -1506,9 +1499,9 @@ void init_StockMarketStalls(void)
             cm_AddFieldDelta(4, 1, (char *)st - cm_FieldObject + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0; i < 0x10; i++) {
-                if (ai_PlayerSlotsT[owner].import[i] != 0) {
-                    cm_SendExSellObject(st->objId, -1, ai_PlayerSlotsT[owner].import[i], 1, ai_OwnPlayer, 0);
-                    cm_SendExSellObject(-1, st->objId, ai_PlayerSlotsT[owner].import[i], 1, ai_OwnPlayer, 0);
+                if (ai_PlayerSlots[owner].import[i] != 0) {
+                    cm_SendExSellObject(st->objId, -1, ai_PlayerSlots[owner].import[i], 1, ai_OwnPlayer, 0);
+                    cm_SendExSellObject(-1, st->objId, ai_PlayerSlots[owner].import[i], 1, ai_OwnPlayer, 0);
                 }
             }
         }
@@ -1516,7 +1509,7 @@ void init_StockMarketStalls(void)
         if (st != 0) {
             n = 0;
             for (i = 0; i < 0x10; i++) {
-                if (ai_PlayerSlotsT[owner].export[i] != 0)
+                if (ai_PlayerSlots[owner].export[i] != 0)
                     n++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
@@ -1525,9 +1518,9 @@ void init_StockMarketStalls(void)
             cm_AddFieldDelta(4, 1, (char *)st - cm_FieldObject + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0; i < 0x10; i++) {
-                if (ai_PlayerSlotsT[owner].export[i] != 0) {
-                    cm_SendExSellObject(st->objId, -1, ai_PlayerSlotsT[owner].export[i], 1, ai_OwnPlayer, 0);
-                    cm_SendExSellObject(-1, st->objId, ai_PlayerSlotsT[owner].export[i], 1, ai_OwnPlayer, 0);
+                if (ai_PlayerSlots[owner].export[i] != 0) {
+                    cm_SendExSellObject(st->objId, -1, ai_PlayerSlots[owner].export[i], 1, ai_OwnPlayer, 0);
+                    cm_SendExSellObject(-1, st->objId, ai_PlayerSlots[owner].export[i], 1, ai_OwnPlayer, 0);
                 }
             }
         }
@@ -2126,9 +2119,9 @@ int init_InitTown(char *city)
 {
     char ok;
     int h, i;
-    short *p;
+    GMPLAYERSLOT *p;
     INIT_CHAR *ch;
-    char *pc;
+    GMPLAYERSLOT *pc;
     int bank;
 
     ai_NextObjectId = 1;
@@ -2184,13 +2177,13 @@ int init_InitTown(char *city)
     }
     cm_EndSendGroup();
     i = 1;
-    p = init_SlotCurrency;
+    p = &ai_PlayerSlots[1];
     do {
-        if (*p != 0)
+        if (p->moneyGood != 0)
             cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerChar)->netId, -1, i, 200000000);
-        p += 0x17a;
+        p++;
         i++;
-    } while ((int)p < (int)INIT_SLOT_CURRENCY_END);
+    } while ((int)&p->moneyGood < (int)&ai_PlayerSlots[4].moneyGood);
     init_CreateOpeningObjects();
     cm_BeginSendGroup();
     init_StockMarketStalls();
@@ -2207,14 +2200,14 @@ int init_InitTown(char *city)
     }
     gm_UpdatePlayers();
     i = 0;
-    pc = ai_PlayerSlots[0];
+    pc = ai_PlayerSlots;
     do {
-        if (*pc == 0)
+        if (pc->name[0] == 0)
             break;
         gm_InitPlayerRecord(i);
-        pc += 0x2f4;
+        pc++;
         i++;
-    } while ((int)pc < (int)INIT_PLAYER_SLOTS_END);
+    } while ((int)pc < (int)&ai_PlayerSlots[4]);
     cm_BeginSendGroup();
     gm_SyncMarket(ai_OwnPlayer);
     cm_EndSendGroup();
@@ -2362,7 +2355,7 @@ int init_StartNetworkGame(char *name)
     if (flags != 0) {
         init_FillMarkets(ai_OwnPlayer);
         for (i = 0; i < 4; i++) {
-            if (ai_PlayerSlots[i][0] == 0)
+            if (ai_PlayerSlots[i].name[0] == 0)
                 break;
             gm_SyncMarket(i);
             gm_RandomMarketShake(i);
@@ -2456,7 +2449,7 @@ int init_SetupNewGame(int n)
             i++;
         } while ((int)p < (int)(INIT_CHARACTERS_END + 2));
     }
-    if ((int)ai_PlayerSlots[n][0x48] - ai_NumPlayers > 0) {
+    if ((int)ai_PlayerSlots[n].maxPlayers - ai_NumPlayers > 0) {
         tab[0] = 0x18;
         tab[1] = 0x27;
         tab[2] = 0x33;
@@ -2484,7 +2477,7 @@ int init_SetupNewGame(int n)
                 p += 0x21c;
             } while ((int)p < (int)(INIT_CHARACTERS_END + 2));
         }
-        init_CreateOpponents((int)ai_PlayerSlots[n][0x48] - ai_NumPlayers, 8, tab);
+        init_CreateOpponents((int)ai_PlayerSlots[n].maxPlayers - ai_NumPlayers, 8, tab);
     }
     init_OpenTown();
     b = (INIT_BLD *)gm_FirstBuilding(1);
@@ -2710,7 +2703,7 @@ void init_LocalData(void)
     if ((ai_GameFlags & 0x40) == 0) {
         gm_UpdatePlayers();
         for (i = 0; i < 4; i++) {
-            if (ai_PlayerSlots[i][0] == 0)
+            if (ai_PlayerSlots[i].name[0] == 0)
                 break;
             gm_InitPlayerRecord(i);
         }
@@ -3789,7 +3782,7 @@ int init_LoadCityINI(char *city, int slot)
 
     if (slot == 0)
         memset(ai_PlayerSlots, 0, sizeof ai_PlayerSlots);
-    s = &ai_PlayerSlotsT[slot];
+    s = &ai_PlayerSlots[slot];
     sprintf(ini, "%s%s/%s.ini", main_GfxPath, main_CitiesDir, city);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", val, 0x100, ini);
     strcpy(s->name, val);

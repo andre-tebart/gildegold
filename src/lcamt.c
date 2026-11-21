@@ -171,7 +171,6 @@ extern struct AIBLD *ai_MarketBuilding;
 extern int ai_PermsDirty;
 extern char * sv_SelectedObject;
 
-extern char ai_PlayerSlots[4][0x2f4];
 
 
 
@@ -204,7 +203,6 @@ extern struct D2OBJ *d2_Objs;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -216,7 +214,6 @@ extern int d2_ClickedId;
 
 extern int d2_ClickedId;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -245,7 +242,6 @@ extern int d2_LastWindow;
 
 extern unsigned char kb_Last;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -387,7 +383,6 @@ extern int d2_ClickedId;
 
 extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
-extern char ai_PlayerSlots[4][0x2f4];
 extern char cm_EventNames[115][0x20];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -472,7 +467,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
 extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
-extern char ai_PlayerSlots[4][0x2f4];
 extern struct D2SURF *rt_MapSurface;
 extern char ch_EmptyName[1];
 extern int ai_SabotageCallback();
@@ -526,7 +520,6 @@ extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern GAPDATA full_data_5fe7d0[];
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -6134,7 +6127,7 @@ void ai_CityStatsPanel(void)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1f0e, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townName, &ai_Time);
+    io_PrintText(0x1f0e, ai_PlayerSlots[ai_OwnPlayer].townName, &ai_Time);
     ord_GetStatistics((int *)&stats);
     d2_SetForm(win, 2);
     io_PrintText(0x1f14, (int)ai_RatingBase);
@@ -8274,7 +8267,7 @@ void ai_Miracle(AICHARREC *me, int which)
         worth = gm_GetWorth(c->id);
         price = (int)((util_Random(3) + 2) * (worth * 0.01));
         cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, price);
-        txt_Format(text, 0x1df8, c->id, bld, c->id, price, &ai_PlayerSlots[ai_OwnPlayer][0x20]);
+        txt_Format(text, 0x1df8, c->id, bld, c->id, price, ai_PlayerSlots[ai_OwnPlayer].townName);
     } else if (which == 1) {
         int v;
 
@@ -9409,7 +9402,7 @@ int ai_UniversityWindow(AICHARREC *parent, AICHARREC *child)
         ctrl[i] = d2_WinOpenPic(0x14, i * 0x5a + 10, 0x4c6, d2_LastWindow);
         d2_Objs[ctrl[i]].interactive = 1;
         d2_Objs[ctrl[i]].style = 3;
-        txt_Format(text, "%s", ((GMPLAYERSLOT *)ai_PlayerSlots)[i + 1].name);
+        txt_Format(text, "%s", ai_PlayerSlots[i + 1].name);
         d2_CreateWinText(0xbe, i * 0x5a + 10, text, d2_LastWindow);
         txt_Format(text, "%s", offers[i][1] + 0x16b7);
         d2_CreateWinText(0xbe, i * 0x5a + 0x1e, text, d2_LastWindow);

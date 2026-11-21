@@ -13,7 +13,6 @@
 #include <string.h>
 #include "hmt.h"
 #include "data_views.h"
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #include "cm_types.h"
 #include "ahm.h"
 #include "amt.h"
@@ -832,7 +831,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     for (j = 0; j < 5; j++)
         c->skills[j] = (unsigned char)(util_Random(0x2a) + 210.0f);
     c->b00d = 9;
-    gm_AddObjekt(c->netId, ai_PlayerSlotsT[ai_OwnPlayer].moneyGood, HMT_START_MONEY);
+    gm_AddObjekt(c->netId, ai_PlayerSlots[ai_OwnPlayer].moneyGood, HMT_START_MONEY);
     pl = 0xffff;
     for (i = 0; i < 768; i++) {
         if (pl != 0xffff)

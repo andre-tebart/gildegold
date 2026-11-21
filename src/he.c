@@ -597,7 +597,6 @@ int he_RegisterEventTypeA2();
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it (the headers declare it unsigned short): @original he_RunInnSim reads the full int result (util_Random(4) + 3, no 16-bit mask); every other caller of this unit reads 16 bits */
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
-#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
@@ -5898,7 +5897,7 @@ void he_RunCharPayouts(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    txt_Format(news, 0x10c2, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], util_Random(3) + 0x10c4);
+    txt_Format(news, 0x10c2, ai_PlayerSlots[ai_OwnPlayer].townName, util_Random(3) + 0x10c4);
     kinds.s.lo = (1 << 22) | (1 << 7);  /* ai_PassesBuildingFilter's kind mask: the building kinds 22 and 7 */
     kinds.s.hi = 0;
     bld = 0;
@@ -7970,13 +7969,13 @@ void he_RunTitleCeremony(int ev)
             else if (t->title == 7)
                 io_PrintText(0x429f, &e->end);
             else if (t->title != 2)
-                io_PrintText(0x1617, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e));
+                io_PrintText(0x1617, ai_PlayerSlots[ai_OwnPlayer].townName, &e->end, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e));
             else {
                 if (c->sex != 0)
                     text = 0x120;
                 else
                     text = 0x116;
-                io_PrintText(0x1618, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, text);
+                io_PrintText(0x1618, ai_PlayerSlots[ai_OwnPlayer].townName, &e->end, c->id, text);
             }
             if (t->title == 2) {
                 snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 100);
@@ -9776,7 +9775,7 @@ void he_RunRanking(int ev)
             strncpy(head.titles[i], tmp, 0x18);
             head.titles[i][0x17] = 0;
         }
-        strcpy(head.player, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20]);
+        strcpy(head.player, ai_PlayerSlots[ai_OwnPlayer].townName);
         strcpy(head.worthTitle, "Verm\xf6gen");
         strcpy(head.pointsTitle, "Gewinnpunkte");
         head.count = (unsigned char)cnt;
@@ -10203,9 +10202,9 @@ void he_RunSixGroupEvent(AIJOB *ev)
 
     if (ev->stage == 0xc) {
         if (ev->grpMode == 0)
-            txt_Format(text, 0x10bc, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20);
+            txt_Format(text, 0x10bc, ai_PlayerSlots[ai_OwnPlayer].townName);
         else
-            txt_Format(text, 0x10be, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20);
+            txt_Format(text, 0x10be, ai_PlayerSlots[ai_OwnPlayer].townName);
         for (i = 0; i < 768; i++) {
             if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7)
                 he_ShowNews(ai_Chars[i].netId, -1, text, 0x20, 0x600, ch_EmptyName);
@@ -10287,7 +10286,7 @@ void he_RunExamQuestion(int ev)
         d2_CentreViewWindows(e->slot->win);
         d2_SetForm(e->slot->win, 0);
         io_PrintText("$C");
-        io_PrintText(0x10b9, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20, e->chr);
+        io_PrintText(0x10b9, ai_PlayerSlots[ai_OwnPlayer].townName, e->chr);
         e->stage = 1;
         return;
     case 1:
@@ -11855,12 +11854,12 @@ void he_TransportToHome(int ev)
     } else if (sv_IsCartAtDoor((char *)tr, (unsigned char *)to) != 0) {
         t->route = cm_SendCartRoute(to->id, guards->id, tr->objId);
         if (to->type == 0x47) {
-            txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
+            txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot].name);
             if ((sv_Frames[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
         } else if (from->type == 0x47) {
-            txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot], to->owner, to);
+            txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot].name, to->owner, to);
             if ((sv_Frames[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
@@ -12081,12 +12080,12 @@ void he_TransportHomeHome(int ev)
             cm_SendChrWalkTo(tr->objId, px, pz, u);
         cm_SendSetField(tr->objId, 0x13, 1, 0, 0x40);
         if (to->type == 0x47) {
-            txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
+            txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot].name);
             if ((sv_Frames[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
         } else if (from->type == 0x47) {
-            txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot], to->owner, to);
+            txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot].name, to->owner, to);
             if ((sv_Frames[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
@@ -14635,7 +14634,7 @@ void he_AllocKredit(int ev)
     partner = (AICHAR *)gm_FindChar(l->partner);
     if (owner->kind == 6 || owner->kind == 7) {
         cash = 0;
-        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, ai_PlayerSlotsT[ai_OwnPlayer].moneyGood);
+        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, ai_PlayerSlots[ai_OwnPlayer].moneyGood);
         if (o != 0)
             cash = o->count;
         txt_Format(text, 0x18d7, partner->id, b, l->amount, l->interest, l->days, 0x5d, cash);
@@ -14918,7 +14917,7 @@ void he_RunMasterExamPassed(int ev)
         group = gm_TitleGroup(x->job);
         left = gm_TitlesLeft(x->job) + 1;
         d2_SetForm(e->slot->win, 1);
-        io_PrintText(0x15c3, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &ai_Time, x->newJob + sexText,
+        io_PrintText(0x15c3, ai_PlayerSlots[ai_OwnPlayer].townName, &ai_Time, x->newJob + sexText,
                      (int)((float)((left - 1) * 0.5) + (group * 3 + 0x155a)), group + 0x158a);
         cm_SendSetJob(c->netId, x->newJob);
         if (c->kind == 6 || c->kind == 7 || c->kind == 5) {
@@ -15036,9 +15035,9 @@ void he_RunEvent27(int ev)
     case 0:
         b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
         if (b != 0) {
-            txt_Format(text, 0x190b, ai_PlayerSlotsT[p->player].name, p->amount);
+            txt_Format(text, 0x190b, ai_PlayerSlots[p->player].name, p->amount);
             he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5ff, (char *)0);
-            cm_SendExSellObject(b->id, -1, ai_PlayerSlotsT[p->player].moneyGood, p->amount, ai_OwnPlayer, 0);
+            cm_SendExSellObject(b->id, -1, ai_PlayerSlots[p->player].moneyGood, p->amount, ai_OwnPlayer, 0);
         }
         he_FreeEvent((int *)ev);
         break;
@@ -16205,7 +16204,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
     }
 
     for (pl = 1; pl < 4; pl++) {
-        if (ai_PlayerSlotsT[pl].name[0] == 0)
+        if (ai_PlayerSlots[pl].name[0] == 0)
             break;
         b = (AIBLD *)gm_FindPlayerBuilding(pl);
         if (b == 0)
