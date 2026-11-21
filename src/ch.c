@@ -1085,7 +1085,7 @@ void ch_LoadLowAnims(CHARACTER *ch, int n, ...)
             f.words[1] &= ~3;
             f.anim.b[0] = 0;
             if (!r)
-                r = d3_LoadAnimFile(file, buf, 1);
+                r = (int)d3_LoadAnimStream(file, buf, 1);
             if (r) {
                 d3anim_StartAnim(ch->lowPolyBody->material->animCtl, buf, f.anim);
                 d3_ReleaseTexture(ch->lowPolyBody->material->animCtl, buf);
@@ -1118,9 +1118,9 @@ int ch_AttachAni(CHARACTER *ch, char *name, unsigned char loop)
         f.a = 1;
         if (!d3_FindAnim(buf)) {
             if (strcmp(name, "bewegung/gehen") && strcmp(name, "bewegung/karren_ziehen"))
-                d3_LoadAnimFile(file, buf, 0);
+                d3_LoadAnimStream(file, buf, 0);
             else
-                d3_LoadAnimFile(file, buf, 1);
+                d3_LoadAnimStream(file, buf, 1);
         }
         s = (D3ANIMSLOT *)d3anim_StartAnimB(ch->obj->material->animCtl, buf, f);
         if (!s) {
