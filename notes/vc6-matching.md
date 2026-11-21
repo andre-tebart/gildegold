@@ -6167,6 +6167,50 @@ the bytes no portable form gives.
   tests the char in al). Not counted: main.c's call of the GetProcAddress result (dynamic loading), function
   pointers passed with a cast as callbacks (d3_ForEachObject2, qsort, ai_GraveWindow, ai_VgFilter, sndc's
   evt_CurCall->fn test) and cmscene's call through cm_Kinds[].check.
+  Data (view macros kept as @original): ai_NumPlayersW in main.c (main_PlayerCountDialog stores the count as a
+  byte, `mov byte [g],2`, and reads it back as `mov eax,[g]; and eax,0xff` in the same function, main_ChooseCity
+  likewise: a char global gives `xor ecx,ecx; mov cl,[g]`, so the unit reads one object at two widths).
+  main_PlayerIdInt in main.c is not (c) yet: only main_RoundReport's gm_CharacterIncomes call needs the unmasked
+  dword (likely an unsigned short parameter in main.c's view of the prototype).
+- **A data view macro `#define NAME (*(T *)&datum)` is our type, not the original's** (the second cast-macro pass,
+  data): the object was declared with a placeholder type (`char *`, `char [n][size]`, `int [n]`, `unsigned short *`
+  for a record pointer) and the units that read records viewed it. Give the definition and every declaration the
+  record type and drop the view; the code does not change (ai_BTypes / ai_Goods / ai_Blds AIBTYPE / AIGOOD / AIBLD
+  *, ai_Chars AICHAR[768], cm_CutInfos CMCUTINFO[16], ai_Crimes CRIME[0x200], gv_Effects GVEFFECT[8],
+  ai_PlayerChar / cm_FightAttacker / cm_FightDefender AICHAR *, ai_SceneChars / ai_KindBChars AICHAR *[],
+  cm_FlagObjects D3OBJECT *[32], ai_TimeCopy AITIME: every function the same or a tie-break). The sites the
+  placeholder type shaped change with it, the same code each:
+  - a byte read at a record's offset `p[k * SIZE + off]` -> the field `p[k].field` (`.kind`, `.level`, `.cls`);
+    a char row passed as the record `f(ai_Chars[k])` -> `(char *)&ai_Chars[k]` (the callee's char * prototype is
+    the next type debt), `(T *)ai_Chars[k]` -> `(T *)&ai_Chars[k]`;
+  - byte pointers into the records keep their arithmetic on `(char *)p + k * SIZE + off` (grave.c / f3init.c's
+    `k + k * 0x24c` forms are load-bearing);
+  - range tests and index recovery: `(T *)user - table` and `(char *)&table[N]` as the end (svtip.c), not
+    `(char *)user - (char *)table) / SIZE` (dcp's Q4 offset-pointer rule grades that draft);
+  - a walk over a placeholder `int *` becomes a walk over the record type (`AICHAR **ch` over ai_SceneChars;
+    ord_BuildingCapacityRatio's `char *p += 0xa9` -> `AIBLD *p; p++` with `p->type`, byte).
+  The record type must be complete where an array of it is declared: `extern struct AICHAR ai_Chars[768]` is
+  accepted by VC6 but is an error for clang (dcp check M6: array of incomplete type); drop such copies from
+  headers that cannot see the typedef (ai.h declares ai_Chars, ahm.c / f3init.c declare it themselves) and use
+  `struct T *` for pointers in headers that do not include the typedef.
+- **Two views that tile one block exactly are two objects** (ai_Unk75f280 int[576] = sv_MemberRows
+  SVMEMBERROW[0x20] at +0 and sv_Frames SVFRAME[0x80] at +0x500): define both, in order, in the owner; dcp data map
+  shows each common at its address. Move the record typedef the units copied into the types header (SVFRAME into
+  sv_types.h, seven copies went).
+- **A pointer global tested and cleared through an int view** (`d3t_CamMoveI`): the pointer compares and stores
+  the same; a chained `a = b = 0` over an int and a pointer is two statements in the store order (b first).
+- **A float global copied as its bits** (`o[6] = *(int *)&ai_RatingBase`): VC6 copies a float variable with integer
+  moves, `((ORDSTATS *)o)->base = ai_RatingBase;` is the same code (ord_GetStatistics byte).
+- **The low byte of an int flag word** (`ai_GameFlagsB & 0x80`, `unsigned char fl = ai_GameFlagsB`): VC6 narrows
+  `(ai_GameFlags & 0x80) == 0` to the byte test and `fl = ai_GameFlags` to the byte load (byte). An unsigned short
+  global read through an int view and masked (`main_PlayerIdInt & 0xffff`) is the plain global: VC6 loads an
+  unsigned short global as `mov eax,[g]; and eax,0xffff` itself. The high word of an __int64 is `(unsigned
+  int)(g >> 32)` (one dword load, ai_OpenRobberBribe byte).
+- **A datum two units read at two widths, one of them byte-matched** (cm_Bombs: cmfight.c's CMBOMB[32] records,
+  sv.c's sv_InitTick clears the same bytes as 0x40 ints; d3_YAxis: a D3VECTOR4 that ecmd.c copies as a
+  D3VECTOR): header drift; the owner keeps the record type, the other unit declares its type itself with
+  `@original why` and does not see the owner's declaration (cm_Bombs left sv.h; ecmd.c no longer includes d3_vec.h,
+  it used nothing else from it).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: the units saw another
