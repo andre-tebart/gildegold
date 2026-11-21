@@ -6231,6 +6231,36 @@ the bytes no portable form gives.
 - **A struct field read at two widths by two units** (D3ACTIVE's packed `int notextures` at 0x63345d: ecmd.c
   stores a dword, d3_engine.c tests the byte): the packed struct was ours; define the bytes as globals
   (d3_D3DActive, d3_NoTextures) and let the dword writer declare `extern int` with `@original why` (as cm_Bombs).
+- **Third data-view pass (views of a record or block at an offset)**: each was a field of a record we had not
+  named, a split block or a placeholder local; every reader stayed the same code.
+  - *A data header drift*: the reading unit declares the datum with its type (`extern char dd_RBits, ..;`
+    `@original why` in d3_d3d.c, whose byte-matched callback sign-extends them) and must not see another
+    declaration: the owner header's copies went (dd_vesa.h, d3_d3d.h; only d3_engine.h's unsigned one stays, for
+    the unit that reads them unsigned). A conflicting `extern` in the same unit is C2371.
+  - *A byte buffer read as a record* (cm_LongMsg as CMCUTINFO): `memcpy(&rec, buf, sizeof(T))` is the same `rep
+    movsd` as the struct assignment through a view; the unit's other readers already memcpy.
+  - *An int-array clear of a byte table* (sv_SelectionFlags int[0xc0] read as bytes): the table is `unsigned
+    char[0x300]` (one byte per character) and the clearing loop `memset(t, 0, sizeof t)` (same `rep stosd`).
+  - *A view whose offset lands on a field of another stride* (d2_AnimView: D2SND[66] at d2_Anims + 8, its x at +5
+    = D2ANIM.x at +0xd): the field of the true record, `d2_Anims[i].x`; the invented record type goes.
+  - *Records straddling two of our blocks* (gm_QueryKind char[550] + ai_Unk61a8ac[0x140]: a 6-byte job record
+    crosses 0x61a8ac): retile the bytes as the records they are (gm_QueryKind, gm_JobTalents[0x60],
+    gm_TitleTalents[0x24], gm_CurrencyRates[16] read `[id - 0x3d]`); a 1-aligned struct array lands right after a
+    byte global's room, so the placement needs no ALIGN1. A byte global stored as an immediate 0xff next to an
+    `= -1` int store is `unsigned char = 0xff` (as its neighbours gm_BQType / gm_BQClass): a char -1 shares the
+    int's -1 register; the compare with a char field keeps `(char)g`.
+  - *A pointer walk over a field with a record stride* (`int *p = view; p += 0x43; while (p < view + N * 0x43)`):
+    `for (i = 0; i < N; i++) if (tab[i].field == x)` compiles to the same strength-reduced walk (sv_ReleaseBubble,
+    byte); the end address one past a table is `&tab[N].field` (ls_RefsToIds).
+  - *int locals that save float globals* (cm_ExecCutscene's `int pos[4]` read through sv_ViewPosX views): float
+    locals (VC6 copies floats with integer moves).
+  - *A bit field viewed one byte into a struct* (struct D3BITS3 at d3d_Config + 1): name the byte-0 filler bit and
+    the field in byte 1 (`unsigned char unk7 : 1; unsigned char shadows : 3;`); a padded struct's tail fields
+    another view already names (D3IFSCENE.sceneFlags at 0x3d8) go into the owner record (D3SCENE).
+  - *Unused views*: dcp's inventory counts uses in the macro's file only; check every unit. data_views.h's views
+    come with `#ifndef DATA_VIEWS_H extern T name; #endif` copies in the owner headers: declarations of objects
+    that do not exist, removed with the view (their removal moves tie-breaks in the units without data_views.h:
+    accepted).
 - **A unit-local prototype instead of a view of the argument** (main_PlayerIdInt: main_RoundReport pushes the
   unsigned short ai_PlayerId as an unmasked dword, the code of a call through an `unsigned short` parameter):
   main.c declares `int gm_CharacterIncomes(unsigned short id, ..)` with `@original why`; the owner header's
