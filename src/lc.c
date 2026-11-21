@@ -1108,7 +1108,7 @@ int ai_ProductionWindow(AIBLD *bld)
                     continue;
                 }
                 ok = 1;
-                g = &((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good];
+                g = &ai_Goods[ai_ProdColumns[c].good];
                 if (gm_FreeCapacity(store, ai_ProdColumns[c].good, g->batch) == 0) {
                     if (g->type == 0x25 || g->type == 0x17)
                         sv_MessageBox(txt_Ptrs[0xbe], 0);
@@ -1201,17 +1201,17 @@ int ai_ProductionWindow(AIBLD *bld)
         for (c = 0, col = ai_ProdColumns; c < ncols; c++, col++) {
             col->maxAmount = 0x7fffffff;
             for (k = 0; k < 4; k++) {
-                col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
-                col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
+                col->in[k] = ai_Goods[col->good].in[k];
+                col->need[k] = ai_Goods[col->good].need[k];
                 if (col->in[k] != 0) {
                     item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
                     if (item == 0)
                         col->maxAmount = 0;
                     else
-                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ai_Goods[col->good].need[k]);
                 }
             }
-            col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
+            col->maxAmount = ai_Goods[col->good].batch * col->maxAmount;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
             if (item != 0)
                 col->stock = gm_ListAmount(store, item);
@@ -1304,7 +1304,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
             if (j >= list.count) {
                 d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74f;
                 worst = 2;
-            } else if (list.amount[j] < ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k]) {
+            } else if (list.amount[j] < ai_Goods[ai_ProdColumns[c].good].need[k]) {
                 d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74e;
                 if (worst <= 1)
                     worst = 1;
@@ -1428,7 +1428,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
                                                                       ai_ProdColumns[c].win, -2);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].interactive = 1;
                     d2_SetObjFont(ai_ProdColumns[c].inPics[k], 0x54);
-                    itoa(((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k], buf, 10);
+                    itoa(ai_Goods[ai_ProdColumns[c].good].need[k], buf, 10);
                     d2_SetCaption(ai_ProdColumns[c].inPics[k], buf);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].captionX = -8;
                     d2_Objs[ai_ProdColumns[c].inPics[k]].captionY = 6;
@@ -1450,12 +1450,12 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
                 d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74f;
                 worst = 2;
                 if (ai_ProdColumns[c].selected == k)
-                    missing = ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k];
-            } else if (list.amount[j] < ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k]) {
+                    missing = ai_Goods[ai_ProdColumns[c].good].need[k];
+            } else if (list.amount[j] < ai_Goods[ai_ProdColumns[c].good].need[k]) {
                 d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74e;
                 if (worst <= 1)
                     worst = 1;
-                missing = ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k] - list.amount[j];
+                missing = ai_Goods[ai_ProdColumns[c].good].need[k] - list.amount[j];
             } else {
                 d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74d;
             }
@@ -1513,22 +1513,22 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
         } else if (missing != 0) {
             d2_Objs[ai_ProdColumns[c].inPics[ai_ProdColumns[c].selected]].highlighted = 1;
             d2_LastWindow = ai_ProdColumns[c].amountWin;
-            if (((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch == 1) {
+            if (ai_Goods[ai_ProdColumns[c].good].batch == 1) {
                 switch (ls_GetLanguage()) {
                 case 0:
-                    io_PrintText(0xc1, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
+                    io_PrintText(0xc1, ai_Goods[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
                     break;
                 case 1:
-                    io_PrintText(0xc1, ai_ProdColumns[c].good * 2 + 0x9a8, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch);
+                    io_PrintText(0xc1, ai_ProdColumns[c].good * 2 + 0x9a8, ai_Goods[ai_ProdColumns[c].good].batch);
                     break;
                 }
             } else {
                 switch (ls_GetLanguage()) {
                 case 0:
-                    io_PrintText(0xc2, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
+                    io_PrintText(0xc2, ai_Goods[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
                     break;
                 case 1:
-                    io_PrintText(0xc2, ai_ProdColumns[c].good * 2 + 0x9a8, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch);
+                    io_PrintText(0xc2, ai_ProdColumns[c].good * 2 + 0x9a8, ai_Goods[ai_ProdColumns[c].good].batch);
                     break;
                 }
             }
@@ -1544,22 +1544,22 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
         } else {
             d2_Objs[ai_ProdColumns[c].inPics[ai_ProdColumns[c].selected]].highlighted = 1;
             d2_LastWindow = ai_ProdColumns[c].amountWin;
-            if (((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch == 1) {
+            if (ai_Goods[ai_ProdColumns[c].good].batch == 1) {
                 switch (ls_GetLanguage()) {
                 case 0:
-                    io_PrintText(0xc1, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
+                    io_PrintText(0xc1, ai_Goods[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
                     break;
                 case 1:
-                    io_PrintText(0xc1, ai_ProdColumns[c].good * 2 + 0x9a8, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch);
+                    io_PrintText(0xc1, ai_ProdColumns[c].good * 2 + 0x9a8, ai_Goods[ai_ProdColumns[c].good].batch);
                     break;
                 }
             } else {
                 switch (ls_GetLanguage()) {
                 case 0:
-                    io_PrintText(0xc2, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
+                    io_PrintText(0xc2, ai_Goods[ai_ProdColumns[c].good].batch, ai_ProdColumns[c].good * 2 + 0x9a8);
                     break;
                 case 1:
-                    io_PrintText(0xc2, ai_ProdColumns[c].good * 2 + 0x9a8, ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].batch);
+                    io_PrintText(0xc2, ai_ProdColumns[c].good * 2 + 0x9a8, ai_Goods[ai_ProdColumns[c].good].batch);
                     break;
                 }
             }
@@ -1605,8 +1605,8 @@ int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
     for (i = 0; i < 2; i++)
         ai_ProdRows2[i].slots = rows2[store->lvl1d][i];
     for (item = (AIOBJ *)gm_Query((void *)store->list, 1, 5); item != 0; item = (AIOBJ *)gm_QueryNext()) {
-        if (value == 2 && ((AIGOOD *)ai_Goods)[item->id].type == 0x17 ||
-            value != 2 && (((AIGOOD *)ai_Goods)[item->id].type == 0x17 || ((AIGOOD *)ai_Goods)[item->id].type == 0x25)) {
+        if (value == 2 && ai_Goods[item->id].type == 0x17 ||
+            value != 2 && (ai_Goods[item->id].type == 0x17 || ai_Goods[item->id].type == 0x25)) {
             for (i = 0; i < 16; i++)
                 if (ai_ProdGoods[i].good == item->id)
                     break;
@@ -3225,7 +3225,7 @@ void ai_TradeContactChecks(void)
 
     item = (unsigned short *)sv_ClickedItem;
     if (item != 0) {
-        g = (AIGOOD *)ai_Goods + *item;
+        g = ai_Goods + *item;
         if ((g->type == 6 || g->type == 2) &&
             (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, item, 0) &
              0x4000) != 0) {
@@ -3571,14 +3571,14 @@ void ai_TechTreeWindow(int bld, int room)
                     i = id - 0xdf;
                     if (ai_ScriptQuery(0x2b, bld, 0, i) == 0)
                         continue;
-                    good = &((AIGOOD *)ai_Goods)[i];
+                    good = &ai_Goods[i];
                     if (rec != 0)
                         found = (int)gm_Query((void *)rec->list, 1, 0, i);
                     else
                         found = (int)gm_Query((void *)b->objList, 2, 6, 0, i);
                     if (found == 0) {
                         /* research it */
-                        if (((AIGOOD *)ai_Goods)[i].type == 6) {
+                        if (ai_Goods[i].type == 6) {
                             msg.flags = 1;
                             msg.type = 0xc;
                             msg.fromId = b->id;
@@ -3912,17 +3912,17 @@ int ai_SearchResourceWindow(AIBLD *bld)
         for (c = 1, col = &ai_ProdColumns[1]; c < ncols; c++, col++) {
             col->maxAmount = 0x7fffffff;
             for (k = 0; k < 4; k++) {
-                col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
-                col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
+                col->in[k] = ai_Goods[col->good].in[k];
+                col->need[k] = ai_Goods[col->good].need[k];
                 if (col->in[k] != 0) {
                     item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
                     if (item == 0)
                         col->maxAmount = 0;
                     else
-                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ai_Goods[col->good].need[k]);
                 }
             }
-            col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
+            col->maxAmount = ai_Goods[col->good].batch * col->maxAmount;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
             if (item != 0)
                 col->stock = gm_ListAmount(store, item);
@@ -4254,7 +4254,7 @@ int ai_ProductionGoodsWindow(AIBLD *bld)
         /* the columns: the objects the building can make whose inputs the room holds */
         gm_BuildKindObjects((char *)bld);
         for (i = 0; ncols < 16 && i < gm_KindObjCount; i++) {
-            g = &((AIGOOD *)ai_Goods)[gm_KindObjs[i]];
+            g = &ai_Goods[gm_KindObjs[i]];
             if (g->type != 0x17) {
                 ok = 1;
                 for (k = 0; ok && k < 4; k++) {
@@ -4277,8 +4277,8 @@ int ai_ProductionGoodsWindow(AIBLD *bld)
         for (c = 0, col = ai_ProdColumns; c < ncols; c++, col++) {
             col->maxAmount = 0x7fffffff;
             for (k = 0; k < 4; k++) {
-                col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
-                col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
+                col->in[k] = ai_Goods[col->good].in[k];
+                col->need[k] = ai_Goods[col->good].need[k];
                 if (col->in[k] != 0) {
                     item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
                     if (item == 0)
@@ -4287,7 +4287,7 @@ int ai_ProductionGoodsWindow(AIBLD *bld)
                         col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / col->need[k]);
                 }
             }
-            col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
+            col->maxAmount = ai_Goods[col->good].batch * col->maxAmount;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
             if (item != 0)
                 col->stock = gm_ListAmount(store, item);

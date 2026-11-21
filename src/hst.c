@@ -33,7 +33,6 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #include "d2.h"
 #include "gfx.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 /* AI_ZERO_AT with the destination local assigned inside: @original the token callbacks store the size temp
@@ -683,7 +682,7 @@ int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
     if (o == 0)
         return 0;
     for (o = gm_Query(o->list, 1, 5); o != 0; o = gm_QueryNext()) {
-        if (ai_GoodsT[o->id].type == 9) {
+        if (ai_Goods[o->id].type == 9) {
             v = o->count;
             break;
         }
@@ -1176,7 +1175,7 @@ int ai_CommandCityTreasury(int a, int b, char *fmt)
             if (o == 0)
                 return 0;
             for (g = gm_Query(o->list, 1, 5); g != 0; g = gm_QueryNext()) {
-                if (ai_GoodsT[g->id].type == 9)
+                if (ai_Goods[g->id].type == 9)
                     break;
             }
             if (g == 0)
@@ -1734,7 +1733,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
         for (i = 0; i < 0x55; i++) {
             p = &gm_StockBlocks[ai_OwnPlayer].goods[i];
             if (p->item != 0 && p->amount != 0
-                && ai_GoodsT[p->item].type == 8) {
+                && ai_Goods[p->item].type == 8) {
                 e = *p;
                 e.mean = (f + 1.0f) * e.demand;
                 e.price = gm_ItemPrice(p->item, 100) * (f + 1.0f);
@@ -1746,7 +1745,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
         for (i = 0; i < 0x55; i++) {
             p = &gm_StockBlocks[ai_OwnPlayer].goods[i];
             if (p->item != 0 && p->amount != 0
-                && ai_GoodsT[p->item].type == 0x20) {
+                && ai_Goods[p->item].type == 0x20) {
                 e = *p;
                 e.mean = (f + 1.0f) * e.demand;
                 e.price = gm_ItemPrice(p->item, 100) * (f + 1.0f);

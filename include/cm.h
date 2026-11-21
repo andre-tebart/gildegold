@@ -148,7 +148,7 @@ int gm_TakeObjekt(int id, int good, int n);                                     
 int gm_AddObjekt(int id, int proto, int n);                                       /* 0x500970, hmt.h: void * n */
 int gm_AddNegative(int id, int good, int n);                                       /* 0x500ae0 */
 extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the players (a good id at +0x54) */
-extern char *ai_Goods;                  /* 0x91aaf0, ai.h: AIGOOD * (0x41 bytes each, the kind at 0) */
+extern struct AIGOOD *ai_Goods;         /* 0x91aaf0, the goods (0x41 bytes each, the kind at 0) */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 int gm_ListAmount(short *l, char *o);                                              /* 0x50aaf0 */
 int gm_ListStock(short *l, int item);                                             /* 0x50ab50 */

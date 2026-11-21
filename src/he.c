@@ -16108,7 +16108,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
         if (rec->item == 0)
             continue;
-        good = (AIGOOD *)ai_Goods + rec->item;
+        good = ai_Goods + rec->item;
         s = *rec;
         if (rec->amount == 0 || (good->type != 0x25 && good->type != 0x17))
             continue;
@@ -16161,7 +16161,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
         if (rec->item == 0)
             continue;
-        good = (AIGOOD *)ai_Goods + rec->item;
+        good = ai_Goods + rec->item;
         if (rec->amount == 0 || good->type == 0x25 || good->type == 0x17)
             continue;
         s = *rec;

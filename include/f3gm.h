@@ -174,7 +174,7 @@ float gm_Liking(unsigned a, unsigned b, int c);  /* 0x50c550 */
 int gm_ListAmount(short *l, char *o);  /* 0x50aaf0 */
 extern struct AIOBJ *ai_Objects;  /* 0x7e3f34 */
 extern int ai_GameFlags;  /* 0x6f23f8 */
-extern char * ai_Goods;  /* 0x91aaf0 */
+extern struct AIGOOD *ai_Goods;  /* 0x91aaf0 */
 int gm_RemoveObject(int *list, unsigned id);  /* 0x4ffff0 */
 void gm_KillSpieler(int c, int mode);  /* 0x503c60 */
 extern char * ai_Blds;  /* 0x889f74 */

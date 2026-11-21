@@ -950,8 +950,7 @@ void sv_DestroyScreen(void)
     sv_PanelRebuild = 1;
 }
 
-extern char *ai_Goods;              /* 0x91aaf0 */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
+extern struct AIGOOD *ai_Goods;              /* 0x91aaf0 */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -1094,7 +1093,7 @@ loaded:
                 for (slot = 0; slot < 0x40; slot++) {
                     if (bt->slot[slot] == 0xffff)
                         continue;
-                    g = &ai_GoodsT[bt->slot[slot] & 0x7fff];
+                    g = &ai_Goods[bt->slot[slot] & 0x7fff];
                     id = bt->slot[slot] & 0x7fff;
                     if ((g->type == 2 || g->type == 6) && id != 0xfd) {
                         if (cnt == i) {
@@ -1188,7 +1187,7 @@ void sv_UpdateGroundplan(unsigned flags)
                             for (slot = 0; slot < 0x40; slot++) {
                                 if (bt->slot[slot] == 0xffff)
                                     continue;
-                                g = &ai_GoodsT[bt->slot[slot] & 0x7fff];
+                                g = &ai_Goods[bt->slot[slot] & 0x7fff];
                                 id = bt->slot[slot] & 0x7fff;
                                 if ((g->type == 2 || g->type == 6) && id != 0xfd) {
                                     if (cnt == i) {
@@ -1215,7 +1214,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         for (slot = 0; slot < 0x40; slot++) {
                             if (bt->slot[slot] == 0xffff)
                                 continue;
-                            g = &ai_GoodsT[bt->slot[slot] & 0x7fff];
+                            g = &ai_Goods[bt->slot[slot] & 0x7fff];
                             id = bt->slot[slot] & 0x7fff;
                             if ((g->type == 2 || g->type == 6) && id != 0xfd) {
                                 if (cnt == i) {
@@ -3602,7 +3601,7 @@ void sv_OpenItemPanel(unsigned short *p)
             io_PrintText("$Z%s", *p * 2 + 0x9a8);
         d2_SetForm(sv_PanelForm, 0);
         ((D2OBJ *)d2_Objs)[d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1, 0x48, *p + 0xdf, d2_LastWindow)].interactive = 1;
-        g = &ai_GoodsT[*p];
+        g = &ai_Goods[*p];
         if (b != 0 && (g->type == 2 || g->type == 6)) {
             owner = gm_ObjectBuildingOwner(p);
             perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
@@ -3971,7 +3970,7 @@ void sv_RefreshPanel(void)
         return;
     }
     SV_CLEAR_PANEL_WIDGETS(i)
-    if (sv_SelectedItem == 0 || ai_Goods[*sv_SelectedItem * 0x41] != 0x1d)
+    if (sv_SelectedItem == 0 || ai_Goods[*sv_SelectedItem].type != 0x1d)
         return;
     if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0)
         rt_EditCartRoute((AIOBJ *)sv_SelectedItem);
@@ -4163,7 +4162,7 @@ refresh:
         return;
     sv_PanelRebuild = 0;
     sv_ClosePanel();
-    if (sv_SelectedItem != 0 && ai_Goods[*sv_SelectedItem * 0x41] == 0x1d && ai_SelectedCount == 0 && sv_SelectedChar == 0)
+    if (sv_SelectedItem != 0 && ai_Goods[*sv_SelectedItem].type == 0x1d && ai_SelectedCount == 0 && sv_SelectedChar == 0)
         sv_OpenCartPanel((AIOBJ *)sv_SelectedItem);
     else if (sv_SelectedModel == 0 && sv_OtherSelected == 0 && ai_SelectedCount == 0) {
         if (sv_PanelShown == 0 && sv_SelectedChar == 0)
@@ -4298,7 +4297,7 @@ void sv_HoverPick(void)
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, sv_HoverItem, 0);
             if (sv_HoverItem != 0) {
                 n = ((AIOBJ *)sv_HoverItem)->id;
-                g = &ai_GoodsT[n];
+                g = &ai_Goods[n];
                 if ((g->type == 6 || g->type == 2) && (sv_PanelPerms & 0x4000) != 0) {
                     sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x9a8 + n * 2], txt_Ptrs[0x83]);
                     d2_PointerLook = 0xb;
@@ -4348,7 +4347,7 @@ void sv_HoverPick(void)
             else
                 it = (unsigned short *)gm_Query(b->objList, 1, 4, 2);
             for (; it != 0; it = gm_QueryNext()) {
-                g = &ai_GoodsT[*it];
+                g = &ai_Goods[*it];
                 if (strcmpi(goods, g->name) == 0)
                     break;
             }
@@ -4424,7 +4423,7 @@ void sv_ResetSelection(void)
     sv_OtherSelected = 0;
     o = (AIOBJ *)gm_Query((void *)b->objList, 1, 5);
     while (o != 0) {
-        if (ai_GoodsT[o->id].type == 0x1d)
+        if (ai_Goods[o->id].type == 0x1d)
             o->flags20 &= ~2u;
         o = (AIOBJ *)gm_QueryNext();
     }
@@ -4505,7 +4504,7 @@ void sv_HandleObjects(void)
             sv_ClickedChar = ai_PickedChar;
             sv_ClickedContact = sv_HoverContact;
             if (sv_HoverItem != 0)
-                cls = &ai_GoodsT[((AIOBJ *)sv_HoverItem)->id];
+                cls = &ai_Goods[((AIOBJ *)sv_HoverItem)->id];
             if (strcmp(ai_PickedObject, "tp_TUER") == 0 || (cls != 0 && cls->type == 6) || sv_HoverContact != 0)
                 door = 1;
             if ((((D3OBJECT *)ai_PickedObject)->objectFlags & 1) != 0 && door == 0) {
@@ -4535,7 +4534,7 @@ void sv_HandleObjects(void)
             if (sv_HoverBuilding != 0)
                 sv_SelectedModel = (int)ai_PickedObject;
             if (sv_HoverItem != 0) {
-                cls = &ai_GoodsT[((AIOBJ *)sv_HoverItem)->id];
+                cls = &ai_Goods[((AIOBJ *)sv_HoverItem)->id];
                 sv_SelectedModel = (int)ai_PickedObject;
                 if (cls->type == 0x1d)
                     sv_ClearSelection();
@@ -4675,7 +4674,7 @@ void sv_RunLocationScripts(AIBLD *a)
 
     cls = 0;
     if (sv_PanelShown != 0 && *sv_PanelShown != 0xfd)
-        cls = &ai_GoodsT[*sv_PanelShown];
+        cls = &ai_Goods[*sv_PanelShown];
     kind = &ai_BTypes[a->type];
     if (d3_Time > sv_SceneEventTime + 500) {
         if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[6].fn != 0)
@@ -5442,7 +5441,7 @@ void sv_DrawGateName(D3OBJECT *part)
     else
         it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
     for (; it != 0; it = gm_QueryNext()) {
-        g = &ai_GoodsT[*it];
+        g = &ai_Goods[*it];
         if (strcmpi(name, g->name) == 0) {
             obj = it;
             goto found;
@@ -5515,7 +5514,7 @@ void sv_DrawItemNames(void)
     }
     d2_SetFont(0x54);
     for (q = (AIOBJ *)gm_Query((void *)list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
-        g = &ai_GoodsT[q->id];
+        g = &ai_Goods[q->id];
         if (q->obj != 0 && g->type != 6 && g->type != 2 && d3if_ScreenBox(q->obj, &box) != 0) {
             y = box.top;
             x = (box.right - box.left) / 2 - 0x50 + box.left;
@@ -5528,7 +5527,7 @@ void sv_DrawItemNames(void)
     else if (ai_FallbackBuilding != 0)
         list = ((AIBLD *)ai_FallbackBuilding)->objList;
     for (q = (AIOBJ *)gm_Query((void *)list, 2, 5, 6); q != 0; q = (AIOBJ *)gm_QueryNext()) {
-        g = &ai_GoodsT[q->id];
+        g = &ai_Goods[q->id];
         if (q->obj != 0 && (g->type == 6 || g->type == 2) && d3if_ScreenBox(q->obj, &box) != 0) {
             y = box.top;
             x = (box.right - box.left) / 2 - 0x50 + box.left;
@@ -5744,7 +5743,7 @@ void sv_HandleRightClick(unsigned fl)
             sv_BorderViewX = 0;
             sv_BorderViewY = 0;
         }
-        if (dm_L.rup != 0 && (sv_OtherSelected != 0 || (sv_SelectedItem != 0 && ai_GoodsT[*sv_SelectedItem].type == 0x1d))) {
+        if (dm_L.rup != 0 && (sv_OtherSelected != 0 || (sv_SelectedItem != 0 && ai_Goods[*sv_SelectedItem].type == 0x1d))) {
             sv_ResetSelection();
             di_ClearEvents(0x10);
         }

@@ -3968,7 +3968,7 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
         if (slots[i].good != 0) {
             pic = d2_WinOpenPic(0xf, i * 0x30, slots[i].good + 0xdf, d2_LastWindow);
             d2_Objs[pic].style = 3;
-            d2_Objs[pic].user = &((AIGOOD *)ai_Goods)[slots[i].good];
+            d2_Objs[pic].user = &ai_Goods[slots[i].good];
             d2_SetObjEnabled(pic, 1);
             d2_Objs[pic].interactive = 1;
             d2_Objs[pic].checked = slots[i].lock == 0;

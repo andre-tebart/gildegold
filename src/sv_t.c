@@ -4385,7 +4385,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
         pid = d2_WinOpenPic(x, y, slot->id + 0xdf, win2);
         *pic = pid;
         d2_Objs[pid].interactive = 1;
-        d2_Objs[pid].user = ai_Goods + slot->id * 0x41;
+        d2_Objs[pid].user = &ai_Goods[slot->id];
         d2_RadioAdd(group, pid);
         txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
         t = d2_CreateWinText(x + 0x3c, y + 5, line, win2);
@@ -4434,7 +4434,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
             pid = d2_WinOpenPic(x, y, slot->id + 0xdf, win2);
             *pic = pid;
             d2_Objs[pid].interactive = 1;
-            d2_Objs[pid].user = ai_Goods + slot->id * 0x41;
+            d2_Objs[pid].user = &ai_Goods[slot->id];
             d2_RadioAdd(group, pid);
             txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
             t = d2_CreateWinText(x + 0x3c, y + 5, line, win2);

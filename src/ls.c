@@ -781,14 +781,14 @@ int ls_WriteSceneRecords(int f)
         AIOBJ *o = ai_Objects;
 
         for (i = 0x5008; i != 0; i--) {
-            if (((AIGOOD *)ai_Goods)[o->id].type == 0x1d)
+            if (ai_Goods[o->id].type == 0x1d)
                 cnt++;
             o++;
         }
     }
     LS_W(&cnt, 4)
     for (i = 0; i < 0x5008; i++) {
-        if (((AIGOOD *)ai_Goods)[ai_Objects[i].id].type == 0x1d) {
+        if (ai_Goods[ai_Objects[i].id].type == 0x1d) {
             c = ai_Objects[i].sceneObj;
             if (ls_WriteSceneCharacter(c, ai_Objects[i].objId, f) == 0)
                 return 0;
@@ -2449,7 +2449,7 @@ int ls_FixupAfterLoad(void)
         int bld, obj, chr;      /* what gm_FindById finds for an id: a building, an object or a character */
 
         o = &ai_Objects[i];
-        if (((AIGOOD *)ai_Goods)[o->id].type == 0x1d)
+        if (ai_Goods[o->id].type == 0x1d)
             o->job24 = 0;
         if (o->ownerId != -1 && gm_FindById(&bld, &obj, &chr, o->ownerId) != 0) {
             if (bld != 0) {

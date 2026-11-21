@@ -2428,7 +2428,7 @@ typedef struct GMJOB {
 
 extern int gm_ClassBuilding[32];
 extern int gm_GoodBuilding[732];
-extern char * ai_Goods;
+extern struct AIGOOD *ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
 extern struct AIOBJ *ai_Objects;
 extern int gm_DefaultStock[];
@@ -2628,7 +2628,7 @@ extern int gm_ClassBuilding[32];
 char * ai_Blds;  /* 0x889f74, the buildings ( */
 signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 int gm_GoodBuilding[732];  /* 0x919f80 */
-char * ai_Goods;  /* 0x91aaf0, the object prototypes ( */
+AIGOOD *ai_Goods;  /* 0x91aaf0, the object prototypes ( */
 extern unsigned gm_OwnNameHeads[136];
 extern char gm_CharacterStatistics[128];
 extern char d2_GfxDir[256];

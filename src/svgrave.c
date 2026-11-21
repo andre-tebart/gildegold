@@ -533,7 +533,7 @@ void ai_GraveSizeButtons(AIBLD *rec, int *w)
         w[8 + i] = d2_WinOpenPic(i * 0x6c + 6, 0, ai_GravePics[i], w[4]);
         d2_Objs[w[8 + i]].interactive = 1;
         d2_Objs[w[8 + i]].style = 3;
-        d2_Objs[w[8 + i]].user = ai_Goods + ai_GraveGoods[i] * 0x41;
+        d2_Objs[w[8 + i]].user = &ai_Goods[ai_GraveGoods[i]];
     }
     d2_SetObjEnabled(w[9], yard->open[1]);
     d2_SetObjEnabled(w[10], yard->open[2]);
@@ -1177,7 +1177,7 @@ void ai_GraveSizeButtonsAt(AIBLD *rec, int win, int section, int *btns, int *sel
         btns[i] = d2_WinOpenPic(i * 0x6c + 6, 0, ai_GravePics[i], d2_LastWindow);
         d2_Objs[btns[i]].interactive = 1;
         d2_Objs[btns[i]].style = 3;
-        d2_Objs[btns[i]].user = ai_Goods + ai_GraveGoods[i] * 0x41;
+        d2_Objs[btns[i]].user = &ai_Goods[ai_GraveGoods[i]];
     }
     d2_SetObjEnabled(btns[1], yard->open[1]);
     d2_SetObjEnabled(btns[2], yard->open[2]);

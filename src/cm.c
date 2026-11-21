@@ -115,7 +115,6 @@ extern GAPDATA full_data_602568[];
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
@@ -3067,7 +3066,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
             q = &z->inventory;
             r2 = z;
         }
-        if (ai_GoodsT[m->sell.item].type == 0x1d)
+        if (ai_Goods[m->sell.item].type == 0x1d)
             o2 = 0;
         else
             o2 = (AIOBJ *)gm_Query((void *)*q, 1, 0, m->sell.item);
@@ -3105,7 +3104,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
     if (m->sell.seller != -1) {
         o->count -= m->sell.count;
         if (o->count <= 0) {
-            if (ai_GoodsT[m->sell.item].type != 2 && ai_GoodsT[m->sell.item].type != 6)
+            if (ai_Goods[m->sell.item].type != 2 && ai_Goods[m->sell.item].type != 6)
                 gm_RemoveObject(p, m->sell.item);
             else if (x1 != 0)
                 gm_RemoveObjectFromBuilding((int)x1, m->sell.item);
@@ -3125,7 +3124,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
     if (m->sell.buyer != -1) {
         if (o2 != 0) {
             o2->count += m->sell.count;
-        } else if (ai_GoodsT[m->sell.item].type == 2 || ai_GoodsT[m->sell.item].type == 6) {
+        } else if (ai_Goods[m->sell.item].type == 2 || ai_Goods[m->sell.item].type == 6) {
             if (x2 != 0)
                 o2 = (AIOBJ *)gm_AllocRaum((unsigned char *)x2, m->sell.item);
             if (o2 == 0)
@@ -3135,7 +3134,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
             if (o2 == 0)
                 return 1;
             if (y2 != 0) {
-                AIGOOD *gd = &ai_GoodsT[m->sell.item];
+                AIGOOD *gd = &ai_Goods[m->sell.item];
 
                 o2->count++;
                 if ((gd->type == 0x17 || gd->type == 0x25)
@@ -3202,7 +3201,7 @@ int cm_ExMakeGoods(G17MSG *m, G17STAT *s)
     r = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)y);
     if (r == 0)
         return 1;
-    g = &ai_GoodsT[m->make.item];
+    g = &ai_Goods[m->make.item];
     n = m->make.runs;
     pp = g->need;
     for (i = 4; i != 0; i--, pp++) {
@@ -4566,7 +4565,7 @@ int cm_ExPlaceOnStage(G17MSG *m, G17STAT *s)
    building through the gate of its room (ch_UseGate) and its transporter, out of another building through its
    door ("dummy_EINGANG"), a walk (0x2d) to the door ("dummy_TUER") of the target, the scene change 0x33 between
    two 0x38 actions, then the room's gate or the sit-down 0x39. Each action gets the message's reason.
-   @deep s2: g = &ai_GoodsT[q->id] named at both gate sites (cm_ExChrUseGates's form) 319 -> 273; door
+   @deep s2: g = &ai_Goods[q->id] named at both gate sites (cm_ExChrUseGates's form) 319 -> 273; door
    block stores x,y,z then hasPos (the original jumps into the other branch's tail at the z store); goto
    done -> q==0 chained as if/else-if (same code); memcpy -> strcpy of TRANSPORTER_ENTRY (same code). Tree:
    draft 275 ins / 1622 bytes. Hunk 1 (every scratch register behind it rotates): the inline strcpy at 4648
@@ -4634,7 +4633,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
         if (p->scriptGroup != -1) {
             q = (AIOBJ *)gm_Query((void *)cb->objList, 1, 1, p->scriptGroup);
             if (q != 0 && q->id != 0xfd) {
-                g = &ai_GoodsT[q->id];
+                g = &ai_Goods[q->id];
                 sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
                 q2 = (AIOBJ *)gm_Query((void *)cb->objList, 1, 0, 0xfd);
                 k = init_BuildingSceneUniverse((unsigned char *)cb);
@@ -4826,7 +4825,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
                 }
             } else {
                 i = init_ObjectSceneUniverse((unsigned short *)q);
-                g = &ai_GoodsT[q->id];
+                g = &ai_Goods[q->id];
                 sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
                 if (cb != 0) {
                     r = ch_UseGate(p, "dummy_EINGANG", gate, i, cb->id, q->objId);
@@ -4872,11 +4871,11 @@ int cm_ExChrUseGates(G17MSG *m, G17STAT *s)
         k = init_BuildingSceneUniverse((unsigned char *)b);
         sprintf(gate2, "dummy_gate_ob_AUSSEN_RAUM");
     } else {
-        g = &ai_GoodsT[q->id];
+        g = &ai_Goods[q->id];
         k = init_ObjectSceneUniverse((unsigned short *)q);
         sprintf(gate2, "dummy_gate_ob_%s", strupr(g->name));
     }
-    g = &ai_GoodsT[r->id];
+    g = &ai_Goods[r->id];
     sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
     if (k >= 0)
         ch_UseGate(p, gate, gate2, k, b->id, q->objId);

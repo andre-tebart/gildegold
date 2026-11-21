@@ -226,7 +226,7 @@ typedef struct GMJOB {
 #pragma pack(pop)
 extern int gm_ClassBuilding[32];
 extern int gm_GoodBuilding[732];
-extern char * ai_Goods;
+extern struct AIGOOD *ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
 extern struct AIOBJ *ai_Objects;
 extern int gm_DefaultStock[];
@@ -387,7 +387,7 @@ void gm_InitBuildingTables(void)
         for (k = 0; k < bt->objCount; k++) {
             if (bt->objs[k] != 0xffff) {
                 u = bt->objs[k] & 0x7fff;
-                base = gm_ClassBuilding[(unsigned char)ai_Goods[u * 0x41 + 0x21]];
+                base = gm_ClassBuilding[ai_Goods[u].cls];
                 kind2 = GM_BTYPE(base)->kind;
                 cnt = 0;
                 for (j = base; j < 0x58 && GM_BTYPE(j)->kind == kind2; j++)
@@ -400,7 +400,7 @@ void gm_InitBuildingTables(void)
     }
     for (i = 0; i < 0x2dc; i++) {
         if (gm_GoodBuilding[i] == 0x58)
-            gm_GoodBuilding[i] = gm_ClassBuilding[(unsigned char)ai_Goods[i * 0x41 + 0x21]];
+            gm_GoodBuilding[i] = gm_ClassBuilding[ai_Goods[i].cls];
     }
 }
 /* 0x4fe570, loads the building and object tables of the data path root: resets the player records at 0x7d6a64 (stride 0xaa4 ints, each gets the 0xaa0 ints 0x6178c8), allocates the building prototypes (0xca78 = 0x58 * 0x24d, "f3_gm:lpGebaeudePROT") and instances (0xa900, "..INST"), reads "<root>A_Geb.dat" (0x58 records of 0x24d bytes), the object prototypes (0xb9dc = 0x2dc * 0x41, "..PROT"), instances (0x14f218) and "<root>A_Obj.dat"; builds the lookup tables (0x4fe370, 0x503e80) and adds the count of the flagged (bit 15) objects of the kinds 2 / 6 (except 0xfd) to each building type's extensions. Returns 0, or -1 .. -6 for the failed step. */
@@ -434,7 +434,7 @@ int gm_LoadTables(char *root)
         return -3;
     fread(ai_BTypes, 0x24d, 0x58, f);
     fclose(f);
-    ai_Goods = (char *)mem_Alloc(0xb9dc, "f3_gm:lpObjektePROT");
+    ai_Goods = (AIGOOD *)mem_Alloc(0xb9dc, "f3_gm:lpObjektePROT");
     if (ai_Goods == 0)
         return -4;
     ai_Objects = (struct AIOBJ *)mem_Alloc(0x14f218, "f3_gm:lpObjekteINST");
@@ -534,7 +534,7 @@ int gm_IsBuildingKind(int n)
 {
     char *g;
 
-    g = ai_Goods + n * 0x41;
+    g = (char *)ai_Goods + n * 0x41;
     if (*g == 1 || *g == 0x1a || *g == 0x0b || *g == 0x1c || *g == 0x1b || *g == 3 || *g == 4)
         return 1;
     return 0;
@@ -667,7 +667,7 @@ void gm_InitPlayerRecord(int p)
     for (i = 0; i < 0x55; i++) {
         g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
         t = &((GMSTOCK *)gm_DefaultStock)[i];
-        pc = ai_Goods + g->item * 0x41;
+        pc = (char *)ai_Goods + g->item * 0x41;
         g->v00c = t->v00c;
         g->baseStock = t->baseStock;
         if (*pc == 0x17 || *pc == 0x25)
@@ -736,7 +736,7 @@ void gm_SyncMarket(unsigned p)
                         g = &stock[i];
                         if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
                             g->amount = 1;
-                            gp = ai_Goods + g->item * 0x41;
+                            gp = (char *)ai_Goods + g->item * 0x41;
                             for (j = 0; j < 0x55; j++) {
                                 g2 = &stock[j];
                                 for (k = 0; k < 4; k++)
@@ -856,7 +856,7 @@ void gm_RefreshGoodsLists(unsigned p)
                 g = &stock[i];
                 if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
                     g->amount = 1;
-                    gp = ai_Goods + g->item * 0x41;
+                    gp = (char *)ai_Goods + g->item * 0x41;
                     for (j = 0; j < 0x55; j++) {
                         g2 = &stock[j];
                         for (k = 0; k < 4; k++)
@@ -1012,7 +1012,7 @@ int gm_GoodsDemand(int p, int i)
 {
     char *good;
 
-    good = ai_Goods + GM_BLOCK(p)->goods[i].item * 0x41;
+    good = (char *)ai_Goods + GM_BLOCK(p)->goods[i].item * 0x41;
     if (*good != 0x17 && *good != 0x25) {
         if (p == 0)
             return (int)(ai_RatingBase * GM_BLOCK(0)->goods[i].rate * 0.0025 + 0.5);
@@ -1079,7 +1079,7 @@ float gm_StockPrice(int p, int n)
     double f, t;
 
     id = GM_BLOCK(p)->goods[n].item;
-    good = ai_Goods + id * 0x41;
+    good = (char *)ai_Goods + id * 0x41;
     mk = gm_FindMarketObject(id);
     if (mk == 0 && p != ai_OwnPlayer && (b = gm_FindPlayerBuilding(p)) != 0)
         mk = (int)gm_Query((void *)((ORDBLD *)b)->objList, 2, 0, 0x1db, 6);
@@ -1220,7 +1220,7 @@ unsigned short *gm_QueryNext(void)
                 m = 1;
         }
         if (ok && gm_QueryKind[0] != -1)
-            m = ai_Goods[gm_QueryCursor->type * 0x41] == gm_QueryKind[0];
+            m = ai_Goods[gm_QueryCursor->type].type == gm_QueryKind[0];
         if (!ok)
             m = 0;
         if (gm_QueryScanAll != 0) {
@@ -1437,7 +1437,7 @@ void gm_FreeObjectExtra(unsigned short *o)
 {
     struct AIOBJ *obj = (struct AIOBJ *)o;
 
-    if (ai_Goods[obj->type * 0x41] == 0x1d && obj->route != 0) {
+    if (ai_Goods[obj->type].type == 0x1d && obj->route != 0) {
         rt_FreePoints(obj->route);
         obj->route = 0;
     }
@@ -2823,7 +2823,7 @@ int gm_GoodPicture(unsigned short *o)
     char *g;
     int i;
 
-    g = ai_Goods + *o * 0x41;
+    g = (char *)ai_Goods + *o * 0x41;
     if (*g == 2 || *g == 6) {
         i = 0;
         do {
@@ -2842,7 +2842,7 @@ char gm_CollectSlotObject(char *o, int *list)
     int key;
 
     key = ((D3OBJECT *)o)->pickId & GM_OBJ_PROTO_MASK;
-    if (o[0x4b] == 1 && ai_Goods[key * 0x40 + key] == 0x21) {
+    if (o[0x4b] == 1 && ((char *)ai_Goods)[key * 0x40 + key] == 0x21) {
         list[list[0x80] + 0x40] = key;
         list[list[0x80]] = (int)o;
         list[0x80]++;
@@ -2949,7 +2949,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own)
         cnt = 0x5008;
         w = (ORDOBJ *)ai_Objects;
         do {
-            if (w->type != 0 && ai_Goods[w->type * 0x41] == 0x1d && w->cartBld == bd->id) {
+            if (w->type != 0 && ai_Goods[w->type].type == 0x1d && w->cartBld == bd->id) {
                 w->holderId = ORD_CHARS[own].netId;
                 if (w->list != 0)
                     ((ORDOBJ *)w->list)->holderId = ORD_CHARS[own].netId;
@@ -3115,7 +3115,7 @@ unsigned short *gm_AllocRaum(unsigned char *b, unsigned n)
         if (w == 0)
             break;
         if (w != 0xffff) {
-            k = ai_Goods + (w & 0x7fff) * 0x41;
+            k = (char *)ai_Goods + (w & 0x7fff) * 0x41;
             if (*k == 2 || *k == 6)
                 i = 0x40;
             else if (w & 0x8000)
@@ -3431,7 +3431,7 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
             v = 0x800;
     } else if (obj != 0) {
         ot = obj->type;
-        if (ai_Goods[ot * 0x41] == 6) {
+        if (ai_Goods[ot].type == 6) {
             if (ot >= 0x91 && ot <= 0x97)
                 v = 1;
             else
@@ -5318,7 +5318,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
         }
     }
     for (o = (ORDOBJ *)oldA.inventory; o != 0; o = o->next) {
-        if (o->type != 0 && ai_Goods[o->type * 0x41] == 9)
+        if (o->type != 0 && ai_Goods[o->type].type == 9)
             gm_AddObjekt(newA.netId, o->type, o->count);
     }
     ORD_CHARS[sa].v1a8 = worth;
@@ -5716,7 +5716,7 @@ int gm_SumListAmounts(void *list, unsigned char p);
 
 #define PLW54(k) (ai_PlayerCity[(unsigned char)(k)][0])  /* the city id of the player slot k */
 #define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
-#define OPROTO(i) (ai_Goods + (unsigned)(i) * 0x41)
+#define OPROTO(i) ((char *)ai_Goods + (unsigned)(i) * 0x41)
 
 extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber, gm_AllowAll, ai_NextObjectId;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc, 0x6f2448, 0x61a654 */
 
@@ -8181,7 +8181,7 @@ extern unsigned gm_KindObjs[732];
 extern int gm_TreeRanks;
 extern char * ai_Blds;
 extern int gm_GoodBuilding[732];
-extern char * ai_Goods;
+extern struct AIGOOD *ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
 extern char gm_CharacterStatistics[128];
 extern char d2_GfxDir[256];

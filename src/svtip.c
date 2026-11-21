@@ -650,8 +650,8 @@ void ai_HandleItemDrag(void)
                 item = ((AIOBJ *)user)->id;
                 if (item >= 0x2dc)
                     item = 0;
-            } else if ((char *)user >= ai_Goods && (char *)user < ai_Goods + 0x2dc * 0x41) {
-                item = ((char *)user - ai_Goods) / 0x41;
+            } else if ((char *)user >= (char *)ai_Goods && (char *)user < (char *)&ai_Goods[0x2dc]) {  /* ai_Goods[0x2dc]: one past the table */
+                item = (AIGOOD *)user - ai_Goods;
             }
         } else {
             if (d2_RightHeldObj >= 0xdf && d2_RightHeldObj < 0x427)
@@ -668,7 +668,7 @@ void ai_HandleItemDrag(void)
             ai_DragViewWin = -1;
         }
         if (item != 0) {
-            g = &((AIGOOD *)ai_Goods)[item];
+            g = &ai_Goods[item];
             if (g->type == 0x20 || g->type == 0x17 || g->type == 0x25 || g->type == 0x27)
                 ai_DragWindow = ai_OpenItemTooltip(item);
             else
@@ -791,7 +791,7 @@ int ai_OpenItemTooltip(int idx)
     int list[32];
 
     w = ai_FindWeaponRecord(idx);
-    item = (AIGOOD *)ai_Goods + idx;
+    item = ai_Goods + idx;
     if (w != 0 && ((AIWEAPON *)w)->id != 0)
         view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Objekte_Waffen");
     else
@@ -937,7 +937,7 @@ int ai_OpenUpgradeTooltip(int idx)
     int value;
     float f;
 
-    if (((AIGOOD *)ai_Goods)[idx].type == 0x1d)
+    if (ai_Goods[idx].type == 0x1d)
         return -1;
     view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Objekte_Upgrades");
     d2_CentreViewWindows(view);
@@ -949,7 +949,7 @@ int ai_OpenUpgradeTooltip(int idx)
     io_PrintText(idx * 2 + 0x9a9);
     d2_SetForm(0, 1);
     io_PrintText(idx * 2 + 0x9a8);
-    item = (AIGOOD *)ai_Goods + idx;
+    item = ai_Goods + idx;
     d2_SetForm(0, 3);
     if (item->b40 != 0)
         io_PrintText(0x21, item->b40);

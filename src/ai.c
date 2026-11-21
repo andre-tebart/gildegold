@@ -23,7 +23,6 @@ typedef unsigned int SOCKET;
 #include "data_views.h"
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #include "d3_types.h"
@@ -654,7 +653,7 @@ void ai_EvaluateProduction(AICHAR *ch)
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
                     e = &ai_Entries[i];
-                    if (e->capacity >= ai_GoodsT[e->item].batch && ai_HasMaterials(ch, e, 1)) {
+                    if (e->capacity >= ai_Goods[e->item].batch && ai_HasMaterials(ch, e, 1)) {
                         ai_Entries[i].flags |= 8;
                         ai_StartProduction(ch, e);
                         ch->prod = (unsigned short)e->item;
@@ -668,7 +667,7 @@ void ai_EvaluateProduction(AICHAR *ch)
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
                 e = &ai_Entries[i];
-                if (e->capacity >= ai_GoodsT[e->item].batch && ai_HasMaterials(ch, e, 1)) {
+                if (e->capacity >= ai_Goods[e->item].batch && ai_HasMaterials(ch, e, 1)) {
                     ai_Entries[i].flags |= 8;
                     ai_StartProduction(ch, e);
                     ch->prod = (unsigned short)e->item;
@@ -686,19 +685,19 @@ void ai_EvaluateProduction(AICHAR *ch)
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount) {
+                    if (e->capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + e->amount) {
                         if (ai_HasMaterials(ch, e, 1)) {
                             ai_Entries[i].flags |= 8;
                             ai_StartProduction(ch, e);
                             ch->prod = (unsigned short)e->item;
-                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_GoodsT[e->item].name);
+                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_Goods[e->item].name);
                             goto done;
                         } else if (ai_HasMaterials(ch, e, 0)) {
                             ai_StartProduction(ch, e);
                             ch->prod = (unsigned short)e->item;
                             sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen, da der spieler es so will",
-                                    ai_GoodsT[e->item].name);
+                                    ai_Goods[e->item].name);
                             goto done;
                         }
                     }
@@ -719,27 +718,27 @@ void ai_EvaluateProduction(AICHAR *ch)
     } while (i < 32);
     for (i = 0; i < ai_NEntries; i++) {
         e = &ai_Entries[info.perm[i]];
-        if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
-            && e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-            && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount && ai_HasMaterials(ch, e, 1)) {
+        if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
+            && e->capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+            && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + e->amount && ai_HasMaterials(ch, e, 1)) {
             k = info.perm[i];
             ai_Entries[k].flags |= 8;
             e = &ai_Entries[k];
             ai_StartProduction(ch, e);
             ch->prod = (unsigned short)e->item;
-            sprintf(buf, "Produktion von %s starten", ai_GoodsT[e->item].name);
+            sprintf(buf, "Produktion von %s starten", ai_Goods[e->item].name);
             goto done;
         }
     }
     for (i = 0; i < ai_NEntries; i++) {
         e = &ai_Entries[info.perm[i]];
-        if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
-            && e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-            && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount && ai_HasMaterials(ch, e, 0)) {
+        if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
+            && e->capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+            && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + e->amount && ai_HasMaterials(ch, e, 0)) {
             e = &ai_Entries[info.perm[i]];
             ai_StartProduction(ch, e);
             ch->prod = (unsigned short)e->item;
-            sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_GoodsT[e->item].name);
+            sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_Goods[e->item].name);
             goto done;
         }
     }
@@ -839,7 +838,7 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         } else if (ch->prod != 0) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
-                    if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                    if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                         && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         ai_Entries[i].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[i]);
@@ -853,7 +852,7 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
     } else {
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
-                if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                     && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     ai_Entries[i].flags |= 8;
                     ai_StartProduction(ch, &ai_Entries[i]);
@@ -872,21 +871,21 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (ai_Entries[i].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[i].amount) {
+                    if (ai_Entries[i].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[i].amount) {
                         if (!ai_HasMaterials(ch, e, 1)) {
                             if (ai_HasMaterials(ch, e, 0)) {
                                 ai_StartProduction(ch, e);
                                 ch->prod = (unsigned short)e->item;
                                 sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen, da der spieler es so will",
-                                        ai_GoodsT[e->item].name);
+                                        ai_Goods[e->item].name);
                                 goto done;
                             }
                         } else {
                             ai_Entries[i].flags |= 8;
                             ai_StartProduction(ch, e);
                             ch->prod = (unsigned short)e->item;
-                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_GoodsT[e->item].name);
+                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_Goods[e->item].name);
                             goto done;
                         }
                     }
@@ -909,17 +908,17 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
                 ai_Entries[k].flags |= 8;
                 e = &ai_Entries[k];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -928,15 +927,15 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -949,7 +948,7 @@ done:
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].flags & 8) {
                 for (k = 0; k < 4; k++) {
-                    if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_GoodsT[ai_Entries[i].item].need[k])
+                    if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_Goods[ai_Entries[i].item].need[k])
                         ai_Entries[i].flags &= ~8;
                 }
             }
@@ -1138,18 +1137,18 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
                 if (ai_Entries[i].item == id) {
                     if (b->lvl1c < ai_Entries[i].need1c || b->lvl1d < ai_Entries[i].need20)
                         break;
-                    if (ai_Entries[i].capacity < ai_GoodsT[ai_Entries[i].item].batch)
+                    if (ai_Entries[i].capacity < ai_Goods[ai_Entries[i].item].batch)
                         break;
                     x = gm_FindMarketObject(ai_Entries[i].item);
                     if (!x)
                         break;
                     r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-                    g = &ai_GoodsT[ai_Entries[i].item];
+                    g = &ai_Goods[ai_Entries[i].item];
                     if (r < g->batch + ai_Entries[i].amount)
                         break;
                     if (g->type == 0x17) {
                         o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                        if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
+                        if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
                             break;
                     } else if (!ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         if (ai_HasMaterials(ch, &ai_Entries[i], 0)) {
@@ -1167,14 +1166,14 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     }
     for (i = 0; i < ai_NEntries; i++) {
         if (!(ai_Entries[i].flags & 4) && b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20
-            && ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+            && ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
             && (x = gm_FindMarketObject(ai_Entries[i].item)) != 0) {
             r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-            g = &ai_GoodsT[ai_Entries[i].item];
+            g = &ai_Goods[ai_Entries[i].item];
             if (r >= g->batch + ai_Entries[i].amount) {
                 if (g->type == 0x17) {
                     o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                    if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
+                    if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
                         continue;
                 } else if (!ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     continue;
@@ -1189,10 +1188,10 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
         if (ai_Entries[i].flags & 8)
             break;
         if (!(ai_Entries[i].flags & 4) && b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20
-            && ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+            && ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
             && (x = gm_FindMarketObject(ai_Entries[i].item)) != 0) {
             r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-            g = &ai_GoodsT[ai_Entries[i].item];
+            g = &ai_Goods[ai_Entries[i].item];
             if (r >= g->batch + ai_Entries[i].amount) {
                 if (g->type == 0x17) {
                     ai_Entries[i].flags |= 0x10;
@@ -1208,13 +1207,13 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
 check:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8) {
-            g = &ai_GoodsT[ai_Entries[i].item];
+            g = &ai_Goods[ai_Entries[i].item];
             if (g->type == 0x17) {
                 if (ai_BTypes[ch->bld->type].kind == 11) {
                     ai_Entries[i].flags |= 0x10;
                 } else {
                     o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                    if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
+                    if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
                         ai_Entries[i].flags = ai_Entries[i].flags & ~8 | 0x10;
                 }
             } else {
@@ -1269,10 +1268,10 @@ check:
                 }
                 for (i = 0; i < ai_NEntries * 4; i++) {
                     r = util_Random(ai_NEntries);
-                    if (ai_GoodsT[ai_Entries[r].item].type == 0x17)
+                    if (ai_Goods[ai_Entries[r].item].type == 0x17)
                         break;
                 }
-                if (ai_GoodsT[ai_Entries[r].item].type == 0x17) {
+                if (ai_Goods[ai_Entries[r].item].type == 0x17) {
                     plant = veg_FindType(ai_Entries[r].item);
                     n = 0;
                     for (y = 0; n < 4; y++) {
@@ -1296,7 +1295,7 @@ check:
                 ai_SendJobOrders(&info);
             }
             if (ai_Entries[i].flags & 8) {
-                if (ai_GoodsT[ai_Entries[i].item].type == 0x17) {
+                if (ai_Goods[ai_Entries[i].item].type == 0x17) {
                     if (ai_BTypes[ch->bld->type].kind != 11) {
                         info.type = 3;
                         info.e = &ai_Entries[i];
@@ -1800,7 +1799,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
     obj = 0;
     o = gm_Query(ch->bld->objList, 2, 6, 0, 0x116);
     for (; !obj && o; o = gm_QueryNext()) {
-        if (gm_FindById(0, &item, 0, o->ownerId) && ai_GoodsT[*item].type == 2)
+        if (gm_FindById(0, &item, 0, o->ownerId) && ai_Goods[*item].type == 2)
             obj = o;
     }
     if (obj) {
@@ -2320,7 +2319,7 @@ void ai_CalcMeisterFernhaendler(AICHAR *ch)
             it = ai_Objects;
             ok = 1;
             for (i = 0; ok && i < 0x5008; it++, i++) {
-                if (it->id && ai_GoodsT[it->id].type == 0x1d && it->bldId == ch->bld->id && it->id == 0x136)
+                if (it->id && ai_Goods[it->id].type == 0x1d && it->bldId == ch->bld->id && it->id == 0x136)
                     ok = 0;
             }
             ai_NumCarts = 0;
@@ -2454,7 +2453,7 @@ void ai_EndWorkerPose(AICHAR *ch)
    ai_EvaluateProduction picks the good to make (the current one at 8 / 13 o'clock, the player's drawn setting, a
    random entry with or without its materials), skipping the entries flagged 0x400: those lose flag 8 and get job
    orders of type 0x8c when a slot flagged 0x400 | 0x10 marks them 0x10, the others of type 4 for flag 8
-   @deep s47: shape. The goods record read as ai_GoodsT[e->item] in both random loops (no AIGOOD *g local):
+   @deep s47: shape. The goods record read as ai_Goods[e->item] in both random loops (no AIGOOD *g local):
    138 -> 52 and draft -> shape (the same lever moved its three draft siblings 36-85 ins). The 8 / 13
    o'clock search sets found = 1 like the other arm (no goto done there) and one if (found) goto done after
    the if / else: 52 -> 44, the first 487 lines equal. Left: the second random loop's success block (ours
@@ -2506,7 +2505,7 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
         } else if (ch->prod != 0) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
-                    if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                    if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                         && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         ai_Entries[i].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[i]);
@@ -2520,7 +2519,7 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
     } else {
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
-                if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                     && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     ai_Entries[i].flags |= 8;
                     ai_StartProduction(ch, &ai_Entries[i]);
@@ -2539,21 +2538,21 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (ai_Entries[i].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[i].amount) {
+                    if (ai_Entries[i].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[i].amount) {
                         if (!ai_HasMaterials(ch, e, 1)) {
                             if (ai_HasMaterials(ch, e, 0)) {
                                 ai_StartProduction(ch, e);
                                 ch->prod = (unsigned short)e->item;
                                 sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen, da der spieler es so will",
-                                        ai_GoodsT[e->item].name);
+                                        ai_Goods[e->item].name);
                                 goto done;
                             }
                         } else {
                             ai_Entries[i].flags |= 8;
                             ai_StartProduction(ch, e);
                             ch->prod = (unsigned short)e->item;
-                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_GoodsT[e->item].name);
+                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_Goods[e->item].name);
                             goto done;
                         }
                     }
@@ -2576,17 +2575,17 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
                 ai_Entries[k].flags |= 8;
                 e = &ai_Entries[k];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -2595,15 +2594,15 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -2615,7 +2614,7 @@ done:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8) {
             for (k = 0; k < 4; k++) {
-                if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_GoodsT[ai_Entries[i].item].need[k])
+                if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_Goods[ai_Entries[i].item].need[k])
                     ai_Entries[i].flags &= ~8;
             }
         }
@@ -2743,7 +2742,7 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         } else if (ch->prod != 0) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
-                    if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                    if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                         && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         ai_Entries[i].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[i]);
@@ -2757,7 +2756,7 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
     } else {
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
-                if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                if (ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
                     && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     ai_Entries[i].flags |= 8;
                     ai_StartProduction(ch, &ai_Entries[i]);
@@ -2776,21 +2775,21 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (ai_Entries[i].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[i].amount) {
+                    if (ai_Entries[i].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[i].amount) {
                         if (!ai_HasMaterials(ch, e, 1)) {
                             if (ai_HasMaterials(ch, e, 0)) {
                                 ai_StartProduction(ch, e);
                                 ch->prod = (unsigned short)e->item;
                                 sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen, da der spieler es so will",
-                                        ai_GoodsT[e->item].name);
+                                        ai_Goods[e->item].name);
                                 goto done;
                             }
                         } else {
                             ai_Entries[i].flags |= 8;
                             ai_StartProduction(ch, e);
                             ch->prod = (unsigned short)e->item;
-                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_GoodsT[e->item].name);
+                            sprintf(buf, "Produktion von %s starten, da Humanplayer es so will.", ai_Goods[e->item].name);
                             goto done;
                         }
                     }
@@ -2813,17 +2812,17 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
                 ai_Entries[k].flags |= 8;
                 e = &ai_Entries[k];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -2832,15 +2831,15 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_Goods[e->item].type != 0x17 && ai_Goods[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
+                && ai_Entries[k].capacity >= ai_Goods[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_Goods[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
                 ai_StartProduction(ch, e);
                 ch->prod = (unsigned short)e->item;
-                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_GoodsT[e->item].name);
+                sprintf(buf, "Produktion von %s starten obwohl Rohstoffe fehlen", ai_Goods[e->item].name);
                 goto done;
             }
         }
@@ -2852,7 +2851,7 @@ done:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8) {
             for (k = 0; k < 4; k++) {
-                if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_GoodsT[ai_Entries[i].item].need[k])
+                if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_Goods[ai_Entries[i].item].need[k])
                     ai_Entries[i].flags &= ~8;
             }
         }
@@ -2974,9 +2973,9 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     ai_NSlots = 0;
     for (i = 0; i < ai_NEntries; i++) {
         for (k = 0; k < 4; k++) {
-            if (ai_GoodsT[ai_Entries[i].item].in[k]) {
+            if (ai_Goods[ai_Entries[i].item].in[k]) {
                 for (j = 0; j < ai_NSlots; j++) {
-                    if (ai_Slots[j].item == ai_GoodsT[ai_Entries[i].item].in[k]) {
+                    if (ai_Slots[j].item == ai_Goods[ai_Entries[i].item].in[k]) {
                         ai_Entries[i].slot[k] = j;
                         break;
                     }
@@ -2984,7 +2983,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
                 if (ai_Entries[i].slot[k] == -1) {
                     if (ai_NSlots >= 128)
                         return;
-                    ai_Slots[ai_NSlots].item = ai_GoodsT[ai_Entries[i].item].in[k];
+                    ai_Slots[ai_NSlots].item = ai_Goods[ai_Entries[i].item].in[k];
                     ai_Slots[ai_NSlots].entry = -1;
                     ai_Slots[ai_NSlots].bld = 0;
                     ai_Slots[ai_NSlots].cleared10 = 0;
@@ -3597,14 +3596,14 @@ void ai_CalcEntryCost(AIENTRY *e0)
                     else
                         s->price = gm_GoodsPrice(s->item, ai_OwnPlayer);
                 }
-                e->materialCost = ai_GoodsT[e->item].need[k] * s->price + e->materialCost;
+                e->materialCost = ai_Goods[e->item].need[k] * s->price + e->materialCost;
             }
         }
-        e->materialCost = e->materialCost / ai_GoodsT[e->item].batch;
+        e->materialCost = e->materialCost / ai_Goods[e->item].batch;
         e->objectValue = gm_ObjectValue(e->item);
         e->cost = e->objectValue + e->materialCost;
         e->price = gm_GoodsPrice(e->item, ai_OwnPlayer);
-        e->margin = (e->price - e->cost) / ai_GoodsT[e->item].workTime;
+        e->margin = (e->price - e->cost) / ai_Goods[e->item].workTime;
     }
 }
 /* 0x487180, whether the workshop can get the materials of entry e, 1 when every needed good is covered: per
@@ -3643,7 +3642,7 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
     for (k = 0; k < 4; k++) {
         if (e->slot[k] >= 0) {
             s = &ai_Slots[e->slot[k]];
-            if (s->amount < ai_GoodsT[e->item].need[k]) {
+            if (s->amount < ai_Goods[e->item].need[k]) {
                 if (f != 0 || s->capacity == 0)
                     return 0;
                 if (s->pending == 0 && s->item != 0x1c7 && s->item != 0x1c4 && s->item != 0x1c5 && s->item != 0x1c6 &&
@@ -3660,17 +3659,17 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
                             row = &gm_Offers[j];
                             if (row->bld != ch->bld && gm_BuildingClass(row->bld->type) != 2 && row->goodsObj != 0) {
                                 cnt = row->count;
-                                if (cnt >= ai_GoodsT[e->item].need[k]) {
+                                if (cnt >= ai_Goods[e->item].need[k]) {
                                     if (row->bld->owner != ch->bld->owner) {
                                         m = e->capacity >> 1;
                                         if (m < 1)
                                             m = 1;
-                                        v = ai_GoodsT[e->item].need[j] * m - s->amount - s->pending;
+                                        v = ai_Goods[e->item].need[j] * m - s->amount - s->pending;
                                         v = max(v, (s->capacity >> 1) - s->pending);
                                         v = min(s->capacity - s->pending - 1, v);
                                         v = (int)min((float)ch->budget / s->price, (float)v);
                                         v = min(cnt, v);
-                                        if (v >= ai_GoodsT[e->item].need[j])
+                                        if (v >= ai_Goods[e->item].need[j])
                                             found = 1;
                                     } else {
                                         found = 1;
@@ -3738,11 +3737,11 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                     ai_Entries[s->entry].rank = ai_Entries[s->entry].rank < e->rank ? ai_Entries[s->entry].rank : e->rank;
                     ai_Entries[s->entry].flags |= 2;
                     if ((ai_Entries[s->entry].pending + ai_Entries[s->entry].amount) * 4 < ai_Entries[s->entry].capacity) {
-                        if (ai_Entries[s->entry].capacity > ai_GoodsT[ai_Entries[s->entry].item].batch)
+                        if (ai_Entries[s->entry].capacity > ai_Goods[ai_Entries[s->entry].item].batch)
                             ai_Entries[s->entry].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[s->entry]);
                     }
-                } else if (s->pending + s->amount < ai_GoodsT[e->item].need[k] * 4) {
+                } else if (s->pending + s->amount < ai_Goods[e->item].need[k] * 4) {
                     gm_CollectOffers(s->item);
                     j = 0;
                     while (1) {
@@ -3751,7 +3750,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                         row = &gm_Offers[j];
                         if (row->bld != ch->bld && gm_BuildingClass(row->bld->type) != 2 && row->goodsObj != 0) {
                             cnt = row->count;
-                            if (cnt >= ai_GoodsT[e->item].need[k]) {
+                            if (cnt >= ai_Goods[e->item].need[k]) {
                                 s->bld = row->bld;
                                 if (row->bld->owner == ch->bld->owner) {
                                     s->make = s->capacity;
@@ -3761,12 +3760,12 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                                 m = e->capacity >> 1;
                                 if (m < 1)
                                     m = 1;
-                                v = ai_GoodsT[e->item].need[k] * m - s->pending - s->amount;
+                                v = ai_Goods[e->item].need[k] * m - s->pending - s->amount;
                                 v = max(v, (s->capacity >> 1) - s->pending);
                                 v = min(s->capacity - s->pending - 1, v);
                                 v = (int)min((float)ch->budget / s->price, (float)v);
                                 v = min(cnt, v);
-                                if (v >= ai_GoodsT[e->item].need[k])
+                                if (v >= ai_Goods[e->item].need[k])
                                     s->make = max(s->make, v);
                             }
                         }
@@ -3775,7 +3774,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                 }
             } else {
                 if ((ai_Entries[s->entry].pending + ai_Entries[s->entry].amount) * 4 < ai_Entries[s->entry].capacity &&
-                    s->amount + s->pending < ai_GoodsT[e->item].need[k] * 4)
+                    s->amount + s->pending < ai_Goods[e->item].need[k] * 4)
                     s->flags |= 0x10;
             }
         }
@@ -4110,7 +4109,7 @@ void ai_BuyUpgrade(AICHAR *ch)
                 goto found;
             if ((bt->slot[i] & 0x7fff) != 0) {
                 n = bt->slot[i] & 0x7fff;
-                if (ai_GoodsT[n].type == 2 || ai_GoodsT[n].type == 6)
+                if (ai_Goods[n].type == 2 || ai_Goods[n].type == 6)
                     first = n;
                 else if (first != 0xfd && !gm_Query(ch->bld->objList, 2, 6, 0, n))
                     ret = bt->slot[i] & 0x7fff;
@@ -4128,7 +4127,7 @@ void ai_BuyUpgrade(AICHAR *ch)
             goto found;
         if ((bt->slot[i] & 0x7fff) != 0) {
             n = bt->slot[i] & 0x7fff;
-            if (ai_GoodsT[n].type == 2 || ai_GoodsT[n].type == 6)
+            if (ai_Goods[n].type == 2 || ai_Goods[n].type == 6)
                 first = n;
             else if (first == 0xfd && !gm_Query(ch->bld->objList, 2, 6, 0, n))
                 ret = bt->slot[i] & 0x7fff;
@@ -4821,7 +4820,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
                 }
             }
             if (sel && sel->amount && ai_FindWeaponRecord(sel->item) && ai_GoodFitsBuilding(ch, sel->item)) {
-                sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_GoodsT[sel->item].name);
+                sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_Goods[sel->item].name);
                 sprintf(buf, SELL_FMT, c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 cm_SendExSellObject(c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 sel->amount--;
@@ -4874,7 +4873,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         t = (AIOBJ *)ai_Objects;
         i = 0x5008;
         do {
-            if (t->type && ai_GoodsT[t->type].type == 0x1d && t->bldId == ch->bld->id) {
+            if (t->type && ai_Goods[t->type].type == 0x1d && t->bldId == ch->bld->id) {
                 n++;
                 if (t->type == 0x136)
                     n136++;
@@ -5075,7 +5074,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                             ai_Entries[i].sellAmount = ai_Entries[i].amount;
                             if (ch == ai_LoggedMaster)
                                 sprintf(buf, "Verkauf von %li Einheiten %s, weil der Preis f\xfcr den Boss ok ist",
-                                        ai_Entries[i].amount, ai_GoodsT[ai_Entries[i].item].name);
+                                        ai_Entries[i].amount, ai_Goods[ai_Entries[i].item].name);
                         }
                     } else {
                         g = gm_ItemPrice(ai_Entries[i].item, 100);
@@ -5084,7 +5083,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                             ai_Entries[i].sellAmount = ai_Entries[i].amount;
                             if (ch == ai_LoggedMaster)
                                 sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
-                                        ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
+                                        ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
                         }
                     }
                 }
@@ -5101,7 +5100,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         v += n * k;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s", ai_Entries[i].sellAmount,
-                                    ai_GoodsT[ai_Entries[i].item].name);
+                                    ai_Goods[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -5112,7 +5111,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         ai_Entries[i].sellAmount = min(ai_Entries[i].sellAmount, ai_Entries[i].amount);
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s wegen \xfc" "berf\xfc" "lltem Lager",
-                                    ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
+                                    ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -5188,7 +5187,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     if (!rec.item[i])
                         continue;
                     sprintf(buf, "ai_MeisterTrade(): Von Auto in \"%s\" %li Einheiten %s entladen", ch->bld->name,
-                            rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                            rec.amount[i], ai_Goods[rec.item[i]].name);
                     s = NULL;
                     for (m = 0; !s && m < 128; m++) {
                         if (ai_Slots[m].item == rec.item[i])
@@ -5199,7 +5198,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (stA.item[j] == rec.item[i]) {
                                 sprintf(buf, "ai_MeisterTrade(): %s ist in \"%s\" schon vorhanden",
-                                        ai_GoodsT[rec.item[i]].name, ch->bld->name);
+                                        ai_Goods[rec.item[i]].name, ch->bld->name);
                                 n = min(rec.amount[i], stA.max[j] - stA.amount[j]);
                                 if (n) {
                                     sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
@@ -5215,7 +5214,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (!stA.item[j]) {
                                 sprintf(buf, "ai_MeisterTrade(): \"%s\" hat leeren Slot f\xfcr %s", ch->bld->name,
-                                        ai_GoodsT[rec.item[i]].name);
+                                        ai_Goods[rec.item[i]].name);
                                 n = gm_ListStock(b, rec.item[i]);
                                 if (rec.amount[i] < n)
                                     n = rec.amount[i];
@@ -5236,7 +5235,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                                 if (ai_Slots[m].item == stA.item[j]
                                     && (!(ai_Slots[m].flags & 2) || ai_Slots[m].rank > s->rank)) {
                                     sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf aus Lager in \"%s\" von %li Einheiten %s",
-                                            ch->bld->name, stA.amount[j], ai_GoodsT[stA.item[j]].name);
+                                            ch->bld->name, stA.amount[j], ai_Goods[stA.item[j]].name);
                                     sprintf(buf, SELL_FMT, -1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
                                             (double)(int)gm_GoodsPrice(stA.item[j], ai_OwnPlayer));
                                     cm_SendExSellObject(-1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
@@ -5261,7 +5260,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
@@ -5368,7 +5367,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         continue;
                     if (!gm_FindMarketObject(ai_Slots[i].item)) {
                         sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf in \"%s\" von %li Einheiten %s, weil kein Marktlager",
-                                ch->bld->name, ai_Slots[i].sellAmount, ai_GoodsT[ai_Slots[i].item].name);
+                                ch->bld->name, ai_Slots[i].sellAmount, ai_Goods[ai_Slots[i].item].name);
                         sprintf(buf, SELL_FMT, -1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
                                 (int)gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer));
                         cm_SendExSellObject(-1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
@@ -5410,12 +5409,12 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     if (ch == ai_LoggedMaster) {
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k])
-                                sprintf(buf, "Verkauf von %s", ai_GoodsT[msg.u.item[k]].name);
+                                sprintf(buf, "Verkauf von %s", ai_Goods[msg.u.item[k]].name);
                         }
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k + 3])
                                 sprintf(buf, "Einkauf von %li Einheiten %s", msg.amount[k],
-                                        ai_GoodsT[msg.u.item[k + 3]].name);
+                                        ai_Goods[msg.u.item[k + 3]].name);
                         }
                     }
                     n = msg.dst[0];
@@ -5496,7 +5495,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         ai_Entries[i].sellAmount = ai_Entries[i].amount;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
-                                    ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
+                                    ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -5512,7 +5511,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         v += n * k;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s", ai_Entries[i].sellAmount,
-                                    ai_GoodsT[ai_Entries[i].item].name);
+                                    ai_Goods[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -5523,7 +5522,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         ai_Entries[i].sellAmount = min(ai_Entries[i].sellAmount, ai_Entries[i].amount);
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s wegen \xfc" "berf\xfc" "lltem Lager",
-                                    ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
+                                    ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -5574,7 +5573,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     if (!rec.item[i])
                         continue;
                     sprintf(buf, "ai_MeisterTradeAllgemein(): Von Auto in \"%s\" %li Einheiten %s entladen", ch->bld->name,
-                            rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                            rec.amount[i], ai_Goods[rec.item[i]].name);
                     s = NULL;
                     for (m = 0; !s && m < 128; m++) {
                         if (ai_Slots[m].item == rec.item[i])
@@ -5585,7 +5584,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (stA.item[j] == rec.item[i]) {
                                 sprintf(buf, "ai_MeisterTradeAllgemein(): %s ist in \"%s\" schon vorhanden",
-                                        ai_GoodsT[rec.item[i]].name, ch->bld->name);
+                                        ai_Goods[rec.item[i]].name, ch->bld->name);
                                 n = min(rec.amount[i], stA.max[j] - stA.amount[j]);
                                 if (n) {
                                     sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
@@ -5601,7 +5600,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (!stA.item[j]) {
                                 sprintf(buf, "ai_MeisterTradeAllgemein(): \"%s\" hat leeren Slot f\xfcr %s", ch->bld->name,
-                                        ai_GoodsT[rec.item[i]].name);
+                                        ai_Goods[rec.item[i]].name);
                                 n = gm_ListStock(b, rec.item[i]);
                                 if (rec.amount[i] < n)
                                     n = rec.amount[i];
@@ -5622,7 +5621,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 if (ai_Slots[m].item == stA.item[j]
                                     && (!(ai_Slots[m].flags & 2) || ai_Slots[m].rank > s->rank)) {
                                     sprintf(buf, "ai_MeisterTradeAllgemein(): Fake-Verkauf aus Lager in \"%s\" von %li Einheiten %s",
-                                            ch->bld->name, stA.amount[j], ai_GoodsT[stA.item[j]].name);
+                                            ch->bld->name, stA.amount[j], ai_Goods[stA.item[j]].name);
                                     sprintf(buf, SELL_FMT, -1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
                                             (double)(int)gm_GoodsPrice(stA.item[j], ai_OwnPlayer));
                                     cm_SendExSellObject(-1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
@@ -5647,7 +5646,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTradeAllgemein(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
@@ -5718,7 +5717,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                         continue;
                     if (!gm_FindMarketObject(ai_Slots[i].item)) {
                         sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf in \"%s\" von %li Einheiten %s, weil kein Marktlager",
-                                ch->bld->name, ai_Slots[i].sellAmount, ai_GoodsT[ai_Slots[i].item].name);
+                                ch->bld->name, ai_Slots[i].sellAmount, ai_Goods[ai_Slots[i].item].name);
                         sprintf(buf, SELL_FMT, -1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
                                 (int)gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer));
                         cm_SendExSellObject(-1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
@@ -5760,12 +5759,12 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     if (ch == ai_LoggedMaster) {
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k])
-                                sprintf(buf, "Verkauf von %s", ai_GoodsT[msg.u.item[k]].name);
+                                sprintf(buf, "Verkauf von %s", ai_Goods[msg.u.item[k]].name);
                         }
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k + 3])
                                 sprintf(buf, "Einkauf von %li Einheiten %s", msg.amount[k],
-                                        ai_GoodsT[msg.u.item[k + 3]].name);
+                                        ai_Goods[msg.u.item[k + 3]].name);
                         }
                     }
                     n = msg.dst[0];
@@ -5843,7 +5842,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             for (i = 0; i < rec.n; i++) {
                 if (rec.item[i]) {
                     sprintf(buf, "ai_MeisterTradeFernEinkauf(): Von Auto in \"%s\" %li Einheiten %s entladen",
-                            ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                            ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                     hit = NULL;
                     for (m = 0; !hit && m < 128; m++) {
                         if (ai_Slots[m].item == rec.item[i])
@@ -5851,7 +5850,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTradeFernEinkauf(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
@@ -5997,7 +5996,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             for (i = 0; i < rec.n; i++) {
                 if (rec.item[i]) {
                     sprintf(buf, "ai_MeisterTradeFernEinkauf(): Von Auto in \"%s\" %li Einheiten %s entladen",
-                            ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                            ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                     hit = NULL;
                     for (m = 0; !hit && m < 128; m++) {
                         if (ai_Slots[m].item == rec.item[i])
@@ -6005,7 +6004,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTradeFernEinkauf(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,

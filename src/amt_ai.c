@@ -69,7 +69,6 @@ extern int ai_EvalStack[73];
 #include "d3_pose.h"
 #include "menu.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
@@ -695,7 +694,7 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
     t = &ai_BTypes[b->type];
     cart = 0;
     for (i = 0; i < t->nslots; i++) {
-        g = &ai_GoodsT[t->slot[i] & 0x7fff];
+        g = &ai_Goods[t->slot[i] & 0x7fff];
         if (g->type == '!')
             continue;
         if (g->type == 2 || g->type == 6) {
@@ -763,7 +762,7 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
     st[2] = 0;
     st[0] = 0;
     for (e = (AIOBJ *)p->inventory; e != 0; e = e->next) {
-        if (ai_GoodsT[e->id].type == 9)
+        if (ai_Goods[e->id].type == 9)
             continue;
         st[0]++;
         for (i = 0; i < n; i++) {

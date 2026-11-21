@@ -3472,7 +3472,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         }
     }
     if (stall != 0)
-        goodsRec = ai_Goods + stall->id * 0x41;
+        goodsRec = (char *)ai_Goods + stall->id * 0x41;
     for (i = 0; i < 16; i++) {
         rows[i].pic = -1;
         rows[i].win = -1;
@@ -6616,7 +6616,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
             break;
         if (type->objs[i] != 0xffff) {
             good = type->objs[i] & 0x7fff;
-            g = &((AIGOOD *)ai_Goods)[good];
+            g = &ai_Goods[good];
             if ((g->type == 2 || g->type == 6) && good != 0xfd) {
                 rows[nRows].good = good;
                 nRows++;
@@ -6624,7 +6624,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
         }
     }
     for (obj = (unsigned short *)gm_Query((void *)bld->objList, 1, 5); obj != 0; obj = gm_QueryNext()) {
-        g = &((AIGOOD *)ai_Goods)[*obj];
+        g = &ai_Goods[*obj];
         if ((g->type == 2 || g->type == 6) && *obj != 0xfd)
             built++;
     }
@@ -7567,7 +7567,7 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                  item = gm_QueryNext()) {
                 if (remaining <= 0)
                     break;
-                g = (AIGOOD *)ai_Goods + *item;
+                g = ai_Goods + *item;
                 if (g->type == 0x17 || g->type == 0x25)
                     continue;
                 price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
@@ -7604,7 +7604,7 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                  item = gm_QueryNext()) {
                 if (remaining <= 0)
                     break;
-                g = (AIGOOD *)ai_Goods + *item;
+                g = ai_Goods + *item;
                 if (g->type != 0x17 && g->type != 0x25)
                     continue;
                 price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
@@ -8001,7 +8001,7 @@ int ai_UpdateInventoryWindow(void)
         }
     }
     for (o = (G8INVOBJ *)gm_Query((void *)ch->inventory, 1, 5); o != 0; o = (G8INVOBJ *)gm_QueryNext()) {
-        if (((AIGOOD *)ai_Goods)[o->id].type == 9)
+        if (ai_Goods[o->id].type == 9)
             continue;
         for (k = 0; k < 6; k++)
             if (ai_InvSlots[k].obj == o)
@@ -8401,7 +8401,7 @@ int ai_UpdateEquipRows(int view, int form)
         sv_ValueBar(0x50, 0x25, ai_EquipRowTab[r].ch->skills[2], 0x4f1);
         for (item = (AIOBJ *)gm_Query((void *)ai_EquipRowTab[r].ch->inventory, 1, 5); item != 0;
              item = (AIOBJ *)gm_QueryNext()) {
-            if (((AIGOOD *)ai_Goods)[item->id].type == 9)
+            if (ai_Goods[item->id].type == 9)
                 continue;
             found = 0;
             for (i = 0; i < 6; i++)
@@ -8536,7 +8536,7 @@ void ai_EquipWindow(AIBLD *bld)
     sv_OpenWindowFrame(d2_LastWindow, 0x72f, 0);
     sv_CreateScrollButtons(0x270, 0x15c, d2_LastWindow, d2_GetViewWin(win, 2), 0x78, &down, &up, &bar);
     d2_Objs[bar].font = 0x54;
-    g = &((AIGOOD *)ai_Goods)[store->id];
+    g = &ai_Goods[store->id];
     do {
         if (store->id == 0x116 || g->type == 0x11) {
             listShown = ai_UpdateStoreGoods(bld, store);

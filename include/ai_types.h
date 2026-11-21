@@ -665,7 +665,8 @@ typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
     union {
         char name[0x25];                /* 0x01 */
         struct {
-            char padname[0x21];
+            char padname[0x20];
+            unsigned char cls;          /* 0x21, the goods class (gm_ClassBuilding's index; f3gm_types.h GMGOOD.cls) */
             unsigned int workTime;      /* 0x22, reasoned: the production time of one unit (the item tooltip shows it, in a building divided by the staff factor; ai_CalcEntryCost divides the margin by it) */
         };
     };

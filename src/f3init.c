@@ -470,7 +470,7 @@ int init_SceneNameToPrototype(char *o)
     }
     if (strcmpi(head, "ob") == 0 || strcmpi(head + 1, "ob") == 0) {
         for (i = 0; i < 0xb9dc / 0x41; i++) {
-            if (strcmpi(rest, ((AIGOOD *)ai_Goods)[i].name) == 0) {
+            if (strcmpi(rest, ai_Goods[i].name) == 0) {
                 obj->proto = i | INIT_PROTO_OBJECT;
                 return 1;
             }
@@ -525,7 +525,7 @@ void init_HookObject(D3OBJECT *o, void *p, int kind)
         }
         break;
     case 1:
-        sprintf(o->name, "ob_%s", ai_Goods + ((INIT_OBJ *)p)->proto * 0x41 + 1);
+        sprintf(o->name, "ob_%s", (char *)ai_Goods + ((INIT_OBJ *)p)->proto * 0x41 + 1);
         o->kind = 4;
         break;
     }
@@ -713,7 +713,7 @@ void init_LoadObjectScene(int n)
     int changed;
 
     save = d3_CurrentScene;
-    p = ai_Goods + n * 0x41;
+    p = (char *)ai_Goods + n * 0x41;
     cb = 0;
     changed = 0;
     if (ai_GameState != 0 && !(ai_FrameWait > 0)) {
@@ -1586,12 +1586,12 @@ void init_Betrieb(INIT_BLD *b)
     st = (INIT_OBJ *)gm_Query((void *)o1->list, 1, 5);
     if (st == 0)
         return;
-    while (st != 0 && ai_Goods[st->proto * 0x41] == '%')
+    while (st != 0 && ai_Goods[st->proto].type == '%')
         st = (INIT_OBJ *)gm_QueryNext();
     if (st == 0)
         return;
     sum = 0;
-    rw0 = ((AIGOOD *)ai_Goods)[st->proto].in;
+    rw0 = ai_Goods[st->proto].in;
     rw = rw0;
     for (i = 0; i < 4; i++, rw++) {
         if (*rw == 0)
@@ -2757,7 +2757,7 @@ void init_FillMarkets(int p)
     i = 0x55;
     g = &gm_StockBlocks[p].goods[0];
     do {
-        pr = ai_Goods + g->item * 0x41;
+        pr = (char *)ai_Goods + g->item * 0x41;
         m = (INIT_OBJ *)gm_FindMarketObject(g->item);
         if (m != 0) {
             if (*pr == 0x17 || *pr == 0x25)
@@ -2821,7 +2821,7 @@ int init_ObjectSceneUniverse(unsigned short *p)
             return -1;
         init_ObjectUniverse[*p] = uni;
         init_SceneDirty[uni * 0x3e0] = 1;
-        strcpy(d3_Scenes[uni].name, ai_Goods + *p * 0x41 + 1);
+        strcpy(d3_Scenes[uni].name, (char *)ai_Goods + *p * 0x41 + 1);
     }
     return init_ObjectUniverse[*p];
 }
@@ -2906,7 +2906,7 @@ void init_SyncSceneObjects(char *o)
     kind = o[0x4b];
     base = ai_SceneObject != 0 ? (char *)((INIT_OBJ *)ai_SceneObject)->list : (char *)((INIT_BLD *)ai_SceneBuilding)->objList;
     if (kind == 1) {
-        g = ai_Goods + id * 0x41;
+        g = (char *)ai_Goods + id * 0x41;
         if (g[0] != 2 && g[0] != 0x1d && g[0] != 0x21 && g[0] != 6 && (rec = (INIT_OBJ *)gm_Query(base, 1, 0, id)) != 0) {
             rec->obj = 0;
             parent = so->parent;
@@ -2945,7 +2945,7 @@ void init_SyncSceneObjects(char *o)
                                 }
                             }
                         }
-                        sg = ai_Goods + s->proto * 0x41;
+                        sg = (char *)ai_Goods + s->proto * 0x41;
                         if (gm_IsBuildingKind(rec->proto) != 0) {
                             for (e = (INIT_OBJ *)gm_Query(base, 1, 4, (unsigned char)sg[0]); e != 0; e = (INIT_OBJ *)gm_QueryNext()) {
                                 if (e->proto > s->proto)
@@ -2969,7 +2969,7 @@ void init_SyncSceneObjects(char *o)
                     }
                 }
             } else {
-                g = ai_Goods + id * 0x41;
+                g = (char *)ai_Goods + id * 0x41;
                 d3if_ShowTree((struct D3OBJECT *)o, 1);
                 so->owner = (SCENEOBJ *)rec;
                 if (g[0] != 0x1d)
@@ -2992,7 +2992,7 @@ void init_SyncSceneObjects(char *o)
                 so->mask = 0;
             }
             rec->obj = so;
-        } else if (ai_Goods[id * 0x41] != 0x1d && ai_Goods[id * 0x41] != 0x21) {
+        } else if (ai_Goods[id].type != 0x1d && ai_Goods[id].type != 0x21) {
             so->owner = 0;
             if (so->type != 1)
                 d3if_ShowTree((struct D3OBJECT *)o, 0);
@@ -3012,7 +3012,7 @@ void init_SyncSceneObjects(char *o)
     if (strncmp(o, "no_", 3) == 0) {
         i = gm_FindObjectProto(o + 6);
         if (i != -1) {
-            s = (INIT_OBJ *)gm_Query(ai_Goods[i * 0x41] == 2 ? (char *)((INIT_BLD *)ai_SceneBuilding)->objList : base, 1, 0, i);
+            s = (INIT_OBJ *)gm_Query(ai_Goods[i].type == 2 ? (char *)((INIT_BLD *)ai_SceneBuilding)->objList : base, 1, 0, i);
             if (s != 0)
                 d3if_ShowTree((struct D3OBJECT *)o, 0);
             else
@@ -3071,7 +3071,7 @@ void init_LoadShopScript(unsigned char *b, unsigned short *o)
         if (gm_IsHomeType(b) != 0)
             name = (char *)INIT_BTYPE(b);
         else
-            goods = ai_Goods + ((INIT_OBJ *)o)->proto * 0x41;
+            goods = (char *)ai_Goods + ((INIT_OBJ *)o)->proto * 0x41;
         if (goods == 0)
             sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, name + 1, name + 1);
         else

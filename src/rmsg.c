@@ -22,7 +22,6 @@
 #include "lc.h"
 #include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
@@ -1707,7 +1706,7 @@ int ai_MsgLoseGood(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (e = gm_Query(c->inventory, 1, 5); e != 0 && n < 6; e = gm_QueryNext()) {
-        if (ai_GoodsT[e->id].type != 9)
+        if (ai_Goods[e->id].type != 9)
             a[n++] = e;
     }
     if (n == 0)
