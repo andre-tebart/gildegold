@@ -244,7 +244,7 @@ extern AICHAR *ai_Partner;            /* 0x6f0468 */
 extern int ai_TradeMsgCount;                /* 0x6f046c, the trade messages sent since the last reset */
 extern float ai_Rating;               /* 0x6f1ba0, the smoothed game rating (statistics out[5]; the running rating ai_RatingBase follows it) */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
-extern AIBLD *ai_MarketBuilding;             /* 0x6f1bc8, the market building (gm_BuildQuery(1, 5, 10)); @original: f3snd.h declares G16BLDVIEW * (f3snd.c reads its +0x4c / object fields); ai.c reads the AIBLD fields (->id) */
+extern AIBLD *ai_MarketBuilding;             /* 0x6f1bc8, the market building (gm_BuildQuery(1, 5, 10)) */
 extern AICHAR *ai_PlayerChar;           /* 0x6f1bf8, the player's character */
 extern struct AIBLD *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD */
 extern struct AIBLD *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 */

@@ -62,7 +62,6 @@
 #include "bio.h"
 #include "cm.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 /* 0x4c01b0, stops the queue: restores the music after a fanfare (fade back to 1.0), frees every queued sound */
 void snd_ClearQueue(void)
 {
@@ -394,8 +393,8 @@ void snd_UpdateAnimals(void)
                 sb_PlaySample(0, "Gackern_s", rand() % snd_Animals[snd_AnimalSeason][2].count + 1, 0x3f,
                     (int)(h * snd_Animals[snd_AnimalSeason][2].vol * 127.0f), 0, 0);
         }
-        if (snd_AmbientTrack != 0 && ai_MarketBuildingV != 0) {
-            d3_PointToWorld(ai_MarketBuildingV->object, ai_MarketBuildingV->object + 0x4c, v);
+        if (snd_AmbientTrack != 0 && ai_MarketBuilding != 0) {
+            d3_PointToWorld(ai_MarketBuilding->object, ai_MarketBuilding->object + 0x4c, v);
             k = ch_CountAt(0, 0, v, 900.0f) * 0x14;
             if (k >= 0x7f)
                 k = 0x7f;
@@ -1174,7 +1173,7 @@ void snd_StartMarketAmbience(void)
     struct SBSAMPLE *smp;
 
     if (snd_AmbientTrack == 0) {
-        o = ai_MarketBuildingV->object;
+        o = ai_MarketBuilding->object;
         if (o != 0) {
             smp = sb_GetSample(0, "Athmo_Marktplatz_Mono_4Bit");
             snd_AmbientTrack = d3snd_Attach(smp, (struct D3OBJECT *)o, 0x7f, 2200.0f);

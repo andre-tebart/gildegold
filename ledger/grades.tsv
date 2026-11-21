@@ -3312,7 +3312,7 @@ exe	0x00522040	sv_PanelImage	sv	byte	readable
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	readable		
 exe	0x00522280	sv_ClosePanelWidgets	sv	byte	readable		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	readable		
-exe	0x005224a0	sv_LoadGroundplan	sv	byte	readable		
+exe	0x005224a0	sv_LoadGroundplan	sv	shape	readable		byte+readable -> shape+readable at f66a10aa: declaration-set tie-break: ai.h / f3snd.h lost G16BLDVIEW (ai_MarketBuildingV view gone); the text is byte under a declaration set (3 unused typedefs at the unit's start) [waits for: sv.c's declaration set (G.tiebreak)]
 exe	0x005229b0	sv_UpdateGroundplan	sv	byte	readable		
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		

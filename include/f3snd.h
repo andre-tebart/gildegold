@@ -46,13 +46,6 @@ typedef struct G16TRACKS {              /* 0x24c bytes, snd_BuildingTracks[]: tr
     char names[6][0x60];                /* 0x0c */
 } G16TRACKS;
 
-#pragma pack(push, 1)
-typedef struct G16BLDVIEW {             /* the market building as f3snd reads it (AIBLD in ai.h, which f3snd
-                                           includes now: the view can give way to AIBLD) */
-    char pad61[0x61];
-    char *object;                       /* 0x61, its 3D object in the scene */
-} G16BLDVIEW;
-#pragma pack(pop)
 
 typedef struct G16TRACKHANDLES {        /* 0x8 bytes, snd_TrackHandles: the music track and a copy of it,
                                            always written together (0x4c1bd0, 0x4c18a0) */
@@ -100,7 +93,7 @@ extern struct SBSAMPLE *snd_LocustsPerm;   /* 0x6f0b94, hpLocustsPerm: the summe
 extern struct SBSAMPLE *snd_Locusts;       /* 0x6f0b98, hpLocusts: the cricket sample */
 extern int snd_AnimalSeason;                /* 0x6f0b9c, the season */
 extern struct D3SOUND *snd_AmbientTrack;    /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
-extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
+extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c) */
 extern struct AIBLD *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD */
 extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
 extern void *snd_AtmoTrack;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
