@@ -1693,8 +1693,15 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     original, the -1 candidate gone; the instruction count rose 132 -> 135 behind the prologue difference).
   - Fixed: ai_AquariumSearchWindow's search message 0x15 carries the room object in arg[2] (+0x60), not in
     LCSEARCHWORDS.room (+0x5c, the 0x14 message's place): a one-instruction slot hunk inside a message fill.
-  - Left with notes: lc_UpdateGoodsReserves (the cursor as a temp copied into i: a while whose continue skips
-    the increment gives the copy shape), he_RunSixGroupEvent (n takes eax, one rotation), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
+  - **A `continue` jumping BEHIND the latch's reload of a global (`je` to `inc edi`, the reload `mov eax,[g]` just
+    above it), ours jumping onto the reload**: the global's web (read in the loop condition) has a register on the
+    skip path in the original. An extra block behind the inner loop gives it: the inner `for (o = f(); o; o = g())`
+    as `o = f(); if (o != 0) do { .. } while ((o = g()) != 0);` (same meaning, `continue` reaches g's test);
+    `do { for .. } while (0)` is the same code. Two increments (`i++; continue;` in the skip arm) give the
+    latch too but strength-reduce a shared record address into a second IV (lc_UpdateGoodsReserves 341 -> 241
+    bytes, size equal; one rotation left).
+  - Left with notes: lc_UpdateGoodsReserves (the cursor K in ecx where the original has eax: the original computes
+    the IV init and the entry test from K, ours from i), he_RunSixGroupEvent (n takes eax, one rotation), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
     cm_Attack (g / k ranks: one k reference fewer swaps them), he_RunGathering (the not-found block last: every search spelling is one
     code), rd_PathToRoad (i in ebx, g->cells re-read per row), ai_Miracle (case slot packing, one rotation),
     d3s_ShadowTriangle (y outranks minY; the original computes y in minY's ebp).
