@@ -8155,29 +8155,32 @@ int ai_BuildingHasItem(AIBLD *bld, int id)
    news 0x1bc9 (_NACHRICHTEN_HS_37, the good's name text), the good 0x178 clears the flag 0x20 of its building's
    word 0x5a, and a character that can act (ai_CanAct) and is not of kind 7 sells it (one, cm_SendExSellObject);
    a good without a duration is set inactive. Stamps lc_Settings.reserveTime and moves the cursor on
-   @deep s47: the whole body is one scratch rotation behind: the original loads the cursor into a temp (mov
-   eax,[cursor]; mov edi,eax; lea ecx,[eax+0x20]; cmp eax,ecx; the i*0x21c lea chain from eax), ours loads
-   i straight into edi (c2trace: k#25, the first-pass cursor value, shares edi with i#3). The draft M8
-   lines are only the two AITIME copies in the rotated register order (crossed). Rounds: i init outside the
-   for / for(;..) / i<0x20+cursor / call in the init comma: = control; i-cursor<0x20 91, commuted compare
-   93; outer id test as if instead of continue and a while form with i++ at the end: = control. A while
-   whose continue skips i++ (meaning differs) gave the original's mov edi,ecx copy shape (one register
-   off): the cursor temp appears when the loop head is a merge point. climb 3 rounds: only meaning-changing
-   mutants (ai_FindUsableGood called twice, 68). Open: which loop/guard form makes the cursor a temp copied
-   into i. prior: Reconstructed in full from 0x5ba750..0x5ba979: the 32-character window from
-   lc_Settings.reserveCursor, the inventory walk, the Domizil duration count-down with the stamp copy, the
-   run-out branch (news 0x1bc9 for kind 6, the 0x5a flag 0x20 of the 0x178 good's building, the sale when
-   ai_CanAct and kind != 7), the inactive branch, the end stamp and cursor; every call, argument, constant
-   and string read against the original; ours 159 vs 160 instructions, frame equal. Left: register rotation
-   only (asmdiff: eax/ecx/edx swapped through the body, e.g. +0x86 xor edx,edx / push edx vs xor eax,eax /
-   push eax; the cursor reload +0x1c2 mov edx,[cursor]; add edx,0x20 vs mov eax,[cursor]; lea
-   ecx,[eax+0x20]); the two AITIME copies (o->since = ai_Time, lc_Settings.reserveTime = ai_Time) load and
-   store the same four parts in another register order. A variant round. (references: M8 at +0xd2: ours
-   refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 5 more), explained:
-   the M8 ref lines are the two 14-byte AITIME copies: the same loads and stores of ai_Time and
-   lc_Settings.reserveTime in another order (the alignment pairs ai_Time+4 with ai_Time); no other object
-   is read or written; the prover stops only at the byte push of ai_OwnPlayer through another register
-   (Ins8Lo of a different upper half)) */
+   @deep s48: KEPT the inner loop as 'o = gm_Query(..); if (o != 0) do { .. } while ((o = gm_QueryNext())
+   != 0);' (continue goes to the QueryNext test as in the for): the original's block layout, frame and size
+   (554 = 554), no branch hunk left; 90 ins / 241 bytes (was 89 / 341, the je to the latch's cursor
+   reload). Mechanism: the extra block behind the inner loop lets the cursor global's web (k#25: init,
+   entry test, latch test) get a register (sav 2), so the id-skip path keeps it and the reload sits only
+   after the inner loop (do { } while (0) around the for = the same code; an if-for = control). Left: one
+   scratch rotation through the whole body: the cursor K takes ecx (the original eax) and every temp after
+   it is one step behind (K+0x20 eax / orig ecx, inventory ecx / edx, o->id edx / eax, the AITIME copies,
+   the tail). c2trace --seq: K is served last (prio -2) and eax is taken in block 2 by temp#164 / temp#169
+   (block-2 CSE temps of the gm_MinutesBetween line, prio 24); the original also computes the ebp IV init
+   and the entry compare from K (lea ecx,[eax+eax*2]; cmp eax,ecx), ours from i (edi): with K referenced in
+   that block K would outrank those temps. flip.py --want on that IV init form hits only 'int i' as short /
+   char. Tried, = control: separate globals lc_ReserveTime / lc_ReserveCursor for the LCSETTINGS fields,
+   prototypes (K&R / char * / AITIME *) of gm_MinutesBetween and ai_CanAct, a named start local, (int)
+   casts, nested guard, return at the end; two increments (while / for(;;) with 'i++; continue;'): the
+   original's latch too but a second IV &ai_Chars[i] (frame 0x408). Open: what references K in the IV-init
+   block (the cursor read once more there, or i's init as a copy VC6 propagates). prior: s47: the whole
+   body is one scratch rotation behind: the original loads the cursor into a temp (mov eax,[cursor]; mov
+   edi,eax; lea ecx,[eax+0x20]; cmp eax,ecx; the i*0x21c lea chain from eax), ours loads i straight into
+   edi (c2trace: k#25, the first-pass cursor value, shares edi with i#3). The draft M8 lines are only the
+   two AITIME copies in the rotated register order (crossed). Rounds: i init outside the for / for(;..) /
+   i<0x20+cursor / call in the init comma: = control; i-cursor<0x20 91, commuted compare 93; outer id test
+   as if instead of continue and a while form with i++ at the end: = control. A while whose continue skips
+   i++ (meaning differs) gave the original's mov edi,ecx copy shape (one register off): the cursor temp
+   appears when the loop head is a merge point. climb 3 rounds: only meaning-changing mutants
+   (ai_FindUsableGood called twice, 68). Open: which loop/guard form makes the cursor a temp copied into i. */
 
 void lc_UpdateGoodsReserves(void)
 {
@@ -8193,34 +8196,36 @@ void lc_UpdateGoodsReserves(void)
     for (i = lc_Settings.reserveCursor; i < lc_Settings.reserveCursor + 0x20 && i < 0x300; i++) {
         if (((AICHARREC *)ai_Chars)[i].id == 0xffff)
             continue;
-        for (o = (G8INVOBJ *)gm_Query((void *)((AICHARREC *)ai_Chars)[i].inventory, 1, 5); o != 0;
-             o = (G8INVOBJ *)gm_QueryNext()) {
-            use = (G9DOMIZIL *)ai_FindUsableGood(o->id);
-            if (use == 0)
-                continue;
-            if (use->minutes > 0) {
-                if (o->active == 0)
+        o = (G8INVOBJ *)gm_Query((void *)((AICHARREC *)ai_Chars)[i].inventory, 1, 5);
+        if (o != 0) {
+            do {
+                use = (G9DOMIZIL *)ai_FindUsableGood(o->id);
+                if (use == 0)
                     continue;
-                o->minutesLeft -= gm_MinutesBetween(&o->since, &ai_Time);
-                o->since = ai_Time;
-                if (o->minutesLeft >= 0)
-                    continue;
-                /* the effect ran out */
-                o->active = 0;
-                if (((AICHARREC *)ai_Chars)[i].kind == 6) {
-                    txt_Format(text, 0x1bc9, o->id * 2 + 0x9a8);
-                    he_ShowNews(ai_CharInts[i][0], -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_37");
+                if (use->minutes > 0) {
+                    if (o->active == 0)
+                        continue;
+                    o->minutesLeft -= gm_MinutesBetween(&o->since, &ai_Time);
+                    o->since = ai_Time;
+                    if (o->minutesLeft >= 0)
+                        continue;
+                    /* the effect ran out */
+                    o->active = 0;
+                    if (((AICHARREC *)ai_Chars)[i].kind == 6) {
+                        txt_Format(text, 0x1bc9, o->id * 2 + 0x9a8);
+                        he_ShowNews(ai_CharInts[i][0], -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_37");
+                    }
+                    if (o->id == 0x178) {
+                        bld = (AIBLD *)gm_BuildQuery(1, 1, o->bldId);
+                        if (bld != 0)
+                            cm_SendSetField(bld->id, 0x5a, 2, 0, 0x20);
+                    }
+                    if (ai_CanAct(ai_Chars[i]) && ((AICHARREC *)ai_Chars)[i].kind != 7)
+                        cm_SendExSellObject(-1, o->ownerId, o->id, 1, ai_OwnPlayer, 0);
+                } else if (o->active != 0) {
+                    o->active = 0;
                 }
-                if (o->id == 0x178) {
-                    bld = (AIBLD *)gm_BuildQuery(1, 1, o->bldId);
-                    if (bld != 0)
-                        cm_SendSetField(bld->id, 0x5a, 2, 0, 0x20);
-                }
-                if (ai_CanAct(ai_Chars[i]) && ((AICHARREC *)ai_Chars)[i].kind != 7)
-                    cm_SendExSellObject(-1, o->ownerId, o->id, 1, ai_OwnPlayer, 0);
-            } else if (o->active != 0) {
-                o->active = 0;
-            }
+            } while ((o = (G8INVOBJ *)gm_QueryNext()) != 0);
         }
     }
     lc_Settings.reserveTime = ai_Time;
