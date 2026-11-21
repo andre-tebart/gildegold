@@ -3173,7 +3173,7 @@ void ai_GraveyardChatter(char *unused)
     AICHAR *x;
     AICHAR *y;
     AICHAR *c;
-    int *slot;
+    AICHAR **slot;
     EVTSCRIPT *script;
 
     y = 0;
@@ -3186,7 +3186,7 @@ void ai_GraveyardChatter(char *unused)
     if (gm_AllowAll == 0 && util_RandomF() < 0.9f)
         return;
     for (slot = ai_SceneChars; (int)slot < (int)(ai_SceneChars + 0x20); slot++) {
-        c = (AICHAR *)*slot;
+        c = *slot;
         if (c != 0 && c->kind == 0x14 && c->model != 0 && (void *)c->model->scene == (void *)d3_DefaultScene)
             list[cnt++] = c;
     }

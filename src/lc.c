@@ -431,10 +431,10 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 
 
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 
@@ -473,11 +473,11 @@ extern int d2_ClickedId;
 
 extern int ai_CityWatchCrewWindow();
 extern int ai_WatchPlanWindow();
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 extern int ai_WatchPlanWindow();
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 
@@ -4522,7 +4522,7 @@ int ai_BreakInCallback(char *place)
     int win;
     int order;
     int cancel;
-    int *ch;
+    AICHAR **ch;
     int *dst;
     int base;
     LCAMBUSHEVENT *ev;
@@ -4607,7 +4607,7 @@ int ai_PickpocketWindow(char *place, AIBLD *target)
     int cancel;
     int base;
     int n;
-    int *ch;
+    AICHAR **ch;
     AIJOB *ev;
     AIBLD *bld;
 
@@ -12398,7 +12398,7 @@ int ai_AttackWindow(int ctx, AIBLD *target)
     int win;
     int base;
     int n;
-    int *pp;
+    AICHAR **pp;
     AICHARREC *ch;
     AIJOB *ev;
 
@@ -12493,7 +12493,7 @@ void ai_PickpocketGangWindow(AIBLD *bld)
     AIMSG msg;
     int win;
     int n;
-    int *pp;
+    AICHAR **pp;
     AICHARREC *ch;
 
     if (sv_CheckCharacterFlag(bld) != 0)
@@ -13254,7 +13254,7 @@ int ai_WatchPlanWindow(int ctx, char *place)
     int base;
     int n;
     int i;
-    int *pp;
+    AICHAR **pp;
     AICHARREC *ch;
     AIBLD *bld;
 
@@ -13337,7 +13337,7 @@ int ai_ArrestWindow(int unused, AIBLD *bld)
     int ctl;
     int n;
     int i;
-    int *p;
+    AICHAR **p;
     AIMSG msg;
 
     if (bld == 0)

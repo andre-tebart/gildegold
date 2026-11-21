@@ -1080,7 +1080,7 @@ void snd_PlayFavourComment(void)
     if (snd_VoiceBankOrders == 0)
         snd_VoiceBankOrders = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_BEFEHL_HANDWERK.sbf", 0);
     for (i = 0; i < 0x20; i++) {
-        c = (AICHAR *)ai_SceneChars[i];
+        c = ai_SceneChars[i];
         if (c != 0 && c->selected != 0) {
             if (c->sex == 0) {
                 men++;

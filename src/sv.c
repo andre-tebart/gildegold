@@ -54,7 +54,7 @@ extern int d2_HitUnderPointer;
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 
@@ -66,7 +66,7 @@ extern int hst_KeyNext;
 extern GAPDATA full_data_623240[];
 extern int ai_PermsDirty;
 extern float d3s_QuadUV[6];
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 
 extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
@@ -4556,7 +4556,7 @@ void sv_CollectGroupCharacters(char *b)
                 return;
             c = &ai_Chars[i];
             if (c->model != 0 && c->model->bldId == ((AIBLD *)b)->id) {
-                ai_SceneChars[n++] = (int)c;
+                ai_SceneChars[n++] = c;
                 if (n > 8)
                     ch_SetVisible((CHARACTER *)c->model, 0);
             }
@@ -4567,7 +4567,7 @@ void sv_CollectGroupCharacters(char *b)
             if (n >= 31)
                 return;
             if (ai_Chars[i].model != 0 && ai_Chars[i].model->bldId == -1)
-                ai_SceneChars[n++] = (int)&ai_Chars[i];
+                ai_SceneChars[n++] = &ai_Chars[i];
         }
     }
 }
@@ -4680,7 +4680,7 @@ void sv_RunLocationScripts(AIBLD *a)
     }
     season = gm_ClockSeason(&ai_Time);
     for (i = 0; i < 0x20; i++) {
-        c = (AICHAR *)ai_SceneChars[i];
+        c = ai_SceneChars[i];
         if (c == 0 || c->model == 0 || c->model->bldId != a->id || c->health <= 0 || c->model->scene != d3_DefaultScene)
             continue;
         ok = 0;
@@ -4735,7 +4735,7 @@ lstart:
             for (n = 0; n < 8; n++)
                 used[n] = 1;
             for (j = 0; j < 0x20; j++) {
-                e = (AICHAR *)ai_SceneChars[j];
+                e = ai_SceneChars[j];
                 if (e != 0 && e->model != 0 && e->model->scriptId != -1 && (s = evt_FindById(e->model->scriptId)) != 0
                     && (r = strstr(s->name, name)) != 0) {
                     d = r[strlen(name)] - '0';
@@ -5022,7 +5022,7 @@ void sv_HandleSelectionMouse(void)
             if (d3_FindObject((int)sv_ClickedObjectT, 0x100, 0, name) == 0)
                 strcpy(name, sv_ClickedObjectT->name);
             for (j = 0; j < 0x20; j++) {
-                c = (AICHAR *)ai_SceneChars[j];
+                c = ai_SceneChars[j];
                 b = 0;
                 if (c != 0 && c->selected != 0) {
                     cm_SendChrStop(c->netId);
@@ -6327,7 +6327,7 @@ void sv_UpdateBand(void)
     right = max(sv_Band.x0, sv_Band.x1);
     bottom = max(sv_Band.y0, sv_Band.y1);
     for (i = 0; i < 0x20; i++) {
-        c = (AICHAR *)ai_SceneChars[i];
+        c = ai_SceneChars[i];
         if (c == 0 || c->health == 0)
             continue;
         bits = gm_PermissionBits(ai_PlayerId, 0, 0, (int)c);
@@ -6380,7 +6380,7 @@ void sv_UpdateBandLed(void)
     right = max(sv_Band.x0, sv_Band.x1);
     bottom = max(sv_Band.y0, sv_Band.y1);
     for (i = 0; i < 0x20; i++) {
-        c = (AICHAR *)ai_SceneChars[i];
+        c = ai_SceneChars[i];
         if (c == 0 || c->health == 0)
             continue;
         bits = ai_LedSelectBits(ai_PlayerId, (char *)c);
@@ -7658,7 +7658,7 @@ int sv_GroundplanButtons[15];  /* 0x7662e0, 15 widget ids */
 int sv_SelectedExtra;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
 char * sv_SelectedObject;  /* 0x75ec60 */
 char cm_ChatLog[2048];  /* 0x75fba0 */
-int ai_SceneChars[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
+struct AICHAR *ai_SceneChars[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (cm.c 0x4cf000 updates them each tick) */
 int * d3t_Rain;  /* 0x760618, the rain level */
 int sv_FrameMask;  /* 0x760638 */
 extern int d2_HitWindow;

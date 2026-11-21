@@ -391,7 +391,7 @@ extern int init_StatusForm;
    from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
 #include "f3init_types.h"
 extern INIT_PLAYER init_PlayerProfile;
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 #define INIT_WINDOWS_END (unsigned)&sv_SkyScale       /* one past the scene window table 0x7603a0 (0x20 ints) */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 #include "ls.h"

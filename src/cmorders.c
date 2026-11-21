@@ -134,7 +134,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
-#define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -674,7 +673,7 @@ void cm_FightLoop(char *a, int ctx)
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
             cm_FightPaused = cm_FightPaused == 0;
             for (i = 0; i < 32; i++) {
-                o = ai_SceneCharsT[i];
+                o = ai_SceneChars[i];
                 if (o != 0 && CM_CHR(o)->scene == d3_DefaultScene)
                     ch_PauseAnim(CM_CHR(o), cm_FightPaused);
             }

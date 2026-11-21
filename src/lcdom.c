@@ -319,10 +319,10 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 
 
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 
@@ -361,11 +361,11 @@ extern int d2_ClickedId;
 
 extern int ai_CityWatchCrewWindow();
 extern int ai_WatchPlanWindow();
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 extern int ai_WatchPlanWindow();
-extern int ai_SceneChars[32];
+extern struct AICHAR *ai_SceneChars[32];
 extern int d2_ClickedId;
 
 
@@ -8309,7 +8309,7 @@ void ai_EquipRowsInit(AIBLD *bld)  /* bld: the equip window passes its building;
 
 int ai_UpdateEquipRows(int view, int form)
 {
-    int *sc;
+    AICHAR **sc;
     AIEQUIPROW *row;
     AIOBJ *item;
     AICHARREC *ch;
@@ -8328,7 +8328,7 @@ int ai_UpdateEquipRows(int view, int form)
         lc_Settings.equipRowCount++;
         found = 0;
         for (sc = ai_SceneChars; (int)sc < (int)&ai_SceneChars[0x20]; sc++)
-            if ((int)ai_EquipRowTab[r].ch == *sc) {
+            if ((int)ai_EquipRowTab[r].ch == (int)*sc) {
                 found = 1;
                 break;
             }
@@ -8399,7 +8399,7 @@ int ai_UpdateEquipRows(int view, int form)
             continue;
         found = 0;
         for (row = ai_EquipRowTab; (int)row < (int)(ai_EquipRowTab + 0x20); row++)
-            if ((int)row->ch == *sc) {
+            if ((int)row->ch == (int)*sc) {
                 found = 1;
                 break;
             }

@@ -140,7 +140,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
-#define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -608,10 +607,10 @@ int cm_UpdateBombs()
         d3t_CreateEarth(0, (D3VECTOR *)&a, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, col);
         d3t_CreateExplosion(0, (D3VECTOR *)&a, 0x1e, 120.0f, 80.0f, 20.0f, 60.0f, 0x3c);
         for (j = 0; j < 32; j++) {
-            if (ai_SceneCharsT[j] == 0)
+            if (ai_SceneChars[j] == 0)
                 continue;
-            ch = ai_SceneCharsT[j]->scene;
-            c = ai_SceneCharsT[j];
+            ch = ai_SceneChars[j]->scene;
+            c = ai_SceneChars[j];
             if (c->health == 0)
                 continue;
             bo = rec->obj;
@@ -622,11 +621,11 @@ int cm_UpdateBombs()
             if (dist < 170.0f) {
                 t = (int)((cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin) * (c->f01c * 0.01));
                 amt = (int)(t * (1.0 - dist * 0.0058823530562222f));
-                ai_SceneCharsT[j]->v024 -= amt;
-                if ((int)ai_SceneCharsT[j]->bld == cm_FightAttacker)
-                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 1);
+                ai_SceneChars[j]->v024 -= amt;
+                if ((int)ai_SceneChars[j]->bld == cm_FightAttacker)
+                    cm_ShowDamage((char *)ai_SceneChars[j], amt, 1);
                 else
-                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 2);
+                    cm_ShowDamage((char *)ai_SceneChars[j], amt, 2);
                 if (cm_CheckDeath(c) == 0)
                     ch_QueueAnim(ch, "kampf/bauch_greifen", 1);
             }
@@ -761,10 +760,10 @@ int cm_UpdateGrenades()
         }
         sb_PlaySample(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         for (j = 0; j < 32; j++) {
-            if (ai_SceneCharsT[j] == 0)
+            if (ai_SceneChars[j] == 0)
                 continue;
-            ch = ai_SceneCharsT[j]->scene;
-            c = ai_SceneCharsT[j];
+            ch = ai_SceneChars[j]->scene;
+            c = ai_SceneChars[j];
             if (c->health == 0)
                 continue;
             d3sm_GetVertex(g, rec->x, rec->y, (D3VECTOR *)&a);
@@ -775,11 +774,11 @@ int cm_UpdateGrenades()
             if (dist < 100.0f) {
                 t = (int)((cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin) * (c->f01c * 0.01));
                 amt = (int)(t * (1.0 - dist * 0.01f));
-                ai_SceneCharsT[j]->v024 -= amt;
-                if ((int)ai_SceneCharsT[j]->bld == cm_FightAttacker)
-                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 1);
+                ai_SceneChars[j]->v024 -= amt;
+                if ((int)ai_SceneChars[j]->bld == cm_FightAttacker)
+                    cm_ShowDamage((char *)ai_SceneChars[j], amt, 1);
                 else
-                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 2);
+                    cm_ShowDamage((char *)ai_SceneChars[j], amt, 2);
                 if (cm_CheckDeath(c) == 0)
                     ch_QueueAnim(ch, "kampf/arm_greifen", 1);
             }
@@ -980,7 +979,7 @@ void cm_CloseFightView()
    if (found != 0) (the scratch rotation from 1095 on). Left (8 ins): the original pushes c->health (xor
    edx / mov dl,[esi+8] / push edx) after the _ftol of the damage, ours before the fild (c2dag: the IL has
    the push before the _ftol call node and the scheduler keeps it; with dmg as its own statement the
-   scheduler still hoists it). Tried: dmg local, (int)c->health, ai_SceneCharsT[i]->health, b, the product
+   scheduler still hoists it). Tried: dmg local, (int)c->health, ai_SceneChars[i]->health, b, the product
    spellings (/ 100.0, c->f01c * n, (float)n: same code; (double), 0.01f, 0.01 * n: fpu hunks), cm_Random
    inline in the call (worse, health loaded before the call); climb 3 rounds from this text: nothing.
    prior: Read whole against 0x4cf000..0x4cf370: the same calls with the same arguments (VecEqual c then o,
@@ -1006,7 +1005,7 @@ void cm_UpdateSceneChars()
 
     if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && d3_Time % 0x15e == 0) {
         for (i = 0; i < 32; i++) {
-            c = ai_SceneCharsT[i];
+            c = ai_SceneChars[i];
             if (c == 0)
                 continue;
             b = c->health;
@@ -1024,7 +1023,7 @@ void cm_UpdateSceneChars()
         }
     }
     for (i = 0; i < 32; i++) {
-        c = ai_SceneCharsT[i];
+        c = ai_SceneChars[i];
         if (c == 0)
             continue;
         w = (AIWEAPON *)cm_CharWeapon((char *)c);
@@ -1044,7 +1043,7 @@ void cm_UpdateSceneChars()
                 best = 999999.0f;
                 found = 0;
                 for (j = 0; j < 32; j++) {
-                    d = ai_SceneCharsT[j];
+                    d = ai_SceneChars[j];
                     if (d != 0 && cm_OtherBuilding((char *)c, (char *)d) != 0 && d->health != 0) {
                         dist = cm_CharObjDistXZ((char *)c, (char *)d->scene->obj);
                         if (dist < 100.0f) {
@@ -1179,7 +1178,7 @@ void cm_UpdatePointer()
         return;
     }
     for (i = 0; i < 31; i++) {
-        c = ai_SceneCharsT[i];
+        c = ai_SceneChars[i];
         if (c != 0 && c->selected != 0) {
             if (ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800) {
                 if (kb_Down[0x36] == 0) {
@@ -1316,7 +1315,7 @@ void cm_BuildPortraits()
     }
     x = 0;
     for (i = 0, n = 0; i < 31 && n < 6; i++) {
-        c = ai_SceneCharsT[i];
+        c = ai_SceneChars[i];
         if (c == 0)
             continue;
         if (!(ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800))
@@ -1375,7 +1374,7 @@ void cm_ClickSceneChar()
     D3OBJECT *sel;
 
     ai_ClickedObject = 0;
-    for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
+    for (pp = ai_SceneChars; (int)pp < (int)(ai_SceneChars + 32); pp++) {
         c = *pp;
         if (c != 0 && c->selected != 0 && (ai_LedSelectBits(t->id, (char *)c) & 0x800) && c->scene != 0 &&
             c->health != 0)
@@ -1670,7 +1669,7 @@ void cm_FightMouse(char *rec)
             sv_StartBand();
         }
     } else if (dm_L.lup != 0) {
-        for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
+        for (pp = ai_SceneChars; (int)pp < (int)(ai_SceneChars + 32); pp++) {
             c = *pp;
             if (c != 0 && c->selected != 0 && (ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800) &&
                 c->scene != 0 && c->health != 0) {
@@ -1684,7 +1683,7 @@ void cm_FightMouse(char *rec)
             }
         }
     }
-    for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
+    for (pp = ai_SceneChars; (int)pp < (int)(ai_SceneChars + 32); pp++) {
         c = *pp;
         if (c != 0 && !(c->scene->flags.bytes.lo & 0x40)) {
             if (c->selected) {
@@ -1764,10 +1763,10 @@ void cm_CollectSceneChars()
     AICHAR **p;
     AICHAR *r;
 
-    memset(ai_SceneCharsT, 0, sizeof(ai_SceneCharsT));
-    p = ai_SceneCharsT;
+    memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
+    p = ai_SceneChars;
     for (r = cm_FightersT; (int)&r->scene < (int)&cm_FightersT[32].scene; r++) {
-        if ((int)p >= (int)&ai_SceneCharsT[31])
+        if ((int)p >= (int)&ai_SceneChars[31])
             break;
         if (r->scene != 0 && r->scene->scene == d3_DefaultScene)
             *p++ = r;
@@ -2085,7 +2084,7 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     for (i = 0; i < 32; i++) {
         if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0 &&
             cm_FightersT[i].scene->scene == d3_DefaultScene)
-            ai_SceneCharsT[n++] = &cm_FightersT[i];
+            ai_SceneChars[n++] = &cm_FightersT[i];
     }
     for (i = 0; i < 9; i++) {
         sprintf(name, "WARE_0%i", i + 1);
@@ -2330,22 +2329,22 @@ AICHAR *cm_NearestEnemy(AICHAR *c)
     res = 0;
     if (((AIWEAPON *)cm_CharWeapon((char *)c))->kind != 2) {
         for (i = 0; i < 32; i++) {
-            if (ai_SceneCharsT[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneCharsT[i]) != 0 &&
-                ai_SceneCharsT[i]->health != 0) {
-                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneCharsT[i]->scene->obj);
-                if (gm_HealthRatio((short *)ai_SceneCharsT[i]) * d < best) {
-                    res = ai_SceneCharsT[i];
+            if (ai_SceneChars[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneChars[i]) != 0 &&
+                ai_SceneChars[i]->health != 0) {
+                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneChars[i]->scene->obj);
+                if (gm_HealthRatio((short *)ai_SceneChars[i]) * d < best) {
+                    res = ai_SceneChars[i];
                     best = d;
                 }
             }
         }
     } else {
         for (i = 0; i < 32; i++) {
-            if (ai_SceneCharsT[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneCharsT[i]) != 0 &&
-                ai_SceneCharsT[i]->health != 0) {
-                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneCharsT[i]->scene->obj);
-                if (gm_HealthRatio((short *)ai_SceneCharsT[i]) * d < best) {
-                    res = ai_SceneCharsT[i];
+            if (ai_SceneChars[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneChars[i]) != 0 &&
+                ai_SceneChars[i]->health != 0) {
+                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneChars[i]->scene->obj);
+                if (gm_HealthRatio((short *)ai_SceneChars[i]) * d < best) {
+                    res = ai_SceneChars[i];
                     best = d;
                 }
             }
