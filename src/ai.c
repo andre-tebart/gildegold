@@ -30,7 +30,6 @@ typedef unsigned int SOCKET;
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_MsgTakeBuildingGoodsPct5to19Type33 / ai_MsgTakeBuildingGoodsPct5to24Type34) */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_RelationGain) */
-#define cm_SendRemoveGoodsI ((void (*)(int, int))cm_SendRemoveGoods)  /* 0x4c4960 (cm.h: short b): @original ai.c pushes the second argument as an int (byte-matched ai_SendRemoveEmptyGoods) */
 #include "d3_types.h"
 #include "am_types.h"                /* AIACT */
 #include "ahm.h"
@@ -612,7 +611,7 @@ void ai_SendRemoveEmptyGoods(AIOBJ *stall)
 
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].amount == 0 && !(ai_Entries[i].flags & 8))
-            cm_SendRemoveGoodsI(stall->objId, ai_Entries[i].item);
+            cm_SendRemoveGoods(stall->objId, ai_Entries[i].item);
     }
 }
 /* 0x47edb0, evaluates the production of a master's workshop @deep B3 far draft (1608/2272 bytes, 702
@@ -3108,7 +3107,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
         } else {
             ai_Slots[j].amount = gm_ListAmount(b, o);
             if (!ai_Slots[j].amount)
-                cm_SendRemoveGoodsI(b->objId, ai_Slots[j].item);
+                cm_SendRemoveGoods(b->objId, ai_Slots[j].item);
         }
         ai_Slots[j].capacity = gm_FreeCapacity(b, ai_Slots[j].item, 1000000);
     }
@@ -5306,7 +5305,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                             }
                         }
                         if (!stA.amount[i]) {
-                            cm_SendRemoveGoodsI(b->objId, stA.item[i]);
+                            cm_SendRemoveGoods(b->objId, stA.item[i]);
                             stA.item[i] = 0;
                         }
                     }
@@ -5342,7 +5341,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                             }
                         }
                         if (!stB.amount[i]) {
-                            cm_SendRemoveGoodsI(b->objId, stB.item[i]);
+                            cm_SendRemoveGoods(b->objId, stB.item[i]);
                             stB.item[i] = 0;
                         }
                     }
@@ -5692,7 +5691,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                             }
                         }
                         if (!stA.amount[i]) {
-                            cm_SendRemoveGoodsI(b->objId, stA.item[i]);
+                            cm_SendRemoveGoods(b->objId, stA.item[i]);
                             stA.item[i] = 0;
                         }
                     }

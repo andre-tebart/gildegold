@@ -1367,7 +1367,7 @@ int cm_SendCartRoute(int a, int b, int c)
 }
 /* 0x4c4960, message 0x14 */
 
-void cm_SendRemoveGoods(int a, short b)
+void cm_SendRemoveGoods(int a, int b)
 {
     G17MSG m;
 
