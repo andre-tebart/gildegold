@@ -49,7 +49,7 @@ typedef struct AIGRP {                  /* 0x34 bytes, a feast group: the host a
     struct {
         struct AIC4 *ch;                /* 0x04, a guest */
         int d;                          /* 0x08, the guest's verdict ai_EvalFest writes: the feast's level less the
-                                           guest's (gm_CharLevelS), clamped to -2 .. 2; the feast's news line 0x1788
+                                           guest's (gm_CharLevel), clamped to -2 .. 2; the feast's news line 0x1788
                                            tells it with the text 0x178f + 3 * d + a random 0 .. 2 (he.c 0x5437c0) */
     } mem[4];
     unsigned int essen;                 /* 0x24, the feast menu pick 0 .. 5: ai_FeastWindow prints text 0x1782
