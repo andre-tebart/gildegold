@@ -32,6 +32,7 @@
 #include "d3_sky.h"
 #include "d3_vec.h"
 #include "d3_engine.h"
+extern unsigned char d3_NoTextures;  /* 0x63345d, defined below; ecmd.c declares it int (it stores a dword) */
 #include "d3_anim.h"
 /* d3_mir.h types d3_MirDrawObject / d3_MirBeginFrame with D3MIRROR *; d3_engine.h keeps the D3OBJECT * views. */
 #define d3_MirDrawObject d3_Unk4550e0_mirview
@@ -923,7 +924,7 @@ void d3_DrawSortedD3D(void)
             p = vb;
             n = 0;
             cur = (D3TEXV *)t->tex;
-            if (!d3_NoTexturesByte && cur && cur->d3dtex != oldtext) {
+            if (!d3_NoTextures && cur && cur->d3dtex != oldtext) {
                 oldtext = cur->d3dtex;
 #line 1219 "D:\\develop\\Units\\d3\\d3_engine.c"
                 D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, oldtext));
@@ -1431,7 +1432,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_AllocObjectPolys(d3s_Object->info);
     d3s_Object->info->nkeys = 0;
     d3s_Object->info->ntris = 0;
-    d3_SetHardwareMode(d3_D3DActiveBits.on);
+    d3_SetHardwareMode(d3_D3DActive);
     d3_EngineReady = 1;
     d3_SetViewport(d3_Cfg.viewW, d3_Cfg.viewH, d3_Cfg.viewX, d3_Cfg.viewY, d3_Cfg.zn, d3_Cfg.zf, d3_Cfg.scale,
                    d3_Cfg.w, d3_Cfg.h);
@@ -2651,7 +2652,8 @@ unsigned char d3_Hardware = 0;  /* 0x633450 */
 unsigned char d3_EngineReady = 0;  /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
 unsigned int d3_ClipOut = 0;  /* 0x633454, vertices in the clipped polygon */
 unsigned int d3_ClipIn = 0;  /* 0x633458, vertices in the polygon to clip */
-D3ACTIVE d3_Active = { 0 };  /* 0x63345c, d3_D3DActive and d3_NoTextures (d3.h) */
+unsigned char d3_D3DActive = 0;  /* 0x63345c, a Direct3D device was created */
+unsigned char d3_NoTextures = 0;  /* 0x63345d, textures off (ecmd.c's ocmd_SetNoTextures; d3_DrawSortedD3D tests the byte) */
 int d3_UnreadBss2[2] = {0};  /* 0x633464, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int d3_ClipExtraTris = 0;  /* 0x63346c */
 int d3_StatPolys = 0;  /* 0x633470, frame statistics */

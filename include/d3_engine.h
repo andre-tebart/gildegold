@@ -202,8 +202,6 @@ extern int d3_TriCount;                /* 0xfc7b60 */
 extern int d3_VertCount;                /* 0xfc2dc4 */
 extern int d3_DrawnVerts;              /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 /* a byte read as an int bitfield (mov dword; and 0xff): d3_Init passes d3_D3DActive so */
-struct D3BITS8 { unsigned int on : 8; };
-#define d3_D3DActiveBits (*(struct D3BITS8 *)&d3_Active)  /* 0x63345c */
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
 struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
 extern unsigned char d3_MipSkip;          /* 0x63342c, d3_d3d.c */
@@ -591,7 +589,6 @@ extern float d3_ZOfs;                       /* 0xfc7b64 */
 extern float d3_UOfs, d3_VOfs;              /* 0xfe73ac, 0xfc26ec */
 extern float ts_ScrollV[32], ts_ScrollU[32];    /* 0xfb9120, 0xfb90a0 */
 /* 0x63345d: the first byte of d3_NoTextures (d3.h), read as a byte */
-#define d3_NoTexturesByte (*(unsigned char *)((char *)&d3_Active + 1))  /* 0x63345d */
 int d3d_GetVertexBuffer(void **buf, int *n);                                            /* 0x4364f0, d3_d3d.c */
 void d3d_DrawTriangles(void *unk, struct _D3DTLVERTEX *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
 /* Inline asm: one transformed vertex from a D3PVERT and a texture coordinate pair (u, v at uv). */

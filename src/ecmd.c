@@ -23,6 +23,8 @@ struct D3SURF;
 #include "d3_light.h"
 #include "bio.h"
 #include "d3_engine.h"
+extern int d3_NoTextures;  /* 0x63345d, @original why: ocmd_SetNoTextures stores the flag as a dword (mov [0x63345d], ecx;
+                              byte-matched) while d3_engine.c defines and reads the byte (d3_DrawSortedD3D) */
 #include "d3_int_io.h"
 #include "d3_interface.h"
 #include "d3_io_t.h"
