@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -3771,7 +3771,7 @@ exe	0x00561190	he_RunRansom	he	byte	readable
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	byte	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
-exe	0x00561a20	he_RunBurglary	he	byte	readable		
+exe	0x00561a20	he_RunBurglary	he	shape	readable		
 exe	0x005628e0	he_RunBuildingSpying	he	shape	readable	deep	
 exe	0x00563070	he_AllocAmbush	he	byte	readable		
 exe	0x005630f0	he_RunAmbush	he	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4505,7 +4505,7 @@ exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	byte	readable		
 exe	0x005c4100	ai_LawSelectionEntry	lcamt	byte	readable		
 exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
-exe	0x005c5310	ai_CharInfoPanel	lcamt	byte	readable		
+exe	0x005c5310	ai_CharInfoPanel	lcamt	shape	readable		
 exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
 exe	0x005c64c0	ai_FindCandidateIds	lcamt	byte	readable		
 exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
