@@ -112,7 +112,6 @@ extern GAPDATA full_data_602568[];
 #include "poker.h"
 #include "gfx.h"
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
                                        may not set it on a character that has it */
@@ -3823,7 +3822,7 @@ int cm_ExSysMessage(G17MSG *m, G17STAT *s)
             ai_Time.sec = msg.sys.time.sec;
             ai_Time.min = msg.sys.time.min;
             ai_Time.hour = msg.sys.time.hour;
-            ai_TimeCopyT = ai_Time;
+            ai_TimeCopy = ai_Time;
             if (k == 0)
                 tb_SetFunctionOff(sv_UpdateClock, 0);
             break;
@@ -6931,7 +6930,6 @@ typedef struct CMFIGHTREC {
 } CMFIGHTREC;
 
 extern unsigned int ai_MissionSeed;
-extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
 extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];
@@ -7031,7 +7029,6 @@ int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8, the lines in the ring (at most 15) */
 int cm_LobbyChatPos = 0;  /* 0x6f0cdc, the index of the line the chat window reads next (cm_LobbyChatFirst / 0x4cd4c0) */
 extern unsigned int ai_MissionSeed;
-extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
 extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];

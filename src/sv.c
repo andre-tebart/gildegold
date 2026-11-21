@@ -77,7 +77,6 @@ extern int d2_HitUnderPointer;
 
 
 extern int main_Inactive;
-extern int ai_TimeCopy[4];
 
 
 struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
@@ -7153,7 +7152,7 @@ l64:
             he_PickActiveEvent();
         he_RunQuickList();
         if (net_Conn.s == (unsigned)-1 && (unsigned)d3_Time > (unsigned)cm_NextNetStep && ai_GameState != 0)
-            cm_SendTime((AITIME *)&ai_TimeCopy);
+            cm_SendTime(&ai_TimeCopy);
         if ((mask & 0x10000) == 0 && ai_GameState != 0 && sv_PanelFlag == 0 && cm_UpdateParties() != 0 && sv_Advancing != 0)
             sv_PopRequest = 1;
     }
@@ -7399,12 +7398,12 @@ void sv_UpdateClock(void)
 {
     int t, h, m;
 
-    if ((ai_TimeCopyHour >= 0x17 || ai_Time.hour >= 0x17) && (ai_GameFlagsB & 0x80) == 0)
+    if ((ai_TimeCopy.hour >= 0x17 || ai_Time.hour >= 0x17) && (ai_GameFlagsB & 0x80) == 0)
         return;
     t = (int)(((float)ai_OptionSpeed * 0.00625f + 0.5) * main_ClockScale);
     h = t / 3600;
     m = (t - h * 3600) / 60;
-    gm_AddTime((struct AITIME *)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
+    gm_AddTime(&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
 }
 
 extern int sv_SkyScene;

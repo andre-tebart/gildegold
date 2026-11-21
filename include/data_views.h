@@ -108,12 +108,6 @@
 #define sv_ViewRotY              (*(int *)((char *)&sv_ViewRot + 0x4))  /* 0x75fb94 */
 #define sv_ViewRotZ              (*(int *)((char *)&sv_ViewRot + 0x8))  /* 0x75fb98 */
 
-/* ai_TimeCopy */
-#define ai_TimeCopyHour          (*(unsigned short *)((char *)&ai_TimeCopy + 0x4))  /* 0x75e134, the copy's hour (AITIME.hour) */
-#define ai_Unk75e134             (*(int *)((char *)&ai_TimeCopy + 0x4))  /* 0x75e134 */
-#define ai_Unk75e138             (*(int *)((char *)&ai_TimeCopy + 0x8))  /* 0x75e138 */
-#define ai_Unk75e13c             (*(short *)((char *)&ai_TimeCopy + 0xc))  /* 0x75e13c */
-
 
 /* ai_GameFlags */
 #define ai_GameFlagsB            (*(unsigned char *)&ai_GameFlags)  /* 0x6f23f8, its low byte (bit 7: sv_UpdateClock) */

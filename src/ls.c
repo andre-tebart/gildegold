@@ -18,7 +18,6 @@ struct D3TERRAIN;
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
-#define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.c: int[4]) as the AITIME it holds */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -89,7 +88,6 @@ extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
 extern int he_EventCount;
 extern void (*he_RunHandlers[5544])(unsigned char *);
-/* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_TimeCopy (data_views.h), the clock copy */
 
 void he_FreeEvents();                    /* 0x53d590 */
 
@@ -1233,7 +1231,6 @@ unsigned short ai_ScreenImage[19200];  /* 0x766320, the */
 LSHEADER ls_LoadedHeader;  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
 int cm_SaveAcks[8][2];  /* 0x76fa20 */
 extern char * cm_LoadBuf;                /* 0xf31140 */
-extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
 #define LS_CLOSEFAIL { vfs_fclose(h); return 0; }   /* a reader failed: the file closed */
 #define LS_LOADFAIL { vfs_fclose(h); mem_Free(cm_LoadBuf); cm_LoadBuf = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
@@ -1262,7 +1259,7 @@ int ls_LoadGame(int name, int kind)
     if (ls_Version >= 0x10022)
         LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_Update, sizeof(AIUPDATE));   /* 0xf89580 */
-    ai_TimeCopyT = ai_Time;
+    ai_TimeCopy = ai_Time;
     if ((ls_LoadedHeader.flags & 2) == 0)
         ai_Difficulty = ls_LoadedHeader.difficulty;
     if (ls_Version >= 0x10030)
@@ -2617,7 +2614,7 @@ int ls_ReceiveGame(void)
         || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerChar, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         LS_LOADFAIL
-    ai_TimeCopyT = ai_Time;
+    ai_TimeCopy = ai_Time;
     LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_Update, sizeof(AIUPDATE));   /* 0xf89580 */
     if (ls_Version >= 0x10030)

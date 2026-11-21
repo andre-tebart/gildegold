@@ -5277,7 +5277,7 @@ char main_NetSaveName[MAX_PATH];  /* 0x75e360, the network game's city / save na
 int main_PlatformNT;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */
-int ai_TimeCopy[4];  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
+AITIME ai_TimeCopy;  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c) */
 int ai_Opponents[7];  /* 0x75e160 .. */
 char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
 int init_StatusForm;  /* 0x75df00, the panel form the load status is printed in */

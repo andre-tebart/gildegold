@@ -84,7 +84,6 @@ int ls_SendGame(char *name);                                            /* 0x520
 int ls_ReceiveGame(void);                                               /* 0x520b80 */
 
 #ifndef DATA_VIEWS_H
-extern short ai_Unk75e13c;                                  /* 0x75e13c */
 #endif
 extern LSSAVE ls_SavePath;                                  /* 0x75e640 */
 extern unsigned short ai_ScreenImage[19200];                /* 0x766320 */
@@ -105,8 +104,6 @@ extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 extern char * he_QuickList[10921];                          /* 0x74db40 */
 extern int he_EventCount;                                    /* 0x7585e4 */
 #ifndef DATA_VIEWS_H
-extern int ai_Unk75e134;                                    /* 0x75e134 */
-extern int ai_Unk75e138;                                    /* 0x75e138 */
 #endif
 extern unsigned cm_LoadSize;                               /* 0xa68d28 */
 extern int cm_LastSeq;                                    /* 0xf81168 */

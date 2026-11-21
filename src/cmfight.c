@@ -89,7 +89,6 @@ extern GAPDATA full_data_602568[];
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d3sm_PickK ((int (*)(D3SM *, int, int, int *, int *))d3sm_Pick)  /* 0x45f2b0 (d3_sm.c: char d3sm_Pick(D3SM *, int, int, int *, int *)): @original this unit's callers read an int result (byte-matched cm_UpdatePointer 0x4cf73a: and eax, 0xff after the call) */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
                                        may not set it on a character that has it */
