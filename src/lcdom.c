@@ -6910,15 +6910,25 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
    building kind can reach (gm_BuildingKindSkill) a caption (txt_Ptrs[0xf98 + 2 * skill]) and a slider up to that
    level (6 for skill 3, 4 for skill 0x24) showing the building's levels (gm_BuildingSkill 1 / 0); the rows share the
    window's height. A click on a caption shows the skill's text pair 0xf98 / 0xf99 + 2 * skill in a message box
-   @deep reconstructed from the stub against the whole original 0x5b7dd0..0x5b8293 (the order table with
-   its 18-value initializer then 1..36, the sliders memset -1, the kind-skill count, step = (int)(10.0f / n
-   * 24.0f), the caption / slider rows, the close button, the caption click message box $Z$[%s$]$N%s, the
-   per-frame slider refresh with the original's unused first gm_BuildingSkill call); ours 341 vs 342 ins.
-   Left is register allocation: the original keeps win in ebp through the frame loop and reloads bld from
-   its argument slot at every use (mov edx,[esp+0x5ec]), ours keeps bld in ebp/ebx and win in edi, so the
-   loop head is entered twice in ours (+0xd1: or ebx,-1 / mov [d2_ClickedId],ebx duplicated, the -1
-   compares against ebx instead of an immediate +0x115/+0x13b/+0x14b), the slider refresh keeps the slider
-   in edi (+0x1dc) where the original compares the slot in memory, and the step / y / top slots are
+   @deep s23: draft 198 -> shape 2 ins by: the slider refresh's two values as named locals (lo =
+   gm_BuildingSkill(..0); hi = ..(..1); d2_SetObjValue(sliders[i], 0, max, hi, lo): the original calls both
+   before any push and reloads sliders[i] after; 198 -> 117), the pic y as n * step + top (step's piece edi
+   consumed by imul edi,[n]: 117 -> 26), and the three order loops as for (i = 0; order[i] != 0; i++) {
+   skill = order[i]; .. } (the copy of order[0] sunk behind the guard: 26 -> 2). Left: +0x1ba the y = top
+   store (mov [esp+0x14],esi) stands before the second loop's guard je in ours, after it in the original.
+   c2trace --split y: y#1's first piece is seeded in the def block with avail-in{} (memory), so ours stores
+   at the def; the original's store on the loop entry looks like the spill of a register piece of y (esi,
+   the value of top). No lever: y = top before / after n = 0, for-init (i = 0, y = top), y-first, the y =
+   top = .. chain (all = control); y = .. ; top = y (83 ins). flip.py (want je then the y store): 0 flips
+   of 497 mutants. prior: reconstructed from the stub against the whole original 0x5b7dd0..0x5b8293 (the
+   order table with its 18-value initializer then 1..36, the sliders memset -1, the kind-skill count, step
+   = (int)(10.0f / n * 24.0f), the caption / slider rows, the close button, the caption click message box
+   $Z$[%s$]$N%s, the per-frame slider refresh with the original's unused first gm_BuildingSkill call); ours
+   341 vs 342 ins. Left is register allocation: the original keeps win in ebp through the frame loop and
+   reloads bld from its argument slot at every use (mov edx,[esp+0x5ec]), ours keeps bld in ebp/ebx and win
+   in edi, so the loop head is entered twice in ours (+0xd1: or ebx,-1 / mov [d2_ClickedId],ebx duplicated,
+   the -1 compares against ebx instead of an immediate +0x115/+0x13b/+0x14b), the slider refresh keeps the
+   slider in edi (+0x1dc) where the original compares the slot in memory, and the step / y / top slots are
    assigned other registers (+0x51..+0x9b: step in edi vs a slot). The prover stops at the d2_Objs reload
    scheduled before / after the pics[i] store (+0x1da) */
 
@@ -6939,6 +6949,8 @@ void ai_TechEffectsWindow(AIBLD *bld)
     int skill;
     int max;
     int pic;
+    int lo;
+    int hi;
     AIBLD *found;
 
     bldId = bld->id;
@@ -6962,9 +6974,10 @@ void ai_TechEffectsWindow(AIBLD *bld)
     top = (d2_LastWindowPtr->h - step * n) / 2 + 0xe;
     n = 0;
     y = top;
-    for (i = 0; (skill = order[i]) != 0; i++) {
+    for (i = 0; order[i] != 0; i++) {
+        skill = order[i];
         if (gm_BuildingKindSkill(bld->type, skill) != 0) {
-            pic = d2_WinOpenPic(0, step * n + top, 0, d2_LastWindow);
+            pic = d2_WinOpenPic(0, n * step + top, 0, d2_LastWindow);
             pics[i] = pic;
             d2_Objs[pic].style = 3;
             d2_Objs[pic].font = 0x55;
@@ -6993,7 +7006,8 @@ void ai_TechEffectsWindow(AIBLD *bld)
         if (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == close))
             sv_PopRequest = 1;
         if (d2_ClickedId != -1) {
-            for (i = 0; (skill = order[i]) != 0; i++) {
+            for (i = 0; order[i] != 0; i++) {
+                skill = order[i];
                 if (pics[i] != -1 && d2_PointerObj == pics[i]) {
                     txt_Format(text, "$Z$[%s$]$N%s", skill * 2 + 0xf98, skill * 2 + 0xf99);
                     d2_EnableViewObjects(win, 0);
@@ -7002,7 +7016,8 @@ void ai_TechEffectsWindow(AIBLD *bld)
                 }
             }
         }
-        for (i = 0; (skill = order[i]) != 0; i++) {
+        for (i = 0; order[i] != 0; i++) {
+            skill = order[i];
             if (gm_BuildingKindSkill(bld->type, skill) != 0 && sliders[i] != -1) {
                 if (skill == 3)
                     max = 6;
@@ -7011,8 +7026,9 @@ void ai_TechEffectsWindow(AIBLD *bld)
                 else
                     max = gm_BuildingKindSkill(bld->type, skill);
                 gm_BuildingSkill((unsigned char *)bld, skill, 0);    /* its value unused (the original calls it too) */
-                d2_SetObjValue(sliders[i], 0, max, gm_BuildingSkill((unsigned char *)bld, skill, 1),
-                               gm_BuildingSkill((unsigned char *)bld, skill, 0));
+                lo = gm_BuildingSkill((unsigned char *)bld, skill, 0);
+                hi = gm_BuildingSkill((unsigned char *)bld, skill, 1);
+                d2_SetObjValue(sliders[i], 0, max, hi, lo);
             }
         }
     } while (sv_RunFrame((int)ai_TechEffectsWindow, 0x677c7) != 0);

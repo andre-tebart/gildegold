@@ -4416,7 +4416,7 @@ exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	8ea250e94cf9f842	no	byte	control=byte p1
 exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	f31f8bf8edc16c60	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b7690	ai_UpgradeBuilding	lc	38fac143ff8399c6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	0b77d45296ee39a3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
-exe	0x005b7dd0	ai_TechEffectsWindow	lc	50b1a8184f0f9c2f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	20b11b9856a3b1f3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	407cc36871d89a74
 exe	0x005b82a0	ai_FireFightingWindow	lc	339686a3f30644bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005b84f0	ai_BuildingWindow	lc	634b775723a4e1ee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	903b2b3f3d5cb564	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	575085f9b5d2e4fd
