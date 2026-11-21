@@ -15,7 +15,6 @@ struct D3TERRAIN;
 #include "txt.h"
 #include "data_views.h"
 #include "ls.h"
-#define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -276,8 +275,8 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     else
         ref = -1;
     vfs_fwrite(&ref, 4, 1, f);
-    if (sv_PanelShownT != 0)
-        ref = sv_PanelShownT->objId;
+    if (sv_PanelShown != 0)
+        ref = ((struct AIOBJ *)sv_PanelShown)->objId;
     else
         ref = -1;
     vfs_fwrite(&ref, 4, 1, f);
