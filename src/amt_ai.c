@@ -42,10 +42,6 @@ G6RING ai_NearRing[32];  /* 0xf83c20 */
 extern char ai_ActionIniPath[260];
 extern int ai_EvalDepth;
 extern AIACT ai_Actions[0x49];
-/* ai_Unkf84c40: view of ai_Actions (tools/data_views.py) */
-/* ai_Unkf84c60: view of ai_Actions (tools/data_views.py) */
-/* ai_Unkf84cd4: view of ai_Actions (tools/data_views.py) */
-/* ai_Unkf84cf4: view of ai_Actions (tools/data_views.py) */
 extern int ai_EvalStack[73];
 
 #include "ls.h"

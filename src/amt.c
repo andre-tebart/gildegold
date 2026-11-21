@@ -1219,8 +1219,7 @@ const float amt_TabA[] = { 1.54142831e-44f, 0.0f, -3.0f, -5.0f, -3.0f, -8.0f, -8
 const float amt_TabB[] = { 4.90454463e-44f, -15.0f, -10.0f, -10.0f, -10.0f, 0.0f, -5.0f, 0.0f, 0.0f, 0.0f, 5.04467447e-44f, -15.0f, -10.0f, -10.0f, -10.0f, -5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 5.18480432e-44f, -15.0f, -10.0f, -10.0f, -10.0f, -5.0f, -5.0f, 0.0f, 0.0f, 0.0f, 5.46506401e-44f, -20.0f, -15.0f, -15.0f, -15.0f, -10.0f, -5.0f, -5.0f, 0.0f, 0.0f, 5.32493416e-44f, -20.0f, -15.0f, -15.0f, -15.0f, -5.0f, -10.0f, -5.0f, 0.0f, 0.0f, 7.00649232e-45f };  /* 0x5edef0, 5 rows of 10 */
 const float amt_Pay[5] = { 1.10000002f, 1.04999995f, 1.0f, 0.949999988f, 0.899999976f };  /* 0x5edfbc */
 int ai_Evidence[0x800][2]; /* 0x91b6e0 */
-CRIME ai_Crimes[0x200]; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
-                                    table ai_Unk91f716 is the same storage, a view at +0x16 */
+CRIME ai_Crimes[0x200]; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100 */
 GVCANNON gv_Cannon;  /* 0x925100, the cannon scene state */
 AMTREC amt_Table[42];  /* 0x925120 */
 

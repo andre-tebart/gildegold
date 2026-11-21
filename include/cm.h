@@ -406,9 +406,6 @@ extern char init_SceneDirty[];  /* 0xfd7f75 */
 #endif
 
 int he_RandomTransporter();  /* 0x555210 */
-#ifndef DATA_VIEWS_H
-extern char ai_Unkfd7c50[];  /* 0xfd7c50 */
-#endif
 
 int ch_QueueAnim();  /* 0x4057a0 */
 char * vfs_GetPath();  /* 0x42fca0 */
@@ -1050,9 +1047,6 @@ void cm_ExecCutscene(char *m);  /* 0x4e4060, runs the scene party m */
 int cm_UpdateParties(void);  /* 0x4e4060's caller: runs every done party within its hour (cm_ExecCutscene) */
 int cm_IsPartyMember(int id, char *m);  /* 0x4e4870, 1 when the character id is one of the scene party m's members and still exists */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);  /* 0x4fe140 */
-#ifndef DATA_VIEWS_H
-extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, +0x18 used) */
-#endif
 
 
 

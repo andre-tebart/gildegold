@@ -282,18 +282,6 @@ typedef char ai_AssertAIBTX[sizeof(AIBTX) == 0x24d ? 1 : -1];
 typedef char ai_AssertAIBLDX[sizeof(AIBLDX) == 0xa9 ? 1 : -1];
 typedef char ai_AssertAIGOODX[sizeof(AIGOODX) == 0x41 ? 1 : -1];
 
-#ifndef DATA_VIEWS_H
-extern float ai_Unkf84c40[8];           /* 0xf84c40, four (value, pad) pairs */
-#endif
-#ifndef DATA_VIEWS_H
-extern float ai_Unkf84c60[8];           /* 0xf84c60, the same scaled by 0x499a90 */
-#endif
-#ifndef DATA_VIEWS_H
-extern float ai_Unkf84cd4[8];           /* 0xf84cd4, four (value, pad) pairs */
-#endif
-#ifndef DATA_VIEWS_H
-extern float ai_Unkf84cf4[8];           /* 0xf84cf4, the same scaled by 0x499f20 */
-#endif
 
 #define AI_BTX ((AIBTX *)ai_BTypes)
 #define AI_GOODX ((AIGOODX *)ai_Goods)

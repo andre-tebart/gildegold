@@ -542,9 +542,6 @@ extern D3CLIPSTATE d3_ClipState;           /* 0xfc5060 */
 #define d3_ClipFlagB (d3_ClipState.flagB)
 #define d3_Planes (d3_ClipState.planes)
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
-#ifndef DATA_VIEWS_H
-extern int d3_Unkfe7400;                /* 0xfe7400 */
-#endif
 extern char d3_DefaultD3DConfig[];          /* 0x5fb5b4 */
 extern unsigned char dd_BBits, dd_GBits, dd_RBits;  /* 0x1464fbd, 0x1463580, 0x1463570 */
 extern float d3_HalfAngleX;              /* 0xfe7600, atan2(d3_HalfW, d3_ScaleX) (d3_Init), no reader */
@@ -671,9 +668,6 @@ void d3_AddObjectDrawData(D3OBJECT *obj);                                       
 extern int d3_Busy;                         /* 0x633b04, nesting guard of d3_Render/d3_Animate */
 extern unsigned char d3_FogByDistance;          /* 0x6334a5 */
 extern int d3_MirrorObject;                    /* 0x63344c, the object the frame's mirror was built for (0 none) */
-#ifndef DATA_VIEWS_H
-extern unsigned char d3_Unkfb9928;          /* 0xfb9928 */
-#endif
 extern int d3_TextureSwitches;                /* 0xfe75b4 */
 extern int d3_TextureBytes;                /* 0xfc2dc0 */
 extern int d3_StatPolys;                /* 0x633470, frame statistics */

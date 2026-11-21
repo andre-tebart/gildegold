@@ -5274,7 +5274,6 @@ int he_EventCount;  /* 0x7585e4 */
 void (*he_RunHandlers[0xa8])(unsigned char *);  /* 0x758600, the event run handlers by type (he_SetEventHandlers) */
 HEGFXINFO he_GfxInfos[0x40];  /* 0x7588a0, he.h: the gfx infos (he_CreateGfxInfo) */
 HEAPEVENT he_ApEvents[0x100];  /* 0x758ca0, he.h: the AP events (he_AddApEvent) */
-/* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
 int main_SoundBanks[0x80];  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
 void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
 MAINFAMILY main_Family;  /* 0x75e180, the character creation's family and talents */

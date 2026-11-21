@@ -3750,7 +3750,6 @@ void cm_ShowObjectScene(char *o, int id)
     }
 }
 
-/* ai_Unk925538: view of cm_Parties (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */
 

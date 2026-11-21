@@ -10,37 +10,17 @@
 
 /* ai_Chars */
 #define ai_CharInts              (*(int (*)[768][0x87])((char *)&ai_Chars + 0x4))  /* 0x770b84 */
-#define ai_CharSex             (*(char (*)[347])((char *)&ai_Chars + 0x9))  /* 0x770b89 */
-#define ai_Unk770cec             (*(char (*)[28])((char *)&ai_Chars + 0x16c))  /* 0x770cec */
 #define ai_Selected              (*(char (*)[132])((char *)&ai_Chars + 0x188))  /* 0x770d08 */
 #define ai_Unk770d8c             (*(char (*)[414196])((char *)&ai_Chars + 0x20c))  /* 0x770d8c */
-
-/* d2_Wins */
-#define ai_Unkf8f128             (*(char (*)[20])((char *)&d2_Wins + 0x8))  /* 0xf8f128 */
-#define ai_Unkf8f13c             (*(int (*)[1][0xf1])((char *)&d2_Wins + 0x1c))  /* 0xf8f13c */
-#define ai_Unkf8f39c             (*(char (*)[91908])((char *)&d2_Wins + 0x27c))  /* 0xf8f39c */
 
 /* d2_Radios */
 #define d2_RadioSel              (*(int (*)[278])((char *)&d2_Radios + 0x8))  /* 0xfa5aa8 */
 
-/* d2_Views */
-#define ai_Unkfb1030             (*(char (*)[32816])((char *)&d2_Views + 0x10))  /* 0xfb1030 */
-
 /* ai_Actions */
 #define ai_ActionFlags           (*(unsigned int (*)[22][37])((char *)&ai_Actions + 0x90))  /* 0xf83f50 */
-#define ai_Unkf84c40             (*(float (*)[8])((char *)&ai_Actions + 0xd80))  /* 0xf84c40 */
-#define ai_Unkf84c60             (*(float (*)[8])((char *)&ai_Actions + 0xda0))  /* 0xf84c60 */
-#define ai_Unkf84cd4             (*(float (*)[8])((char *)&ai_Actions + 0xe14))  /* 0xf84cd4 */
-#define ai_Unkf84cf4             (*(float (*)[8])((char *)&ai_Actions + 0xe34))  /* 0xf84cf4 */
 
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */
-
-/* cm_Parties */
-#define ai_Unk925538             (*(char (*)[26472])((char *)&cm_Parties + 0x18))  /* 0x925538 */
-
-/* cm_CutInfos */
-#define ai_Unk92caf0             (*(char (*)[13744])((char *)&cm_CutInfos + 0x10))  /* 0x92caf0 */
 
 /* d3d_UsedCard */
 #define d3d_Caps98d              (*(unsigned char *)((char *)&d3d_UsedCard + 0x30d))  /* 0xfe798d */
@@ -51,30 +31,17 @@
 /* d3if_ParList (the head node: its next field) */
 #define d3_ParHead               (*(struct D3PARTSYS **)((char *)&d3if_ParList + 0x314))  /* 0xfb98f4 */
 
-/* d3_Mirror */
-#define d3_Unkfb9928             (*(unsigned char *)((char *)&d3_Mirror + 0x28))  /* 0xfb9928 */
-
-/* cm_SaveAcks */
-#define ai_Unk76fa24             (*(char (*)[60])((char *)&cm_SaveAcks + 0x4))  /* 0x76fa24 */
-
 /* d3_DefaultD3DConfig */
 #define d3if_SceneState0           (*(int *)((char *)&d3_DefaultD3DConfig + 0xc))  /* 0x5fb5c0 */
 
 /* d3_Scenes */
 #define ai_MapRefs               (*(void **)((char *)&d3_Scenes + 0xac))  /* 0xfd7c4c */
-#define ai_Unkfd7c50             (*(char (*)[805])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 #define init_SceneDirty          (*(char (*)[3])((char *)&d3_Scenes + 0x3d5))  /* 0xfd7f75 */
 #define d3_Scene0Flags             (*(unsigned char *)((char *)&d3_Scenes + 0x3d8))  /* 0xfd7f78 */
-#define unk_Ptrfd7c50            (*(char **)((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 #define init_SceneHeightMaps     (*(int (*)[202])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
-
-/* ai_Crimes */
-#define ai_Unk91f716             (*(char (*)[23018])((char *)&ai_Crimes + 0x16))  /* 0x91f716 */
-
 
 /* d3_Cfg */
 #define d3_SortMax               (*(int *)((char *)&d3_Cfg + 0x18))  /* 0xfe73f8 */
-#define d3_Unkfe7400             (*(int *)((char *)&d3_Cfg + 0x20))  /* 0xfe7400 */
 
 /* d3d_Config */
 #define d3_ShadowMode            (*(struct D3BITS3 *)((char *)&d3d_Config + 0x1))  /* 0xfe7671 */
@@ -86,13 +53,6 @@
 #define sv_ViewRotX              (*(int *)((char *)&sv_ViewRot + 0x0))  /* 0x75fb90 */
 #define sv_ViewRotY              (*(int *)((char *)&sv_ViewRot + 0x4))  /* 0x75fb94 */
 #define sv_ViewRotZ              (*(int *)((char *)&sv_ViewRot + 0x8))  /* 0x75fb98 */
-
-
-
-/* he_EventSlots (the event bar's 16 slots of 12 bytes) */
-#define full_data_6faa84         (*(unsigned char (*)[188])((char *)&he_EventSlots + 0x4))  /* 0x6faa84 */
-#define full_data_6faa88         (*(unsigned char (*)[184])((char *)&he_EventSlots + 0x8))  /* 0x6faa88 */
-#define full_data_6faa90         (*(unsigned char (*)[176])((char *)&he_EventSlots + 0x10))  /* 0x6faa90 */
 
 /* sv_Bubbles */
 #define sv_BubbleObjects         (*(int (*)[4286])((char *)&sv_Bubbles + 0x8))  /* 0x761fc8 */

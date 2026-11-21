@@ -31,7 +31,6 @@ int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
-/* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteCrimes();                     /* 0x4f28d0 */

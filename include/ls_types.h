@@ -42,7 +42,7 @@ typedef struct LSHDR {              /* 0xfc bytes, the save game header: ls_Writ
     char pad6e[2];
     int building;                   /* 0x70, the player's building id, -1 none */
     int panel;                      /* 0x74, the shown panel's id, -1 none */
-    int party[8];                   /* 0x78, ai_Unk76fa24 (versions >= 0x10034) */
+    int party[8];                   /* 0x78, cm_SaveAcks + 4 (versions >= 0x10034) */
     int difficulty;                 /* 0x98, ai_Difficulty (2 before 0x10038) */
     char path[0x60];                /* 0x9c, ls_SavePath.path ("Savegame" before 0x10039) */
 } LSHDR;

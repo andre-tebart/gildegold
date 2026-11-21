@@ -6898,8 +6898,6 @@ extern unsigned int ai_MissionSeed;
 extern char * sv_SelectedObject;
 extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];
-/* ai_CharSex: view of ai_Chars (tools/data_views.py) */
-/* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
 extern int ai_Evidence[0x800][2];
 extern int cm_SavedScene;
 extern int cm_DuelRight;
@@ -6954,7 +6952,6 @@ extern unsigned int cm_GroupFirstSeq;
 extern char d2_CaptionCopy[0x80];
 extern int cm_PickCellX;
 extern int cm_PickCellZ;
-/* ai_Unkfd7c50: view of d3_Scenes (tools/data_views.py) */
 /* txt_HonourTitles: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_JobNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_TitleNames: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7038,7 +7035,6 @@ int cm_LastSeq;  /* 0xf81168 .. */
 unsigned cm_LoadReceived;  /* 0xf81220 / */
 extern AIWATCH ai_Watch;
 extern char d2_CaptionCopy[0x80];
-/* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
 extern int cm_PickCellX;
 extern int cm_PickCellZ;
 /* txt_AmountUnit: view of txt_Ptrs (build/mk_txt_views.py) */

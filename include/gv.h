@@ -650,9 +650,6 @@ extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of th
 extern ORDSTATS ord_Statistics;         /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
 extern float ord_RatingRate;             /* 0x91aaf4, the change rate of the rating (ord.c 0x4f8ed0; ls.c saves it) */
-#ifndef DATA_VIEWS_H
-extern char *unk_Ptrfd7c50;             /* 0xfd7c50, the scene */
-#endif
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);                    /* 0x45f170 */
 void ord_ResetStatistics(void);               /* 0x4f82a0 */
 int ord_GetGridCell(char *p, int *x, int *y);  /* 0x4f8300, the grid cell (x, y) of the position p */

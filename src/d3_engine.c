@@ -2679,7 +2679,6 @@ unsigned int d3_Fps10Frames = 0;  /* 0x6334b4 */
 extern D3PARTSYS d3_ParEnd;
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 /* d3_ParHead: view of d3if_ParList (the head node's next field) */
-/* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */
 extern struct VFSDIR *d3io_StockDir;
 float d3_ZFar;  /* 0xfc2564 */
 D3ANIMDATA d3anim_Head; /* 0xfc2580, the head sentinel of the animation cache list (d3_anim.c): its next is the first animation */
@@ -2739,7 +2738,6 @@ float d3_ViewH;  /* 0xfe73c4 */
 float d3_ViewW;  /* 0xfe73c8 */
 D3INITCFG d3_Cfg;  /* 0xfe73e0 */
 /* d3_SortMax: view of d3_Cfg (tools/data_views.py) */
-/* d3_Unkfe7400: view of d3_Cfg (tools/data_views.py) */
 D3ANIMDATA d3anim_Tail; /* 0xfe7440, the end sentinel of the animation cache list (d3_anim.c): new animations are linked in before it */
 int d3_DrawnVerts;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 int d3_TextureSwitches;  /* 0xfe75b4 */
