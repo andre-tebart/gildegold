@@ -426,7 +426,7 @@ int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
+        ai_PickActionBuilding((AIPER *)c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -464,7 +464,7 @@ int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
+        ai_PickActionBuilding((AIPER *)c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -503,7 +503,7 @@ int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
+        ai_PickActionBuilding((AIPER *)c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -532,7 +532,7 @@ int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
     msg.n = msg.fromId;
     m.s.lo = 0x7b4c4a0;
     m.s.hi = 0;
-    ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 0, m.q, 0, 100.0f, &v);
+    ai_PickActionBuilding((AIPER *)p, 0, m.q, 0, 100.0f, &v);
     msg.car = v;
     cm_SendLongMessage(&msg);
     return 1;
@@ -576,7 +576,7 @@ int ai_DecideCannonTower(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     m.s.lo = 0xe07c43b4;
     m.s.hi = 1;
-    if (!((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
         return 0;
     gm_FindById((int)&b2, 0, 0, v);
     if (!b2)
