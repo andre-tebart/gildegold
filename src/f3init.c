@@ -206,17 +206,10 @@ typedef struct INIT_CHAR {
     char pad188[0x94];              /* 0x188 .. 0x21b */
 } INIT_CHAR;
 
-/* AIFIN.camAngle (0x88) in both spellings the unit needs: the factor, and its bits for sv_PlaceCameraB (the
-   original's callers push the float's bits; sv.h's float prototype would convert them) */
-typedef union INIT_CAMANGLE {
-    float f;
-    int bits;
-} INIT_CAMANGLE;
-
 /* the player record view (ai.h's AIFIN, 0xac bytes, gm_PlayerRecords): the camera fields this unit reads */
 typedef struct INIT_CAMREC {
     char pad000[0x88];              /* 0x00 .. 0x87 */
-    INIT_CAMANGLE angle;            /* 0x88, AIFIN.camAngle: the camera angle factor */
+    float angle;                    /* 0x88, AIFIN.camAngle: the camera angle factor */
     D3VECTOR pos;                   /* 0x8c, AIFIN.camPos: the camera position */
     char pad098[0x4];               /* 0x98 .. 0x9b */
     float rot[3];                   /* 0x9c, AIFIN.camRot: the camera's angles (rot[1] = the stored y angle) */
@@ -240,7 +233,6 @@ typedef struct INIT_TERRAIN {
 #include "d3_snd.h"
 #include "sblib.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define sv_PlaceCameraB ((void (*)(int))sv_PlaceCamera)  /* 0x525dd0 (sv.h: void sv_PlaceCamera(float f)): @original init_AfterTownLoad pushes the angle's bits as an int (0x513740: push 0x3ea8f5c3 / the INIT_CAMREC angle union's int) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 /* the object list of init_LoadSiteScene (0x510770): the count, the objects by name and the name substring the
@@ -3695,11 +3687,11 @@ void init_AfterTownLoad(void)
     phase = gm_ClockSeason(&ai_Time);
     if (d3_CurrentScene == 0) {
         cam = (INIT_CAMREC *)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
-        if (cam == 0 || cam->angle.f == -1.0f) {
-            sv_PlaceCameraB(0x3ea8f5c3);
+        if (cam == 0 || cam->angle == -1.0f) {
+            sv_PlaceCamera(0.33f);
         } else {
             d3_SetObjectPos(d3_Camera, &cam->pos);
-            sv_PlaceCameraB(cam->angle.bits);
+            sv_PlaceCamera(cam->angle);
             d3_Camera->rotation.y = cam->rot[1];
             d3_SetObjectRot(d3_Camera, &d3_Camera->rotation);
         }
