@@ -313,7 +313,7 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     D3VECTOR lastPos;                   /* 0xd8, the cart body's position at the last round (arrived: it did not move) */
     char pade4[4];
     int slotE8;                         /* 0xe8, -1 at the start (its run handler's slot) */
-    int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRouteH), -1 at the start */
+    int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRoute), -1 at the start */
     unsigned char ambushed;             /* 0xf0, 1 once an ambush (he_RunAmbush) picked the transport, 0 at the start */
     unsigned char weatherStage;         /* 0xf1, 2: the cart slowed once more (he_SetCartSpeed) */
     unsigned char quiet;                /* 0xf2, nonzero: no arrival news */

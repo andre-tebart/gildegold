@@ -1353,9 +1353,9 @@ void cm_SendMakeGoods(int a, short b, int c)
     m.make.runs = c;
     cm_QueueSend(&m);
 }
-/* 0x4c4920, message 0x13 */
+/* 0x4c4920, message 0x13: the cart route; returns the send slot (cm_QueueSend) */
 
-void cm_SendCartRoute(int a, int b, int c)
+int cm_SendCartRoute(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1363,7 +1363,7 @@ void cm_SendCartRoute(int a, int b, int c)
     m.type = 0x13;
     m.move.from = b;
     m.move.objId = c;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4960, message 0x14 */
 

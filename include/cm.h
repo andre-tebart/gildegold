@@ -214,7 +214,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
 int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
 void cm_SendMakeGoods(int a, short b, int c);                                        /* 0x4c48e0 */
-void cm_SendCartRoute(int a, int b, int c);                                          /* 0x4c4920 */
+int cm_SendCartRoute(int a, int b, int c);                                           /* 0x4c4920 */
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */
 int cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
 int cm_SendFieldValues(void);                                                          /* 0x4c49e0, returns the cm slot of the send */

@@ -396,7 +396,7 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     D3VECTOR lastPos;                   /* 0xd8, the cart body's position at the last round (arrived: it did not move) */
     char pade4[4];
     int slotE8;                         /* 0xe8, -1 at the start (its run handler's slot) */
-    int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRouteH), -1 at the start */
+    int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRoute), -1 at the start */
     unsigned char ambushed;             /* 0xf0, 1 once an ambush (he_RunAmbush) picked the transport, 0 at the start */
     unsigned char weatherStage;         /* 0xf1, 2: the cart slowed once more (he_SetCartSpeed) */
     unsigned char quiet;                /* 0xf2, nonzero: no arrival news */
@@ -11758,13 +11758,12 @@ typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 
     char pad04[4];
 } SVFRAME;
 #define sv_FramesT (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth */
-#define cm_SendCartRouteH ((int (*)(int, int, int))cm_SendCartRoute)  /* 0x4c4920: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original the transport legs keep it (HETRANSPORT.route) */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 
 /* 0x555350, the leg of the transport event 15 (HETRANSPORT) of mode 2 (only the start a home), called by its run
    handler 0x556600 each round: the cart (gm_FindObjectInst; none: nothing) gets its speed (he_SetCartSpeed). The
    first round stops it and sends it to the goal ("Trans") with the route from the 0x44 building to the start
-   (cm_SendCartRouteH). Later rounds, once the cart's character is idle in the main scene and has not moved since
+   (cm_SendCartRoute). Later rounds, once the cart's character is idle in the main scene and has not moved since
    the last round (d3_VecEqual within 100.0) or after more than 6 rounds: a goal that is not of the type 10 gets the
    route on to the 0x45 building and the cart's state 0 (cm_SendCartState), the cart's bit 0x40 is cleared
    (cm_SendSetField), the arrival news 0x1c43 (goal of the type 10), 0x1c41 (with 0x1c39, the start, the goal's
@@ -11796,14 +11795,14 @@ void he_TransportFromHome(int ev)
     if (t->started == 0) {
         cm_SendChrStop(tr->objId);
         cm_SendChrGotoBuilding(tr->objId, to->id, -1, 0, 1, "Trans");
-        t->route = cm_SendCartRouteH(guards->id, from->id, tr->objId);
+        t->route = cm_SendCartRoute(guards->id, from->id, tr->objId);
         t->started = 1;
     } else {
         ch = (CHARACTER *)tr->sceneObj;
         if (ch != 0 && ch->actions == 0
             && ((ch->scene == &d3_Scenes[0] && d3_VecEqual(&ch->obj->pos, &t->lastPos, 100.0f) != 0) || t->rounds > 6)) {
             if (gm_IsType10((unsigned char *)to) == 0) {
-                t->route = cm_SendCartRouteH(to->id, guards->id, tr->objId);
+                t->route = cm_SendCartRoute(to->id, guards->id, tr->objId);
                 cm_SendCartState(tr->objId, 0);
             }
             cm_SendSetField(tr->objId, 0x13, 1, 0, 0x40);
@@ -11841,7 +11840,7 @@ int sv_IsCartAtDoor();
    handler 0x556600 each round: the cart (gm_FindObjectInst; none: nothing) gets its speed (he_SetCartSpeed). The
    first round stops it, puts it on the road (cm_SendCartState 1) unless the start is of the type 10, sends it to the
    goal ("Trans") and, again unless the start is of the type 10, gives it the route from the 0x44 building to the
-   start (cm_SendCartRouteH). Later rounds, once the cart is at the goal's door (sv_IsCartAtDoor), give it the route
+   start (cm_SendCartRoute). Later rounds, once the cart is at the goal's door (sv_IsCartAtDoor), give it the route
    on from the goal to the 0x44 building and write the arrival news: 0x1c3b (with 0x1c39 and the goal's player slot)
    for a kind 0x47 goal, 0x1c3d (the start's player slot, the goal's owner and the goal) for a kind 0x47 start, else
    0x1c3f (the goal's owner and the goal) or, for goals of the kinds 0x1d / 0x1f, 0x1c43 (type 10) / 0x1c44 with
@@ -11874,10 +11873,10 @@ void he_TransportToHome(int ev)
             cm_SendCartState(tr->objId, 1);
         cm_SendChrGotoBuilding(tr->objId, to->id, -1, 0, 0, "Trans");
         if (gm_IsType10((unsigned char *)from) == 0)
-            t->route = cm_SendCartRouteH(guards->id, from->id, tr->objId);
+            t->route = cm_SendCartRoute(guards->id, from->id, tr->objId);
         t->started = 1;
     } else if (sv_IsCartAtDoor((char *)tr, (unsigned char *)to) != 0) {
-        t->route = cm_SendCartRouteH(to->id, guards->id, tr->objId);
+        t->route = cm_SendCartRoute(to->id, guards->id, tr->objId);
         if (to->type == 0x47) {
             txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
@@ -11998,7 +11997,7 @@ void he_TransportStadtStadt(int ev)
             }
             cm_SendChrWalkTo(tr->objId, px, pz, 0);
             if (gm_IsType10((unsigned char *)from) == 0)
-                t->route = cm_SendCartRouteH(guards->id, t->start, t->cart);
+                t->route = cm_SendCartRoute(guards->id, t->start, t->cart);
         } else
             gm_Query(0, 2, 7, 1, t->cart);
         d3if_SelectScene(sc, 1);
@@ -12023,7 +12022,7 @@ void he_TransportStadtStadt(int ev)
             cm_SendSetField(tr->objId, 0x13, 1, 0, 0x40);
             if (gm_IsType10((unsigned char *)to) == 0) {
                 cm_SendCartState(tr->objId, 0);
-                t->route = cm_SendCartRouteH(to->id, guards->id, t->cart);
+                t->route = cm_SendCartRoute(to->id, guards->id, t->cart);
             }
             if (gm_IsType10((unsigned char *)to) != 0)
                 txt_Format(text, 0x1c43);
@@ -12059,7 +12058,7 @@ int init_BuildingSceneUniverse();
 /* 0x556080, the leg of the transport event 15 (HETRANSPORT) of mode 4 (both buildings homes), called by its run
    handler 0x556600 each round: the cart (gm_FindObjectInst; none: nothing) gets its speed (he_SetCartSpeed). The
    first round stops it, sends it to the goal ("Trans") and gives it the route from the 0x44 building to the start
-   (cm_SendCartRouteH). Later rounds, once the cart is at the goal's door (sv_IsCartAtDoor): the route on from the
+   (cm_SendCartRoute). Later rounds, once the cart is at the goal's door (sv_IsCartAtDoor): the route on from the
    goal to the 0x44 building, the cart moves into the goal's scene universe at "dummy_TRANSPORTER_ENTRY", which is
    selected; with a transporter dummy and a height map there it walks to the ground cell of `pos` (the original
    never sets pos: no d3_PointToWorld here, unlike the other legs); its bit 0x40 is cleared and the arrival news
@@ -12093,10 +12092,10 @@ void he_TransportHomeHome(int ev)
     if (t->started == 0) {
         cm_SendChrStop(tr->objId);
         cm_SendChrGotoBuilding(tr->objId, to->id, -1, 0, 1, "Trans");
-        t->route = cm_SendCartRouteH(guards->id, from->id, tr->objId);
+        t->route = cm_SendCartRoute(guards->id, from->id, tr->objId);
         t->started = 1;
     } else if (sv_IsCartAtDoor((char *)tr, (unsigned char *)to) != 0) {
-        t->route = cm_SendCartRouteH(to->id, guards->id, tr->objId);
+        t->route = cm_SendCartRoute(to->id, guards->id, tr->objId);
         cm_RequestChrMoveToUniverse(tr->objId, to->id, -1, "dummy_TRANSPORTER_ENTRY");
         u = init_BuildingSceneUniverse((unsigned char *)to);
         d3if_SelectScene(u, 1);
