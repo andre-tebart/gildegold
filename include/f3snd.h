@@ -47,11 +47,7 @@ typedef struct G16TRACKS {              /* 0x24c bytes, snd_BuildingTracks[]: tr
 } G16TRACKS;
 
 
-typedef struct G16TRACKHANDLES {        /* 0x8 bytes, snd_TrackHandles: the music track and a copy of it,
-                                           always written together (0x4c1bd0, 0x4c18a0) */
-    struct MSXTRACK *current;           /* 0x00, the music track */
-    struct MSXTRACK *copy;              /* 0x04, a copy of current, never read */
-} G16TRACKHANDLES;
+#include "f3snd_types.h"               /* G16TRACKHANDLES */
 
 typedef struct G16CHARCLICK {           /* the click-comment view of the start of a character record (0x770b80) */
     unsigned short id;                  /* 0x00, the character id */

@@ -96,6 +96,7 @@ struct SBSAMPLE;
 union AHMGRID;
 struct D3SM;
 #include "d2_types.h"
+#include "f3snd_types.h"               /* G16TRACKHANDLES (snd_TrackHandles) */
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -130,7 +131,7 @@ extern unsigned char ai_GameState;
 extern GAPDATA full_data_5fe7d0[];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_60d0d4[];
-extern struct G16TRACKHANDLES snd_TrackHandles;
+extern G16TRACKHANDLES snd_TrackHandles;
 extern int * d3t_Rain;
 extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
@@ -594,7 +595,6 @@ int he_RegisterEventTypeA2();
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it (the headers declare it unsigned short): @original he_RunInnSim reads the full int result (util_Random(4) + 3, no 16-bit mask); every other caller of this unit reads 16 bits */
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
-#define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
                                            +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
@@ -9618,7 +9618,7 @@ void he_RunReaper(int ev)
     }
     if (he_ReaperMusic == 0) {
         cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
-        if (snd_CurrentTrack != 0)
+        if (snd_TrackHandles.current != 0)
             he_ReaperMusic = 1;
     }
     e->end = ai_Time;
