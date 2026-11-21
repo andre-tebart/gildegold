@@ -108,7 +108,6 @@ extern GAPDATA full_data_602568[];
 #include "gv.h"
 #include "poker.h"
 #include "gfx.h"
-#define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
                                        may not set it on a character that has it */
 typedef struct CMCUTTYPEMSG {      /* 0x7c bytes, the data of the system message 0x11 cm_RunSceneParty sends (cm_SendExSysMessage) */
@@ -4078,7 +4077,7 @@ int cm_ExSendCutInfo(G17MSG *m, G17STAT *s)
     for (i = 0; i < 16; i++) {
         if (cm_CutInfos[i].playerId == m->cut.playerId) {
             if (cm_CurrentFight != 0 && *cm_CurrentFight == m->cut.fightId) {
-                cm_CutInfos[i] = cm_LongMsgCut;
+                memcpy(&cm_CutInfos[i], cm_LongMsg, sizeof(CMCUTINFO));
                 cm_CutInfos[i].recvFlag = 0;
                 sprintf(buf, "cm_ExSendCutInfo: PlayerId:%i Valid:%i  Ready:%i  Time:%i", cm_CutInfos[i].playerId,
                         cm_CutInfos[i].valid, cm_CutInfos[i].ready, d3_Time);
