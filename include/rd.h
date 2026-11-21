@@ -102,9 +102,6 @@ typedef struct G15BKFIND {              /* context of rd_FindSiteCB */
 #ifndef DATA_VIEWS_H
 #endif
 extern G15ROAD rd_Road;            /* 0xf81300 */
-#ifndef DATA_VIEWS_H
-extern unsigned char d3_Scene0Flags;      /* 0xfd7f78 */
-#endif
 
 extern G15TREE veg_Types[];          /* 0x602860 */
 extern int veg_NextId;                /* 0x6f0748, the next plant id */

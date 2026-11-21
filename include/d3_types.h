@@ -49,7 +49,11 @@ typedef struct D3SCENE {            /* 0x3e0 bytes, 64 of them in d3_Scenes */
                                        with loaded or dirty set is not free (d3t_FindFreeScene) */
     char dirty;                     /* 0x3d5, a reserved scene whose file is not loaded yet: the next use
                                        reloads it and clears the flag (f3init.c "flagged dirty") */
-    char pad3d6[0xa];
+    char pad3d6[0x2];
+    unsigned int sceneFlags;        /* 0x3d8, the scene's d3_SceneFlags (d3if_SelectScene saves and restores it;
+                                       d3_interface.h's D3IFSCENE view names the same fields) */
+    unsigned char hardware;         /* 0x3dc, its d3_Hardware */
+    char pad3dd[0x3];
 } D3SCENE;
 
 typedef struct D3SORTENT {          /* 8 bytes, sorted by key with a radix sort (d3_RadixSort) */
