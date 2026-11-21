@@ -61,7 +61,7 @@ extern int he_MessageFilterMask;         /* 0x6f263c, INI "Game" / "message_filt
                                             (he_IsMessageKindFiltered / he_SetMessageKindFiltered) */
 extern char he_OptionsPath[256];         /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile */
 int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2);
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
+void he_MessageBoxQuickjump(int a1, int a2, char *text, int fl, int a5, int a6, int a7, char *jump, char *text2);
 
 unsigned char * he_CreateEvent(unsigned char *m);
 void he_FreeEvent(int *r);

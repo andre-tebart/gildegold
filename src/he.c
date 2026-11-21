@@ -1597,7 +1597,7 @@ int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2
    id `news` (arg[0], as he_ShowNews), the object `obj` and the second id `obj2` (arg[1] / arg[2]; callers pass a
    building id and an item object or -1), the contact name `jump` at +0x68 (at most 0x30 bytes with its NUL, else
    an error), the text flags `tflags` | 2 (| 0x10 when `text2` follows the text behind its NUL) */
-void he_MessageBoxQuickjump(int pid, int from, char *text, char tflags, int news, int obj, int obj2, char *jump, char *text2)
+void he_MessageBoxQuickjump(int pid, int from, char *text, int tflags, int news, int obj, int obj2, char *jump, char *text2)
 {
     AIMSG msg;
     char buf[0x1fa0];
@@ -11208,7 +11208,7 @@ void he_AllocSale(int ev)
         gm_AddTime(&e->end, 0, good->workTime, 0);
 }
 
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
+void he_MessageBoxQuickjump(int a1, int a2, char *text, int fl, int a5, int a6, int a7, char *jump, char *text2);
 
 /* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_AllocSale sets it due after the good's
    production time): stage 0 goes to 1; stage 1, once due, sells the object obj of the building AIJOB.from

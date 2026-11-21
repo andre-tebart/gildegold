@@ -25,7 +25,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_MsgTakeBuildingGoodsPct5to19Type33 / ai_MsgTakeBuildingGoodsPct5to24Type34) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT_MALE 0x600c01  /* as AI_PARTNER_FILTER_MINOR_SERVANT and a male candidate: bit 0 rejects sex 1 (AICHAR.sex 0 male / 1 female) */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -1578,7 +1577,7 @@ int ai_MsgBuildingGetsItemType31(G14MSG *m)
         return 0x400;
     cm_SendExSellObject(b->id, -1, util_RandomU(2) + 0x134, 1, ai_OwnPlayer, 0);
     txt_Format(buf, m->type + 0x12e7, p->id);
-    he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
+    he_MessageBoxQuickjump(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
     return 0;
 }
 /* 0x4ba840, takes a share f of the goods (0x4ffe90 (1, 5) list, more than 1 each) of the object (2, 6, 0, 0x2a) of
@@ -1660,7 +1659,7 @@ int ai_MsgTakeBuildingGoodsPct5to19Type33(G14MSG *m)
         return 1;
     if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, b, (int)(f * 100.0f));
-        he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
+        he_MessageBoxQuickjump(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
         return 0;
     }
     return 0x400;
@@ -1681,7 +1680,7 @@ int ai_MsgTakeBuildingGoodsPct5to24Type34(G14MSG *m)
         return 1;
     if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, (int)(f * 100.0f), b);
-        he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
+        he_MessageBoxQuickjump(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
         return 0;
     }
     return 0x400;

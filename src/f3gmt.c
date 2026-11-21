@@ -2795,7 +2795,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 void cm_SendBoss(int a, int b);                     /* 0x4c5540 */
 int cm_SendExSetHE(int k, char *p);                     /* 0x4c4c60 */
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
+void he_MessageBoxQuickjump(int a1, int a2, char *text, int fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
 int d3t_SceneIndex();                     /* 0x411be0 */
 int ch_Delete();                     /* 0x4028a0 */
 int gm_ObjectBuilding(int y);                     /* 0x50a0f0 */
