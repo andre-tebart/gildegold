@@ -62,7 +62,6 @@
 #include "poker.h"
 #include "ch.h"
 #include "bio.h"
-#define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 /* The stock list head lives inside its 0xfc2e00 head sentinel (the original's +0x1fc relationship). As a
    separate COMMON pointer the linker would not keep it adjacent, so the loader would link the first object
    into one address while the readers start from another. */

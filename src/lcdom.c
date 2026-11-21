@@ -12,7 +12,6 @@
 #define GAPDATA __declspec(align(1)) unsigned char
 
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
-#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
 struct SBSAMPLE;
 struct D3SM;
 #include "txt_views.h"

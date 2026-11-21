@@ -92,7 +92,6 @@ typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (regist
 #define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
-#define ai_PickActionBuildingI ((int (*)(struct AIPER *, int, __int64, int, float, int *))ai_PickActionBuilding)  /* 0x4a63f0 with lo an int: @original he_AllocBrawl passes its (null) home building there, the register as it is (push edi; a float parameter would convert it) */
 
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
