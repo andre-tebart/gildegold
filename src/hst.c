@@ -2240,7 +2240,9 @@ int hst_ParseContext(char *src, char *out, G12ARG *ctx)
 }
 
 char hst_ListModes[2][5] = { "_SET", "_USE" };  /* 0x601b00, the modes of a list reference: "_SET", "_USE" */
-#define hst_ListModeSet (*(int *)((char *)&hst_ListModes + 0x0))  /* 0x601b00, hst_ListModes[0] ("_SET") as one dword */
+#define hst_ListModeSet (*(int *)((char *)&hst_ListModes + 0x0))  /* 0x601b00, hst_ListModes[0] ("_SET") as one dword; @original why: the
+   readers compare a label's 4-byte tag with the first four characters of the 5-byte mode strings (one dword load each, the
+   second at the odd address 0x601b05): no C type puts an int at +5 of char[2][5], the string data is read as an int (view) */
 #define hst_ListModeUse (*(int *)((char *)&hst_ListModes + 0x5))  /* 0x601b05, hst_ListModes[1] ("_USE") as one dword */
 
 /* 0x4b2380, leaked name (its messages): text k (or a string above 0x4800) "[_SET_n..." / "[_USE_n...":
