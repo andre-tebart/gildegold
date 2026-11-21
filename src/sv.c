@@ -1828,7 +1828,6 @@ int sv_CharStateIcons(char *c, int *out)
 extern int d2_PointerObj;  /* 0x5fe710 */
 extern int sv_SelectedChar;
 extern char sv_PlayerBarKind;
-#define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, the member list rows (he.c and sv.c declare int[576]) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
@@ -5660,11 +5659,6 @@ void sv_CameraFollow(void)
     if (sv_SelectedItem != 0)
         sv_ResetSelection();
 }
-typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv_RunFrame: "MASTER()") */
-    int cb;                             /* 0x00, the frame callback registered at this depth (sv_RunFrame's cb) */
-    char pad04[4];
-} SVFRAME;
-#define sv_Frames (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth (sv_RunFrame pushes and pops it) */
 
 /* 0x52d940, the per-frame input step of the game screen (sv_RunFrame, mask 0x100; fl is the frame mask): a right
    click (dm_L.rup) that has something to undo clicks ("MausclickRechts_s_01"); while an event window is active
@@ -7640,7 +7634,8 @@ int sv_SkyScene;  /* 0x75ec20 */
 MSG sv_Message;  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
 unsigned short * sv_SelectedItem;  /* 0x75ec5c */
 SVACTIVITY sv_Activities[0x30];  /* 0x75ec80, the character activities the he.c scripts register (sv_RegisterActivity) */
-int ai_Unk75f280[576];  /* 0x75f280, the member panel: */
+SVMEMBERROW sv_MemberRows[0x20];  /* 0x75f280, the member panel: the member list rows */
+SVFRAME sv_Frames[0x80];  /* 0x75f780, the frame stack, indexed by sv_FrameDepth (sv_RunFrame pushes and pops it) */
 float sv_ViewPos[4];  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4];  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale;  /* 0x760420 */

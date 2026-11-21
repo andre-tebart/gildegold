@@ -1222,10 +1222,6 @@ void sv_PopTo(int v);
 void he_FreeEventNow();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, int fl, int a5, int a6, int a7, char *jump, char *text2);
 int gm_LevelPayout(int v, int kind);
-typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()"; as sv.c / lc.c declare it) */
-    int cb;                             /* 0x00, the frame callback registered at this depth */
-    char pad04[4];
-} SVFRAME;
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 int sv_IsCartAtDoor();
 int init_BuildingSceneUniverse();

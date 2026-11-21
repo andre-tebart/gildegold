@@ -977,7 +977,6 @@ void snd_PlayFavourComment(void); void d2_CloseView(int view);
 int gm_ListAmount(); char * gm_Query(void *list, int n, ...);
 void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *itoa(int, char *, int); void d2_SetObjText();
 
-#define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, sv.c's member list rows (32 of SVMEMBERROW) */
 
 /* 0x58bd60, the production window "Handel\Handel_PRODUKTION" of the building bld (2335 B): returns 0 at once when
    sv_CheckCharacterFlag refuses; opens the form (tutorial step 0x1f), the player bar (2 for the building class
@@ -3231,11 +3230,6 @@ void ai_TradeContactChecks(void)
         type->kind == 0x1d)
         ai_MarketContact(b);
 }
-typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 0x75f780 (sv.c sv_RunFrame: "MASTER()") */
-    int cb;                             /* 0x00, the frame callback registered at this depth */
-    char pad04[4];
-} SVFRAME;
-#define sv_Frames (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the screen's frame stack, indexed by sv_FrameDepth */
 
 /* 0x591480, the '1' key of the game frame (called every frame by ai_GameFrame 0x591520; 150 B): when no
    other screen runs on top (the frame stack's entry is ai_GameFrame) and the camera exists, the tutorial

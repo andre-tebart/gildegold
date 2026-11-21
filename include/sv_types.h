@@ -66,4 +66,9 @@ typedef struct SVMEMBERROW {            /* 0x28 bytes, a row of the member list 
     int pad24;
 } SVMEMBERROW;
 
+typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()") */
+    int cb;                             /* 0x00, the frame callback registered at this depth */
+    char pad04[4];
+} SVFRAME;
+
 #endif

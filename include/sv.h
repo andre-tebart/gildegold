@@ -335,7 +335,8 @@ extern int sv_SkyScene;                                    /* 0x75ec20 */
 extern MSG sv_Message;                                     /* 0x75ec40, the window message sv_PumpMessages reads */
 extern unsigned short * sv_SelectedItem;                       /* 0x75ec5c */
 extern SVACTIVITY sv_Activities[0x30];                          /* 0x75ec80 */
-extern int ai_Unk75f280[576];                               /* 0x75f280 */
+extern SVMEMBERROW sv_MemberRows[0x20];                     /* 0x75f280, the member list rows */
+extern SVFRAME sv_Frames[0x80];                             /* 0x75f780, the frame stack, indexed by sv_FrameDepth */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float sv_SkyScale;                                  /* 0x760420 */
