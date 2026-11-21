@@ -26,6 +26,8 @@
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
+void lobby_Nothing(void);  /* unlinked, defined at the end of the unit (an empty body above its callers would let VC6 drop the calls) */
+
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
 extern GAPDATA full_data_602568[];
@@ -308,7 +310,7 @@ int lobby_Screen(void)
     WritePrivateProfileStringA("Network", "Glauben", text, ai_OptionsFile);
     sprintf(text, "%d", init_PlayerProfile.job);
     WritePrivateProfileStringA("Network", "Beruf", text, ai_OptionsFile);
-    ((void (*)(void))d3io_NoopCallback)();
+    lobby_Nothing();
     return ret;
 }
 
@@ -824,4 +826,10 @@ void lobby_ShowChat(void)
         d2_Wins[d2_LastWindow].scrollY = d2_Wins[d2_LastWindow].contentHeight - d2_Wins[d2_LastWindow].h;
         d2_ScrollWindow(d2_LastWindow);
     }
+}
+
+/* unlinked: an empty function; LINK folds it (/OPT:ICF) into d3io_NoopCallback, 0x44ee40, where the original's
+   calls of it in lobby_Screen (no push) point */
+void lobby_Nothing(void)
+{
 }

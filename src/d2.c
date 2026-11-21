@@ -24,6 +24,8 @@
 #include "dd_vesa.h"
 #include "d2.h"
 #include "shp_bank.h"
+void d2_DrawNothing(int x, int y, void *surf, void *data);  /* unlinked, defined at the end of the unit (an empty body above its callers would let VC6 drop the calls) */
+
 #ifdef REA_FRAME_DUMP
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 
@@ -1877,7 +1879,7 @@ void *surf;
         d2_DrawShape((short)x, (short)y, surf, data, 0);
         break;
     case 0x11:
-        ((void (*)(int, int, void *, void *))d3io_NoopCallback)(x, y, surf, data);
+        d2_DrawNothing(x, y, surf, data);
         break;
     case 5:
     case 8:
@@ -2037,11 +2039,11 @@ void d2_DrawObjects(void)
                 break;
             case 0x11:
                 if (o->drawFrames > 0) {
-                    ((void (*)(int, int, void *, void *))d3io_NoopCallback)(x, y, d2_ScreenSurf, o->data);
+                    d2_DrawNothing(x, y, d2_ScreenSurf, o->data);
                     if (o->drawFrames == 2) {
                         if (d2_NoBackgroundRestore == 1)
                             break;
-                        ((void (*)(int, int, void *, void *))d3io_NoopCallback)(x, y, d2_BackSurf, o->data);
+                        d2_DrawNothing(x, y, d2_BackSurf, o->data);
                     }
                     if (d2_NoBackgroundRestore != 1)
                         o->drawFrames--;
@@ -5838,4 +5840,10 @@ void d2_ClearInput(void)
     d2_ClickedId = -1;
     di_ClearButtons();
     kb_Last = 0;
+}
+
+/* unlinked: an empty function; LINK folds it (/OPT:ICF) into d3io_NoopCallback, 0x44ee40, where the original's
+   calls of it for the object type 0x11 in d2_DrawObject / d2_DrawAll (x, y, surface, data) point */
+void d2_DrawNothing(int x, int y, void *surf, void *data)
+{
 }

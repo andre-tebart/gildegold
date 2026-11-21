@@ -23,6 +23,8 @@
 #include "cmscene.h"
 #include "d2.h"
 #include "d3.h"
+void cm_SceneNothing(void);  /* unlinked, defined at the end of the unit (an empty body above its callers would let VC6 drop the calls) */
+
 struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3SKY *s, int first, char *tex, D3TEXFLAGS flags, float scale, float offset, float vscale, float voffset);  /* 0x45d880 */
 #include "d3_tools.h"
 #include "d3_quad.h"
@@ -4649,7 +4651,7 @@ void cm_ExecCutscene(char *m)
                 shown++;
             }
         }
-        ((void (*)(void))d3io_NoopCallback)();  /* @original called without its argument (no push) */
+        cm_SceneNothing();
         cm_ClearSceneChars();
         if (party->flags & 0x20) {
             /* the cinemascope letterbox: 75 (scaled) lines off the top and the bottom */
@@ -5289,4 +5291,10 @@ void cm_InitScenes(void)
     cm_RegisterSceneKind(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)cm_CheckAuction, 1);
     cm_RegisterSceneKind(11, (int)cm_RunSale, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
+}
+
+/* unlinked: an empty function; LINK folds it (/OPT:ICF) into d3io_NoopCallback, 0x44ee40, where the original's
+   calls of it in the scene runner (no push) point */
+void cm_SceneNothing(void)
+{
 }

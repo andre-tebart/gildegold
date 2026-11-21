@@ -52,6 +52,8 @@ extern int gm_PlayerRecords[688];
 #include "udp.h"                     /* udp_FindServers, UDPSERVER */
 #define GAPDATA __declspec(align(1)) unsigned char
 
+void main_Nothing(void);  /* unlinked, defined at the end of the unit (an empty body above its callers would let VC6 drop the calls) */
+
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (menu.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
@@ -905,7 +907,7 @@ int main_HostNetworkGame(void)
     char c;
 
     if (main_PlayerCountDialog() != 0) {
-        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+        main_Nothing();
         if (main_ChooseCity(1, 1) != 0) {
             sprintf(main_NetSaveName, "%s/%s.net", main_CitiesDir, ai_CityName);
             strcpy(main_NetHost, "127.0.0.1");
@@ -1483,7 +1485,7 @@ void main_Menue(void)
         if (dm_L.lclick != 0 && d2_PointerObj != -1) {
             if (d2_PointerObj == bnew) {
                 d2_EnableObject(win, 0);
-                ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+                main_Nothing();
                 hmt_Reset();
                 if (main_NewSinglePlayerGame() != 0) {
                     sv_PopRequest = 1;
@@ -2868,7 +2870,7 @@ void main_CloseLoadingScreen(void)
     while ((*fade & 4) == 0)
         sv_RunFrame(0, mask);
     d2_CloseView(init_StatusForm);
-    ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+    main_Nothing();
     d2_ClearSurface(d2_ScreenSurf);
     d2_CutsceneActive = 0;
     d2_ReleaseFade(fade);
@@ -2973,7 +2975,7 @@ void main_StartGame(void)
     sv_PanelShown = 0;
     ai_PlayerBuilding = 0;
     ai_FallbackBuilding = 0;
-    ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+    main_Nothing();
     anm_Alloc();
     ch_Reset();
     ai_InitBookmarks();
@@ -3330,7 +3332,7 @@ void main_EndRound(void)
         while ((fade->flags & 4) == 0)
             sv_RunFrame(0, sv_FrameMask | 0x80);
         sv_DestroyScrollForm();
-        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+        main_Nothing();
     }
     cm_SendMoveGoodsUnchecked(-1, ai_CharsT[MAIN_PLAYER].netId, ai_OwnPlayer, -he_SumApEventCosts(MAIN_PLAYER));
     ai_PostRandomMessages(3, ai_CharsT[MAIN_PLAYER].netId);
@@ -4352,7 +4354,7 @@ void main_BeginPlayerRound(void)
         sv_PumpNet();
         Sleep(100);
         he_DailyEventChecks();
-        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+        main_Nothing();
         sv_PumpNet();
         Sleep(100);
         gv_CheckRankUps();
@@ -5568,3 +5570,9 @@ LSSAVE ls_SavePath;  /* 0x75e640 */
 /* full_data_144acf4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144ad10: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144adb4: view of txt_Ptrs (build/mk_txt_views.py) */
+
+/* unlinked: an empty function; LINK folds it (/OPT:ICF) into d3io_NoopCallback, 0x44ee40, where the original's
+   calls of it in main_RunTitle .. main_GameLoop (no push) point */
+void main_Nothing(void)
+{
+}

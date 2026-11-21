@@ -1276,7 +1276,7 @@ exe	0x0046cb20	d2_OpenPic	d2	f0b3b60d5d30bf50	no	byte	control=byte p1=byte p2=by
 exe	0x0046cd80	d2_CreatePicObj	d2	fb519b177027d632	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046cda0	d2_MoveObj	d2	49c781f49715619b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046cfd0	d2_ShowPicture	d2	019209af24b8c27e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0046d040	d2_DrawPic	d2	96639f2801d343c2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d918c6ec89c5a8a6
+exe	0x0046d040	d2_DrawPic	d2	f64b2b1a308b8f3a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	a43ce6e87b58e9a9
 exe	0x0046d220	d2_DrawObjCaption	d2	49a5c3a6244cd76c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0046d3d0	d2_DrawObjects	d2	26ed54f859912e57	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0046e150	d2_DrawAll	d2	ddf3aa353f890cef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2584,7 +2584,7 @@ exe	0x004e3800	cm_PrevPartyMember	cm	7b77550130ece620	no	byte	control=byte p1=by
 exe	0x004e3830	cm_RunSceneParty	cm	3e69a62bcafcc4fe	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004e3fe0	cm_PauseSceneChars	cm	02a36a424a93022f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e4020	cm_ResumeSceneChars	cm	1eda0bfa387fb775	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e4060	cm_ExecCutscene	cm	8ed56b9c9cd5c726	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004e4060	cm_ExecCutscene	cmscene	40753a7778654cf3	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=190	8507acee22fa1e15
 exe	0x004e4870	cm_IsPartyMember	cm	00de1194cc5529d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e48b0	cm_SendPartyNote	cm	5c1f86e32f436c1f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e4a50	cm_CheckMaster	cm	2614b0e75fa3fe63	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3443,7 +3443,7 @@ exe	0x00532160	main_OpenEngine	main	6b1ea5d6d22691b1	no	byte	control=byte p1=byt
 exe	0x005324f0	main_CreateWindow	main	c5316bb6b98c5afa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00532700	main_StartCityGame	main	62d798df77938acd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005327e0	main_PlayerCountDialog	main	48523357adc8fd93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005328f0	main_HostNetworkGame	main	541fd40477ec5354	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x005328f0	main_HostNetworkGame	main	0e911ee7462b8132	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	62e27ee2a94e9159
 exe	0x00532a70	main_JoinNetworkGame	main	17b7315ef9ce65d7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00532c30	main_EnterHostAddress	main	d79764f086820d42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00532da0	main_SearchNetworkGame	main	9f73df0e32a97c0d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3451,7 +3451,7 @@ exe	0x00533470	main_ChooseNetworkGame	main	28ee11445843b350	no	byte	control=byte
 exe	0x005335b0	main_NetworkMenu	main	c93258d5524ce963	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00533740	main_MoneyDialog	main	cf9f5cdd76bb58f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005337f0	main_MenuButton	main	839cefad1e947914	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00533850	main_Menue	main	f4089098da4561a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x00533850	main_Menue	main	2b06a43de19d58a1	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	62e27ee2a94e9159
 exe	0x00534040	main_GiveStartBuildings	main	0f6de19c3c38ea1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005344f0	main_PlaceFamilyModel	main	d6681c70aec02e4e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1eabd7340eadb42f
 exe	0x00534610	main_ChooseTalents	main	ee8550a5930897dd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cd6615daf697a080
@@ -3467,13 +3467,13 @@ exe	0x00537930	main_NewSinglePlayerGame	main	faad6e0c57bc3632	no	byte	control=by
 exe	0x00537980	main_LoadingScreen	main	6f9c38e6a477e40c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00537af0	main_SetLoadProgress	main	bd11981eb3b9185d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00537b60	main_LoadProgressCallback	main	882ae497afa4adb7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00537be0	main_CloseLoadingScreen	main	46fe18b7176fa3fd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x00537be0	main_CloseLoadingScreen	main	fd5906c47f17280f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	62e27ee2a94e9159
 exe	0x00537c70	main_PreloadSound	main	ad619d51925c8946	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00537db0	main_FreeSoundBanks	main	30e7343386f774ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00537de0	main_StartGame	main	0b0b0c404d4919a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x00537de0	main_StartGame	main	1e0c0f088a09aa25	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	62e27ee2a94e9159
 exe	0x00537f40	main_EndGame	main	68671b89ac5fb237	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00538140	main_RundenBeginn	main	503e9d8c2106fe24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005384e0	main_EndRound	main	87bb9c64cddb5a00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x005384e0	main_EndRound	main	466d32884e828536	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	62e27ee2a94e9159
 exe	0x00539620	main_ReplaceFigure	main	c35457202d9f562a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	af22ce15de209ae0
 exe	0x00539870	main_RoundReport	main	70a622d54e4c889a	yes	byte	sweep control=shape best=byte by 22 unused typedefs at the unit's start; codegens=2 compiled=48 (stopped at the goal)	cb7c05d3724b14b3
 exe	0x0053a250	main_UpdateFigure	main	ac7764d6864b4bd6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4a8bed7379a4ae73
