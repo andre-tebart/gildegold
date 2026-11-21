@@ -157,7 +157,7 @@ int gm_RemoveObjectFromBuilding(int b, int id);                                 
 unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);                                           /* 0x5031b0 */
 /* 0x500190 */
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
-struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c */
 float gm_ItemPrice(int item, unsigned char n);                                   /* 0x5087f0 */
 int gm_ObjectBuilding(int y);                                                     /* 0x50a0f0 */
 void util_Seed(unsigned int seed);                                               /* 0x42ec90, tr.c */
@@ -564,7 +564,7 @@ int cm_UpdateBombs();  /* 0x4ce300 */
 struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d0 */
 unsigned int cm_Random(unsigned int n);  /* 0x4e52f0, a random number below n */
 extern int cm_FightAttacker;  /* 0x6f0cec */
-extern int cm_BombSounds;  /* 0x6f0d14 */
+extern struct SBBANK *cm_BombSounds;  /* 0x6f0d14 */
 extern char cm_Grenades[];  /* 0x935a00 */
 
 int cm_UpdateGrenades();  /* 0x4ce830 */
@@ -694,11 +694,11 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
 extern int cm_FightDefender;  /* 0x6f0ce8 */
 extern int cm_FightWinner;  /* 0x6f0cf4 */
-extern int cm_FightSounds;  /* 0x6f0d0c */
-extern int cm_CrossbowSounds;  /* 0x6f0d10 */
-extern int cm_DaggerSounds;  /* 0x6f0d18 */
-extern int cm_PistolSounds;  /* 0x6f0d1c */
-extern int cm_SwordSounds;  /* 0x6f0d20 */
+extern struct SBBANK *cm_FightSounds;  /* 0x6f0d0c */
+extern struct SBBANK *cm_CrossbowSounds;  /* 0x6f0d10 */
+extern struct SBBANK *cm_DaggerSounds;  /* 0x6f0d18 */
+extern struct SBBANK *cm_PistolSounds;  /* 0x6f0d1c */
+extern struct SBBANK *cm_SwordSounds;  /* 0x6f0d20 */
 extern int cm_AttackerAttackVoices;  /* 0x6f0d2c */
 extern int cm_DefenderAttackVoices;  /* 0x6f0d30 */
 extern int cm_AttackerTauntVoices;  /* 0x6f0d3c */

@@ -234,7 +234,7 @@ extern int d2_LastWindow;
 extern char * ai_BTypes;
 
 extern int d2_CutsceneActive;
-extern int snd_RoomBank;
+extern struct SBBANK *snd_RoomBank;
 extern char * ai_BTypes;
 #include "menu_types.h"
 extern char ai_Chars[768][0x21c];

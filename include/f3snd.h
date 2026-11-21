@@ -132,7 +132,7 @@ extern unsigned int snd_LastGust;       /* 0x6f0b90, time of the last gust */
 #include "ai_types.h"                /* AITIME */
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int *d3t_Rain;               /* 0x760618, the rain level */
-extern int snd_Bank;                    /* 0x6f2404, the sample bank */
+extern struct SBBANK *snd_Bank;                    /* 0x6f2404, the sample bank */
 typedef struct SNDRAIN {                /* 0x48 bytes, snd_UpdateRain's state */
     AITIME time;                        /* 0x00, a copy of ai_Time (14 bytes) */
     struct { int unread; int smp; } loop[7];  /* 0x10, the loops (smp: the playing sample, 0: none); no surviving code
@@ -154,7 +154,7 @@ extern int snd_QueueTime;               /* 0x6f0b88, time of the last queue chan
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 
 int gm_ClockSeason(AITIME *c);                                                     /* 0x4fe350, the season */
-struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */

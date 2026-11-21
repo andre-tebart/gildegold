@@ -61,7 +61,7 @@ extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
 
 extern unsigned char ai_GameState;
-extern int snd_SystemBank;
+extern struct SBBANK *snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
 #include "sv_types.h"
 extern float gm_DayStartHours[];

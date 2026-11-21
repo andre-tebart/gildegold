@@ -86,9 +86,9 @@ extern int d2_ClickedForm;            /* 0xf8aac4 */
 extern char d2_CaptionCopy[];         /* 0xf8aae0 */
 extern int d2_HitClicked;            /* 0x5febd0 */
 extern int d2_HitUnderPointer;            /* 0x5febd4 */
-extern int d2_ClickBank;            /* 0x6ed990 */
+extern struct SBBANK *d2_ClickBank;            /* 0x6ed990 */
 
-struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c */
 
 void d2_FocusInput(int obj);                                         /* 0x478320, gives an input object the focus */
 void d2_MouseUpdate(void);                                            /* 0x4784c0, mouse handling of the gui */

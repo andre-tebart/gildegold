@@ -5213,12 +5213,12 @@ char main_CitiesDir[128] = "gamedata/cities";  /* 0x6248b8, the folder of the ci
 int main_MessageBox = -1;  /* 0x624938, the message box open over the character creation (sv_OpenMessageBox), -1 = none */
 int ai_GameFlags = 0;  /* 0x6f23f8 */
 int ai_Difficulty = 0;  /* 0x6f23fc */
-int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
-int snd_Bank = 0;  /* 0x6f2404, the sample bank */
+struct SBBANK *snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
+struct SBBANK *snd_Bank = 0;  /* 0x6f2404, the sample bank */
 int snd_ThunderBank = 0;  /* 0x6f2408 */
 int snd_BookBank = 0;  /* 0x6f240c */
-int snd_RoomBank = 0;  /* 0x6f2410 */
-int snd_TransportBank = 0;  /* 0x6f2414 */
+struct SBBANK *snd_RoomBank = 0;  /* 0x6f2410 */
+struct SBBANK *snd_TransportBank = 0;  /* 0x6f2414 */
 struct MSXTRACK *main_MenuSong = 0;  /* 0x6f2418, the main menu's song (main_Menue) */
 int main_Movie = 0;  /* 0x6f241c, the id mov_Open gave the movie that plays (intro movies, outro.mpg) */
 GAPDATA full_data_6f2420[8] = { 0 };  /* 0x6f2420 */

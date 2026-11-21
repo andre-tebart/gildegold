@@ -62,7 +62,6 @@
 #include "bio.h"
 #include "cm.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sb_SetVolumeI ((void (*)(int, int))sb_SetVolume)  /* 0x427330 (sblib.c: SBSAMPLE *): @original f3snd.c passes the int handle view of the sample */
 #define sb_IsVariationI ((int (*)(int, char *))sb_IsVariation)  /* 0x426f60 (sblib.c: SBBANK *): this unit's int bank view */
 #define sb_GetVariationI ((int (*)(int, char *, int))sb_GetVariation)  /* 0x426190 (sblib.c: SBSAMPLE *(SBBANK *, char *, int)): this unit's int bank / handle view */
@@ -183,7 +182,7 @@ void snd_UpdateQueue(void)
 #define SND_STOP(s) if ((s) != 0) { sb_Stop((s), 0); (s) = 0; }
 
 /* plays ambient sound s (name n, volume v; a, b the last two arguments) or sets its volume */
-#define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySampleI(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
+#define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySample(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
     else sb_SetVolumeI((s), (v))
 
 /* the volume of a rain loop: x scaled to 0..88.9 (0.7 of the full 127) by the divisor d; the float cast keeps
@@ -235,7 +234,7 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v = SND_RAINVOL(2600.0f - f, 2600.0f), 0, 0);
             SND_SET(snd_RainHeavyFar, "StarkFern_l_01", SND_RAINVOL(f, 2600.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
+                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
             else
                 sb_SetVolumeI(snd_RainDrops, v);
             SND_STOP(snd_RainMediumNear);
@@ -251,7 +250,7 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainMediumNear, "MittelNah_l_01", SND_RAINVOL(depth * t, 1300000.0f), 0, 0);
             SND_SET(snd_RainMediumFar, "MittelFern_l_01", SND_RAINVOL(t * f, 1300000.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 0xa28);
+                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 0xa28);
             else {
                 ((G16SMP *)snd_RainDrops)->delay = 2000;
                 sb_SetVolumeI(snd_RainDrops, v);
@@ -267,7 +266,7 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainLightNear, "LeichtNah_l_01", SND_RAINVOL(dm * tm, 910000.0f), 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(tm * f, 910000.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, SND_RAINVOL(dm, 2600.0f), 0, 3000);
+                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 1, 0x3f, SND_RAINVOL(dm, 2600.0f), 0, 3000);
             else {
                 ((G16SMP *)snd_RainDrops)->delay = 3000;
                 sb_SetVolumeI(snd_RainDrops, v);
@@ -280,7 +279,7 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainLightNear, "LeichtNah_l_01", v = SND_RAINVOL((2600.0f - f) * t, 387400.0f), 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(t * f, 387400.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
+                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
             else {
                 ((G16SMP *)snd_RainDrops)->delay = 4000;
                 sb_SetVolumeI(snd_RainDrops, v);
@@ -300,7 +299,7 @@ void snd_UpdateRain(void)
                 k = rand() % 3;
             else if (w > 0xfa)
                 k = rand() % 2;
-            sb_PlaySampleI(0, snd_GustNames[k], 1, 0x3f, (int)(snd_Gusts[snd_Season].vol * 127.0f), 0, 0);
+            sb_PlaySample(0, snd_GustNames[k], 1, 0x3f, (int)(snd_Gusts[snd_Season].vol * 127.0f), 0, 0);
         }
     }
 }
@@ -348,10 +347,10 @@ void snd_UpdateAnimals(void)
         if (t - snd_Animals[snd_AnimalSeason][0].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][0].interval && n < 0x15e) {
             snd_Animals[snd_AnimalSeason][0].last = t;
             if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > 1.0f)
-                sb_PlaySampleI(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
+                sb_PlaySample(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
                     (int)(snd_Animals[snd_AnimalSeason][0].vol * 127.0f), 0, 0);
             if (rand() % 10 > 6)
-                sb_PlaySampleI(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
+                sb_PlaySample(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
                     (int)(snd_Animals[snd_AnimalSeason][0].vol * 127.0f), 0, 0);
         }
         if (t - snd_Animals[snd_AnimalSeason][1].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][1].interval && n < 100) {
@@ -360,13 +359,13 @@ void snd_UpdateAnimals(void)
                 (snd_Locusts == 0 || snd_Locusts->loops <= 2)) {
                 sprintf(snd_LocustLog, "About to trigger hpLocusts ! Handlevalue before triggering is %x, loopCount is %d.",
                     snd_Locusts, snd_Locusts != 0 ? snd_Locusts->loops : 0);
-                snd_Locusts = sb_PlaySampleI(0, "Grillen_l", rand() % snd_Animals[snd_AnimalSeason][1].count + 2,
+                snd_Locusts = sb_PlaySample(0, "Grillen_l", rand() % snd_Animals[snd_AnimalSeason][1].count + 2,
                     0x3f, (int)(h * snd_Animals[snd_AnimalSeason][1].vol * 127.0f), 0, 0);
                 sprintf(snd_LocustLog, "hpLocusts triggered ! Handlevalue is %x", snd_Locusts);
             }
             if (snd_AnimalSeason == 1) {
                 if (snd_LocustsPerm == 0) {
-                    snd_LocustsPerm = sb_PlaySampleI(0, "Grillen_l", 0, 0x3f,
+                    snd_LocustsPerm = sb_PlaySample(0, "Grillen_l", 0, 0x3f,
                         (int)(snd_Animals[1][1].vol * h * 127.0f) >> 1, 0, 0);
                     sprintf(snd_LocustLog, "hpLocustsPerm triggered ! Handlevalue is %x", snd_LocustsPerm);
                 } else {
@@ -392,7 +391,7 @@ void snd_UpdateAnimals(void)
         if (t - snd_Animals[snd_AnimalSeason][4].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][4].interval) {
             snd_Animals[snd_AnimalSeason][4].last = t;
             if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > 1.0f)
-                sb_PlaySampleI(0, "Bellt_s", 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][4].vol * 127.0f), 0, 0);
+                sb_PlaySample(0, "Bellt_s", 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][4].vol * 127.0f), 0, 0);
         }
         if (t - snd_Animals[snd_AnimalSeason][3].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][3].interval) {
             snd_Animals[snd_AnimalSeason][3].last = t;
@@ -401,13 +400,13 @@ void snd_UpdateAnimals(void)
                     name = "Wiehern_s";
                 else
                     name = "Schnauben_s";
-                sb_PlaySampleI(0, name, 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][3].vol * 127.0f), 0, 0);
+                sb_PlaySample(0, name, 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][3].vol * 127.0f), 0, 0);
             }
         }
         if (t - snd_Animals[snd_AnimalSeason][2].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][2].interval) {
             snd_Animals[snd_AnimalSeason][2].last = t;
             if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][2].chance > 1.0f)
-                sb_PlaySampleI(0, "Gackern_s", rand() % snd_Animals[snd_AnimalSeason][2].count + 1, 0x3f,
+                sb_PlaySample(0, "Gackern_s", rand() % snd_Animals[snd_AnimalSeason][2].count + 1, 0x3f,
                     (int)(h * snd_Animals[snd_AnimalSeason][2].vol * 127.0f), 0, 0);
         }
         if (snd_AmbientTrack != 0 && ai_MarketBuildingV != 0) {

@@ -144,7 +144,7 @@ extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
 
 extern unsigned char ai_GameState;
-extern int snd_SystemBank;
+extern struct SBBANK *snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
 #include "sv_types.h"
 extern float gm_DayStartHours[];
@@ -12280,7 +12280,7 @@ void he_RunTransport(int ev)
         m.sold.bld = b->id;
         cm_SendExSysMessage(4, &m);
         if (ai_PlayerBuilding == (char *)b || ai_FallbackBuilding == (char *)b)
-            sb_PlaySample((struct SBBANK *)snd_TransportBank, "Karrenrumpeln_r", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(snd_TransportBank, "Karrenrumpeln_r", 1, 0x3f, 0x7f, 0, 0);
         e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
@@ -12523,7 +12523,7 @@ void he_RunMessageBox(int ev)
         d2_SetForm(e->slot->win, 0);
         io_PrintText("%s", e->text);
         if (ai_GameState != 2)
-            sb_PlaySample((struct SBBANK *)snd_SystemBank, "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(snd_SystemBank, "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
         if ((m->flags & 8) != 0)
             he_ActivateSlot((int *)e->slot);
         if ((m->flags & 0x10) != 0) {

@@ -42,7 +42,6 @@ typedef struct SNDHANDLE {
 #include "d3_pose.h"
 #define sb_PlayH ((void (*)(SNDHANDLE *, int, int))sb_Play)  /* 0x427110 (sblib.c: int (SBSAMPLE *, int, int)): @original d3_snd.c sees a SNDHANDLE pointer and void */
 #define sb_SetPanH ((void (*)(SNDHANDLE *, int))sb_SetPan)  /* 0x4272f0 (sblib.c: SBSAMPLE *): this unit's SNDHANDLE view of the sample, 0..127 */
-#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 
 
 #define D3SND_INCH (1.0 / 39.37)            /* the engine works in inches */
@@ -671,7 +670,7 @@ void d3sndw_Update(void)
                     t = D3SNDW_TIME;
                     t -= d3sndw_LastSplash;
                     if (t > 60000 && t < 120000) {
-                        sb_PlaySampleI(0, d3sndw_Names[type], 1,
+                        sb_PlaySample(0, d3sndw_Names[type], 1,
                                       (int)((sum / cnt + 1.0f) * 63.0f),
                                       (int)((d3sndw_Vol[type] - d3sndw_Vol[type] * k * k
                                              / (d3sndw_Range[type] * d3sndw_Range[type]))

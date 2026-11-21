@@ -32,7 +32,6 @@
 #include "sblib.h"
 #include "sv.h"
 #include "d2.h"
-#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
 
 /* 0x476b90, adds amount to the item list drawn next to the pointer: the entry of picture id (first match, else
@@ -836,11 +835,11 @@ void d2_MouseUpdate(void)
             if (o->checkable != 0) {
                 o->checked ^= 1;
                 d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked;
-                sb_PlaySampleI(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySample(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
             } else if (d2_HoverObj == 1) {
-                sb_PlaySampleI(d2_ClickBank, "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySample(d2_ClickBank, "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
             } else {
-                sb_PlaySampleI(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySample(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
             }
             found = 0;
             for (i = 0; i < 8; i++) {

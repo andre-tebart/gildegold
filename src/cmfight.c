@@ -92,7 +92,6 @@ extern GAPDATA full_data_602568[];
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d3t_CreateBloodK ((int (*)(void *, int, int, int, int, int))d3t_CreateBlood)  /* 0x415e90 (d3_tools.c: D3PARTSYS *d3t_CreateBlood(void *, int, float, float, float, float)): @original this unit passes the four floats as their int bit patterns and does not use the result (byte-matched cm_DuelShotAction 0x4de767: push 0x425c0000 .. push 0x3e800000, no fstp pair) */
-#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
@@ -210,12 +209,12 @@ int cm_FightLootValue = 0;  /* 0x6f0cfc */
 int cm_UnreadBss = 0;  /* 0x6f0d00, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
 int cm_SelectedCount = 0;  /* 0x6f0d08 */
-int cm_FightSounds = 0;  /* 0x6f0d0c */
-int cm_CrossbowSounds = 0;  /* 0x6f0d10 */
-int cm_BombSounds = 0;  /* 0x6f0d14 */
-int cm_DaggerSounds = 0;  /* 0x6f0d18 */
-int cm_PistolSounds = 0;  /* 0x6f0d1c */
-int cm_SwordSounds = 0;  /* 0x6f0d20 */
+struct SBBANK *cm_FightSounds = 0;  /* 0x6f0d0c */
+struct SBBANK *cm_CrossbowSounds = 0;  /* 0x6f0d10 */
+struct SBBANK *cm_BombSounds = 0;  /* 0x6f0d14 */
+struct SBBANK *cm_DaggerSounds = 0;  /* 0x6f0d18 */
+struct SBBANK *cm_PistolSounds = 0;  /* 0x6f0d1c */
+struct SBBANK *cm_SwordSounds = 0;  /* 0x6f0d20 */
 int cm_AttackerClickVoices = 0;  /* 0x6f0d24 */
 int cm_DefenderClickVoices = 0;  /* 0x6f0d28 */
 int cm_AttackerAttackVoices = 0;  /* 0x6f0d2c */
@@ -619,7 +618,7 @@ int cm_UpdateBombs()
         b.y = 0.0f;
         b.z = 38.0f;
         b.w = 0;
-        sb_PlaySampleI(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         col.r = 0xc0;
         col.g = 0xc0;
         col.b = 0xc0;
@@ -782,7 +781,7 @@ int cm_UpdateGrenades()
             d3fl_MakeDivide((D3FLMAP *)d3_Terrain);
             d3fl_MakeLight((D3FLMAP *)d3_Terrain);
         }
-        sb_PlaySampleI(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         for (j = 0; j < 32; j++) {
             if (ai_SceneCharsT[j] == 0)
                 continue;
@@ -3073,7 +3072,7 @@ void cm_FallDownAction(char *c)
     rot.y = 0;
     rot.z = 0;
     rot.y = (float)(cm_Random(0x168) * 3.14159274f * 0.005555555555555556);
-    sb_PlaySampleI(0, "Koerperfaellt", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(0, "Koerperfaellt", 1, 0x3f, 0x7f, 0, 0);
     b = d3_CreateObject(0, &((CHACTION *)c)->ch->obj->pos, &rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
@@ -3184,14 +3183,14 @@ void cm_HitAction(CHACTION *a)
             if (damage != 0)
                 sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
             else
-                sb_PlaySampleI(cm_SwordSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySample(cm_SwordSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
         } else if (hw->id == 0x154 || hw->id == 0x16e || hw->id == 0x172) {
             if (damage != 0)
                 sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
             else
-                sb_PlaySampleI(cm_DaggerSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySample(cm_DaggerSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
         } else if (hw->id == 0x15e)
-            sb_PlaySampleI(cm_PistolSounds, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(cm_PistolSounds, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
         else if (hw->id == 0x160) {
             if (damage != 0)
                 sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
@@ -3229,7 +3228,7 @@ void cm_LayBombAction(char *ev)
 
     k = (AIWEAPON *)cm_CharWeapon((char *)att);
     cm_LayBomb(&att->scene->obj->pos);
-    sb_PlaySampleI(cm_BombSounds, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(cm_BombSounds, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
     if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && (k->kind == 1 || k->kind == 2)) {
         G19_FIGHTER_SYNC(att);
     }
@@ -4469,7 +4468,7 @@ void cm_FighterAct(CMFIGHTSLOT *f)
         for (s = k->anim, d = ev->u.name; (*d++ = *s++) != 0;)
             ;
         ch_AddAction(c->scene, 0x3b, cm_Random(0x1e) + 0x8c);
-        sb_PlaySampleI(cm_BombSounds, "topfwerfen_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(cm_BombSounds, "topfwerfen_s", 1, 0x3f, 0x7f, 0, 0);
         f->id = -1;
         f->active = 0;
     }

@@ -169,7 +169,7 @@ struct AIPER;
 int gm_BathObjectCount(char *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as poker.h) */
 void gm_SendMoneyDelta(int a, int b);                /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta */
 int amt_GetKindLevel(int k);                         /* 0x4e7c40, amt.c: the level of the office kind k */
-extern int snd_SystemBank;        /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
+extern struct SBBANK *snd_SystemBank;        /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
 extern int main_ScreenRestart;     /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
 extern char dd_Has1024x768;         /* 0x631226, dd_vesa.h */
 extern char dd_Has1152x864;         /* 0x631227, dd_vesa.h */

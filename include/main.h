@@ -19,8 +19,8 @@ extern int main_ScreenSaverOff;         /* 0x6f25bc, the screen saver was switch
 extern int main_MessageBox;             /* 0x624938, the message box over the character creation, -1 = none */
 extern int snd_ThunderBank;     /* 0x6f2408, sample bank handle (natur/blitzunddonner.sbf) */
 extern int snd_BookBank;        /* 0x6f240c, sample bank handle (objekte/buecher.sbf) */
-extern int snd_RoomBank;        /* 0x6f2410, sample bank handle (objekte/TuerenUndRaeume.sbf) */
-extern int snd_TransportBank;   /* 0x6f2414, sample bank handle (objekte/Transporter.sbf) */
+extern struct SBBANK *snd_RoomBank;        /* 0x6f2410, sample bank handle (objekte/TuerenUndRaeume.sbf) */
+extern struct SBBANK *snd_TransportBank;   /* 0x6f2414, sample bank handle (objekte/Transporter.sbf) */
 extern int main_UdpOpen;               /* 0x6f25c4, the udp socket of the network game is open */
 extern int main_Round;                   /* 0x6f2598, the round number (1 at the game start) */
 extern struct MSXTRACK *main_MenuSong;  /* 0x6f2418, the main menu's song (msx_Play) */
@@ -65,6 +65,6 @@ extern int main_AutoSaveOn;  /* 0x62456c, 1: the end of a round writes the autos
 extern int main_AmbientSoundOn;  /* 0x624584, the [Sound] ambient key of game.INI (WinMain) */
 extern int main_WeatherSound;  /* 0x6f2580, the [Sound] weather key */
 extern int main_DayEnding;  /* 0x6f25a8, the day is ending (sv_RunFrame sets, main_GameLoop clears) */
-extern int snd_SystemBank;  /* 0x6f2400 */
+extern struct SBBANK *snd_SystemBank;  /* 0x6f2400 */
 
 #endif
