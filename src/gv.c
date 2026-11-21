@@ -81,11 +81,11 @@ char *gv_AllocAvatar(void)
     i = util_Random(0x20);
     n = 0x20;
     do {
-        if (unk_Avatars[i].used == 0) {
+        if (gv_Avatars[i].used == 0) {
             for (j = 0; j < 0xe; j++)
-                unk_Avatars[i].mood[j][1] = (float)(unk_Avatars[i].mood[j][0] * 0.001);
-            unk_Avatars[i].used = 1;
-            return (char *)&unk_Avatars[i];
+                gv_Avatars[i].mood[j][1] = (float)(gv_Avatars[i].mood[j][0] * 0.001);
+            gv_Avatars[i].used = 1;
+            return (char *)&gv_Avatars[i];
         }
         n--;
         i = (i + 1) & 0x1f;
@@ -104,9 +104,9 @@ int gv_WriteAvatars(void *f)
     if (vfs_fwrite(&n, 4, 1, f) == 0)
         return 0;
     for (i = 0; i < n; i++) {
-        if (vfs_fwrite(&unk_Avatars[i].id, 4, 1, f) == 0)
+        if (vfs_fwrite(&gv_Avatars[i].id, 4, 1, f) == 0)
             return 0;
-        if (vfs_fwrite(&unk_Avatars[i].used, 1, 1, f) == 0)
+        if (vfs_fwrite(&gv_Avatars[i].used, 1, 1, f) == 0)
             return 0;
     }
     return 1;
@@ -129,15 +129,15 @@ int gv_ReadAvatars(void *f)
     if (n != 0x20)
         sprintf(buf, "Inconsisten Avatar count: <Expected: %i> <Found: %i>", 0x20, n);
     for (i = 0; i < 0x20; i++)
-        unk_Avatars[i].used = 0xff;
+        gv_Avatars[i].used = 0xff;
     for (i = 0; i < n; i++) {
         if (ls_Read(&id, 4, 1, (int)f) == 0)
             return 0;
         if (ls_Read(&used, 1, 1, (int)f) == 0)
             return 0;
         for (j = 0; j < 0x20; j++) {
-            if (unk_Avatars[j].id == id) {
-                unk_Avatars[j].used = used;
+            if (gv_Avatars[j].id == id) {
+                gv_Avatars[j].used = used;
                 goto next;
             }
         }
@@ -155,9 +155,9 @@ int gv_ReadAvatars(void *f)
         ;
     }
     for (i = 0; i < 0x20; i++) {
-        if (unk_Avatars[i].used == 0xff) {
-            sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", unk_Avatars[i].name);
-            unk_Avatars[i].used = 0;
+        if (gv_Avatars[i].used == 0xff) {
+            sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", gv_Avatars[i].name);
+            gv_Avatars[i].used = 0;
         }
     }
     return 1;
@@ -1129,7 +1129,7 @@ float gv_CannonItemFactor(char *o)
 /* the cannon kinds' balls (5 records, 0x5edfe0..0x5ee01c: this unit's first .rdata, before the literals of
    gv_UpdateEffects 0x4edf80; am.c / sv_t.c read [0 .. 2], the kinds 3 and 4 nothing addresses) */
 const G9BALL ai_CannonBalls[5] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f }, { 4200.0f, 7200.0f, 0.0799999982f }, { 4800.0f, 8600.0f, 0.0850000009f } };  /* 0x5edfe0 */
-GVAVATAR unk_Avatars[0x20] = {
+GVAVATAR gv_Avatars[0x20] = {
     { 0x6d56656e, "Maven", "of Reading", { 64, 32, 96, 96, 64 }, { 0 }, { { 2.6f, 0.0026f, 920.0f }, { 2.4f, 0.0024f, 890.0f }, { 2.1f, 0.0021f, 880.0f }, { 2.5f, 0.0025f, 903.0f }, { 2.65f, 0.0026500002f, 910.0f }, { 2.7f, 0.0027f, 920.0f }, { 2.65f, 0.0026500002f, 890.0f }, { 2.8f, 0.0028f, 915.0f }, { 2.75f, 0.00275f, 905.0f }, { 2.35f, 0.00235f, 880.0f }, { 2.75f, 0.00275f, 912.0f }, { 2.55f, 0.0025499999f, 900.0f }, { 2.75f, 0.00275f, 920.0f }, { 20.5f, 0.0205f, 910.0f } }, 3, 0, 1, { 68, 105, 101, 98, 52, 95, 75, 85, 84, 84, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1 }, 0 },
     { 0x6e524147, "Rangaroek", "Lhutien", { 84, 10, 96, 64, 84 }, { 0 }, { { 2.7f, 0.0027f, 920.0f }, { 2.4f, 0.0024f, 890.0f }, { 2.1f, 0.0021f, 880.0f }, { 2.5f, 0.0025f, 903.0f }, { 2.65f, 0.0026500002f, 910.0f }, { 2.7f, 0.0027f, 920.0f }, { 2.35f, 0.00235f, 890.0f }, { 2.8f, 0.0028f, 915.0f }, { 2.75f, 0.00275f, 905.0f }, { 2.4f, 0.0024f, 880.0f }, { 2.7f, 0.0027f, 912.0f }, { 2.6f, 0.0026f, 900.0f }, { 2.6f, 0.0026f, 920.0f }, { 20.5f, 0.0205f, 910.0f } }, 41, 0, 1, { 122, 105, 103, 101, 117, 110, 101, 114, 95, 77, 65, 78, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1 }, 0 },
     { 0x73574e65, "Swine", "von Severing", { 64, 128, 64, 32, 64 }, { 0 }, { { 2.6f, 0.0026f, 920.0f }, { 2.4f, 0.0026f, 890.0f }, { 2.1f, 0.0026f, 880.0f }, { 2.5f, 0.0026f, 903.0f }, { 2.65f, 0.0026f, 910.0f }, { 2.7f, 0.0026f, 920.0f }, { 2.65f, 0.0026f, 890.0f }, { 2.8f, 0.0026f, 915.0f }, { 2.75f, 0.0026f, 905.0f }, { 2.35f, 0.0026f, 880.0f }, { 2.75f, 0.0026f, 912.0f }, { 2.55f, 0.0026f, 900.0f }, { 2.75f, 0.0026f, 920.0f }, { 20.5f, 0.0205f, 910.0f } }, 58, 0, 1, { 68, 105, 101, 98, 52, 95, 75, 85, 84, 84, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1 }, 0 },

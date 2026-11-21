@@ -181,7 +181,7 @@ typedef struct ORDCHAR {
 } ORDCHAR;
 typedef char gv_AssertORDCHAR[sizeof(ORDCHAR) == 0x21c ? 1 : -1];
 
-typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar table unk_Avatars (32) */
+typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar table gv_Avatars (32) */
     unsigned id;                        /* 0x00, four characters ("neVm"), the key of the save game's (id, used) pairs */
     char name[0x10];                    /* 0x04, "Maven" (the read report prints it): the first name of the character made from it */
     char title[0x10];                   /* 0x14, "of Reading": its family name */
@@ -196,7 +196,7 @@ typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar ta
     char padf3;
 } GVAVATAR;
 typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
-extern GVAVATAR unk_Avatars[0x20];     /* 0x60f310, the avatars: the characters the graveyard raises (gv_AllocAvatar) */
+extern GVAVATAR gv_Avatars[0x20];     /* 0x60f310, the avatars: the characters the graveyard raises (gv_AllocAvatar) */
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
 
