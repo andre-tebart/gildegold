@@ -385,7 +385,7 @@ extern int ch_DirtyZ0;                      /* 0x5f12ac */
 extern int ch_DirtyX1;                      /* 0x63107c */
 extern int ch_DirtyZ1;                      /* 0x631080 */
 extern int d3t_CamMoving;                   /* 0x6310e4 */
-extern struct D3ANIM *d3t_CamMove;       /* 0x6310e8, the running camera animation (d3_tools.c; ch.c / ecmd.c test it through d3t_CamMoveI) */
+extern struct D3ANIM *d3t_CamMove;       /* 0x6310e8, the running camera animation (d3_tools.c) */
 
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100 */
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);             /* 0x4463b0 */

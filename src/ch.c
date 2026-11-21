@@ -35,7 +35,6 @@
 #include "vfs.h"
 #include "chc.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 char ch_AnimPath[0x100] = "x:\\gfx\\engine\\animations\\character";  /* 0x5f1120 */
 int ch_Unk5f1220 = -1;  /* 0x5f1220, an int of ch's .data block (-1) no surviving code reads (a removed function's) */
@@ -1419,7 +1418,7 @@ void ch_MoveCamera(CHARACTER *ch, int view, int time)
         ch_GetCamera(ch, view, &pos, &rot);
         d3anim_FreePath(d3_Camera);
         d3t_CamMoving = 0;
-        d3t_CamMoveI = 0;
+        d3t_CamMove = 0;
         d3t_PlaceObjectV(d3_Camera, (D3VECTOR *)&pos, &rot, time, 0x28);
     }
 }

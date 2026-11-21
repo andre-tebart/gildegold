@@ -31,7 +31,6 @@ struct D3SURF;
 #include "d3_vec.h"
 #include "mem.h"
 #include "d3_pose.h"
-#define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 #define OCMD_DEG 0.017453292f       /* degrees to radians */
 
@@ -556,7 +555,7 @@ int ocmd_CameraFlight(int *time, char **a, char **b)
 int ocmd_CameraFlightEnhanced(int *time, char **a, char **b, char **c, char **d, char **e, char **f)
 {
     if (evt_CurCall && evt_CurCall->fn == ocmd_CameraFlightEnhanced) {
-        if (d3t_CamMoving || d3t_CamMoveI) {
+        if (d3t_CamMoving || d3t_CamMove) {
             evt_Cur->waitfn = ocmd_CameraFlightEnhanced;
             return 0;
         }
@@ -573,7 +572,7 @@ int ocmd_CameraFlightEnhanced(int *time, char **a, char **b, char **c, char **d,
 int ocmd_NewCameraFlight(int *time, char **a, char **b, char **c, char **d, char **e, char **f)
 {
     if (evt_CurCall && evt_CurCall->fn == ocmd_NewCameraFlight) {
-        if (d3t_CamMoving || d3t_CamMoveI) {
+        if (d3t_CamMoving || d3t_CamMove) {
             evt_Cur->waitfn = ocmd_NewCameraFlight;
             return 0;
         }
@@ -594,7 +593,7 @@ int ocmd_ObjectFlight(D3OBJECT **obj, int *time, char **a, char **b, char **c, c
 
     n = 0;
     if (evt_CurCall && evt_CurCall->fn == ocmd_ObjectFlight) {
-        if (d3t_CamMoving || d3t_CamMoveI) {
+        if (d3t_CamMoving || d3t_CamMove) {
             evt_Cur->waitfn = ocmd_ObjectFlight;
             return 0;
         }
@@ -625,7 +624,7 @@ int ocmd_ZoomOnObject(int *time, char **name)
     D3OBJECT *obj;
 
     if (evt_CurCall && evt_CurCall->fn == ocmd_ZoomOnObject) {
-        if (d3t_CamMoving || d3t_CamMoveI) {
+        if (d3t_CamMoving || d3t_CamMove) {
             evt_Cur->waitfn = ocmd_ZoomOnObject;
             return 0;
         }
@@ -742,7 +741,8 @@ int ocmd_SetCameraToDummy(char **name)
 int ocmd_StopCameraFlight(void)
 {
     d3anim_FreePath(d3_Camera);
-    d3t_CamMoving = d3t_CamMoveI = 0;
+    d3t_CamMove = 0;
+    d3t_CamMoving = 0;
     return 0;
 }
 /* 0x40eec0, renames *obj to *name; 0 when *obj is NULL, else 1 */
