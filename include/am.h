@@ -940,7 +940,6 @@ int ai_UpgradeBusinessApDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /*
 int ai_UpgradeBusinessApExec(G5CH *p, AIARG *s1, AIARG *s2);  /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */
 /* 0x4c4830 with an int c (unk_48e070.h: unsigned char) */
-#define G8_4C4830I(a, b, c, d) ((void (*)(int, unsigned int, int, int))cm_SendMoveGoodsUnchecked)(a, b, c, d)
 
 /* ---- 0x4a3af0..0x4a7140 (was unk_4a3af0.h) ---- */
 #define amt_GetKindLevel ai_Unk4e7c40_g9      /* k is an unsigned char here */

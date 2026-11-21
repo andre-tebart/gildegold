@@ -3422,7 +3422,7 @@ int ai_ExecuteCitizenship(G5CH *p)
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
     if (o == 0)
         return 0;
-    G8_4C4830I(o->objId, p->netId, 0, 16000);
+    cm_SendMoveGoodsUnchecked(o->objId, p->netId, 0, 16000);
     cm_BeginFieldBlock((AIPER *)p, p->netId);
     cm_AddFieldDelta(1, 1, 0xd, &rank);
     cm_SendFieldDeltas();
