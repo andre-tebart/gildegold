@@ -627,7 +627,7 @@ void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
 void d2_ClearPointerItems(void);  /* 0x476c70 */
 extern int d2_ClickedId;  /* 0xf8a668 */
 extern CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
-extern D2OBJ *d2_Objs;          /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
+extern D2OBJ *d2_Objs;          /* 0xf8f080, 0x2ec bytes each (d2.c) */
 
 void cm_BuildPortraits();  /* 0x4cfc10 */
 void cm_ClosePortraits();  /* 0x4cfe70 */
@@ -806,7 +806,7 @@ int cm_MessageBox(int id, int flags);  /* 0x4e5470, a message box for the text i
 int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
 extern int cm_FightSettled;  /* 0x6f0cf8 */
 extern int cm_FightLootValue;  /* 0x6f0cfc */
-extern struct D2WIN *d2_LastWindowPtr;  /* 0x6ed980, window created last (d2.c); cm.c adds byte offsets through d2_LastWindowPtrC */
+extern struct D2WIN *d2_LastWindowPtr;  /* 0x6ed980, window created last (d2.c) */
 
 int cm_LootCarts(struct CMFIGHTREC *a, AIBLD *b, struct AICHAR *d, int unused, float f);  /* 0x4d3ea0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0, a price */

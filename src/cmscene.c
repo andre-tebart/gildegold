@@ -88,8 +88,6 @@ extern GAPDATA full_data_602568[];
 #include "poker.h"
 #include "gfx.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
-#define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
@@ -145,7 +143,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
-#define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -902,7 +899,7 @@ int cm_AskElectVote(unsigned char office, AICHAR *b, int *ids, int *click)
         btn[i] = d2_GetWinObj(view, 0, io_PrintText("%ia[%1N3]$A", cand[i]->id));
     for (i = n; i < 4; i++)
         btn[i] = -1;
-    dlg = d2_WinOpenSlider((d2_LastWindowPtrT->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    dlg = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
     while (sv_RunFrame(cm_AskDeposeVote, cm_DialogFrameFlags) != 0) {
@@ -1790,7 +1787,7 @@ void cm_RunTrial(G28REC *m)
         cm_UnloadVoiceBank(bankF2);     /* the original frees bankF2 a second time here, not bankT4 */
 }
 
-#define CUT_BOX() d2_WinOpenSlider((d2_LastWindowPtrT->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)  /* the timer slider of a cutscene dialog */
+#define CUT_BOX() d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)  /* the timer slider of a cutscene dialog */
 #define CM_ASK_YESNO(r, yes, no)                                                    \
     while (sv_RunFrame(cm_TrialAskPlayer, cm_DialogFrameFlags) != 0) {              \
         if (cm_DialogTimer(dlg, 0, 0) == 0)                                         \
