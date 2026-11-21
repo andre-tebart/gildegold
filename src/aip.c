@@ -39,6 +39,7 @@
 #include "he.h"
 #include "tr.h"
 #include "lc.h"
+#include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* 0x4a8760, decide callback: character p (or the one of the ctx record, kind 2) picks a partner in its district

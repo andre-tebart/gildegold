@@ -6142,9 +6142,15 @@ the bytes no portable form gives.
   caller below sees. VC6 compiles both without a warning (the K&R definition makes no prototype, the later one
   wins at the call); d3s_Project byte, the d3s_ShadowPolyB cast went. Not compatible types by the standard, so
   each side carries `@original`.
+- **A pointer register pushed into a float parameter's slot (he_AllocBrawl: `push edi`, home == 0, as
+  ai_PickActionBuilding's `lo`)**: the unit declared that parameter `int`. he.c declares `int
+  ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int lo, float hi, int *out)` (`@original`) and
+  passes `0` / `(int)home` (its other calls' `0.0f` push the same `push 0`). For that to be the unit's only view,
+  the float prototype moved from am.h (which he.c includes, also through mission.h / rmsg.h) to its owner
+  header amt_ai.h, which aip.c, am.c, amr.c and rmsg.c now include. The ai_PickActionBuildingI cast went (byte).
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
+  int: an int definition is worse, a char prototype makes VC6 fold or widen).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: the units saw another

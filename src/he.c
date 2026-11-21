@@ -81,7 +81,7 @@
    message records through raw offsets
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with: util_RandomInt
-   (he_RunInnSim), ai_PickActionBuildingI.
+   (he_RunInnSim).
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
@@ -172,8 +172,6 @@ struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT
 typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
 #define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
-#define ai_PickActionBuildingI ((int (*)(struct AIPER *, int, __int64, int, float, int *))ai_PickActionBuilding)  /* 0x4a63f0 with lo an int: @original he_AllocBrawl passes its (null) home building there, the register as it is (push edi; a float parameter would convert it) */
 
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
@@ -5795,7 +5793,7 @@ void he_AllocInsultNews(int ev)
 
 void gm_ChangeRelationToJobs(unsigned short a, int b);
 void ai_PlagueNews(void);
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int lo, float hi, int *out);  /* 0x4a63f0, @original: amt_ai.c defines lo as a float; this unit passes it as an int, he_AllocBrawl its (null) home building through a register (push edi) */
 void amt_ChangeDistrictOpinion();
 
 
@@ -5916,7 +5914,7 @@ void he_RunCharPayouts(int ev)
     for (i = 0; i < 0x300; i++) {
         c = &ai_CharsT[i];
         if (c->id != 0xffff && c->health >= 2 && (c->kind == 6 || c->kind == 7 || c->kind == 5)) {
-            if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.q, 0.0f, 100.0f, &at) != 0)
+            if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.q, 0, 100.0f, &at) != 0)
                 gm_FindById(&bld, 0, 0, at);
             if (c->kind == 6 || c->kind == 7)
                 he_ShowNews(c->netId, -1, news, 0x20, 0x601, (char *)0);
@@ -9940,7 +9938,7 @@ int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
     mask.s.hi = 1;                      /* HE_WALK_BUILDINGS, set as two dwords */
     if (ch->bld2 != 0)
         tgt = ch->bld2->id;
-    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, mask.q, 0.0f, 100.0f, &tgt) == 0)
+    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, mask.q, 0, 100.0f, &tgt) == 0)
         return -1;
     if (util_RandomF() > n * 0.1f) {
         int bld;
@@ -13607,7 +13605,7 @@ void he_AllocSpying(int ev)
     }
     gm_FindById(&tgt, 0, 0, s->target);
     if (tgt == 0) {
-        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, 0.0f, 100.0f, &s->target);
+        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, 0, 100.0f, &s->target);
         gm_FindById(&tgt, 0, 0, s->target);
         if (tgt == 0) {
             e->exSlot = cm_SendExSetHE(-1, ev);
@@ -13820,7 +13818,7 @@ void he_AllocBrawl(AIJOB *e)
     else
         home = (AIBLD *)gm_BuildQuery(1, 4, victim->id);
     if (home == 0) {
-        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, (int)home, 100.0f, &at) != 0)
+        if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, (int)home, 100.0f, &at) != 0)
             home = (AIBLD *)gm_BuildQuery(1, 1, at);
     }
     br->meet = home->id;
@@ -19682,7 +19680,7 @@ void he_RunSecretRoom();
 void he_AllocEvent9a();
 void he_RunDomizilEvent();
 void he_AllocDomizilEvent();
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int lo, float hi, int *out);   /* 0x4a63f0, @original: lo an int, as this unit declares it above */
 void he_FreeEventNow(int *r);          /* 0x56f040 */
 void he_AllocHaunting(int ev);          /* 0x56fc50 */
 void he_RunHaunting(int ev);          /* 0x56fda0 */
