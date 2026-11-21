@@ -32,7 +32,6 @@ void d2_DrawNothing(int x, int y, void *surf, void *data);  /* unlinked, defined
 #endif
 #include "data_views.h"
 #include "ch.h"
-#include "cm.h"
 #include "d3_interface.h"
 #include "d3_io_a.h"
 #include "d3s.h"
@@ -44,7 +43,6 @@ void d2_DrawNothing(int x, int y, void *surf, void *data);  /* unlinked, defined
 #include "ts_texture.h"
 #include "vfs.h"
 #include "shp.h"
-#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit calls it with promoted int coordinates (movsx pushes), as an unprototyped call does: the original unit had no d2_MoveObj prototype in scope there (d2_CenterObj stands above the definition); the short definition is the right one (int x, int y: 20 -> 37 ins), so no one prototype serves both */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3OBJECT *d3s_Lights[4];
@@ -1395,6 +1393,7 @@ void d2_DrawButton(int id, D2SURF *surf)
 
 void d2_CenterObj(int obj)
 {
+    void d2_MoveObj();  /* @original: no prototype here: d2_MoveObj (short x, y) is defined below; the call pushes promoted ints (movsx) */
     D2OBJ *o = &d2_Objs[obj];
     int x;
 
@@ -1403,7 +1402,7 @@ void d2_CenterObj(int obj)
             x = o->win->w / 2 - o->w / 2 + o->win->x;
         else
             x = d2_ScreenW / 2 - o->w / 2;
-        d2_MoveObjI(x, o->y, obj);
+        d2_MoveObj(x, o->y, obj);
     }
 }
 /* 0x46c260, sets the width of an object and centres it again */
@@ -1743,10 +1742,10 @@ int d2_CreatePicObj(short x, short y, int pic)
     return d2_OpenPic(x, y, pic);
 }
 
-/* 0x46cda0, moves an object (and, for a window, the objects on it) to x, y and recomputes its clip rectangle */
 void d2_MoveObj(short x, short y, int obj);
 
-/* 0x46cda0 */
+/* 0x46cda0, moves an object (and, for a window, the objects on it) to x, y and recomputes its clip rectangle. d2.h
+   does not declare it (d2_CenterObj above and gfx.c call it unprototyped, pushing ints); cm.h does, for the game units */
 void d2_MoveObj(short x, short y, int obj)
 {
     D2OBJ *o;

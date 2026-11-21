@@ -1257,7 +1257,7 @@ exe	0x0046bdd0	d2_SetSliderFlags	d2	c18d1afc06551822	no	byte	control=byte p1=byt
 exe	0x0046be00	d2_CreateSlider	d2	a739073be51b40b2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046bf10	d2_WinCreateSlider	d2	78fc6ad647bc0449	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046bf60	d2_DrawButton	d2	309893a2d18de110	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d918c6ec89c5a8a6
-exe	0x0046c1d0	d2_CenterObj	d2	54b69b33c9db8733	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d918c6ec89c5a8a6
+exe	0x0046c1d0	d2_CenterObj	d2	5c19604c93c13420	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6518c7e9c9c02b82
 exe	0x0046c260	d2_SetObjWidth	d2	1eda778e0b017f59	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046c290	d2_OpenRaw	d2	74350c855413f805	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0046c390	d2_WinOpenRaw	d2	a0b12f8ce01269d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

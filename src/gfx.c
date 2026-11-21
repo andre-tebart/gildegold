@@ -25,14 +25,13 @@
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 #endif
 #include "data_views.h"
-#include "cm.h"
 #include "d3_io_a.h"
 #include "f3init.h"
 #include "mem.h"
 #include "sblib.h"
 #include "sv.h"
 #include "d2.h"
-#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit calls it with promoted int coordinates (movsx pushes), as an unprototyped call does: the original unit had no d2_MoveObj prototype in scope there (d2_CenterObj stands above the definition); the short definition is the right one (int x, int y: 20 -> 37 ins), so no one prototype serves both */
+void d2_MoveObj(int x, int y, int obj);  /* 0x46cda0, @original: d2.c defines it with short x, y (d2.h does not declare it, cm.h is not included); this unit pushes int coordinates (movsx) */
 
 /* 0x476b90, adds amount to the item list drawn next to the pointer: the entry of picture id (first match, else
    the first free one); no effect when amount is 0 or the list is full (6 entries) */
@@ -445,7 +444,7 @@ void d2_InputKey(void)
             if (d2_TextCursorSprite == -1)
                 d2_TextCursorSprite = d2_CreatePicObj(d2_TextCursorX, d2_TextCursorY - 7, d2_ExtraSymbolsPic + 8);
             else
-                d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
+                d2_MoveObj(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
         }
         kb_Last = 0;
         break;
@@ -475,7 +474,7 @@ void d2_InputKey(void)
             D2CUR->value = atoi(D2CUR->text);
         d2_TextCursorX = d2_TextWidth(D2CUR->text, D2CUR->font) + D2CUR->x;
         if (d2_TextCursorSprite != -1)
-            d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
+            d2_MoveObj(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
     }
 }
 /* 0x477a70, mouse drag on a number input */
@@ -692,7 +691,7 @@ focus:
                     if (d2_TextCursorSprite == -1) {
                         d2_TextCursorSprite = d2_CreatePicObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorPic);
                     } else {
-                        d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
+                        d2_MoveObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
                     }
                 } else {
                     if (d2_TextCursorSprite != -1) {
@@ -786,7 +785,7 @@ void d2_FocusInput(int obj)
             if (d2_TextCursorSprite == -1)
                 d2_TextCursorSprite = d2_CreatePicObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorPic);
             else
-                d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
+                d2_MoveObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
         } else if (d2_TextCursorSprite != -1) {
             d2_RemoveObj(d2_TextCursorSprite);
             d2_TextCursorSprite = -1;

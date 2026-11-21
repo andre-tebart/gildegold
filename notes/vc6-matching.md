@@ -6080,7 +6080,15 @@ the bytes no portable form gives.
   cm_QueueSend(&m); }` is the same code (cm_SendCartRoute, cm_SendMakeGoods, cm_SendSpawnCharacter).
 - **Calls that push a promoted int (movsx) to a short parameter in the same unit as the definition, above it**
   (d2_CenterObj -> d2_MoveObj): the original unit had no prototype in scope at that call; the short definition
-  is right (int params 20 -> 37 ins). No portable form: d2_MoveObjI stays @original (d2.c, gfx.c).
+  is right (int params 20 -> 37 ins). Spell it as that: d2.h does not declare d2_MoveObj (cm.h's short prototype
+  serves the game units), d2_CenterObj has a block-scope `void d2_MoveObj();` (`@original`; an undeclared call
+  is implicit int, which the void definition below then contradicts: C2371; a block-scope int prototype draws
+  C4028 at the definition), and gfx.c, which pushes ints at all four calls, declares `void d2_MoveObj(int x, int
+  y, int obj);` (`@original`) in its head and no longer includes cm.h (it needed nothing from it). A K&R
+  declaration followed by the short prototype compiles without a warning; VC6 merges them, so the calls after
+  the definition push shorts. The two d2_MoveObjI cast macros went (byte); dcp lint counts d2_CenterObj's call
+  as M7. A differing prototype in a unit that also sees the owner's compiles too (C4028, the later one wins), but
+  is not legal C within the unit: take the owner's prototype out of that unit's view first.
 - **Calls of an empty function that LINK folded with others (d3io_NoopCallback 0x44ee40, ai_MsgNoOp)**: each
   calling unit gets its own unlinked empty function with the call's own prototype (main_Nothing,
   d2_DrawNothing(x, y, surf, data) ..), defined at the END of the unit with a prototype at the top: an empty
@@ -6106,7 +6114,7 @@ the bytes no portable form gives.
   local adds the mask; the old d3_ClipBoxU cast to an unsigned int return modelled that wrong local). Byte.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_MoveObj / d2_CreateWindow /
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_CreateWindow /
   d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
