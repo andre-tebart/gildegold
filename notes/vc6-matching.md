@@ -3427,7 +3427,12 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   +4 bytes); `&frames[nframes - 1]`, `frames + n - 1` and the index written out at each use do not.
 - **`add eax,ecx; mov al,[eax]` / `cmp byte ptr [eax],K` (ours `[eax+ecx]`) on a table record's byte tested
   twice**: a record pointer local tested at each use (`g = GM_GOOD(o->type); if (g->type == 0x17 ..`), not a
-  `char` copy of the field (gm_BuildingGoodsList17, ai_TradeContactChecks byte).
+  `char` copy of the field (gm_BuildingGoodsList17, ai_TradeContactChecks byte). ai_LiquidateAssets too
+  (`(AIGOOD *)ai_Goods + *item`, the `shl edx,6; add ebp,edx; add ecx,ebp; mov cl,[ecx]` form: 133 -> 50
+  ins); there also a product used by three accumulators and a test (`mov eax,esi; imul eax,ebp` where ours
+  reused n's register: `imul esi,ebp`) is no `got` local but `n * price` written at each use (a CSE temp in
+  eax), and the accumulators' order decides which loaded slot lands in the loop's register (`remaining -=`
+  first; `mov esi,edi` behind the stores): a 36-order round over both loops, 26 -> byte.
 - **The field of a copied struct in a callee-saved register, the copy's store of it missing**: compute in the
   field itself (`clk = ai_Time; if (..) clk.year = ..; clk.year -= ..;`), not in an int local stored into it
   afterwards (gm_BirthDate byte).

@@ -7519,22 +7519,7 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
    the stores (0x2a, else 0x116) of its buildings of the classes 1 / 2 / 8 at half their price (cm_SendExSellObject),
    all goods but the types 0x17 / 0x25 first and then, from the 0x2a stores only, those two, round after round
    while something sells. The sale proceeds go to `to`, noted in `note` (text 0x18eb appended); without any sale
-   the rest is moved unchecked. Returns what was paid
-   @deep size queue s16: the two goto exits of the sale rounds (remaining <= 0 inside the building loop)
-   are a plain break (the while test ends the round): the same code, kept as the plainer form. The original
-   calls cm_SendExSellObject right after the n clamp (as ours) and keeps n in esi (mov eax,esi; cdq; idiv
-   ebp: remaining's register reused), so climb.py's best (the call after the sums: 111 ins, raw 1088) is
-   not it; both loops' call moved gives raw 1092 (padded right) at 116 ins with another order, not kept.
-   Left: register allocation as before. prior: reconstructed from the stub against the whole original
-   0x5b92e0..0x5b9727: the money first (min of gm_GetGoodsValue and the amount, cm_SendMoveGoods), the two
-   sale rounds over the class 1/2/8 buildings' stores (0x2a else 0x116 for the other goods, 0x2a only for
-   the types 0x17/0x25) at half gm_GoodsPrice with the n <= 1 / gm_ListAmount clamps and
-   cm_SendExSellObject, the stop flag per round, the proceeds message 0x18eb strcat into the note and the
-   rest through cm_SendMoveGoodsUnchecked; ours 359 vs 366 ins. Left is register allocation: the original
-   keeps the ai_Goods base in ebp before reusing ebp for the price (+0x406..+0x41c: mov ebp,[ai_Goods]; add
-   ebp,edx; add ecx,ebp; mov cl,[ecx] vs ours mov ecx,[ai_Goods]; add ecx,edx; mov cl,[eax+ecx]) and so
-   assigns eax/ecx/edx otherwise around cm_SendExSellObject (+0x479..+0x4c0, +0x61d.., the same five pushes
-   from other registers) and the secon... */
+   the rest is moved unchecked. Returns what was paid */
 
 int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
 {
@@ -7545,10 +7530,9 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
     char text[0x100];
     int value;
     int take;
-    int got;
     int n;
     int price;
-    char kind;
+    AIGOOD *g;
     int cls;
     unsigned char *bld;
     AIROOM *store;
@@ -7584,8 +7568,8 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                  item = gm_QueryNext()) {
                 if (remaining <= 0)
                     break;
-                kind = ((AIGOOD *)ai_Goods)[*item].type;
-                if (kind == 0x17 || kind == 0x25)
+                g = (AIGOOD *)ai_Goods + *item;
+                if (g->type == 0x17 || g->type == 0x25)
                     continue;
                 price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
                 if (price == 0)
@@ -7596,11 +7580,10 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                 if (n >= gm_ListAmount((short *)store, (char *)item))
                     n = gm_ListAmount((short *)store, (char *)item);
                 cm_SendExSellObject(-1, store->objId, *item, n, ai_OwnPlayer, 0);
-                got = n * price;
-                sold += got;
-                remaining -= got;
-                paid += got;
-                if (got != 0)
+                remaining -= n * price;
+                sold += n * price;
+                paid += n * price;
+                if (n * price != 0)
                     stop = 0;
             }
         }
@@ -7622,8 +7605,8 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                  item = gm_QueryNext()) {
                 if (remaining <= 0)
                     break;
-                kind = ((AIGOOD *)ai_Goods)[*item].type;
-                if (kind != 0x17 && kind != 0x25)
+                g = (AIGOOD *)ai_Goods + *item;
+                if (g->type != 0x17 && g->type != 0x25)
                     continue;
                 price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
                 if (price == 0)
@@ -7634,11 +7617,10 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
                 if (n >= gm_ListAmount((short *)store, (char *)item))
                     n = gm_ListAmount((short *)store, (char *)item);
                 cm_SendExSellObject(-1, store->objId, *item, n, ai_OwnPlayer, 0);
-                got = n * price;
-                paid += got;
-                remaining -= got;
-                sold += got;
-                if (got != 0)
+                remaining -= n * price;
+                paid += n * price;
+                sold += n * price;
+                if (n * price != 0)
                     stop = 0;
             }
         }
