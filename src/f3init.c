@@ -430,6 +430,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
 void init_RoomNoOp(void);                                /* unlinked, folded into ai_MsgNoOp (below init_ShowBuildingScene) */
+void init_NoRoomNoOp(void);                              /* unlinked, folded into ai_MsgNoOp (below init_ShowBuildingScene) */
 struct G15PLANT;
 void ai_FavourComment(char *a);
 
@@ -949,7 +950,7 @@ void init_LoadBuildingScene(int k)
    The purse goes through its own address-taken local (money), so the two judge send slots stay in registers. Caller: 0x511400 at 0x511423 (the new-game setup). Readability done: Q1 init_StartNewGame, Q2 cleared, Q3 INIT_START_CHARACTERS_END, Q4 INIT_CHAR view, Q5 marker removed, Q6 described. */
 
 
-void init_StartNewGame(void)
+void init_StartNewGame(int unused)
 {
     INIT_CHAR *c;
     int i;
@@ -1185,7 +1186,7 @@ void init_PlaceOffices(int n, int *out, int *ids)
    byt... */
 
 
-int init_CreateStartCharacters(void)
+int init_CreateStartCharacters(int unused)
 {
     int t[30] = {0x10, 0x12, 0x14, 0x18, 0x10, 0x12, 0x14, 0x18, 0x10, 0x12, 0x14, 0x18,
                  0x16, 0x18, 0x19, 0x1b, 0x1d, 0x1d, 0x16, 0x18, 0x19, 0x1b, 0x1d, 0x1d,
@@ -1966,7 +1967,7 @@ void init_OpenTown(void)
         cm_ReceiveMessages();
         cm_ExecCommands();
     }
-    ((int (*)(int))init_CreateStartCharacters)(0);   /* @original: the original call pushes one argument (0x510494) although the callee reads none */
+    init_CreateStartCharacters(0);   /* the original call pushes one argument (0x510494), which the callee does not read */
     ord_UpdateStatistics();
     b = (char *)gm_BuildQuery(1, 6);
     while (b != 0) {
@@ -2441,7 +2442,7 @@ int init_SetupNewGame(int n)
         t = timeGetTime();
         srand(t);
     }
-    ((void (*)(int))init_StartNewGame)(0);   /* @original: the original call pushes one argument (0x511422) although the callee reads none */
+    init_StartNewGame(0);   /* the original call pushes one argument (0x511422), which the callee does not read */
     if (main_StartHouseCheat != 0) {
         i = 0;
         p = ai_Chars[0] + 2;
@@ -3440,7 +3441,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     if (o == 0 || (proto = *o) == 0xfd) {
         uni = init_BuildingUniverse[(unsigned char)ai_BTypes[*b * 0x24d]];
         ai_SceneObject = 0;
-        ((int (*)())ai_MsgNoOp)();
+        init_NoRoomNoOp();
     } else {
         ai_SceneObject = o;
         uni = init_ObjectUniverse[proto];
@@ -3529,6 +3530,11 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
    into ai_MsgNoOp, 0x4b70f0, where both of the original's calls point. A distinct symbol, as the original keeps the
    two calls apart (one symbol in both arms is merged into one call) */
 void init_RoomNoOp(void)
+{
+}
+
+/* unlinked: the same for the other branch of init_ShowBuildingScene (folded into ai_MsgNoOp, 0x4b70f0) */
+void init_NoRoomNoOp(void)
 {
 }
 /* 0x513400, finishes the scene of the building b (init_FinishBuildingScene): one of the "contact_EINKAUF*" shop

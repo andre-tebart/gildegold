@@ -21,10 +21,10 @@ void init_AdjustSceneLights(struct D3OBJECT *o);                        /* 0x50d
 void init_LoadObjectScene(int n);                                       /* 0x50d7f0 */
 int init_BuildingKindName(int k, char *out);                            /* 0x50dba0 */
 void init_LoadBuildingScene(int k);                                     /* 0x50dc30 */
-void init_StartNewGame(void);                                           /* 0x50e0d0 */
+void init_StartNewGame(int unused);                                           /* 0x50e0d0 */
 void init_CreateOpponents(int n, int m, int *list);                     /* 0x50e330 */
 void init_PlaceOffices(int n, int *out, int *ids);            /* 0x50e5a0 */
-int init_CreateStartCharacters(void);                                   /* 0x50e690 */
+int init_CreateStartCharacters(int unused);                                   /* 0x50e690 */
 void init_CreateOpeningObjects(void);                                   /* 0x50f0b0 */
 void init_StockMarketStalls(void);                                      /* 0x50f340 */
 void init_Betrieb(struct INIT_BLD *b);                                  /* 0x50f570 */

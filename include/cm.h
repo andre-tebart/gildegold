@@ -863,7 +863,7 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
 } G22ENT;
 extern struct D2PIC *d2_Pics;  /* 0x6ed918 */
 int cm_LoadVoiceBank(char *name, int a);  /* 0x4e3270 */
-int cm_PlaySpecialTrack(char *a);  /* 0x4e3620 */
+void cm_PlaySpecialTrack(char *a);  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
 void amt_ElectOffices();  /* 0x4e7c60 */
@@ -880,7 +880,7 @@ int cm_StartEventArg(char *name, int arg);  /* 0x4e2c30 */
 int cm_WaitEvent(int a);  /* 0x4e2c70 */
 int cm_UnloadVoiceBank(int a);  /* 0x4e3290, drops the reference of the voice bank a (0 in the replay mode) */
 int cm_WaitEventFull(int a);  /* 0x4e2d40 */
-int cm_EndSpecialTrack();  /* 0x4e3640 */
+void cm_EndSpecialTrack();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040 */
 void cm_RunCouncilSession(G28REC *a);  /* 0x4d8e20 */

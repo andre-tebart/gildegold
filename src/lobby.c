@@ -433,14 +433,14 @@ void lobby_FetchPlayers(void)
     int r;
     int i;
 
-    h = ((int (*)())cm_LobbyRequestList)();
+    h = cm_LobbyRequestList();
     while (cm_GetSlotState(h) == 0)
         sv_PumpNet();
     lobby_List = cm_LobbyPlayerList();
     r = -1;
     for (i = 1; i < 9; i++)
         if (lobby_List[i] != 0)
-            r = ((int (*)(int))cm_LobbyRequestPlayer)(lobby_List[i]);
+            r = cm_LobbyRequestPlayer(lobby_List[i]);
     if (r != -1)
         while (cm_GetSlotState(r) == 0)
             sv_PumpNet();

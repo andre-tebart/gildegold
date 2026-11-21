@@ -4215,19 +4215,19 @@ int cm_RunSceneTicks(int a)
 }
 /* 0x4e3620, clears the sound queue and plays the special track name (snd_PlaySpecialTrack), nothing in the replay mode */
 
-int cm_PlaySpecialTrack(char *name)
+void cm_PlaySpecialTrack(char *name)
 {
     if (cm_SkipEvents == 0) {
         snd_ClearQueue();
-        return ((int (*)(char *))snd_PlaySpecialTrack)(name);
+        snd_PlaySpecialTrack(name);
     }
 }
 /* 0x4e3640, ends the special track and restores the ambient sounds and the music volume (snd_EndSpecialTrack), nothing in the replay mode */
 
-int cm_EndSpecialTrack(void)
+void cm_EndSpecialTrack(void)
 {
     if (cm_SkipEvents == 0)
-        return ((int (*)())snd_EndSpecialTrack)();
+        snd_EndSpecialTrack();
 }
 /* 0x4e3650, sets the object tables 0x5fb5b0 up with the two 0xc0 byte callbacks 0x512de0 / 0x512e40 (0x438e60) after 0x4fe350, then 0x5128d0 */
 
