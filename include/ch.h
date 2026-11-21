@@ -513,7 +513,6 @@ typedef struct CHKEYFLAGS {         /* D3ANIMFLAGS as built for d3anim_CreatePat
         struct { unsigned char a8 : 1, b8 : 1, r8 : 6; } c;
     } w;                            /* 0x08 */
 } CHKEYFLAGS;
-#define d3anim_CreatePathK ((D3ANIM *(*)(D3OBJECT *, CHKEYFLAGS, int, D3ANIMKEY *))d3anim_CreatePath)
 #define CH_LASTFRAME(ch) (CH_SLOT(ch)->data->frames[CH_SLOT(ch)->data->nframes - 1])
 void ch_ActTurn(CHACTION *a);                                                           /* 0x406e60 */
 

@@ -861,7 +861,6 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
     char kind;                          /* 0x10, 2 = candidate, 3 = voter */
     char pad[7];
 } G22ENT;
-#define G22_4C5580 ((int (*)())cm_SendHandOverCrimes)  /* cut.c calls it without arguments */
 extern struct D2PIC *d2_Pics;  /* 0x6ed918 */
 int cm_LoadVoiceBank(char *name, int a);  /* 0x4e3270 */
 int cm_PlaySpecialTrack(char *a);  /* 0x4e3620 */
