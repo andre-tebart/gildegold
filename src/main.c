@@ -314,8 +314,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319), main_PlayerCountDialog the same after its clamp (0x53281b) */
 #define ai_NetLibName (ai_DataPath + 0x100)  /* 0x75dda0, the network plug-in DLL (0x104 bytes inside ai_DataPath's block: game.INI [Network] Server, "Server\Server.dll") */
-#define ls_SavePortW (*(int *)((char *)&ls_SavePath + 0x84))  /* 0x75e6c4, ls_SavePath.cur as the whole dword: @original main_GameLoop passes it so (0x53bce5 mov edx,[0x75e6c4]; push edx) */
-#define net_ConnectI ((unsigned int (*)(char *, int))net_Connect)  /* 0x424990 (net.h: unsigned short port): @original main_GameLoop pushes the port as a dword */
 #define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -916,7 +914,7 @@ int main_HostNetworkGame(void)
             ls_SavePath.net.size = 0x6a;
             ls_SavePath.net.a = 1;
             ls_SavePath.net.b = 1;
-            ls_SavePath.net.x = ls_SavePath.cur;
+            ls_SavePath.net.x = ls_SavePath.port;
             i = 0;
             do {
                 c = ai_DataPath[0x220 + i];
@@ -955,7 +953,7 @@ int main_JoinNetworkGame(void)
             ls_SavePath.net.size = 0x6a;
             ls_SavePath.net.a = 1;
             ls_SavePath.net.b = 4;
-            ls_SavePath.net.x = ls_SavePath.cur;
+            ls_SavePath.net.x = ls_SavePath.port;
             strcpy(ls_SavePath.net.name, hdr.player);
             strcpy(ls_SavePath.net.save, main_NetSaveName);
             memcpy(ls_SavePath.net.party, hdr.party, sizeof(hdr.party));
@@ -4575,7 +4573,7 @@ void main_GameLoop(int ctl)
             udp_Init(0x3039);
             main_UdpOpen = 1;
         }
-        net_ConnectI(main_NetHost, ls_SavePortW);
+        net_Connect(main_NetHost, ls_SavePath.port);
         d2_CloseView(w);
     } else {
         net_Connect(0, 0);
@@ -5061,7 +5059,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         main_MoneyCheat = 1;
     GetPrivateProfileStringA("General", "Stadt", "Augsburg", ai_CityName, 0x40, ai_OptionsFile);
     GetPrivateProfileStringA("Network", "Host", "128.0.0.1", main_NetHost, 0x80, ai_OptionsFile);
-    ls_SavePortW = GetPrivateProfileIntA("Network", "Port", 0x1d6b, ai_OptionsFile);
+    ls_SavePath.port = GetPrivateProfileIntA("Network", "Port", 0x1d6b, ai_OptionsFile);
     r = strstr(cmd, "STADT=\"");
     if (r != 0) {
         d = ai_CityName;
@@ -5104,7 +5102,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             d += k;
         }
         *d = 0;
-        ls_SavePortW = atoi(num);
+        ls_SavePath.port = atoi(num);
     }
     if (main_CreateMutex(&mutex) != 0)
         exit(1);

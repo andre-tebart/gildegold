@@ -52,8 +52,9 @@ typedef struct LSSAVE {             /* 0x280 bytes at 0x75e640 (ls_SavePath) */
     char path[0x80];                /* 0x000, the path of the save game (ls_SaveGame), its first 0x60 bytes
                                        are written into the save header */
     int netLib;                     /* 0x080, main: the network DLL (LoadLibraryA), 0 = none */
-    short cur;                      /* 0x084, main: read into NETHDR.x, passed to net_Connect */
-    char pad086[0x1a];
+    int port;                       /* 0x084, main: the network port (the INI's Network/Port, default 0x1d6b, or the
+                                       command line's); read into NETHDR.x, passed to net_Connect */
+    char pad088[0x18];
     NETHDR net;                     /* 0x0a0, main: the network game record */
     char pad10a[0x16];
     char version[0x40];             /* 0x120, main: the version text (main_BuildVersionString) */

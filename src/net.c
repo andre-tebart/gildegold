@@ -132,7 +132,7 @@ void net_PrintStats(void)
 }
 /* 0x424990, opens a nonblocking TCP connection to host:port: clears the stats and the connection, WSAStartup, a socket with the buffer options and nonblocking mode, the address from the IP literal or gethostbyname, connect (WSAEWOULDBLOCK accepted), then waits up to 16 * 0.5 s for the socket to become writable; stores the connection and returns the socket on success, else INVALID_SOCKET (fail: shutdown, closesocket; cleanup: WSACleanup) */
 
-SOCKET net_Connect(char *host, unsigned short port)
+SOCKET net_Connect(char *host, int port)
 {
     u_long opt;
     int len;

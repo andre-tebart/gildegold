@@ -6125,9 +6125,13 @@ the bytes no portable form gives.
   edx`)**: the parameter is `int` (d2_AddHitRect(int x, int y, int w, int h, int user): the body's word stores
   compile the same; sv_BuildScreenLayout byte, the d2_AddHitRectI cast went). Check what the body does with a
   "short" parameter before calling the definition right.
+- **A dword load pushed to an unsigned short parameter (`mov edx,[0x75e6c4]; push edx`; a u16 parameter loads
+  `mov dx,word`)**: both sides were int. The field was an `int` (LSSAVE.port at 0x84, written whole by
+  GetPrivateProfileIntA / atoi; it was a `short cur` read through an int view macro) and net_Connect takes `int
+  port` (its `htons(port)` compiles the same). The net_ConnectI cast and the ls_SavePortW view went (byte).
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), net_Connect (short parameters the callers push promoted, the short definition is right),
+  int: an int definition is worse, a char prototype makes VC6 fold or widen),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
