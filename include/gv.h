@@ -629,7 +629,7 @@ int ord_InterrogationOrder3(char *c, int *m);     /* 0x4f7fc0 */
 int ord_DismissWorkerOrder(char *c, int *m);     /* 0x4f8140 */
 
 extern int (*ord_OrderHandlers[0x3a])(char *c, int *m);    /* 0x611768, the order handler of each order number */
-int d2_OpenForm(int x, int y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
+int d2_OpenForm(short x, short y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
 void d2_CentreViewWindows(int view);                     /* 0x475600 */
 int d2_SetForm(int view, int n);                       /* 0x475f70 */
 void d2_CloseView(int view);                     /* 0x4758f0 */

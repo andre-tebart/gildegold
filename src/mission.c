@@ -197,7 +197,7 @@ G13MIS *ai_NewMission(int owner, int type, int x)
     return 0;
 }
 
-int d2_OpenForm(int x, int y, char *name);                                     /* 0x4741f0 */
+int d2_OpenForm(short x, short y, char *name);                                     /* 0x4741f0 */
 void d2_CentreViewWindows(int view);                                                     /* 0x475600 */
 void d2_CloseView(int view);                                                     /* 0x4758f0 */
 int d2_SetForm(int view, int n);                                                 /* 0x475f70 */

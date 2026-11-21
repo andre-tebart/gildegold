@@ -412,7 +412,7 @@ extern int d2_CurrentView;                                                      
 extern int d2_FullFormPath;                                                        /* 0x6ed984, nonzero: the name given to d2_OpenForm is a full path (no d2_FormsDir prefix, no .form suffix); cleared after each load, nothing in the binary sets it */
 extern D2FORM0 d2_Forms0[];                                                     /* 0x633f18 */
 extern D2FORM2 d2_Forms2[];                                                     /* 0x68ce98 */
-int d2_OpenForm(int x, int y, char *name);                                     /* 0x4741f0, loads a view */
+int d2_OpenForm(short x, short y, char *name);                                     /* 0x4741f0, loads a view */
 int d2_LoadView(int x, int y, char *name);                                     /* 0x474b30 */
 int d2_SetViewTextures(int view, char *tex1, char *tex2);                             /* 0x474ca0 */
 void d2_ClearViewTextures(int view);                                                    /* 0x474d10 */

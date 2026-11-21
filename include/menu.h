@@ -333,7 +333,7 @@ extern int d2_ClickedId;            /* 0xf8a668, d2.h / rt.h: the id the pointer
 
 
 /* The callees of the options menu whose units have no header (type debt, the prototype belongs there). */
-int d2_OpenForm(int x, int y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
+int d2_OpenForm(short x, short y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
 void d2_SetObjEnabled(int obj, int on);     /* 0x475e40, d2.h: enables / disables one control */
 void d2_SetViewEnabled(int view, int on);   /* 0x475590, d2.c: enables / disables the objects of a view */
 void d2_PlaceViewWindows(int view, unsigned char flags); /* 0x475870, d2.c: places the view's windows

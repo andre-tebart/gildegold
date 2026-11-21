@@ -4668,7 +4668,7 @@ void d2_RaiseViewWindows(int v)
    ('- push edi' against '+ push 1' at every vfs_fread), the original strength-reduces the records to
    stepped slots (d2_Forms0 entry [esp+0x34], d2_Forms2 entry + 0xed0 [esp+0x28], wins pointer [esp+0x10])
    where ours steps d2_Forms0 + 6 in ebp; the original does not thread its sec... */
-int d2_OpenForm(int x, int y, char *name)
+int d2_OpenForm(short x, short y, char *name)
 {
     char buf[0x100] = "";
     char msg[0x100];
@@ -4830,7 +4830,7 @@ int d2_OpenForm(int x, int y, char *name)
     d2_FullFormPath = 0;
     strcpy(d2_Views[view].pad22c, name);
     ww = (D2WINF *)&d2_Wins[d2_Views[view].wins[0]];
-    if ((short)x != 0 && (short)y != 0)
+    if (x != 0 && y != 0)
         d2_MoveObj(x, y, ww->parent);
     if (d2_ScreenW < ww->x + ww->w)
         d2_MoveObj(d2_ScreenW - ww->w, ww->y, ww->parent);

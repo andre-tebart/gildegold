@@ -801,7 +801,7 @@ int gm_TitleGroup();  /* 0x504ad0 */
 int gm_BuildingJob();  /* 0x5048e0 */
 void gm_ChangeBuildingState(unsigned char *b, int d);  /* 0x50cad0 */
 
-int d2_OpenForm();  /* 0x4741f0 */
+int d2_OpenForm(short x, short y, char *name);  /* 0x4741f0 */
 int d2_SetForm(int view, int n);  /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);  /* 0x475b80 */
 int io_PrintText(char *fmt, ...);  /* 0x515960 */

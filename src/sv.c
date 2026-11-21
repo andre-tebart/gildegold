@@ -8,7 +8,7 @@
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade). The
-   @original cast macros (d2_PutPixelRGBc, d2_OpenFormS, ai_SwitchRoomI) record the parameter types the original's
+   @original cast macros (d2_PutPixelRGBc, ai_SwitchRoomI) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -1838,7 +1838,6 @@ extern int sv_SelectedChar;
 extern char sv_PlayerBarKind;
 #define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, the member list rows (he.c and sv.c declare int[576]) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
-#define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: sv_OpenPlayerBar computes x = d2_ScreenW - 0x68 in 16 bits (sub cx, 0x68; push ecx) */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
@@ -2089,9 +2088,9 @@ void sv_OpenPlayerBar(int a, char k)
         return;
     sv_PlayerBarKind = k;
     if (ai_GfxResolution.byte[0] == 0)
-        sv_PlayerBarForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar");
+        sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar");
     else
-        sv_PlayerBarForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar_1");
+        sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar_1");
     d2_SetForm(sv_PlayerBarForm, 1);
     s = d2_LastWindow;
     d2_SetForm(sv_PlayerBarForm, 2);
@@ -3537,7 +3536,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
     level = gm_BuildingLevel((char *)b);
     if (sv_PanelForm != -1)
         return;
-    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
+    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
     d2_SetForm(sv_PanelForm, 1);
     if (b->type != 0x47) {
         io_CharacterNameMarkup(b->owner, 2, 1, name);
@@ -3594,7 +3593,7 @@ void sv_OpenItemPanel(unsigned short *p)
 
     b = 0;
     if (sv_PanelForm == -1 && (*p < 0x92 || *p > 0x97) && *p != 0x2db) {
-        sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
+        sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
         d2_SetForm(sv_PanelForm, 1);
         if (ai_PlayerBuilding != 0)
             b = (AIBLD *)ai_PlayerBuilding;
@@ -3637,7 +3636,7 @@ void sv_OpenCartPanel(AIOBJ *c)
     owner = gm_ObjectBuildingOwner((unsigned short *)c);
     if (owner == 0)
         return;
-    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_transporter");
+    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_transporter");
     d2_SetForm(sv_PanelForm, 1);
     io_PrintText("$Z%2N1$A%s", *owner, c->id * 2 + 0x9a8);
     d2_SetForm(sv_PanelForm, 0);
@@ -3689,7 +3688,7 @@ void sv_OpenDefaultPanel(void)
         return;
     if (ai_FallbackBuilding == 0) {
         if (ai_PlayerBuilding == 0) {
-            sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_standard");
+            sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_standard");
             d2_SetForm(sv_PanelForm, 0);
             sv_PanelBuildBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnBuild);
             sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
@@ -3697,7 +3696,7 @@ void sv_OpenDefaultPanel(void)
         }
     } else if (((AIBLD *)ai_FallbackBuilding)->owner == (unsigned short)ai_PlayerId) {
         level = gm_BuildingLevel((char *)ai_FallbackBuilding);
-        sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
+        sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
         d2_SetForm(sv_PanelForm, 0);
         d2_SetForm(sv_PanelForm, 1);
         io_CharacterNameMarkup(((AIBLD *)ai_FallbackBuilding)->owner, 2, 1, name);
@@ -3728,7 +3727,7 @@ void sv_OpenPersonPanel(AICHAR *c)
 
     if (sv_PanelForm != -1)
         return;
-    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_personen");
+    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_personen");
     d2_SetForm(sv_PanelForm, 1);
     if (c == 0 || ai_SelectedCount >= 2) {
         sprintf(text, "%i %s", ai_SelectedCount, txt_PanelPersons);

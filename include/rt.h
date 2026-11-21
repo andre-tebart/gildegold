@@ -57,7 +57,7 @@ int d2_CreateRadioGroup(int n, ...);                                            
 void d2_RadioAdd(int g, int obj);                                                /* 0x46c560 */
 int d2_GetObjValue(int obj);                                                       /* 0x475980 */
 int d2_WinOpenPic(short x, short y, int pic, int win);                            /* 0x4731d0 */
-int d2_OpenForm(int a, int b, char *name);                                      /* 0x4741f0, d2.c */
+int d2_OpenForm(short x, short y, char *name);                                      /* 0x4741f0, d2.c */
 void d2_CentreViewWindows(int view);                                                        /* 0x475600 */
 int d2_SetForm(int view, int n);                                                   /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);                                        /* 0x475b80 */
