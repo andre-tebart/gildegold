@@ -1333,7 +1333,7 @@ int amt_CreateApplicant(int k)
     if (amt_Flip == 2)
         amt_Flip = util_RandomU(2) & 0xffff;
     e = gm_TitleNumber(util_RandomU(12) + 1, util_RandomU(r.i7 - r.i6 + 1) + r.i6);
-    v = ((int (*)(int, int, int, int, int, int, int, unsigned char))cm_SendCreateCharacter)(0x13, -1, -1, util_Random(((AMTRANGEW *)&r)->word1 - ((AMTRANGEW *)&r)->word0 + 1) + ((AMTRANGEW *)&r)->word0, -1, e, 0, amt_Flip);
+    v = cm_SendCreateCharacter(0x13, -1, -1, util_Random(((AMTRANGEW *)&r)->word1 - ((AMTRANGEW *)&r)->word0 + 1) + ((AMTRANGEW *)&r)->word0, -1, e, 0, amt_Flip);
     amt_Flip = 1 - amt_Flip;
     return v;
 }

@@ -731,7 +731,7 @@ void hmt_FillCouncils(void)
     for (i = 0, k = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
             id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
-            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_SexForJob(id));
+            h = cm_SendCreateCharacter(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_SexForJob(id));
             while (h != -1 && !cm_GetSlotState(h))
                 sv_PumpNet();
             if (cm_GetSlotState(h) != 1)

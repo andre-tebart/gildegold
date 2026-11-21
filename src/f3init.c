@@ -970,8 +970,8 @@ void init_StartNewGame(void)
         c++;
     } while ((int)c < INIT_START_CHARACTERS_END);
     cm_BeginSendGroup();
-    w1 = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0xc, -1, -1, 0x12, -1, 0, 0, 0);
-    w2 = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0xc, -1, -1, 0x12, -1, 0, 0, 0);
+    w1 = cm_SendCreateCharacter(0xc, -1, -1, 0x12, -1, 0, 0, 0);
+    w2 = cm_SendCreateCharacter(0xc, -1, -1, 0x12, -1, 0, 0, 0);
     cm_EndSendGroup();
     i = cm_SendGroupState();
     while (i == 0) {
@@ -1002,7 +1002,7 @@ void init_StartNewGame(void)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0, -1, -1, util_RandomU(8) + 0x10, -1, (char)util_RandomU(3) + 4, 0, 0);
+        rec[i] = cm_SendCreateCharacter(0, -1, -1, util_RandomU(8) + 0x10, -1, (char)util_RandomU(3) + 4, 0, 0);
         i++;
     } while (i < 8);
     cm_EndSendGroup();
@@ -1014,7 +1014,7 @@ void init_StartNewGame(void)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0xb, -1, -1, util_RandomU(8) + 0x10, -1, 0, 0x13, 0);
+        rec[i] = cm_SendCreateCharacter(0xb, -1, -1, util_RandomU(8) + 0x10, -1, 0, 0x13, 0);
         cm_SendExSellObject(-2, -1, 0x154, 1, ai_OwnPlayer, 0);
         i++;
     } while (i < 8);
@@ -1072,7 +1072,7 @@ void init_CreateOpponents(int n, int m, int *list)
             cnt--;
             idx = (idx + step) % m;
         }
-        ids[i] = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(5, -1, -1, 0x10, -1, prm, 0, 2);
+        ids[i] = cm_SendCreateCharacter(5, -1, -1, 0x10, -1, prm, 0, 2);
         cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(price[ai_Opponents[i]], ai_OwnPlayer));
         if (init_BonusStart != 0)
             cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(util_RandomU(5000) + 5000, ai_OwnPlayer));
@@ -1240,10 +1240,10 @@ int init_CreateStartCharacters(void)
     for (i = n; i < 30; i++) {
         cm_BeginSendGroup();
         if (cnt < 3 && i * 4 > 0x30 && util_RandomU(4) == 0) {
-            h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0x10, -1, -1, 0x10, -1, 0, 0, 0);
+            h = cm_SendCreateCharacter(0x10, -1, -1, 0x10, -1, 0, 0, 0);
             cnt++;
         } else {
-            h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, 0x10, -1, (unsigned char)out[i], 0, 2);
+            h = cm_SendCreateCharacter(3, -1, -1, 0x10, -1, (unsigned char)out[i], 0, 2);
         }
         cm_EndSendGroup();
         while (cm_SendGroupState() == 0) {
@@ -1331,7 +1331,7 @@ int init_CreateStartCharacters(void)
             if (n > 5) {
                 w = gm_TitleNumber(gm_TitleGroup(util_RandomU(2) != 0 ? u->jobId : v->jobId), 1);
                 msg4 = 2;
-                j = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(8, u->netId, v->netId, n, -1, w, 0, 2);
+                j = cm_SendCreateCharacter(8, u->netId, v->netId, n, -1, w, 0, 2);
                 while (j != -1 && cm_GetSlotState(j) == 0)
                     sv_PumpNet();
                 ch = (INIT_CHAR *)cm_GetSlotValue(j);
@@ -1349,7 +1349,7 @@ int init_CreateStartCharacters(void)
     for (i = 8; i != 0; i--) {
         msg0 = 2;
         msg1 = (util_RandomU(9) & 0xffff) + 1;
-        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, util_Random(4) + 0xf, -1,
+        h = cm_SendCreateCharacter(3, -1, -1, util_Random(4) + 0xf, -1,
             gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 0);
         while (h != -1 && cm_GetSlotState(h) == 0)
             sv_PumpNet();
@@ -1359,7 +1359,7 @@ int init_CreateStartCharacters(void)
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);
         cm_SendFieldDeltas();
-        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, util_Random(4) + 0xe, -1,
+        h = cm_SendCreateCharacter(3, -1, -1, util_Random(4) + 0xe, -1,
             gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 1);
         while (h != -1 && cm_GetSlotState(h) == 0)
             sv_PumpNet();
@@ -2159,7 +2159,7 @@ int init_InitTown(char *city)
     cm_BeginSendGroup();
     cm_SendMessage10(0x44, -1, 0, 0);
     cm_SendMessage10(0x45, -1, 0, 0);
-    bank = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(10, -1, -1, 0x12, -1, 0, 0, 1);
+    bank = cm_SendCreateCharacter(10, -1, -1, 0x12, -1, 0, 0, 1);
     cm_EndSendGroup();
     i = cm_SendGroupState();
     while (i == 0) {
