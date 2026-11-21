@@ -1251,7 +1251,6 @@ void cm_UpdatePointer()
 }
 
 #define G19_E(e, o) (*(int *)((e) + (o)))
-#define txt_FormatS ((void (*)(char *, char *, ...))txt_Format)  /* txt_Format with a format text where the id goes (the token engine takes either) */
 
 /* 0x4cf9c0, refreshes the portrait boxes cm_Portraits: after a click a portrait's checked state becomes its
    character's selection; each box of a character whose body is of type 1 hides its window and frame, the others
@@ -1293,7 +1292,7 @@ void cm_UpdatePortraits()
             cm_SelectedCount++;
         } else
             d2_SetObjValue(cm_Portraits[i].portrait, 0);
-        txt_FormatS(buf, "%1N1 %i%", cm_Portraits[i].c->id, (int)(gm_HealthRatio(cm_Portraits[i].c) * 100.0));
+        txt_Format(buf, (int)"%1N1 %i%", cm_Portraits[i].c->id, (int)(gm_HealthRatio(cm_Portraits[i].c) * 100.0));
         d2_SetObjText(cm_Portraits[i].text, buf);
         w = (AIWEAPON *)cm_CharWeaponAny((char *)cm_Portraits[i].c);
         if (w == 0 || w->id == 0)
@@ -3463,7 +3462,7 @@ int cm_LootList(int x, int y, int mode)
             d2_Objs[t2].font = 0x56;
             d2_Objs[t2].w = 0x50;
             d2_Objs[t2].centred = 1;
-            txt_FormatS(buf, "%T", (int)gm_GoodsPrice(q->id, ai_OwnPlayer) * q->count);
+            txt_Format(buf, (int)"%T", (int)gm_GoodsPrice(q->id, ai_OwnPlayer) * q->count);
             d2_SetObjText(t2, buf);
             total = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * q->count + total);
             j++;
@@ -3502,7 +3501,7 @@ void cm_FightPortraits(int *ids, int x, int y)
         d2_Objs[t].w = 0x78;
         d2_Objs[t].centred = 1;
         d2_Objs[t].font = 0x56;
-        txt_FormatS(buf, "%1N1 %i%", c->id, (int)(gm_HealthRatio(c) * 100.0));
+        txt_Format(buf, (int)"%1N1 %i%", c->id, (int)(gm_HealthRatio(c) * 100.0));
         d2_SetObjText(t, buf);
         o = (AIWEAPON *)cm_CharWeapon((char *)c);
         if (o != 0 && o->id != 0) {
