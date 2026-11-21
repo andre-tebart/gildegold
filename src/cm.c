@@ -1341,9 +1341,9 @@ int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
     m.sell.price = f;
     return cm_QueueSend(&m);
 }
-/* 0x4c48e0, message 0x12 */
+/* 0x4c48e0, message 0x12: produce goods; returns the send slot (cm_QueueSend) */
 
-void cm_SendMakeGoods(int a, short b, int c)
+int cm_SendMakeGoods(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1351,7 +1351,7 @@ void cm_SendMakeGoods(int a, short b, int c)
     m.type = 0x12;
     m.make.item = b;
     m.make.runs = c;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4920, message 0x13: the cart route; returns the send slot (cm_QueueSend) */
 

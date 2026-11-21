@@ -3810,7 +3810,7 @@ exe	0x00568aa0	he_EndKind23Events	he	a77de2841f8dcf4a	no	byte	control=byte p1=by
 exe	0x00568ae0	he_AllocIncomeEvent	he	c05348f8a9c2cd42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00568be0	he_RunIncomeEvent	he_b	4f97e52dcd30edab	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x005690c0	he_AllocProduktion	he	ca3f60510a9c3a7f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00569210	he_RunProduktion	he_b	d79e555c08e255b6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d7a1f9753aa4ee44
+exe	0x00569210	he_RunProduktion	he_b	66f36ef53ea5b49f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b07dd35ce72028b2
 exe	0x0056a100	he_AllocSearchEvent	he	befd97a83d66ff26	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056a170	he_RunSearchEvent	he	f31820b8cb407fc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056a360	he_AllocSearch9	he	fa8b7bff56992e81	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

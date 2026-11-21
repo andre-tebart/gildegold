@@ -1551,7 +1551,6 @@ void he_AllocProduktion(AIJOB *ev)
 void sv_CountGroupMembers(char *g);
 int he_HasEvent9f(AICHAR *a);
 
-#define cm_SendMakeGoodsH ((int (*)(int, int, int))cm_SendMakeGoods)  /* 0x4c48e0: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunProduktion keeps it (HEPRODUCTION.slot) and passes the good as an int (zero-extended) */
 
 /* 0x569210, the run handler of the production event (he_AllocProduktion; "he_RunProduktion()"): without a character
    it frees itself (the debug text names the building). Stage 1 goes to 2 when no workers are left (the words +0x14 /
@@ -1794,7 +1793,7 @@ wait:
                     units++;
                 }
                 if (units != 0)
-                    p->slot = cm_SendMakeGoodsH(p->store, p->good, units);
+                    p->slot = cm_SendMakeGoods(p->store, p->good, units);
                 else if (p->slot == -1 && gm_Query((void *)store->list, 1, 0, p->good) == 0)
                     p->slot = cm_SendExSellObject(store->objId, -1, p->good, 0, ai_OwnPlayer, 0);
                 ev->clock60 = ev->end;
