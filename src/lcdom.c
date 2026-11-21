@@ -2634,7 +2634,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
     n = i;
     d2_SetForm(book->views[0], 3);
     ai_CreatePersonnelRow(d2_LastWindowPtr->w / 2 - 0x18, 0x20, (int *)&masterRow);
-    i = d2_CreateWinText(masterRow.x - 0x38, masterRow.y - 0x20, txt_Ptrs[0x1a2d], d2_LastWindow);
+    i = d2_CreateWinText(masterRow.x, masterRow.y - 0x20, txt_Ptrs[0x1a2d], d2_LastWindow);
     d2_Objs[i].centred = 1;
     d2_Objs[i].w = 0x64;
     ai_ShowBldCarts(book, bld);
