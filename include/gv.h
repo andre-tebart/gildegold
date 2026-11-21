@@ -19,7 +19,6 @@ struct G15PLANT;
 #include "gv_types.h"                /* GVENTRY, AIDEC, ORDSTATS, ORDSTATROUND, ORDMSGREC */
 
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
-extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
 typedef struct GVGRAVE {                /* 0x44 bytes, a dead person in a grave (GVYARD.graves; filled by gv_BuryNewDead) */
     int id;                             /* 0x00, the object id (ai_NextObjectId), -1 when free */
@@ -380,6 +379,7 @@ typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Eff
     int (*cb)(GVEFFARG *arg);           /* 0x168, the slot's callback (gv_EffectNotifyOwner by default), called when a part ends */
     GVEFFARG *arg;                      /* 0x16c, its argument: cur = the part that ended */
 } GVEFFECT;
+extern GVEFFECT gv_Effects[8];          /* 0x6f1008, the effect slots */
 typedef char gv_AssertGVEFFECT[sizeof(GVEFFECT) == 0x170 ? 1 : -1];
 extern GVEFFARG gv_EffectArgs[8];      /* 0x6f0e48, one per effect slot */
 int gv_EffectNotifyOwner(GVEFFARG *a);  /* 0x4ed3f0, the default effect slot callback: tells the owner of the current record's building */
