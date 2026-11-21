@@ -1111,8 +1111,8 @@ int gm_HeadIconNumber(char *name)
     return r;
 }
 
-extern char * ai_PlayerBuilding;  /* 0x6f2308 */
-extern char * ai_FallbackBuilding;  /* 0x6f230c */
+extern struct AIBLD *ai_PlayerBuilding;  /* 0x6f2308 */
+extern struct AIBLD *ai_FallbackBuilding;  /* 0x6f230c */
 struct CHARACTER * ch_Create();                     /* 0x403390 */
 int gm_IsHomeType(unsigned char *b);                     /* 0x502520 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
@@ -1320,8 +1320,8 @@ int gm_PlaceOnStage(int id, int a, int b, int *p, int *ori)
                 if (c->model != 0) {
                     c->model->group = a;
                     c->model->scriptGroup = b;
-                    if ((ai_PlayerBuilding != 0 && ai_PlayerBuilding != (char *)o)
-                        || (ai_FallbackBuilding != 0 && ai_FallbackBuilding != (char *)o))
+                    if ((ai_PlayerBuilding != 0 && ai_PlayerBuilding != (AIBLD *)o)
+                        || (ai_FallbackBuilding != 0 && ai_FallbackBuilding != (AIBLD *)o))
                         ch_SetVisible(c->model, 0);
                     return (int)c->model;
                 }

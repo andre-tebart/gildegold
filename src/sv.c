@@ -991,9 +991,9 @@ void sv_LoadGroundplan(void)
     white[1] = 0xff;
     white[2] = 0xff;
     if (ai_PlayerBuilding != 0)
-        b = (AIBLD *)ai_PlayerBuilding;
+        b = ai_PlayerBuilding;
     else
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     if (sv_GroundplanSurf != 0) {
         d2_FreeSurface(sv_GroundplanSurf);
         sv_GroundplanSurf = 0;
@@ -1165,7 +1165,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         break;
                 d2_UnlockSurface(sv_GroundplanSurf);
                 if (i < 15) {
-                    b = (AIBLD *)ai_PlayerBuilding;
+                    b = ai_PlayerBuilding;
                     if (b != 0) {
                         obj = 0;
                         bt = &ai_BTypes[b->type];
@@ -1200,7 +1200,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         } else if (obj != 0)
                             d2_CopyCaption((char *)txt_ObjectNames[obj->id][0]);
                     }
-                    b = (AIBLD *)ai_FallbackBuilding;
+                    b = ai_FallbackBuilding;
                     if (b != 0) {
                         bt = &ai_BTypes[b->type];
                         obj = 0;
@@ -1422,8 +1422,8 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         }
         d2_SetFont(0x54);
         if (sv_ResearchClass == 0) {
-            if (ai_FallbackBuilding != 0 && ((AIBLD *)ai_FallbackBuilding)->type == 0x47)
-                who = ((AIBLD *)ai_FallbackBuilding)->playerSlot;
+            if (ai_FallbackBuilding != 0 && ai_FallbackBuilding->type == 0x47)
+                who = ai_FallbackBuilding->playerSlot;
             else
                 who = ai_OwnPlayer;
             n = gm_SumSlotAmounts((void *)ai_Chars[ai_PlayerId].inventory, who) + sv_PendingMoney;
@@ -3580,9 +3580,9 @@ void sv_OpenItemPanel(unsigned short *p)
         sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
         d2_SetForm(sv_PanelForm, 1);
         if (ai_PlayerBuilding != 0)
-            b = (AIBLD *)ai_PlayerBuilding;
+            b = ai_PlayerBuilding;
         else if (ai_FallbackBuilding != 0)
-            b = (AIBLD *)ai_FallbackBuilding;
+            b = ai_FallbackBuilding;
         if (b != 0) {
             if (b->name[0] != 0)
                 io_PrintText("$Z%s$A>%s<$A%s", b->type * 0xe + 0x48e, b->name, *p * 2 + 0x9a8);
@@ -3678,19 +3678,19 @@ void sv_OpenDefaultPanel(void)
             sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
             return;
         }
-    } else if (((AIBLD *)ai_FallbackBuilding)->owner == (unsigned short)ai_PlayerId) {
+    } else if (ai_FallbackBuilding->owner == (unsigned short)ai_PlayerId) {
         level = gm_BuildingLevel((char *)ai_FallbackBuilding);
         sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
         d2_SetForm(sv_PanelForm, 0);
         d2_SetForm(sv_PanelForm, 1);
-        io_CharacterNameMarkup(((AIBLD *)ai_FallbackBuilding)->owner, 2, 1, name);
-        io_PrintText("$Z%s$A%s$A%s", name, ((AIBLD *)ai_FallbackBuilding)->type * 0xe + 0x48e, ((AIBLD *)ai_FallbackBuilding)->name);
+        io_CharacterNameMarkup(ai_FallbackBuilding->owner, 2, 1, name);
+        io_PrintText("$Z%s$A%s$A%s", name, ai_FallbackBuilding->type * 0xe + 0x48e, ai_FallbackBuilding->name);
         d2_SetForm(sv_PanelForm, 0);
-        d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1, 0x4c, ((AIBLD *)ai_FallbackBuilding)->type + 0x427, d2_LastWindow);
+        d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1, 0x4c, ai_FallbackBuilding->type + 0x427, d2_LastWindow);
         sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7a, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
         d2_SetObjValue(sv_PanelHealthBar, 0, 100, level);
         sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
-        if (((AIBLD *)ai_FallbackBuilding)->type == 0x1e) {
+        if (ai_FallbackBuilding->type == 0x1e) {
             sv_PanelPlantBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnKind1e);
             return;
         }
@@ -4097,7 +4097,7 @@ void sv_UpdatePanel(void)
             if (sv_PanelShown == 0)
                 perms = gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, 0, 0);
             else {
-                room = (int)gm_Query(((AIBLD *)ai_FallbackBuilding)->objList, 1, 0, ((AIBLD *)ai_FallbackBuilding)->mainRoom);
+                room = (int)gm_Query(ai_FallbackBuilding->objList, 1, 0, ai_FallbackBuilding->mainRoom);
                 perms = gm_PermissionBits(ai_PlayerId, 0, room, 0);
             }
         } else {
@@ -4107,9 +4107,9 @@ void sv_UpdatePanel(void)
         }
         sv_PanelPerms = perms;
         if (ai_PlayerBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
-            ai_TechTreeWindow((int)ai_PlayerBuilding, ((AIBLD *)ai_PlayerBuilding)->mainRoom);
+            ai_TechTreeWindow((int)ai_PlayerBuilding, ai_PlayerBuilding->mainRoom);
         else if (ai_FallbackBuilding != 0 && sv_PanelShown == 0)
-            ai_BuildingWindow((AIBLD *)ai_FallbackBuilding);
+            ai_BuildingWindow(ai_FallbackBuilding);
         else if (ai_FallbackBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
             ai_TechTreeWindow((int)ai_FallbackBuilding, *sv_PanelShown);
         else if (sv_SelectedObject != 0) {
@@ -4216,7 +4216,7 @@ refresh:
     if (sv_SelectedObject != 0)
         b = SV_SELBLD;
     else if (ai_FallbackBuilding != 0)
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     sv_OpenBuildingPanel(b);
     sv_RefreshPanel();
 }
@@ -4330,8 +4330,8 @@ void sv_HoverPick(void)
         if (sv_SelectedObject != 0 && sv_HoverBuilding == (int)sv_SelectedObject && (sv_HoverBldPerms & 1) != 0
             && (((AIBLD *)sv_HoverBuilding)->flags5a & 1) == 0)
             d2_PointerLook = 0xb;
-        b = (AIBLD *)ai_FallbackBuilding;
-        if ((b != 0 || (b = (AIBLD *)ai_PlayerBuilding) != 0) && ai_PickedObject != 0 && strncmp(ai_PickedObject, "contact_gate_", 0xd) == 0) {
+        b = ai_FallbackBuilding;
+        if ((b != 0 || (b = ai_PlayerBuilding) != 0) && ai_PickedObject != 0 && strncmp(ai_PickedObject, "contact_gate_", 0xd) == 0) {
             strcpy(goods, ai_PickedObject + 0x10);
             if (ai_FallbackBuilding != 0)
                 it = (unsigned short *)gm_Query(b->objList, 1, 4, 6);
@@ -4401,13 +4401,13 @@ void sv_ResetSelection(void)
     sv_SelectedExtra = 0;
     sv_SelectedModel = 0;
     if (ai_PlayerBuilding == 0) {
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
         if (b == 0)
             b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
     } else {
         if (ai_FallbackBuilding == 0)
             return;
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     }
     if (b == 0)
         return;
@@ -4459,7 +4459,7 @@ void sv_HandleObjects(void)
     if (sv_SelectedChar != 0 && ((AICHAR *)sv_SelectedChar)->selected == 0)
         sv_SelectedChar = 0;
     if (sv_PanelFlag != 0) {
-        subj = ai_PlayerBuilding != 0 ? ai_PlayerBuilding : ai_FallbackBuilding;
+        subj = (char *)(ai_PlayerBuilding != 0 ? ai_PlayerBuilding : ai_FallbackBuilding);
         if (subj == sv_QuickJump.object
             && (sv_PanelShown == sv_QuickJump.record
                 || (ai_FallbackBuilding != 0 && sv_PanelShown == 0 && sv_QuickJump.record != 0 && *sv_QuickJump.record == 0xfd))) {
@@ -4965,9 +4965,9 @@ void sv_HandleSelectionMouse(void)
     map = (D3SM *)d3_DefaultScene->hmap;
     b = 0;
     if (ai_PlayerBuilding != 0)
-        b = (AIBLD *)ai_PlayerBuilding;
+        b = ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     if (dm_L.lhold == 0 && sv_BandActive != 0) {
         snd_PlaySelectedClick();
         sv_EndBand();
@@ -5025,22 +5025,22 @@ void sv_HandleSelectionMouse(void)
                     if (((AIOBJ *)sv_ClickedContact)->id != 0xfd) {
                         t = init_ObjectSceneUniverse((unsigned short *)sv_ClickedContact);
                         if (ai_FallbackBuilding != 0)
-                            b = (AIBLD *)ai_FallbackBuilding;
+                            b = ai_FallbackBuilding;
                         else if (ai_PlayerBuilding != 0)
-                            b = (AIBLD *)ai_PlayerBuilding;
+                            b = ai_PlayerBuilding;
                     } else {
                         if (ai_FallbackBuilding != 0) {
                             t = init_BuildingSceneUniverse((unsigned char *)ai_FallbackBuilding);
                             if (ai_FallbackBuilding != 0)
-                                b = (AIBLD *)ai_FallbackBuilding;
+                                b = ai_FallbackBuilding;
                             else if (ai_PlayerBuilding != 0)
-                                b = (AIBLD *)ai_PlayerBuilding;
+                                b = ai_PlayerBuilding;
                         } else if (ai_PlayerBuilding != 0) {
                             t = 0;
                             if (ai_FallbackBuilding != 0)
-                                b = (AIBLD *)ai_FallbackBuilding;
+                                b = ai_FallbackBuilding;
                             else if (ai_PlayerBuilding != 0)
-                                b = (AIBLD *)ai_PlayerBuilding;
+                                b = ai_PlayerBuilding;
                         }
                     }
                     if (t >= 0)
@@ -5182,9 +5182,9 @@ void sv_SpeakPicked(void)
     b = 0;
     cls = 0;
     if (ai_PlayerBuilding != 0)
-        b = (AIBLD *)ai_PlayerBuilding;
+        b = ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     if (b != 0)
         cls = &ai_BTypes[b->type];
     if (ai_PickedChar != 0)
@@ -5419,9 +5419,9 @@ void sv_DrawGateName(D3OBJECT *part)
     AIGOOD *g;
 
     if (ai_FallbackBuilding != 0)
-        b = (AIBLD *)ai_FallbackBuilding;
+        b = ai_FallbackBuilding;
     else if (ai_PlayerBuilding != 0)
-        b = (AIBLD *)ai_PlayerBuilding;
+        b = ai_PlayerBuilding;
     else
         return;
     if (strstr(part->name, "gate") == 0)
@@ -5497,11 +5497,11 @@ void sv_DrawItemNames(void)
     } else {
         if (ai_FallbackBuilding == 0)
             return;
-        q = (AIOBJ *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 1, 0, 0xfd);
+        q = (AIOBJ *)gm_Query((void *)ai_FallbackBuilding->objList, 1, 0, 0xfd);
         if (q != 0)
             list = q->list;
         else
-            list = ((AIBLD *)ai_FallbackBuilding)->objList;
+            list = ai_FallbackBuilding->objList;
     }
     d2_SetFont(0x54);
     for (q = (AIOBJ *)gm_Query((void *)list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
@@ -5516,7 +5516,7 @@ void sv_DrawItemNames(void)
     if (sv_PanelShown != 0)
         list = ((AIOBJ *)sv_PanelShown)->list;
     else if (ai_FallbackBuilding != 0)
-        list = ((AIBLD *)ai_FallbackBuilding)->objList;
+        list = ai_FallbackBuilding->objList;
     for (q = (AIOBJ *)gm_Query((void *)list, 2, 5, 6); q != 0; q = (AIOBJ *)gm_QueryNext()) {
         g = &ai_Goods[q->id];
         if (q->obj != 0 && (g->type == 6 || g->type == 2) && d3if_ScreenBox(q->obj, &box) != 0) {
@@ -5536,7 +5536,7 @@ void sv_DrawItemNames(void)
 void sv_DrawBorderArrows(void)
 {
     void *pic;
-    char *b;
+    AIBLD *b;
     int bottom, left, right, top;
 
     right = 0;
@@ -5666,11 +5666,11 @@ void sv_CameraFollow(void)
 
 void sv_HandleRightClick(unsigned fl)
 {
-    char *bld;
+    AIBLD *bld;
     int placed, i;
     AIJOB *job;
     HEEVSLOT *s;
-    char *rb;
+    AIBLD *rb;
     unsigned short *room;
     D3EVENT *ev;
 
@@ -5715,7 +5715,7 @@ void sv_HandleRightClick(unsigned fl)
         if (ai_PlayerBuilding != 0) {
             if (sv_ClickedContact != 0 && ai_SelectedCount == 0 && sv_OtherSelected == 0) {
                 sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
-                ((AIBLD *)ai_PlayerBuilding)->mainRoom = ((AIOBJ *)sv_ClickedContact)->id;
+                ai_PlayerBuilding->mainRoom = ((AIOBJ *)sv_ClickedContact)->id;
                 sv_PopRequest = sv_FrameDepth - sv_FrameBase + 1;
                 d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
                 d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
@@ -5830,7 +5830,7 @@ done:
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)bld, sv_PanelShown, 0);
         else
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)bld, 0, 0);
-        if (((AIBLD *)bld)->owner == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
+        if (bld->owner == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
             sv_BorderCameraView();
     }
     if (sv_PermsBuilding != bld || sv_PermsRoom != sv_PanelShown || ai_PermsDirty != 0) {
@@ -6107,7 +6107,7 @@ void sv_DisableVisibleWidgets(int on)
 
 void sv_OpenWindowFrame(int f, int b, int c)
 {
-    char *bld;
+    AIBLD *bld;
 
     d2_WinOpenPic(0x257, 9, 0x520, f);
     if (c != 0)
@@ -6115,14 +6115,14 @@ void sv_OpenWindowFrame(int f, int b, int c)
     else if ((bld = ai_PlayerBuilding) == 0 && (bld = ai_FallbackBuilding) == 0)
         d2_WinOpenPic(0xb, 9, 0x520, f);
     else
-        d2_WinOpenPic(0xb, 9, ((AIBLD *)bld)->type + 0x427, f);
+        d2_WinOpenPic(0xb, 9, bld->type + 0x427, f);
     if ((bld = ai_PlayerBuilding) == 0 && (bld = ai_FallbackBuilding) == 0)
         d2_WinOpenPic(0x257, 9, 0x444, f);
     else if (b != 0x73b)
-        d2_WinOpenPic(0x257, 9, ((AIBLD *)bld)->type + 0x427, f);
+        d2_WinOpenPic(0x257, 9, bld->type + 0x427, f);
     else {
         d2_WinOpenPic(0x1eb, 9, 0x520, f);
-        d2_WinOpenPic(0x1eb, 9, ((AIBLD *)bld)->type + 0x427, f);
+        d2_WinOpenPic(0x1eb, 9, bld->type + 0x427, f);
     }
     if (b != 0x73b) {
         d2_WinOpenPic(0, 0, b, f);
@@ -7167,9 +7167,9 @@ l64:
         d3t_UpdateCamera();
         d3if_ClearView();
     }
-    c = (AIBLD *)ai_PlayerBuilding;
+    c = ai_PlayerBuilding;
     if (c == 0)
-        c = (AIBLD *)ai_FallbackBuilding;
+        c = ai_FallbackBuilding;
     u5 = mask & 0x8000;
     if (u5 == 0 && ai_GameState != 0)
         sv_CollectGroupCharacters((char *)c);
@@ -7564,8 +7564,8 @@ int ai_PickedChar = 0;  /* 0x6f22f8 */
 int sv_ClickedContact = 0;  /* 0x6f22fc, sv_HoverContact at the last click (sv_HandleObjects) */
 int sv_HoverContact = 0;  /* 0x6f2300, the goods item a contact gate under the pointer resolves to */
 int sv_SelectedModel = 0;  /* 0x6f2304 */
-char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
-char * ai_FallbackBuilding = 0;  /* 0x6f230c */
+AIBLD *ai_PlayerBuilding = 0;  /* 0x6f2308 */
+AIBLD *ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
 struct AIOBJ *sv_LastRoom = 0;  /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building); sv's by place (between sv_PanelShown and f3gm's ai_PermsDirty), only lc reads it */
 int ai_PermsDirty = 0;  /* 0x6f2318 */
@@ -7617,7 +7617,7 @@ int sv_ShownOther = 0;  /* 0x6f23d4, sv_OtherSelected when sv_UpdatePanel last b
 int sv_ShownCount = 0;  /* 0x6f23d8, ai_SelectedCount when sv_UpdatePanel last built the panel */
 int sv_PointerSpriteFor = 0;  /* 0x6f23dc, reset with the pointer sprite (-1 / 0 when sv_HoverPick frees d2_PointerSprite; reasoned: what the sprite was made for) */
 char * sv_LastPicked = 0;  /* 0x6f23e0, ai_PickedObject at the last click (sv_HandleObjects; nothing reads it) */
-char *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for (the right-click handler 0x52d940) */
+AIBLD *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for (the right-click handler 0x52d940) */
 unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was computed for */
 int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
 unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the open book's update: which page of the shown pair is redrawn this frame */

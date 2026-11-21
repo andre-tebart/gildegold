@@ -4198,9 +4198,9 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         }
                         home = 0;
                         if (ai_PlayerBuilding != 0)
-                            home = (AIBLD *)ai_PlayerBuilding;
+                            home = ai_PlayerBuilding;
                         else if (ai_FallbackBuilding != 0)
-                            home = (AIBLD *)ai_FallbackBuilding;
+                            home = ai_FallbackBuilding;
                         if (home == 0 || (ai_BTypes[home->type].kind != 0x1e
                                           && ai_BTypes[home->type].kind != 0x1d))
                             snd_PlayFavourComment();
@@ -4219,9 +4219,9 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         }
                         home = 0;
                         if (ai_PlayerBuilding != 0)
-                            home = (AIBLD *)ai_PlayerBuilding;
+                            home = ai_PlayerBuilding;
                         else if (ai_FallbackBuilding != 0)
-                            home = (AIBLD *)ai_FallbackBuilding;
+                            home = ai_FallbackBuilding;
                         if (home == 0 || (ai_BTypes[home->type].kind != 0x1e
                                           && ai_BTypes[home->type].kind != 0x1d))
                             snd_PlayFavourComment();
@@ -5013,7 +5013,7 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
         if (d2_ClickedId == 0 && ok != -1 && d2_PointerObj == ok) {
             buf.msg.type = 0x19;
             buf.msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
-            buf.msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+            buf.msg.fromId = ai_PlayerBuilding->id;
             buf.msg.flags = 1;
             buf.msg.sabotage.price = price;
             buf.msg.sabotage.bld = target->id;
@@ -5204,7 +5204,7 @@ int ai_BeatingCallback(AICHARREC *ch)
         if (d2_ClickedId == 0 && ok != -1 && d2_PointerObj == ok) {
             buf.msg.type = 0x1a;
             buf.msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
-            buf.msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+            buf.msg.fromId = ai_PlayerBuilding->id;
             buf.msg.flags = 1;
             buf.msg.u.s.cost = price;
             buf.msg.ch = ch->netId;

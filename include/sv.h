@@ -265,8 +265,8 @@ extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
 extern float sv_CameraAngleFactor;                          /* 0x6f22d8 */
 extern char * sv_FocusObject;                               /* 0x6f22ec */
 extern int sv_SelectedModel;                                    /* 0x6f2304 */
-extern char * ai_PlayerBuilding;                            /* 0x6f2308 */
-extern char * ai_FallbackBuilding;                          /* 0x6f230c */
+extern struct AIBLD *ai_PlayerBuilding;                            /* 0x6f2308 */
+extern struct AIBLD *ai_FallbackBuilding;                          /* 0x6f230c */
 extern unsigned short * sv_PanelShown;                      /* 0x6f2310 */
 extern int ai_SelectedCount;                                    /* 0x6f2334 */
 extern int sv_ResearchClass;                                /* 0x6f233c */
@@ -311,7 +311,7 @@ extern int sv_HoverItemPerms;  /* 0x6f2328 */
 extern int sv_HoverCharPerms;  /* 0x6f232c */
 extern int sv_PointerSpriteFor;  /* 0x6f23dc */
 extern char * sv_LastPicked;  /* 0x6f23e0 */
-extern char *sv_PermsBuilding;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for */
+extern struct AIBLD *sv_PermsBuilding;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for */
 extern unsigned short *sv_PermsRoom;  /* 0x6f23e8, its room */
 extern unsigned short sv_DisabledWidgets[0x300];  /* 0x6f1c90 */
 extern int sv_DisabledCount;  /* 0x6f23ec */

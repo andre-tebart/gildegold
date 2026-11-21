@@ -1531,7 +1531,7 @@ void ai_HookChapter3Intro(int arg)
     if (arg)
         return;
     if (ai_PlayerBuilding) {
-        kind = ((AIBLD *)ai_PlayerBuilding)->type;
+        kind = ai_PlayerBuilding->type;
         if (ai_BTypes[kind].kind == 0x12)
             return;
     }
@@ -1556,7 +1556,7 @@ void ai_HookChapter5Intro(int arg)
     if (arg)
         return;
     if (ai_PlayerBuilding) {
-        kind = ((AIBLD *)ai_PlayerBuilding)->type;
+        kind = ai_PlayerBuilding->type;
         if (ai_BTypes[kind].kind == 2)
             return;
     }

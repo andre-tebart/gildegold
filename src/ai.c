@@ -20,8 +20,6 @@ typedef unsigned int SOCKET;
 #include "net.h"
 #include "ai.h"
 #include "data_views.h"
-#define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #include "d3_types.h"
 #include "am_types.h"                /* AIACT */
 #include "ahm.h"
@@ -517,7 +515,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
         }
         if (c->bld->owner == c->id)
             c->budget = gm_GetGoodsValue(c);
-        if (c->bld == ai_PlayerBuildingT || c->bld == ai_FallbackBuildingT) {
+        if (c->bld == ai_PlayerBuilding || c->bld == ai_FallbackBuilding) {
             w = &ai_Watch;
             w->bld = c->bld;
             w->ch = c;

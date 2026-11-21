@@ -246,8 +246,8 @@ extern float ai_Rating;               /* 0x6f1ba0, the smoothed game rating (sta
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 extern AIBLD *ai_MarketBuilding;             /* 0x6f1bc8, the market building (gm_BuildQuery(1, 5, 10)); @original: f3snd.h declares G16BLDVIEW * (f3snd.c reads its +0x4c / object fields); ai.c reads the AIBLD fields (->id) */
 extern AICHAR *ai_PlayerChar;           /* 0x6f1bf8, the player's character */
-extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
-extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
+extern struct AIBLD *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD */
+extern struct AIBLD *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 */
 extern int ai_CurrentPlayer;                /* 0x6f2590, the player index whose turn the local round loop simulates */
 extern int ai_Difficulty;                 /* 0x6f23fc, the game difficulty 0 .. 4 */
 extern AISTORE gm_Offers[];          /* 0x7e4b20 */

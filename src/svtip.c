@@ -763,7 +763,7 @@ int ai_OpenItemTooltip(int idx)
     AIGOOD *item;
     float factor;
     char *w;
-    char *bld;
+    AIBLD *bld;
     AICHAR *c;
     AICHAR *master;
     D2WIN *win;
@@ -797,7 +797,7 @@ int ai_OpenItemTooltip(int idx)
     if (bld == 0) {
         bld = ai_FallbackBuilding;
         if (bld == 0)
-            bld = sv_SelectedObject;
+            bld = (AIBLD *)sv_SelectedObject;
     }
     d2_SetForm(view, 4);
     if (bld == 0) {
@@ -807,13 +807,13 @@ int ai_OpenItemTooltip(int idx)
         gm_BuildingSkill((unsigned char *)bld, 1, 1);
         master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
         for (i = 0; i < 0x300; i++) {
-            if ((char *)ai_Chars[i].bld == bld && &ai_Chars[i] != master)
+            if (ai_Chars[i].bld == bld && &ai_Chars[i] != master)
                 list[n++] = ai_Chars[i].netId;
         }
         factor = gm_StaffFactor((unsigned char *)bld, n, list);
         c = (AICHAR *)gm_FindCharacterByMaster((int)bld);
         if (c == 0)
-            c = (AICHAR *)&ai_Chars[((AIBLD *)bld)->owner];
+            c = (AICHAR *)&ai_Chars[bld->owner];
         io_PrintText(0x22, (int)(item->workTime / ((float)(c->sk81 * (1.0 / 1008)) + factor)), item->workTime);
     }
     d2_SetForm(0, 4);
@@ -913,7 +913,7 @@ int ai_OpenUpgradeTooltip(int idx)
     int view;
     AIGOOD *item;
     D2WIN *win;
-    char *bld;
+    AIBLD *bld;
     AIBTYPE *bt;
     int i;
     int cls;
@@ -945,14 +945,14 @@ int ai_OpenUpgradeTooltip(int idx)
     if (bld == 0) {
         bld = ai_FallbackBuilding;
         if (bld == 0) {
-            bld = sv_SelectedObject;
+            bld = (AIBLD *)sv_SelectedObject;
             if (bld == 0)
                 return view;
         }
     }
     if (item->type == 2 || item->type == 6)
         return view;
-    bt = ai_BTypes + ((AIBLD *)bld)->type;
+    bt = ai_BTypes + bld->type;
     for (i = 0; i < 0x40; i++) {
         if ((bt->objs[i] & 0x7fff) == idx) {
             cls = bt->objClass[i];
@@ -1279,14 +1279,14 @@ void ai_SetBookmark(int idx)
     AIBLD *a;
     AIOBJ *o;
 
-    a = (AIBLD *)ai_PlayerBuilding;
+    a = ai_PlayerBuilding;
     if (a != 0) {
         if (sv_PanelShown != 0)
             o = (AIOBJ *)sv_PanelShown;
         else
             o = 0;
     } else {
-        a = (AIBLD *)ai_FallbackBuilding;
+        a = ai_FallbackBuilding;
         if (a != 0) {
             if (sv_PanelShown != 0)
                 o = (AIOBJ *)sv_PanelShown;

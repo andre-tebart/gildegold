@@ -63,9 +63,6 @@
 #include "cm.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
-#define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
-#define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
-#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 /* 0x4c01b0, stops the queue: restores the music after a fanfare (fade back to 1.0), frees every queued sound */
 void snd_ClearQueue(void)
 {
@@ -416,8 +413,8 @@ void snd_UpdateAnimals(void)
         snd_Animals[snd_AnimalSeason][2].last = t;
         snd_Animals[snd_AnimalSeason][4].last = t;
     }
-    if (ai_PlayerBuildingT != 0 && snd_AmbientOn != 0) {
-        bt = &ai_BTypes[ai_PlayerBuildingT->type];
+    if (ai_PlayerBuilding != 0 && snd_AmbientOn != 0) {
+        bt = &ai_BTypes[ai_PlayerBuilding->type];
         panel = sv_PanelShown;
         if (bt->kind == 0x16 && panel != 0 && *panel == 0x120) {
             int c;
@@ -437,12 +434,12 @@ void snd_UpdateAnimals(void)
             c = ch_Count(d3_CurrentScene, 0) * 6;
             vol = 64.0f < c ? 64.0f : c;
             if (snd_AtmoTrack == 0) {
-                if (ai_PlayerBuildingT->smokeEffect == -1)
+                if (ai_PlayerBuilding->smokeEffect == -1)
                     return;
                 snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Handwerk.mp3", (int)vol);
                 return;
             }
-            if (ai_PlayerBuildingT->smokeEffect == -1) {
+            if (ai_PlayerBuilding->smokeEffect == -1) {
                 msx_StopAmbient(snd_AtmoTrack);
                 snd_AtmoTrack = 0;
                 return;
@@ -474,17 +471,17 @@ void snd_UpdateAnimals(void)
 
 void snd_EnterBuilding(void)
 {
-    unsigned char *b;
+    AIBLD *b;
     unsigned int kind;
     int season;
     int i, k, j, n;
     G16TRACKS *e;
 
-    b = ai_PlayerBuildingB;
-    if (b == 0 && (b = ai_FallbackBuildingB) == 0)
+    b = ai_PlayerBuilding;
+    if (b == 0 && (b = ai_FallbackBuilding) == 0)
         return;
     k = 0;
-    kind = ai_BTypes[*b].kind;
+    kind = ai_BTypes[b->type].kind;
     season = gm_ClockSeason(&ai_Time);
     i = snd_FindActiveTrack();
     if (i >= 0) {
@@ -674,8 +671,8 @@ void snd_UpdateMusic(void)
     unsigned int t;
     int i;
     unsigned short *room;
-    unsigned char *b;
-    unsigned char *b2;
+    AIBLD *b;
+    AIBLD *b2;
     MSXTRACK *trk;
     short prio;
     unsigned int kind;
@@ -727,23 +724,23 @@ void snd_UpdateMusic(void)
             sprintf(snd_MusicLog, "Pause starting at %d, pauseLength is %d ", t, snd_PauseLength);
             return;
         }
-        b2 = ai_FallbackBuildingB;
+        b2 = ai_FallbackBuilding;
         room = sv_PanelShown;
         if (!(t - snd_LastDecision > 40000 && trk != snd_SpecialTrack
-              && (ai_PlayerBuildingB != 0 && snd_TrackBuilding != ai_PlayerBuildingB || b2 != 0 && snd_TrackBuilding != b2
-                  || ai_PlayerBuildingB == 0 && b2 == 0 && snd_TrackBuilding != 0))
-            && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypes[*snd_TrackBuilding].kind != 2))
+              && (ai_PlayerBuilding != 0 && snd_TrackBuilding != ai_PlayerBuilding || b2 != 0 && snd_TrackBuilding != b2
+                  || ai_PlayerBuilding == 0 && b2 == 0 && snd_TrackBuilding != 0))
+            && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypes[snd_TrackBuilding->type].kind != 2))
             return;
         i = snd_FindActiveTrack();
-        snd_TrackBuilding = ai_PlayerBuildingB;
-        if (ai_PlayerBuildingB == 0)
+        snd_TrackBuilding = ai_PlayerBuilding;
+        if (ai_PlayerBuilding == 0)
             snd_TrackBuilding = b2;
         snd_TrackRoom = room;
         prio = snd_LocationTracks[i].prio;
         if (util_Random(0x80) < prio) {
             k = 0;
             if (snd_TrackBuilding != 0)
-                kind = ai_BTypes[*snd_TrackBuilding].kind;
+                kind = ai_BTypes[snd_TrackBuilding->type].kind;
             else
                 kind = 0x2694;
             while (snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind)
@@ -764,9 +761,9 @@ void snd_UpdateMusic(void)
         if (snd_PauseStart != 0 && snd_PauseLength + snd_PauseStart >= t)
             return;
         snd_PauseStart = 0;
-        b = ai_PlayerBuildingB;
+        b = ai_PlayerBuilding;
         if (b == 0)
-            b = ai_FallbackBuildingB;
+            b = ai_FallbackBuilding;
         snd_TrackBuilding = b;
         snd_LastDecision = t;
         if (snd_TrackBuilding != 0)
@@ -1231,7 +1228,7 @@ struct SBSAMPLE *snd_Locusts = 0;  /* 0x6f0b98, hpLocusts */
 int snd_AnimalSeason = 0;  /* 0x6f0b9c, the season */
 void * snd_AtmoTrack = 0;  /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 char snd_LastTrack[256] = {0};  /* 0x6f0ba8, the outdoor track played last */
-unsigned char * snd_TrackBuilding = 0;  /* 0x6f0ca8, the building of the track */
+struct AIBLD *snd_TrackBuilding = 0;  /* 0x6f0ca8, the building of the track */
 unsigned short *snd_TrackRoom = 0;  /* 0x6f0cac, the room of the track */
 unsigned int snd_PauseLength = 0;  /* 0x6f0cb0, the pause length */
 int snd_MusicSeason = 0;  /* 0x6f0cb4, the season of the music */

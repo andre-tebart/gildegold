@@ -1223,9 +1223,9 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 
     bld = 0;
     if (ai_PlayerBuilding != 0)
-        bld = (AIBLD *)ai_PlayerBuilding;
+        bld = ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
-        bld = (AIBLD *)ai_FallbackBuilding;
+        bld = ai_FallbackBuilding;
     d2_SetForm(win, 0);
     d2_SetForm(win, part);
     gm_BuildingGoodsList((char *)bld, (unsigned *)&list, 1);
@@ -1350,9 +1350,9 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
 
     bld = 0;
     if (ai_PlayerBuilding != 0)
-        bld = (AIBLD *)ai_PlayerBuilding;
+        bld = ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
-        bld = (AIBLD *)ai_FallbackBuilding;
+        bld = ai_FallbackBuilding;
     cls = gm_BuildingClass(bld->type);
     d2_SetForm(win, 0);
     d2_SetForm(win, part);
@@ -3187,15 +3187,15 @@ void ai_TradeContactChecks(void)
         if ((g->type == 6 || g->type == 2) &&
             (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, item, 0) &
              0x4000) != 0) {
-            room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+            room = (unsigned short *)gm_Query((void *)ai_FallbackBuilding->objList, 2, 6, 0, 0xfd);
             ai_RunObjectRoom((AIOBJ *)sv_ClickedItem);
             init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
             init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
             sv_FrameBase = sv_FrameDepth;
         }
     }
-    if (sv_PanelFlag != 0 && sv_QuickJump.record != 0 && sv_QuickJump.object == ai_FallbackBuilding) {
-        room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+    if (sv_PanelFlag != 0 && sv_QuickJump.record != 0 && sv_QuickJump.object == (char *)ai_FallbackBuilding) {
+        room = (unsigned short *)gm_Query((void *)ai_FallbackBuilding->objList, 2, 6, 0, 0xfd);
         if (sv_QuickJump.record != room) {
             ai_RunObjectRoom((AIOBJ *)sv_QuickJump.record);
             init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
@@ -3207,12 +3207,12 @@ void ai_TradeContactChecks(void)
         }
     }
     if (sv_ClickedContact != 0 && ai_SelectedCount == 0) {
-        room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+        room = (unsigned short *)gm_Query((void *)ai_FallbackBuilding->objList, 2, 6, 0, 0xfd);
         ai_RunObjectRoom((AIOBJ *)sv_ClickedContact);
         init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
         init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
     }
-    b = (AIBLD *)ai_FallbackBuilding;
+    b = ai_FallbackBuilding;
     type = ai_BTypes + b->type;
     if (b->type == 0x20 || b->type == 0x1f || b->type == 0x1e || type->kind == 0x1f ||
         type->kind == 0x1d)
@@ -4534,13 +4534,13 @@ int ai_BreakInCallback(char *place)
         if (d2_ClickedId == -1)
             continue;
         if (d2_PointerObj == order) {
-            bld = (AIBLD *)ai_FallbackBuilding;
+            bld = ai_FallbackBuilding;
             for (ev = (LCAMBUSHEVENT *)he_FindEvent(3, 0, 0x48, 2, bld->owner, 3, bld->id); ev != 0;
                  ev = (LCAMBUSHEVENT *)he_NextEvent())
                 if (strcmp(ev->place, place) == 0)
                     break;
             if (ev == 0) {
-                bld = (AIBLD *)ai_FallbackBuilding;
+                bld = ai_FallbackBuilding;
                 msg.type = 0x48;
                 msg.to = ai_CharInts[bld->owner][0];
                 msg.fromId = bld->id;
@@ -4615,13 +4615,13 @@ int ai_PickpocketWindow(char *place, AIBLD *target)
         if (d2_ClickedId == -1)
             continue;
         if (d2_PointerObj == send) {
-            bld = (AIBLD *)ai_FallbackBuilding;
+            bld = ai_FallbackBuilding;
             for (ev = (AIJOB *)he_FindEvent(3, 0, 0x49, 2, bld->owner, 3, bld->id); ev != 0;
                  ev = (AIJOB *)he_NextEvent())
                 if (ev->bldId == target->id)
                     break;
             if (ev == 0) {
-                bld = (AIBLD *)ai_FallbackBuilding;
+                bld = ai_FallbackBuilding;
                 msg.type = 0x49;
                 msg.to = ai_CharInts[bld->owner][0];
                 msg.fromId = bld->id;
@@ -4741,11 +4741,11 @@ int ai_BribeCallback(char *place, AIBLD *target)
             snd_PlayFavourComment();
             msg.type = 0x62;
             msg.to = ai_CharInts[ai_PlayerId][0];
-            msg.fromId = ai_PlayerBuilding != 0 ? ((AIBLD *)ai_PlayerBuilding)->id : ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.fromId = ai_PlayerBuilding != 0 ? ai_PlayerBuilding->id : ai_FallbackBuilding->id;
             msg.time = ai_Time;
             msg.flags = 2;
             msg.arg[1] = target->id;
-            msg.arg[4] = ai_PlayerBuilding != 0 ? ((AIBLD *)ai_PlayerBuilding)->id : ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.arg[4] = ai_PlayerBuilding != 0 ? ai_PlayerBuilding->id : ai_FallbackBuilding->id;
             msg.arg[5] = sv_PanelShown != 0 ? ((AIROOM *)sv_PanelShown)->objId : -1;
             for (i = 0; i < 0x20; i++)
                 if (ai_SceneChars[i] != 0 && ((AICHARREC *)ai_SceneChars[i])->selected != 0) {
@@ -4824,9 +4824,9 @@ void ai_BriberyWindow(char *place, AIBLD *target)
     }
     type = &ai_BTypes[target->type];
     n = 0;
-    bld = (AIBLD *)ai_PlayerBuilding;
+    bld = ai_PlayerBuilding;
     if (bld == 0)
-        bld = (AIBLD *)ai_FallbackBuilding;
+        bld = ai_FallbackBuilding;
     if (bld != 0)
         for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0; o = (AIOBJ *)gm_QueryNext())
             if (o->reportBld != target->id)
@@ -4864,7 +4864,7 @@ void ai_BriberyWindow(char *place, AIBLD *target)
             msg.to = ai_CharInts[ai_PlayerId][0];
             msg.flags = 1;
             msg.arg[0] = target->id;
-            msg.arg[1] = ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.arg[1] = ai_FallbackBuilding->id;
             n = 0;
             for (i = 0; i < 0x300 && n < 8; i++)
                 if (((AICHARREC *)ai_Chars)[i].selected != 0)
@@ -4954,7 +4954,7 @@ void ai_RaidWindow(char *place, AIBLD *target)
             msg.flags = 1;
             msg.to = ai_CharInts[ai_PlayerId][0];
             msg.arg[0] = target->id;
-            msg.arg[1] = ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.arg[1] = ai_FallbackBuilding->id;
             memset(msg.ids, 0xff, sizeof(msg.ids));
             for (i = 0; i < 0x300; i++)
                 if (((AICHARREC *)ai_Chars)[i].selected != 0)
@@ -9333,7 +9333,7 @@ void ai_SwitchRoom(int index, unsigned room)
     int i;
 
     if (index != -1) {
-        p = (unsigned short *)gm_Query(((AIBLD *)ai_PlayerBuilding)->objList, 1, 4, 2);
+        p = (unsigned short *)gm_Query(ai_PlayerBuilding->objList, 1, 4, 2);
         if (p == 0)
             return;
         for (i = 1; i < index; i++) {
@@ -9341,9 +9341,9 @@ void ai_SwitchRoom(int index, unsigned room)
             if (p == 0)
                 return;
         }
-        ((AIBLD *)ai_PlayerBuilding)->mainRoom = *p;
+        ai_PlayerBuilding->mainRoom = *p;
     } else
-        ((AIBLD *)ai_PlayerBuilding)->mainRoom = room;
+        ai_PlayerBuilding->mainRoom = room;
     sv_PopRequest = (sv_FrameDepth - sv_FrameBase) + 1;
     d3_SetObjectPos(d3_Camera, sv_ViewPos);
     d3_SetObjectRot(d3_Camera, sv_ViewRot);
@@ -9492,7 +9492,7 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 }
                 if (d3_CurrentScene != 0)
                     d3_DeflateScene(3);
-                ai_PlayerBuilding = (char *)b;
+                ai_PlayerBuilding = (AIBLD *)b;
                 sv_PanelShown = (unsigned short *)room;
                 evt_NoGroup = room->objId;
                 ch_CurrentGroup = b->id;
@@ -9502,7 +9502,7 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 d3_InflateScene(3);
                 d3_ForEachObject2(d3_DefaultScene, 0, 0xe0, d3s_ResetShadows);
                 init_SetCharacterAnimations((unsigned char *)b);
-                init_ShowBuildingScene((unsigned char *)ai_PlayerBuilding, ((AIBLD *)ai_PlayerBuilding)->mainRoom);
+                init_ShowBuildingScene((unsigned char *)ai_PlayerBuilding, ai_PlayerBuilding->mainRoom);
                 init_FinishBuildingScene((unsigned char *)ai_PlayerBuilding, sv_PanelShown);
                 d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
                 d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
@@ -9530,7 +9530,7 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
             ai_CampaignStep(0x19, (int)room, 0, 0);
             switch (room->type) {
             case 0x13:
-                ai_StudyContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_StudyContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0x14:
                 ai_RobberContact((int)ai_PlayerBuilding, (int)room);
@@ -9542,7 +9542,7 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_RhetoricContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x17:
-                ai_FeastContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_FeastContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0x18:
                 ai_MistressContact((int)ai_PlayerBuilding, (int)room);
@@ -9551,13 +9551,13 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_MapTableContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x74:
-                ai_SmithyContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_SmithyContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0x85:
-                ai_CarpenterContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_CarpenterContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0xcf:
-                ai_MixingContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_MixingContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0xd6:
                 ai_IdleContact((int)ai_PlayerBuilding, (int)room);
@@ -9566,10 +9566,10 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_AquariumContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x9b:
-                ai_StonecutterContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_StonecutterContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0xa5:
-                ai_MoneyLenderContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_MoneyLenderContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0xe5:
             case 0xe6:
@@ -9609,16 +9609,16 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_PerfumeryContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x120:
-                ai_TavernContact((AIBLD *)ai_PlayerBuilding, room);
+                ai_TavernContact(ai_PlayerBuilding, room);
                 break;
             case 0x12e:
-                ai_BreweryContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_BreweryContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0x10e:
                 ai_TownHallContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x110:
-                ai_LawBookContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_LawBookContact(ai_PlayerBuilding, (int)room);
                 break;
             case 0x114:
                 ai_TownCashContact((int)ai_PlayerBuilding, (int)room);
@@ -9639,13 +9639,13 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_TrainingRoomListener((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x146:
-                ai_CityWatchListener((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_CityWatchListener(ai_PlayerBuilding, (int)room);
                 break;
             case 0x14c:
-                ai_GuildHallListener((AIBLD *)ai_PlayerBuilding, (int)room);
+                ai_GuildHallListener(ai_PlayerBuilding, (int)room);
                 break;
             case 0x24b:
-                ai_AlchemistLabContact((AIBLD *)ai_PlayerBuilding, room);
+                ai_AlchemistLabContact(ai_PlayerBuilding, room);
                 break;
             default:
                 ai_PumpFrames((int)room);
@@ -9654,10 +9654,10 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 ai_ProductionContact((int)ai_PlayerBuilding, (int)room);
                 break;
             case 0x266:
-                ai_CabinetContact((AIBLD *)ai_PlayerBuilding, room);
+                ai_CabinetContact(ai_PlayerBuilding, room);
                 break;
             case 0x256:
-                ai_CannonContact((AIBLD *)ai_PlayerBuilding, room);
+                ai_CannonContact(ai_PlayerBuilding, room);
                 break;
             }
             ai_CampaignStep(0x1a, (int)room, 0, 0);
@@ -9753,7 +9753,7 @@ void ai_EnterOwnBuilding(AIBLD *b)
             init_LoadBuildingScene(b->type);
             d2_CutsceneActive = 0;
         }
-        ai_FallbackBuilding = (char *)b;
+        ai_FallbackBuilding = (AIBLD *)b;
         evt_NoGroup = b->id;
         ch_CurrentGroup = b->id;
         room = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0xfd);
@@ -9808,17 +9808,17 @@ void ai_EnterOwnBuilding(AIBLD *b)
     }
     switch (b->type) {
     case 0x20:
-        ai_KontorContact((AIBLD *)ai_FallbackBuilding);
+        ai_KontorContact(ai_FallbackBuilding);
         break;
     case 0x1e:
-        ai_WoodKontorContact((AIBLD *)ai_FallbackBuilding);
+        ai_WoodKontorContact(ai_FallbackBuilding);
         veg_HidePlants(b->plants);
         break;
     case 0x1f:
-        ai_StoneKontorContact((AIBLD *)ai_FallbackBuilding);
+        ai_StoneKontorContact(ai_FallbackBuilding);
         break;
     case 0x27:
-        ai_CriminalContact((AIBLD *)ai_FallbackBuilding);
+        ai_CriminalContact(ai_FallbackBuilding);
         break;
     case 0x47:
         ai_FarTradeContact((int)ai_FallbackBuilding);
@@ -9826,7 +9826,7 @@ void ai_EnterOwnBuilding(AIBLD *b)
     case 0x48:
     case 0x49:
     case 0x4a:
-        ai_GraveyardContact(ai_FallbackBuilding);
+        ai_GraveyardContact((char *)ai_FallbackBuilding);
         break;
     case 0x4e:
     case 0x4f:
@@ -9913,7 +9913,7 @@ void ai_RunObjectRoom(AIOBJ *room)
             init_LoadObjectScene(room->type);
             d2_CutsceneActive = 0;
         }
-        ((AIBLD *)ai_FallbackBuilding)->mainRoom = room->type;
+        ai_FallbackBuilding->mainRoom = room->type;
         d3if_SelectScene(init_ObjectUniverse[room->type], 0);
         d3_InflateScene(3);
         init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, room->type);
@@ -9937,16 +9937,16 @@ void ai_RunObjectRoom(AIOBJ *room)
     snd_AmbientOn = 0;
     switch (room->type) {
     case 0x2d:
-        ai_BookContact(ai_FallbackBuilding);
+        ai_BookContact((char *)ai_FallbackBuilding);
         break;
     case 0x33:
-        ai_MercenaryBookContact(ai_FallbackBuilding);
+        ai_MercenaryBookContact((char *)ai_FallbackBuilding);
         break;
     case 0x2c:
         ai_UpgradeContact((int)ai_FallbackBuilding);
         break;
     case 0x37:
-        ai_MiningContact(ai_FallbackBuilding);
+        ai_MiningContact((char *)ai_FallbackBuilding);
         break;
     case 0x107:
         ai_InformationContact((int)ai_FallbackBuilding);
@@ -9955,13 +9955,13 @@ void ai_RunObjectRoom(AIOBJ *room)
         ai_UpgradeContact((int)ai_FallbackBuilding);
         break;
     case 0x205:
-        ai_GraveyardTradeContact(ai_FallbackBuilding);
+        ai_GraveyardTradeContact((char *)ai_FallbackBuilding);
         break;
     case 0x211:
-        ai_GraveyardFogContact(ai_FallbackBuilding);
+        ai_GraveyardFogContact((char *)ai_FallbackBuilding);
         break;
     case 0x21b:
-        ai_GraveyardSeanceContact(ai_FallbackBuilding);
+        ai_GraveyardSeanceContact((char *)ai_FallbackBuilding);
         break;
     case 0x276:
         ai_GypsyContact((int)ai_FallbackBuilding);
@@ -9995,10 +9995,10 @@ void ai_RunObjectRoom(AIOBJ *room)
     d3_DeflateScene(3);
     d3if_SelectScene(scene, 0);
     sv_PanelShown = 0;
-    ((AIBLD *)ai_FallbackBuilding)->mainRoom = 0xfd;
+    ai_FallbackBuilding->mainRoom = 0xfd;
     evt_NoGroup = 0;
-    ch_CurrentGroup = ((AIBLD *)ai_FallbackBuilding)->id;
-    home = (AIOBJ *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+    ch_CurrentGroup = ai_FallbackBuilding->id;
+    home = (AIOBJ *)gm_Query((void *)ai_FallbackBuilding->objList, 2, 6, 0, 0xfd);
     ch_CurrentScriptGroup = home->objId;
     sv_FrameBase = sv_FrameDepth;
     sv_BorderViewY = borderY;
@@ -12056,7 +12056,7 @@ int ai_BurglaryWindow(int ctx, AIBLD *bld)
         sv_MessageBox(buf, 0);
         return 0;
     }
-    if (gm_BuildingRankGate(ai_PlayerBuilding, bld) == 0) {
+    if (gm_BuildingRankGate((unsigned char *)ai_PlayerBuilding, bld) == 0) {
         sv_MessageBox(txt_Ptrs[0x19e5], 0);
         return 0;
     }
@@ -12078,7 +12078,7 @@ int ai_BurglaryWindow(int ctx, AIBLD *bld)
                 msg.flags = 1;
                 msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
                 msg.arg[0] = bld->id;
-                msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[1] = ai_PlayerBuilding->id;
                 memset(msg.ids, -1, sizeof(msg.ids));
                 for (i = 0; i < 768; i++) {
                     if (((AICHARREC *)ai_Chars)[i].selected != 0)
@@ -12174,10 +12174,10 @@ int ai_GuildSpyWindow(int ctx, AIBLD *target)
     }
     n = 0;
     if (ai_PlayerBuilding != 0)
-        bld = (AIBLD *)ai_PlayerBuilding;
+        bld = ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
-        bld = (AIBLD *)ai_FallbackBuilding;
-    type = &ai_BTypes[((AIBLD *)ai_PlayerBuilding)->type];
+        bld = ai_FallbackBuilding;
+    type = &ai_BTypes[ai_PlayerBuilding->type];
     if (bld != 0)
         for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0; o = (AIOBJ *)gm_QueryNext())
             if (o->reportBld != target->id)
@@ -12215,7 +12215,7 @@ int ai_GuildSpyWindow(int ctx, AIBLD *target)
             msg.flags = 1;
             msg.to = ai_CharInts[ai_PlayerId][0];
             msg.arg[0] = target->id;
-            msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+            msg.arg[1] = ai_PlayerBuilding->id;
             n = 0;
             for (i = 0; i < 0x300 && n < 8; i++)
                 if (((AICHARREC *)ai_Chars)[i].selected != 0)
@@ -12406,19 +12406,19 @@ int ai_AttackWindow(int ctx, AIBLD *target)
         if (d2_ClickedId == -1)
             continue;
         if (d2_PointerObj == ok) {
-            for (ev = (AIJOB *)he_FindEvent(3, 0, 0x49, 2, ((AIBLD *)ai_PlayerBuilding)->owner,
-                                            3, ((AIBLD *)ai_PlayerBuilding)->id);
+            for (ev = (AIJOB *)he_FindEvent(3, 0, 0x49, 2, ai_PlayerBuilding->owner,
+                                            3, ai_PlayerBuilding->id);
                  ev != 0; ev = (AIJOB *)he_NextEvent())
                 if (ev->bldId == target->id)
                     break;
             if (ev == 0) {
                 msg.type = 0x49;
-                msg.to = ai_CharInts[((AIBLD *)ai_PlayerBuilding)->owner][0];
-                msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.to = ai_CharInts[ai_PlayerBuilding->owner][0];
+                msg.fromId = ai_PlayerBuilding->id;
                 msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[0] = target->id;
-                msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[1] = ai_PlayerBuilding->id;
                 memset(msg.ids, 0xff, sizeof(msg.ids));
                 n = 0;
                 for (pp = ai_SceneChars; (int)pp < (int)&ai_SceneChars[32] && n < 8; pp++) {  /* signed compares (jl) */
@@ -12733,7 +12733,7 @@ int ai_KidnapWindow(AICHARREC *victim)
                     msg.to = ai_CharInts[ai_PlayerId][0];
                     msg.arg[0] = victim->netId;
                     msg.arg[1] = bld->id;
-                    msg.arg[2] = ((AIBLD *)ai_PlayerBuilding)->id;
+                    msg.arg[2] = ai_PlayerBuilding->id;
                     memset(msg.ids, 0xff, sizeof(msg.ids));
                     for (i = 0; i < 0x300; i++)
                         if (((AICHARREC *)ai_Chars)[i].selected != 0)
@@ -13087,7 +13087,7 @@ int ai_CityWatchWindow(int ctx, AIBLD *target)
                 msg.flags = 2;
                 msg.to = ai_CharInts[ai_PlayerId][0];
                 msg.arg[0] = target->id;
-                msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[1] = ai_PlayerBuilding->id;
                 for (i = n; i < 4; i++)
                     msg.arg[6 + i] = -1;
                 cm_SendLongMessage((char *)&msg);
@@ -13183,7 +13183,7 @@ int ai_CityWatchCrewWindow(int ctx, AIBLD *target)
                 msg.flags = 2;
                 msg.to = ai_CharInts[ai_PlayerId][0];
                 msg.arg[0] = target->id;
-                msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[1] = ai_PlayerBuilding->id;
                 cm_SendLongMessage((char *)&msg);
                 snd_PlayFavourComment();
                 done = 1;
@@ -13270,7 +13270,7 @@ int ai_WatchPlanWindow(int ctx, char *place)
         if (d2_ClickedId == -1)
             continue;
         if (d2_PointerObj == ok) {
-            bld = (AIBLD *)ai_PlayerBuilding;
+            bld = ai_PlayerBuilding;
             msg.type = 0x65;
             msg.to = ai_CharInts[ai_PlayerId][0];
             msg.fromId = bld->id;
@@ -13359,11 +13359,11 @@ int ai_ArrestWindow(int unused, AIBLD *bld)
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x64;
                 msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
-                msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.fromId = ai_PlayerBuilding->id;
                 msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[1] = bld->id;
-                msg.arg[2] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[2] = ai_PlayerBuilding->id;
                 msg.arg[3] = ((AIROOM *)sv_PanelShown)->objId;
                 for (i = 0; i < 0x20; i++) {
                     if (ai_SceneChars[i] != 0 && ((AICHARREC *)ai_SceneChars[i])->selected != 0) {

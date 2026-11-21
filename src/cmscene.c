@@ -134,8 +134,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
-#define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -3702,7 +3700,7 @@ void cm_ShowObjectScene(char *o, int id)
     if (cm_SkipEvents != 0)
         return;
     b = (AIBLD *)o;
-    if ((ai_PlayerBuildingT == b && b->mainRoom == id) || (ai_FallbackBuildingT == b && b->mainRoom == id)) {
+    if ((ai_PlayerBuilding == b && b->mainRoom == id) || (ai_FallbackBuilding == b && b->mainRoom == id)) {
         if (((G28REC *)cm_CurrentFight)->flags & 0x20) {
             d2_ClearSurface(d2_ScreenSurf);
             G27_FRAME(d2_ScreenSurf, d2_BackSurf);

@@ -15,8 +15,6 @@ struct D3TERRAIN;
 #include "txt.h"
 #include "data_views.h"
 #include "ls.h"
-#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -271,10 +269,10 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     }
     if (vfs_fwrite(&ls_SaveSlot, 1, 1, f) <= 0)
         return 0;
-    if (ai_PlayerBuildingT != 0)
-        ref = ai_PlayerBuildingT->id;
-    else if (ai_FallbackBuildingT != 0)
-        ref = ai_FallbackBuildingT->id;
+    if (ai_PlayerBuilding != 0)
+        ref = ai_PlayerBuilding->id;
+    else if (ai_FallbackBuilding != 0)
+        ref = ai_FallbackBuilding->id;
     else
         ref = -1;
     vfs_fwrite(&ref, 4, 1, f);

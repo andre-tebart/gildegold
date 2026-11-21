@@ -75,7 +75,7 @@ extern int snd_SfxEnabled;              /* 0x6f257c, the "sfx" setting of game.I
 extern int snd_MusicSeason;                /* 0x6f0cb4, the season of the music */
 extern unsigned int snd_PauseLength;       /* 0x6f0cb0, the pause length */
 extern unsigned int snd_LastDecision;       /* 0x6f0cb8, time of the last track decision */
-extern unsigned char *snd_TrackBuilding;     /* 0x6f0ca8, the building of the track */
+extern struct AIBLD *snd_TrackBuilding;     /* 0x6f0ca8, the building of the track */
 extern unsigned short *snd_TrackRoom;                /* 0x6f0cac, the room of the track */
 extern struct MSXTRACK *snd_SpecialTrack; /* 0x6f0b74, the special track of snd_PlaySpecialTrack */
 extern int snd_AmbientSaved;            /* 0x6f0b78, 1 while the ambient flag is off and saved (0x4c23f0) */
@@ -88,7 +88,7 @@ extern int snd_VoiceBankNoise;          /* 0x6f0cc4, voice bank: click noises */
 extern int snd_VoiceBankGreeting;       /* 0x6f0ccc, voice bank: greeting */
 extern G16LOC snd_LocationTracks[];           /* 0x6094d0 */
 extern G16TRACKS snd_BuildingTracks[];        /* 0x602d70 */
-extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
+extern struct AIBLD *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 */
 extern unsigned short ai_PlayerId;      /* 0x6f25b8, the player (as am.h / cm.h / gv.h declare it) */
 extern G16TRACKHANDLES snd_TrackHandles; /* 0x6f0b6c, the music track and its copy */
 extern char snd_DebugText[];             /* 0x6f0a60, a debug text */
@@ -101,7 +101,7 @@ extern struct SBSAMPLE *snd_Locusts;       /* 0x6f0b98, hpLocusts: the cricket s
 extern int snd_AnimalSeason;                /* 0x6f0b9c, the season */
 extern struct D3SOUND *snd_AmbientTrack;    /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
 extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
-extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
+extern struct AIBLD *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD */
 extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
 extern void *snd_AtmoTrack;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 extern int d3_CurrentScene;             /* 0x633444 */        /* 0x602ba8 */

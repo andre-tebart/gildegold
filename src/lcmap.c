@@ -1353,7 +1353,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
 
     /* scrolled to the player's building */
     obj = d3_Camera;
-    if ((bld = (AIBLD *)ai_PlayerBuilding) == 0 && (bld = (AIBLD *)ai_FallbackBuilding) == 0 && obj == 0)
+    if ((bld = ai_PlayerBuilding) == 0 && (bld = ai_FallbackBuilding) == 0 && obj == 0)
         return;
     if (bld != 0 && bld->object != 0)
         d3_PointToWorld(((D3OBJECT *)bld->object), &((D3OBJECT *)bld->object)->pos, (D3VECTOR *)&pos);
