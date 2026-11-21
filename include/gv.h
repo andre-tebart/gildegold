@@ -543,7 +543,7 @@ int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode);  /* 0x4f31d0 */
 int gv_CrimeTextLaw17to28(char *out, CRIME r, int mode);  /* 0x4f3270 */
 int gv_CrimeText(char *out, CRIME r, int mode);  /* 0x4f3580 */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0 */
-void gv_PassSentence(struct AICHAR *c, int a);  /* 0x4f4460 */
+void gv_PassSentence(struct AICHAR *c, int a, struct AICHAR *judge, struct AICHAR *assessor1, struct AICHAR *assessor2);  /* 0x4f4460 */
 void gv_SentenceText(unsigned short *c, int a, char *out);  /* 0x4f48f0 */
 
 unsigned ord_ApplyForOffice(ORDCHAR *c, int *m);  /* 0x4f4e20 */
@@ -694,7 +694,7 @@ int ord_HandleMessageRecord(int *m);              /* 0x4f9710 */
 unsigned char ord_GetRatingByte(int i);              /* 0x4f97a0 */
 float ord_BuildingCapacityRatio(void);              /* 0x4f97c0 */
 
-float ord_StatisticsRating(void);              /* 0x4f9ce0 */
+float ord_StatisticsRating(int *rec);              /* 0x4f9ce0 */
 float ord_WeightedRecordSum(int *out);          /* 0x4f9d40 */
 float ord_GetStatistics(int *o);            /* 0x4f9e00 */
 

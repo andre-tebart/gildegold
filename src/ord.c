@@ -1999,7 +1999,6 @@ void cm_SendMessage41(void *p);                         /* 0x4c5800 */
 /* ord_StatisticsRating as ord_ComputeStatistics calls it: @original the call pushes the record buffer (lea edx,
    [esp+0x48]; push edx; call 0x4f9ce0; add esp, 8 together with ord_WeightedRecordSum's), which the callee does
    not read */
-#define ord_StatisticsRatingR ((float (*)(int *))ord_StatisticsRating)
 
 /* 0x4f8ae0, the statistics of the characters and buildings into the 10-dword record out (floats but for the ints
    out[4], out[7], out[8]): counts the characters of kind 0 / 1 and their two buildings (bld / bld2), adds 1.0 to
@@ -2101,7 +2100,7 @@ void ord_ComputeStatistics(float *out)
         }
     }
     f = ord_WeightedRecordSum(rec);
-    f = (float)((1.0 - (f * 0.7f + ord_StatisticsRatingR(rec) * 0.3)) * sum);
+    f = (float)((1.0 - (f * 0.7f + ord_StatisticsRating(rec) * 0.3)) * sum);
     out[2] = f;
     q3 = 1.0f - out[3];
     q1 = 1.0f - out[1];
@@ -2534,7 +2533,7 @@ void ord_AdvanceRatingBase(void)
 }
 /* 0x4f9ce0, a rating from the table records 0 and 1 of 0x4f2720 (their int +0x18): (4 - rec0[6]) * 0.25 * 0.75 + (1 - rec1[6]) * 0.25 */
 
-float ord_StatisticsRating(void)
+float ord_StatisticsRating(int *rec)
 {
     int ra[9];
     int rb[9];

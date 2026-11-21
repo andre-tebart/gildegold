@@ -151,7 +151,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define cm_FlagObjectsT (*(D3OBJECT *(*)[32])&cm_FlagObjects)  /* 0x935980, cm_FlagObjects (cm.h: char *[]) as the D3OBJECTs it holds */
@@ -1174,7 +1173,6 @@ int cm_CheckTrial(G28REC *p)
     return 0;
 }
 
-#define gv_PassSentenceK ((void (*)(AICHAR *, int, AICHAR *, AICHAR *, AICHAR *))gv_PassSentence)  /* 0x4f4460 (gv.h: void gv_PassSentence(AICHAR *, int)): @original cm_RunTrial pushes five arguments (the accused, the sentence, the judge, the two assessors; 0x4dd52d push edx .. push ebx) */
 #define CM_WAIT_VOICE(h) if ((h) != 0) { do { if (sb_IsPlaying(h) == 0) break; cm_WaitTicks(1); } while (1); } cm_WaitTicks(1)  /* waits until the voice sample h has played */
 
 /* 0x4db700, the trial (the run function of scene kind 2, checked by cm_CheckTrial) of the party m in "Gericht.ed3": the
@@ -1728,7 +1726,7 @@ void cm_RunTrial(G28REC *m)
         cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_7_STRAFEN", sentence, 100);
         cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", (c1->sex == 1) & 1, 200);
         if (m->host == ai_CharsT[ai_PlayerId].netId)
-            gv_PassSentenceK(c1, sentence, c2, c3, c4);
+            gv_PassSentence(c1, sentence, c2, c3, c4);
         io_PrintText(0x1531);
         if (m->host == ai_CharsT[ai_PlayerId].netId) {
             fee = plan.rating2c / 3;

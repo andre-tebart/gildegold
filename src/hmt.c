@@ -36,7 +36,6 @@
 #include "gv.h"
 
 /* ai.h declares cm_AddFieldValues with an int field; the caller 0x4ac2f0 passes an unsigned short (no masking) */
-#define CM_AddFieldValuesShort ((void (*)(int, int, unsigned short, void *))cm_AddFieldValues)
 
 /* 0x4ac140, the number of records */
 unsigned short hmt_RecordCount(void)
@@ -146,7 +145,7 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
             v = util_RandomU(8) + 8;
             v = (unsigned char)min((float)(char)v, 252.0f - ((unsigned char *)p)[e->id + 0x80]);
             cm_BeginFieldBlock((AIPER *)p, p->netId);
-            CM_AddFieldValuesShort(1, 1, e->id + 0x80, &v);
+            cm_AddFieldValues(1, 1, e->id + 0x80, &v);
             cm_SendFieldDeltas();
         } else if (e->kind == 1) {
             for (i = 0; i < 768; i++) {

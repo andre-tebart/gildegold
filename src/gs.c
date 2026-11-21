@@ -1242,7 +1242,7 @@ int gv_CheckSentence(AICHAR *c, unsigned k)
    0x27) of c, both judges and up to 13 player characters (kinds 5 / 6 / 7) held by the player's character a day later
    at 10, then frees an office of c (amt_FindOffice, mode 3). */
 
-void gv_PassSentence(AICHAR *c, int a)
+void gv_PassSentence(AICHAR *c, int a, AICHAR *judge, AICHAR *assessor1, AICHAR *assessor2)
 {
     unsigned char b;
     int worth;
