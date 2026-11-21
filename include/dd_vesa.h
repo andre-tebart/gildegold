@@ -34,12 +34,10 @@ extern char dd_Has1152x864;                     /* 0x631227 */
 
 extern int dd_BytesPerPixel;                    /* 0x1463568 */
 extern ULONG dd_Ref;                            /* 0x146356c, result of the last Release */
-extern unsigned char dd_RBits;                  /* 0x1463570 */
 extern HWND dd_Window;                          /* 0x1463574 */
 extern unsigned char dd_GShift;                 /* 0x1463578 */
 extern unsigned char dd_RShift;                 /* 0x1463579 */
 extern int dd_LockPitch;                        /* 0x146357c */
-extern unsigned char dd_GBits;                  /* 0x1463580 */
 #ifndef DATA_VIEWS_H
 extern unsigned char dd_GLoss;                  /* 0x1463581 */
 #endif
@@ -65,7 +63,6 @@ extern unsigned int dd_GMask;                   /* 0x1464fb0 */
 extern int dd_LockBits;                         /* 0x1464fb4 */
 extern unsigned int dd_ColorBitMaskDword;              /* 0x1464fb8 */
 extern unsigned char dd_BShift;                 /* 0x1464fbc */
-extern unsigned char dd_BBits;                  /* 0x1464fbd */
 extern int dd_SurfaceFlags;                       /* 0x1464fc0 */
 extern unsigned char dd_BLoss;                  /* 0x1464fc4 */
 extern HBITMAP dd_Bitmap;                       /* 0x14650e0 */

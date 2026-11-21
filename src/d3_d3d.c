@@ -33,9 +33,7 @@ extern D3DTEXFMTCTX d3d_UsedTexFormat;
 #include "err.h"
 #include "mem.h"
 #include "ts_texture.h"
-#define dd_BBitsC (*(char *)&dd_BBits)  /* 0x1464fbd, dd_BBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
-#define dd_GBitsC (*(char *)&dd_GBits)  /* 0x1463580, dd_GBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
-#define dd_RBitsC (*(char *)&dd_RBits)  /* 0x1463570, dd_RBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
+extern char dd_RBits, dd_GBits, dd_BBits;  /* 0x1463570, 0x1463580, 0x1464fbd, @original why: d3d_EnumTextureFormatsCallback (byte-matched) sign-extends them (movsx) where dd_vesa.c defines and d3_engine.c reads them unsigned char; header drift, dd_vesa.h no longer declares them */
 extern unsigned char d3_MipSkip;
 
 /* 0x4359f0, picks the texture formats closest to the wanted bit depths. */
@@ -80,7 +78,7 @@ HRESULT CALLBACK d3d_EnumTextureFormatsCallback(LPDDPIXELFORMAT pf, LPVOID lpctx
                && pf->dwRBitMask + pf->dwGBitMask + pf->dwBBitMask
                   > ctx->pf2.dwRBitMask + ctx->pf2.dwGBitMask + ctx->pf2.dwBBitMask
                && !d3d_UsedTexFormat.exact) {
-            if (r == dd_RBitsC && g == dd_GBitsC && b == dd_BBitsC)
+            if (r == dd_RBits && g == dd_GBits && b == dd_BBits)
                 d3d_UsedTexFormat.exact = 1;
             D3_COPY(&ctx->pf2, pf, sizeof(DDPIXELFORMAT));
         }
