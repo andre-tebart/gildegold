@@ -755,14 +755,14 @@ void sv_BuildScreenLayout(int s)
     q = sv_GroundplanButtons;
     for (i = 0xf; i != 0; i--)
         *q++ = -1;
-    d2_DirtyRectRight = sv_ViewRectRight;
-    d2_DirtyRectLeft[0] = sv_ViewRectLeft;
-    d2_DirtyRectTop = sv_ViewRectTop;
+    d2_DirtyRect.right = sv_ViewRectRight;
+    d2_DirtyRect.left = sv_ViewRectLeft;
+    d2_DirtyRect.top = sv_ViewRectTop;
     q = tab;
     for (i = 0x10; i != 0; i--)
         *q++ = 0;
     sv_PanelPic = s;
-    d2_DirtyRectBottom = sv_ViewRectBottom;
+    d2_DirtyRect.bottom = sv_ViewRectBottom;
     tab[1] = 0x68;
     tab[2] = 0x6e;
     sv_GroundplanView = d2_MakeSurface(tab, 3);
@@ -7422,10 +7422,7 @@ extern int sv_WeatherHour;
 extern int d3t_Snow;
 extern int d3_SkyLayers[6];
 extern int d2_HitWindow;
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 /* txt_NetworkSyncWait: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnBuild: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnOwn: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7673,4 +7670,4 @@ int * d3t_Rain;  /* 0x760618, the rain level */
 int sv_FrameMask;  /* 0x760638 */
 extern int cm_Bombs[0x40];
 extern int d2_HitWindow;
-extern int d2_DirtyRectLeft[4];
+extern struct D3RECT d2_DirtyRect;

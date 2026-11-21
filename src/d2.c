@@ -161,7 +161,7 @@ short d2_ScreenW;  /* 0xfb9072, common */
 char d2_GfxDir[256]; /* 0xf8ef80, the game root path */
 int cm_PickCellX; /* 0xfa5f00 */
 int cm_PickCellZ; /* 0xfa5f04 */
-int d2_DirtyRectLeft[4];  /* 0xfb9060, left, top, right, bottom (d2_DirtyRectTop .. Bottom are its elements) */
+D3RECT d2_DirtyRect;  /* 0xfb9060, the rectangle d2_AddDirty tests against (one memset clears it) */
 
 /* 0x4687a0, drops the picture that was used longest ago (not locked, not in use); 0 if there is none */
 
@@ -425,8 +425,8 @@ void d2_AddDirty(int x, int y, int w, int h)
             y = d2_ClipTop;
         if (x < d2_ClipLeft)
             x = d2_ClipLeft;
-        if (0 < w && 0 < h && (y <= d2_DirtyRectTop || y + h >= d2_DirtyRectBottom || x <= d2_DirtyRectLeft[0] ||
-                               x + w >= d2_DirtyRectRight)) {
+        if (0 < w && 0 < h && (y <= d2_DirtyRect.top || y + h >= d2_DirtyRect.bottom || x <= d2_DirtyRect.left ||
+                               x + w >= d2_DirtyRect.right)) {
             dp = &d2_Dirty[dd_Page];
             (*dp)[n].x = x;
             (*dp)[n].y = y;
@@ -4536,7 +4536,7 @@ int d2_Open(int hwnd, int w, int h, char *dir, char *file)
     d2_Objs[0].id = 0;
     memset(d2_Pics, 0, 4);   /* the original clears the first 4 bytes with one dword store */
     d2_DrawOrder[0] = 0;
-    memset(d2_DirtyRectLeft, 0, sizeof(d2_DirtyRectLeft));
+    memset(&d2_DirtyRect, 0, sizeof(d2_DirtyRect));
     memset(d2_Fades, 0, sizeof(d2_Fades));
     for (i = 0; i < 0x30; i++)
         d2_Views[i].id = i;
@@ -5790,21 +5790,21 @@ void d2_DrawFade(D2FADE *f, D2SURF *surf)
     if (on)
         d2_LockSurface(surf);
     if ((f->flags & 4) && (f->flags & 8)) {
-        if (f->w + f->x > d2_DirtyRectRight)
-            d2_AddDirty(d2_DirtyRectRight, 0, d2_ScreenW - d2_DirtyRectRight, d2_ScreenH);
-        if (f->y < d2_DirtyRectTop)
-            d2_AddDirty(d2_DirtyRectRight, f->y, d2_ScreenW - d2_DirtyRectRight, d2_DirtyRectTop - f->y);
-        if (f->h + f->y > d2_DirtyRectBottom)
-            d2_AddDirty(d2_DirtyRectRight, d2_DirtyRectBottom, d2_ScreenW - d2_DirtyRectRight, f->h + f->y - d2_DirtyRectBottom);
+        if (f->w + f->x > d2_DirtyRect.right)
+            d2_AddDirty(d2_DirtyRect.right, 0, d2_ScreenW - d2_DirtyRect.right, d2_ScreenH);
+        if (f->y < d2_DirtyRect.top)
+            d2_AddDirty(d2_DirtyRect.right, f->y, d2_ScreenW - d2_DirtyRect.right, d2_DirtyRect.top - f->y);
+        if (f->h + f->y > d2_DirtyRect.bottom)
+            d2_AddDirty(d2_DirtyRect.right, d2_DirtyRect.bottom, d2_ScreenW - d2_DirtyRect.right, f->h + f->y - d2_DirtyRect.bottom);
         d2_ReleaseFade(f);
         return;
     }
     if (((f->flags & 1) && a == 1.0) || ((f->flags & 2) && a == 0.0))
         f->flags |= 4;
-    if (f->w + f->x > d2_DirtyRectRight)
-        d2_AddDirty(d2_DirtyRectRight, 0, d2_ScreenW - d2_DirtyRectRight, d2_ScreenH);
-    if (f->y + f->h > d2_DirtyRectBottom)
-        d2_AddDirty(0, d2_DirtyRectBottom, d2_ScreenW, f->y + f->h - d2_DirtyRectBottom);
+    if (f->w + f->x > d2_DirtyRect.right)
+        d2_AddDirty(d2_DirtyRect.right, 0, d2_ScreenW - d2_DirtyRect.right, d2_ScreenH);
+    if (f->y + f->h > d2_DirtyRect.bottom)
+        d2_AddDirty(0, d2_DirtyRect.bottom, d2_ScreenW, f->y + f->h - d2_DirtyRect.bottom);
     f->last = tb_Calls;
 }
 /* 0x476b10, draws all fades */

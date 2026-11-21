@@ -440,10 +440,7 @@ int io_PrintText(char *fmt, ...);          /* 0x515960, io_text.c: prints a text
                                            tokens into the current window and redraws it */
 extern short d2_ScreenW;                /* 0xfb9072, d2.h */
 extern short d2_ScreenH;                /* 0xfb9070, d2.h */
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 D2FADEVIEW *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
 void d2_ReleaseFade(D2FADEVIEW *f);        /* 0x476860, d2.h */
 void d2_ClearScreen(void);              /* 0x46e990, d2.h */
@@ -1278,12 +1275,12 @@ void ai_LeaveGameScreen(void)
     while ((fade->flags & 4) == 0) {
         sv_RunFrame(0, flags);
     }
-    d2_DirtyRectRight = 0;
+    d2_DirtyRect.right = 0;
     w = d2_ScreenW;
-    d2_DirtyRectLeft[0] = w;
-    d2_DirtyRectTop = 0;
+    d2_DirtyRect.left = w;
+    d2_DirtyRect.top = 0;
     h = d2_ScreenH;
-    d2_DirtyRectBottom = h;
+    d2_DirtyRect.bottom = h;
     sv_FrameMask = 0x24087;
     sv_DisableVisibleWidgets(1);
     d2_ClearScreen();
@@ -1314,10 +1311,10 @@ void ai_ResumeGameScreen(void)
         ai_FrameWait = 3;
         return 0;
     }
-    d2_DirtyRectRight = sv_ViewRectRight;
-    d2_DirtyRectLeft[0] = sv_ViewRectLeft;
-    d2_DirtyRectTop = sv_ViewRectTop;
-    d2_DirtyRectBottom = sv_ViewRectBottom;
+    d2_DirtyRect.right = sv_ViewRectRight;
+    d2_DirtyRect.left = sv_ViewRectLeft;
+    d2_DirtyRect.top = sv_ViewRectTop;
+    d2_DirtyRect.bottom = sv_ViewRectBottom;
     d2_ClearScreen();
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();

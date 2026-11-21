@@ -43,9 +43,6 @@ extern GAPDATA full_data_624204[];
 
 
 extern const int sv_PhaseMinutes[24];
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
 

@@ -4577,10 +4577,10 @@ void cm_ExecCutscene(char *m)
     savedFog = 0;
     panel = 0;
     sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i", party->kind, party->id);
-    rect[2] = d2_DirtyRectRight;
-    rect[0] = d2_DirtyRectLeft[0];
-    rect[1] = d2_DirtyRectTop;
-    rect[3] = d2_DirtyRectBottom;
+    rect[2] = d2_DirtyRect.right;
+    rect[0] = d2_DirtyRect.left;
+    rect[1] = d2_DirtyRect.top;
+    rect[3] = d2_DirtyRect.bottom;
     cm_SavedScene = d3_CurrentScene;
     cm_SavedNoGroup = evt_NoGroup;
     cm_ScenePartyRuns = 0;
@@ -4656,10 +4656,10 @@ void cm_ExecCutscene(char *m)
             cm_DialogFrameFlags &= ~0x100;
             d3_SetViewport((float)d2_ScreenW, d2_ScreenH - d2_ScreenScale * 150.0f, 0, 75.0f * d2_ScreenScale,
                            d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
-            d2_DirtyRectRight = 0;
-            d2_DirtyRectLeft[0] = d2_ScreenW;
-            d2_DirtyRectTop = (int)(d2_ScreenScale * 75.0f);
-            d2_DirtyRectBottom = (int)(d2_ScreenH - d2_ScreenScale * 75.0f);
+            d2_DirtyRect.right = 0;
+            d2_DirtyRect.left = d2_ScreenW;
+            d2_DirtyRect.top = (int)(d2_ScreenScale * 75.0f);
+            d2_DirtyRect.bottom = (int)(d2_ScreenH - d2_ScreenScale * 75.0f);
             if (sv_PanelEnabled != 0) {
                 sv_SetPanelEnabled(0);
                 panel = 1;
@@ -4698,10 +4698,10 @@ void cm_ExecCutscene(char *m)
             d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop),
                            (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW,
                            d2_ScreenH);
-            d2_DirtyRectRight = rect[2];
-            d2_DirtyRectLeft[0] = rect[0];
-            d2_DirtyRectTop = rect[1];
-            d2_DirtyRectBottom = rect[3];
+            d2_DirtyRect.right = rect[2];
+            d2_DirtyRect.left = rect[0];
+            d2_DirtyRect.top = rect[1];
+            d2_DirtyRect.bottom = rect[3];
             if (panel != 0 && !(party->flags & 0x40)) {
                 sv_SetPanelEnabled(1);
                 sv_RedrawScreen();

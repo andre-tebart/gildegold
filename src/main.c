@@ -86,10 +86,7 @@ extern int sv_PopRequest;
 
 
 
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 
 
 
@@ -128,10 +125,7 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
 typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
@@ -193,10 +187,7 @@ extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c: nonzero when the player
 extern int main_WindBank;           /* 0x75e630, the wind sound bank */
 extern int sv_FrameMask;
 extern char ai_MissionMode;
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern int sv_PopRequest;
 
@@ -204,10 +195,7 @@ extern int sv_PopRequest;
 extern int ai_NextCharNumber;
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 extern GAPDATA full_data_6024e4[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
@@ -215,10 +203,7 @@ extern char ai_MissionMode;
 
 
 extern INIT_PLAYER init_PlayerProfile;
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
+extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
@@ -1302,10 +1287,10 @@ void main_MoneyDialog(void)
 {
     int dlg, ed, run;
 
-    d2_DirtyRectRight = 0;
-    d2_DirtyRectLeft[0] = 1;
-    d2_DirtyRectTop = 1;
-    d2_DirtyRectBottom = 2;
+    d2_DirtyRect.right = 0;
+    d2_DirtyRect.left = 1;
+    d2_DirtyRect.top = 1;
+    d2_DirtyRect.bottom = 2;
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
     ed = d2_GetWinObj(-1, dlg, io_PrintText("$3ABetrag:%m"));
     d2_SetObjValue(ed, 0, 10000, 0);
@@ -1381,11 +1366,11 @@ void main_Menue(void)
     sv_FrameBase = sv_FrameDepth + 1;
     ai_GameFlags = 0;
     D3_ZERO_AT(offset init_PlayerProfile, 0x8c);  /* the profile and the bytes after it up to 0x75e62c */
-    d2_DirtyRectLeft[0] = d2_ScreenW;
+    d2_DirtyRect.left = d2_ScreenW;
     d2_CutsceneActive = 0;
-    d2_DirtyRectRight = 0;
-    d2_DirtyRectTop = 0;
-    d2_DirtyRectBottom = d2_ScreenH;
+    d2_DirtyRect.right = 0;
+    d2_DirtyRect.top = 0;
+    d2_DirtyRect.bottom = d2_ScreenH;
     d2_ClearScreen();
     d2_ShowPicture(0x797);
     again = 0;
@@ -2802,10 +2787,10 @@ void main_LoadingScreen(void)
     sv_SetScreenCenter(0x24087);
     s = (short)util_Random(2);
     d2_ShowPicture(((s != 1) ? 3 : 0) + 0x78e);
-    d2_DirtyRectLeft[0] = -1;
-    d2_DirtyRectRight = -1;
-    d2_DirtyRectTop = -1;
-    d2_DirtyRectBottom = -1;
+    d2_DirtyRect.left = -1;
+    d2_DirtyRect.right = -1;
+    d2_DirtyRect.top = -1;
+    d2_DirtyRect.bottom = -1;
     d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH, 0.0f, 0.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
     if (ai_GameFlags & 4)
         id = d2_OpenForm(0, 0, "Misc\\Loading_net");
@@ -3199,12 +3184,12 @@ void main_EndRound(void)
     fin->roundFactors[1] = 1.0f;
     fin->roundFactors[2] = 1.0f;
     if (main_GfxOn != 0) {
-        d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft[0] = d2_ScreenW;
-        d2_DirtyRectTop = 0;
-        d2_DirtyRectBottom = d2_ScreenH;
+        d2_DirtyRect.right = 0;
+        d2_DirtyRect.left = d2_ScreenW;
+        d2_DirtyRect.top = 0;
+        d2_DirtyRect.bottom = d2_ScreenH;
         if (main_NoRoundFade == 0) {
-            fade = d2_StartFade(0, 0, d2_DirtyRectLeft[0], d2_DirtyRectBottom, "BLACK", 0, 1);
+            fade = d2_StartFade(0, 0, d2_DirtyRect.left, d2_DirtyRect.bottom, "BLACK", 0, 1);
             while ((fade->flags & 4) == 0)
                 sv_RunFrame(0, 0x24087);
             d2_ShowPicture(0x79d);
@@ -3333,10 +3318,10 @@ void main_EndRound(void)
     cm_SendExSysMessage(1, 0);
     if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    d2_DirtyRectRight = sv_ViewRectRight;
-    d2_DirtyRectLeft[0] = sv_ViewRectLeft;
-    d2_DirtyRectTop = sv_ViewRectTop;
-    d2_DirtyRectBottom = sv_ViewRectBottom;
+    d2_DirtyRect.right = sv_ViewRectRight;
+    d2_DirtyRect.left = sv_ViewRectLeft;
+    d2_DirtyRect.top = sv_ViewRectTop;
+    d2_DirtyRect.bottom = sv_ViewRectBottom;
     init_AfterTownLoad();
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();
@@ -3759,10 +3744,10 @@ void main_RoundReport(void)
         d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
         main_NoRoundFade = 1;
-        d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft[0] = d2_ScreenW;
-        d2_DirtyRectTop = 0;
-        d2_DirtyRectBottom = d2_ScreenH;
+        d2_DirtyRect.right = 0;
+        d2_DirtyRect.left = d2_ScreenW;
+        d2_DirtyRect.top = 0;
+        d2_DirtyRect.bottom = d2_ScreenH;
         d2_SetForm(win, 1);
         t = d2_LastWindow;
         d2_SetForm(win, 2);
@@ -4283,10 +4268,10 @@ void main_BeginPlayerRound(void)
         sv_NetworkSyncWait(0x24087);
     cm_ResetCutInfos(0);
     if (ai_RunPendingParties(cur) != 0 && main_GfxOn != 0) {
-        d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft[0] = d2_ScreenW;
-        d2_DirtyRectTop = 0;
-        d2_DirtyRectBottom = d2_ScreenH;
+        d2_DirtyRect.right = 0;
+        d2_DirtyRect.left = d2_ScreenW;
+        d2_DirtyRect.top = 0;
+        d2_DirtyRect.bottom = d2_ScreenH;
         d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
     }

@@ -46,9 +46,6 @@ extern GAPDATA full_data_624204[];
 
 
 extern const int sv_PhaseMinutes[24];
-#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
-#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
-#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
 
@@ -553,10 +550,10 @@ void ai_CannonScene(char *rec)
     save3.x = d3_Camera->rotation.x;
     save3.y = d3_Camera->rotation.y;
     save3.z = d3_Camera->rotation.z;
-    saved.rect[2] = d2_DirtyRectRight;
-    saved.rect[0] = d2_DirtyRectLeft[0];
-    saved.rect[1] = d2_DirtyRectTop;
-    saved.rect[3] = d2_DirtyRectBottom;
+    saved.rect[2] = d2_DirtyRect.right;
+    saved.rect[0] = d2_DirtyRect.left;
+    saved.rect[1] = d2_DirtyRect.top;
+    saved.rect[3] = d2_DirtyRect.bottom;
     saved.scene = d3_CurrentScene;
     d2_SetPointerSprite(0, 0);
     sv_ClearSelection();
@@ -586,10 +583,10 @@ void ai_CannonScene(char *rec)
         }
     }
     d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH - 150.0f, 0.0f, 75.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
-    d2_DirtyRectRight = 0;
-    d2_DirtyRectLeft[0] = d2_ScreenW;
-    d2_DirtyRectTop = 0x4b;
-    d2_DirtyRectBottom = d2_ScreenH - 0x4b;
+    d2_DirtyRect.right = 0;
+    d2_DirtyRect.left = d2_ScreenW;
+    d2_DirtyRect.top = 0x4b;
+    d2_DirtyRect.bottom = d2_ScreenH - 0x4b;
     sv_SetPanelEnabled(0);
     cam3.x = d3_Camera->pos.x;
     cam3.y = d3_Camera->pos.y;
@@ -704,10 +701,10 @@ void ai_CannonScene(char *rec)
     for (m = 0; m < n; m++)
         d2_Objs[list[m]].disabled = 0;
     d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
-    d2_DirtyRectRight = saved.rect[2];
-    d2_DirtyRectLeft[0] = saved.rect[0];
-    d2_DirtyRectTop = saved.rect[1];
-    d2_DirtyRectBottom = saved.rect[3];
+    d2_DirtyRect.right = saved.rect[2];
+    d2_DirtyRect.left = saved.rect[0];
+    d2_DirtyRect.top = saved.rect[1];
+    d2_DirtyRect.bottom = saved.rect[3];
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();
     d3if_SelectScene(saved.scene, 0);
