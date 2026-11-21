@@ -4144,7 +4144,7 @@ int he_SecretRoomAttack(AICHAR *a, AICHAR *b, int c)
         fa = gm_GetSkill((char *)a, 2);
         fb = gm_GetSkill((char *)b, 2);
         if (fa - fb * 0.5f + util_RandomF() >= 1.0f) {
-            ((float (*)(unsigned short, int))gm_AddHealth)(b->id, (-1 - c) * 5);
+            gm_AddHealth(b->id, (-1 - c) * 5);
             return 1;
         }
     }

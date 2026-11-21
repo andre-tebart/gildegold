@@ -285,7 +285,7 @@ void cm_DeleteSceneChars()
 /* 0x4d8c70, draws the next picture 0x4df of a stack (o + 0x2c counts them, 10 up each) on the window 0x6ed938 */
 void cm_StackPicture(int unused, CMAMOUNTROW *o)
 {
-    ((int (*)(short, short, int, int))d2_WinOpenPic)(0x8c, (short)(0x44 - (short)o->x2c * 10), 0x4df, d2_LastWindow);
+    d2_WinOpenPic(0x8c, (short)(0x44 - (short)o->x2c * 10), 0x4df, d2_LastWindow);
     o->x2c++;
 }
 /* 0x4d8cb0, the fight result list (a) or one more picture of its three stacks: b set: the three headings (texts 0x12d3 / 0x12d4 / 0x12d5)

@@ -1273,6 +1273,7 @@ int ahm_HasRecord();                     /* 0x4eaad0 */
 struct D3SKY; struct D3SKYLAYER; struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 char * cm_CharWeapon(char *c);                     /* 0x4cda50 */
 
+int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: one push, no player slot */
 /* 0x522f10, the city / time panel (the big panel at the top of the screen), only while the player's character
    is in state 6: blits the saved view shape back; a & 1 rebuilds the widgets (the shield, the money and name
    texts, the clock / compass pictures, the help captions from the text list), then every call draws the date
@@ -1439,7 +1440,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 who = ai_OwnPlayer;
             n = gm_SumSlotAmounts((void *)ai_CharsT[ai_PlayerId].inventory, who) + sv_PendingMoney;
         } else {
-            n = ((int (*)(void *))gm_SumListAmounts)(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
+            n = gm_SumListMoney(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
             who = ai_OwnPlayer;
         }
         if (sv_PanelMoneyText != -1) {
