@@ -191,7 +191,7 @@ int cm_SendNewParty(void *p);                     /* 0x4c4fa0 */
 int gm_TitleNumber(int group, int rank);                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 extern char d2_GfxDir[256];
-extern char gm_CharacterStatistics[128];
+extern GMCHARSTATS gm_CharacterStatistics;
 unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_SexForJob(int x);                   /* 0x503f30 */
 int gm_SexForTitle(int x);                   /* 0x503f50 */
@@ -8172,7 +8172,7 @@ extern struct AIBLD *ai_Blds;
 extern int gm_GoodBuilding[732];
 extern struct AIGOOD *ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
-extern char gm_CharacterStatistics[128];
+extern GMCHARSTATS gm_CharacterStatistics;
 extern char d2_GfxDir[256];
 /* 0x50c550, how much the character a likes the character b, 0 .. 100 (100 for the same character, 50 when one of them is
    none (0xffff)): the sum of the skill (gm_BuildingSkill) of a's own building, of the first kind 1 building when a's

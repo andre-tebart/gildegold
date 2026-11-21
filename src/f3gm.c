@@ -2049,8 +2049,7 @@ extern char d2_GfxDir[256];
 /* txt_FemaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
 int gm_HomeSearchStart = 0;  /* 0x6f1bb4 */
-extern char gm_CharacterStatistics[128];
-#define gm_CharStats (*(GMCHARSTATS *)&gm_CharacterStatistics)  /* 0x91b500, gm_CharacterStatistics as the record gm_CountCharacters fills: its fields read through the object (a GMCHARSTATS * local compiles baseHealth[k] += .. without the original's lea edx,[edx*4+X] before the call) */
+extern GMCHARSTATS gm_CharacterStatistics;
 unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_SexForJob(int x);                   /* 0x503f30 */
 int gm_SexForTitle(int x);                   /* 0x503f50 */
@@ -2380,24 +2379,24 @@ void gm_CountCharacters(void)
     ORDCHAR *c;
     int i, k;
 
-    memset(gm_CharacterStatistics, 0, sizeof(GMCHARSTATS));
+    memset(&gm_CharacterStatistics, 0, sizeof(GMCHARSTATS));
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];
         if (c->id != 0xffff && c->health > 0 && c->kind < 10) {
-            gm_CharStats.count++;
+            gm_CharacterStatistics.count++;
             k = (int)GM_MAX(GM_MIN(gm_CharAge(i) * 0.1f, 7.0f), 0.0f);
-            gm_CharStats.ageCount[k]++;
+            gm_CharacterStatistics.ageCount[k]++;
             if (gm_IsUnderAge(i) != 0)
-                gm_CharStats.underAge += 1.0f;
-            gm_CharStats.health[k] += gm_CharacterHealth((short *)c);
-            gm_CharStats.baseHealth[k] += gm_CharacterBaseHealth((short *)c);
+                gm_CharacterStatistics.underAge += 1.0f;
+            gm_CharacterStatistics.health[k] += gm_CharacterHealth((short *)c);
+            gm_CharacterStatistics.baseHealth[k] += gm_CharacterBaseHealth((short *)c);
         }
     }
     for (k = 0; k < 8; k++) {
-        gm_CharStats.health[k] = gm_CharStats.health[k] / gm_CharStats.baseHealth[k] * 100.0f;
-        gm_CharStats.baseHealth[k] = gm_CharStats.baseHealth[k] / (float)gm_CharStats.ageCount[k];
+        gm_CharacterStatistics.health[k] = gm_CharacterStatistics.health[k] / gm_CharacterStatistics.baseHealth[k] * 100.0f;
+        gm_CharacterStatistics.baseHealth[k] = gm_CharacterStatistics.baseHealth[k] / (float)gm_CharacterStatistics.ageCount[k];
     }
-    gm_CharStats.underAge = gm_CharStats.underAge / (float)gm_CharStats.count * 100.0f;
+    gm_CharacterStatistics.underAge = gm_CharacterStatistics.underAge / (float)gm_CharacterStatistics.count * 100.0f;
 }
 
 
@@ -2621,5 +2620,5 @@ signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 int gm_GoodBuilding[732];  /* 0x919f80 */
 AIGOOD *ai_Goods;  /* 0x91aaf0, the object prototypes ( */
 extern unsigned gm_OwnNameHeads[136];
-extern char gm_CharacterStatistics[128];
+extern GMCHARSTATS gm_CharacterStatistics;
 extern char d2_GfxDir[256];

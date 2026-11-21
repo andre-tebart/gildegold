@@ -88,7 +88,7 @@ short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, 
 void gm_CountCharacters(void);  /* 0x4fdfd0 */
 unsigned short *gm_AllocRaum(unsigned char *b, unsigned n);  /* 0x5031b0 */
 int gm_BuildingGoodsList17(char *b, unsigned *out, int kind);  /* 0x5099e0 */
-extern char gm_CharacterStatistics[128];  /* 0x91b500 */
+extern GMCHARSTATS gm_CharacterStatistics;  /* 0x91b500 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700 */
 int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
 unsigned short *gm_CreateObject(int id, int proto, int n);  /* 0x500190, the new object instance of the prototype proto with the amount n in the holder's list (gm_FindById); 0 on failure */

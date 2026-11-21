@@ -646,7 +646,6 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4f
 extern ORDMSGREC ord_MessageRecord;     /* 0x91b480, the record the messages carry */
 extern int gm_IncomeHistory[5][17];       /* 0x91b580, the 17-round history of the five income sums (rows of
                                             0x44 bytes, the running sums behind them) */
-extern char gm_CharacterStatistics[];            /* 0x91b500 */
 extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of the last 16 rounds */
 extern ORDSTATS ord_Statistics;         /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
