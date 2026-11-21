@@ -150,6 +150,7 @@ exe	0x0058ff00	lc_GebaeudeAusrichten	1
 exe	0x005a7cd0	ai_UpdateTownMap	1
 exe	0x005b4820	ai_BribeAmountCB	1
 exe	0x005b4c60	ai_DrohbriefAmountCB	1
+exe	0x005b5690	ai_NoticeBoardWindow	1
 exe	0x005c4150	ai_FamilyTreeWindow	1
 exe	0x005ccc10	ai_Miracle	1
 exe	0x005cff70	ai_UseGoodSendHome	1

@@ -4403,7 +4403,7 @@ exe	0x005b4340	ai_EvidenceDetailsWindow	lcdom	byte	readable
 exe	0x005b4590	ai_EvidenceBookWindow	lcdom	byte	readable		
 exe	0x005b4820	ai_BribeAmountCB	lcdom	draft	readable	deep	
 exe	0x005b4bf0	ai_OpenRobberBribe	lcdom	byte	readable		
-exe	0x005b4c60	ai_DrohbriefAmountCB	lcdom	draft	readable	deep	
+exe	0x005b4c60	ai_DrohbriefAmountCB	lcdom	byte	readable		
 exe	0x005b4fb0	ai_DrohbriefWindow	lcdom	byte	readable		
 exe	0x005b5010	ai_DenounceWindow	lcdom	byte	readable		
 exe	0x005b5310	ai_PamphletAmountCB	lcdom	byte	readable		
