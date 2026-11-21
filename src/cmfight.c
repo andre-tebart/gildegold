@@ -182,7 +182,7 @@ int cm_FightWinner = 0;  /* 0x6f0cf4 */
 int cm_FightSettled = 0;  /* 0x6f0cf8 */
 int cm_FightLootValue = 0;  /* 0x6f0cfc */
 int cm_UnreadBss = 0;  /* 0x6f0d00, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
-char * cm_FightRecord = 0;  /* 0x6f0d04 */
+CMFIGHTREC *cm_FightRecord = 0;  /* 0x6f0d04 */
 int cm_SelectedCount = 0;  /* 0x6f0d08 */
 struct SBBANK *cm_FightSounds = 0;  /* 0x6f0d0c */
 struct SBBANK *cm_CrossbowSounds = 0;  /* 0x6f0d10 */
@@ -417,7 +417,7 @@ int *cm_CutEntrySlot(char *rec, char *c)
 
 int *cm_FightCutEntry(char *c)
 {
-    int n = (unsigned char)cm_FightRecord[0x30];
+    int n = cm_FightRecord->nChars;
     CMCUTINFO *r;
     int i, j;
 
@@ -1885,34 +1885,6 @@ char cm_ClearKind3MaskCB(char *o)
     cm_##SIDE##TauntVoices = snd_LoadVoiceBank("K_C2C_HOHN_" KIND ".sbf", 0);             \
     cm_##SIDE##PainVoices = snd_LoadVoiceBank("K_C2C_SCHMERZ_" KIND ".sbf", 0)
 
-/* a fight record as cm_SetupFightScene and its caller 0x4d63e0 read it (the rest of its layout is not known here) */
-typedef struct CMFIGHTREC {
-    char pad000[0xc];
-    int owner;                      /* 0x00c, the player whose fight it is (cm_FightOwner) */
-    char pad010[4];
-    int placeId;                    /* 0x014, the defender's building: its type picks the scenario, its role the defender voices */
-    char pad018[0x18];
-    unsigned char nChars;           /* 0x030, the count of charIds */
-    char pad031[3];
-    union {
-        struct {
-            int attackerId;         /* 0x034, the attacking character (cm_FightAttacker) */
-            int defenderId;         /* 0x038, the defending character (cm_FightDefender) */
-        };
-        int charIds[16];            /* 0x034, the netIds of the fight's leading characters, -1 = none (cm_CutInfos[i]
-                                       is the cutscene record of charIds[i]) */
-    };
-    char pad074[8];
-    unsigned char flags;            /* 0x07c, 1 in the open (8: in the town, else the mountain pass), 4 the mountain pass */
-    char pad07d[3];
-    int defenders[16];              /* 0x080, the netIds of the defending fighters, -1 = none */
-    int attackers[16];              /* 0x0c0, the netIds of the attacking fighters, -1 = none */
-    int carts[3];                   /* 0x100, the object ids of the carts in the fight, -1 = none */
-    int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
-    int escort;                     /* 0x110, the carts' escort: the arming kind ai_ArmGateGuards keeps (0 none, 1 .. 3);
-                                       the AI side of a won raid takes the loot when random 0 .. 4 is above it */
-} CMFIGHTREC;
-#define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
 
 /* 0x4d0fa0, sets up the fight scene for the fight record rec: the scenario "Kampfszenario_<place>.ed3" by the flags or
    the type of the defender's building (cm_LoadEventScene; a robbers' camp gets a 15 cells wide border), the fight
@@ -2039,7 +2011,7 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     cm_FightCellScale = sc->cell.x * 1.1;
     sv_ScrollSpeed = 0.15f;
     sv_CameraEaseOn = 0;
-    cm_FightRecord = (char *)rec;
+    cm_FightRecord = rec;
     cm_PlaceFlagObjects();
     cm_FightAttacker = (AICHAR *)gm_FindChar(rec->attackerId);
     cm_FightDefender = (AICHAR *)gm_FindChar(rec->defenderId);
@@ -2364,11 +2336,11 @@ float cm_ThreatAt(AICHAR *c, int a, int b, float limit)
     sc = (D3SM *)d3_DefaultScene->hmap;
     threat = 0.0f;
     if ((AICHAR *)c->bld == cm_FightAttacker) {      /* in a fight: the side's leader */
-        own = cm_FightRecordT->attackers;
-        enemies = cm_FightRecordT->defenders;
+        own = cm_FightRecord->attackers;
+        enemies = cm_FightRecord->defenders;
     } else {
-        own = cm_FightRecordT->defenders;
-        enemies = cm_FightRecordT->attackers;
+        own = cm_FightRecord->defenders;
+        enemies = cm_FightRecord->attackers;
     }
     d3sm_GetVertex(sc, a, b, (D3VECTOR *)&v);
     for (i = 0; i < 16; i++) {
@@ -2781,30 +2753,30 @@ float *cm_OrderChancesFor(int side)
     int i, cnt, lvl;
 
     kind = 6;
-    if ((cm_FightRecordT->flags & 1) && (int)cm_FightAttacker == side)
+    if ((cm_FightRecord->flags & 1) && (int)cm_FightAttacker == side)
         kind = 0;
-    else if ((cm_FightRecordT->flags & 1) && (int)cm_FightDefender == side)
+    else if ((cm_FightRecord->flags & 1) && (int)cm_FightDefender == side)
         kind = 1;
-    else if ((cm_FightRecordT->flags & 2) && (int)cm_FightAttacker == side)
+    else if ((cm_FightRecord->flags & 2) && (int)cm_FightAttacker == side)
         kind = 2;
-    else if ((cm_FightRecordT->flags & 2) && (int)cm_FightDefender == side)
+    else if ((cm_FightRecord->flags & 2) && (int)cm_FightDefender == side)
         kind = 3;
-    else if ((cm_FightRecordT->flags & 4) && (int)cm_FightAttacker == side)
+    else if ((cm_FightRecord->flags & 4) && (int)cm_FightAttacker == side)
         kind = 4;
-    else if ((cm_FightRecordT->flags & 4) && (int)cm_FightDefender == side)
+    else if ((cm_FightRecord->flags & 4) && (int)cm_FightDefender == side)
         kind = 5;
     def = 0.0f;
     for (i = 0; i < 16; i++) {
-        if (cm_FightRecordT->defenders[i] != -1) {
-            o = cm_FindFighter(cm_FightRecordT->defenders[i]);
+        if (cm_FightRecord->defenders[i] != -1) {
+            o = cm_FindFighter(cm_FightRecord->defenders[i]);
             if (((AICHAR *)o)->health != 0 && ((AICHAR *)o)->health != 4)
                 def = cm_FightStrength(o) + def;
         }
     }
     att = 0.0f;
     for (i = 0; i < 16; i++) {
-        if (cm_FightRecordT->attackers[i] != -1) {
-            o = cm_FindFighter(cm_FightRecordT->attackers[i]);
+        if (cm_FightRecord->attackers[i] != -1) {
+            o = cm_FindFighter(cm_FightRecord->attackers[i]);
             if (((AICHAR *)o)->health != 0 && ((AICHAR *)o)->health != 4)
                 att = cm_FightStrength(o) + att;
         }
@@ -2918,16 +2890,16 @@ void cm_GiveFightOrders(int side)
     order = 0;
     cut = 0;
     row = cm_OrderChancesFor(side);
-    for (i = 0; i < cm_FightRecordT->nChars; i++) {
-        if (cm_FightRecordT->charIds[i] == ((AICHAR *)side)->netId) {
+    for (i = 0; i < cm_FightRecord->nChars; i++) {
+        if (cm_FightRecord->charIds[i] == ((AICHAR *)side)->netId) {
             cut = (char *)&cm_CutInfos[i];
             break;
         }
     }
     if (side == (int)cm_FightAttacker)
-        ids = cm_FightRecordT->attackers;
+        ids = cm_FightRecord->attackers;
     else
-        ids = cm_FightRecordT->defenders;
+        ids = cm_FightRecord->defenders;
     for (i = 0; i < 16; i++) {
         if (ids[i] != -1) {
             c[i] = (AICHAR *)cm_FindFighter(ids[i]);
@@ -3295,8 +3267,8 @@ AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
     if (flags != 0 && owned == flags)
         winner = cm_FightDefender;
     if (winner != 0) {
-        n = cm_FightRecordT->nChars;
-        for (i = 0; i < n && cm_FightRecordT->charIds[i] == -1; i++)
+        n = cm_FightRecord->nChars;
+        for (i = 0; i < n && cm_FightRecord->charIds[i] == -1; i++)
             ;
         slot = (CMCUTENTRY *)cm_CutEntrySlot((char *)&cm_CutInfos[i], (char *)winner);
         entry = *slot;
@@ -3408,9 +3380,9 @@ int cm_LootList(int x, int y, int mode)
     char buf[0x100];
 
     for (i = 0; i < 3; i++) {
-        if (cm_FightRecordT->carts[i] == -1)
+        if (cm_FightRecord->carts[i] == -1)
             continue;
-        q = (AIOBJ *)gm_Query(0, 2, 7, 1, cm_FightRecordT->carts[i]);
+        q = (AIOBJ *)gm_Query(0, 2, 7, 1, cm_FightRecord->carts[i]);
         q = (AIOBJ *)gm_Query(q->list, 1, 0, 0x1dd);
         for (q = (AIOBJ *)gm_Query(q->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
             if (mode != 0 && !(mode == 1 && q->fightSide == ai_PlayerId) &&
@@ -3656,7 +3628,7 @@ int cm_FightStartDialog(CMFIGHTREC *a)
                     sv_PopRequest = 1;
                     res = 0;
                     cm_FightSettled = 1;
-                    cm_FightLootValue = cm_LootCarts(cm_FightRecordT, (AIBLD *)home, cm_FightAttacker, (int)cm_FightDefender, fv);
+                    cm_FightLootValue = cm_LootCarts(cm_FightRecord, (AIBLD *)home, cm_FightAttacker, (int)cm_FightDefender, fv);
                 } else {
                     txt_Format(tc, 0x1143);
                     cm_MessageBox(tc, 0);
@@ -3685,7 +3657,7 @@ int cm_FightStartDialog(CMFIGHTREC *a)
                 fv = (float)(st * 0.01);
                 res = 0;
                 cm_FightSettled = 1;
-                cm_FightLootValue = cm_LootCarts(cm_FightRecordT, (AIBLD *)home, cm_FightAttacker, (int)cm_FightDefender, fv);
+                cm_FightLootValue = cm_LootCarts(cm_FightRecord, (AIBLD *)home, cm_FightAttacker, (int)cm_FightDefender, fv);
             } else {
                 cm_FightLootValue = -1;
                 res = 1;
@@ -4215,7 +4187,7 @@ void cm_RunFight(CMFIGHTREC *a)
             cm_FightOutro((char *)a);
         } else if (cm_FightLootValue != 0 && cm_FightAttacker->kind == 6) {
             e1 = 0;
-            bld = (AIBLD *)gm_BuildQuery(1, 1, cm_FightRecordT->attackerBldId);
+            bld = (AIBLD *)gm_BuildQuery(1, 1, cm_FightRecord->attackerBldId);
             if (bld != 0)
                 e1 = gm_Query(bld->objList, 2, 6, 0, 0x116);
             if (cm_FightLootValue > 0) {
@@ -4633,9 +4605,9 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
         s.kill = hit;
         if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && k->kind == 0) {
             other = 0;
-            n = cm_FightRecordT->nChars;
+            n = cm_FightRecord->nChars;
             for (i = 0; i < n; i++) {
-                if (cm_FightRecordT->charIds[i] != -1 && rec != &cm_CutInfos[i]) {
+                if (cm_FightRecord->charIds[i] != -1 && rec != &cm_CutInfos[i]) {
                     other = &cm_CutInfos[i];
                     break;
                 }

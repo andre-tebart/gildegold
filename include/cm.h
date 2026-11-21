@@ -538,7 +538,7 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  
 extern char ai_WeaponRecordData[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int cm_LobbyChatPos;  /* 0x6f0cdc */
-extern char *cm_FightRecord;  /* 0x6f0d04 */
+extern CMFIGHTREC *cm_FightRecord;  /* 0x6f0d04, the fight being run */
 extern int gm_AllowAll;  /* 0x6f2448 */
 extern char cm_Fighters[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */

@@ -174,7 +174,7 @@ extern int cm_FightWinner;
 extern int cm_FightSettled;
 extern int cm_FightLootValue;
 extern int cm_UnreadBss;
-extern char * cm_FightRecord;
+extern CMFIGHTREC *cm_FightRecord;
 extern int cm_SelectedCount;
 extern struct SBBANK *cm_FightSounds;
 extern struct SBBANK *cm_CrossbowSounds;
@@ -201,33 +201,6 @@ extern int cm_PointCount;
 extern int cm_FightForm;
 
 /* declarations of cmfight between its functions that the moved functions read */
-typedef struct CMFIGHTREC {
-    char pad000[0xc];
-    int owner;                      /* 0x00c, the player whose fight it is (cm_FightOwner) */
-    char pad010[4];
-    int placeId;                    /* 0x014, the defender's building: its type picks the scenario, its role the defender voices */
-    char pad018[0x18];
-    unsigned char nChars;           /* 0x030, the count of charIds */
-    char pad031[3];
-    union {
-        struct {
-            int attackerId;         /* 0x034, the attacking character (cm_FightAttacker) */
-            int defenderId;         /* 0x038, the defending character (cm_FightDefender) */
-        };
-        int charIds[16];            /* 0x034, the netIds of the fight's leading characters, -1 = none (cm_CutInfos[i]
-                                       is the cutscene record of charIds[i]) */
-    };
-    char pad074[8];
-    unsigned char flags;            /* 0x07c, 1 in the open (8: in the town, else the mountain pass), 4 the mountain pass */
-    char pad07d[3];
-    int defenders[16];              /* 0x080, the netIds of the defending fighters, -1 = none */
-    int attackers[16];              /* 0x0c0, the netIds of the attacking fighters, -1 = none */
-    int carts[3];                   /* 0x100, the object ids of the carts in the fight, -1 = none */
-    int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
-    int escort;                     /* 0x110, the carts' escort: the arming kind ai_ArmGateGuards keeps (0 none, 1 .. 3);
-                                       the AI side of a won raid takes the loot when random 0 .. 4 is above it */
-} CMFIGHTREC;
-#define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
 
 /* 0x4d76a0, runs the orders of the fighters of the cutscene record rec (its 16 entries; until the fight has a winner):
    an entry whose last order message went out (orderSlot 1 or no longer pending) takes its next step by its state:
@@ -412,9 +385,9 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                         p->damage = (int)(p->damage * 1.25f);
                     if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && k->kind == 0 && x != 0) {
                         other = 0;
-                        n = cm_FightRecordT->nChars;
+                        n = cm_FightRecord->nChars;
                         for (i = 0; i < n; i++) {
-                            if (cm_FightRecordT->charIds[i] != -1 && rec != &cm_CutInfos[i]) {
+                            if (cm_FightRecord->charIds[i] != -1 && rec != &cm_CutInfos[i]) {
                                 other = &cm_CutInfos[i];
                                 break;
                             }
@@ -681,9 +654,9 @@ void cm_FightLoop(char *a, int ctx)
             cm_FightFrame(a);
         if (cm_FightWinner == 0 && cm_FightSettled == 0 && cm_FightPaused == 0) {
             if (tb_Calls > t + 0x1a4) {
-                for (i = 0; i < cm_FightRecordT->nChars; i++) {
-                    if (cm_FightRecordT->charIds[i] != -1) {
-                        o = (AICHAR *)gm_FindChar(cm_FightRecordT->charIds[i]);
+                for (i = 0; i < cm_FightRecord->nChars; i++) {
+                    if (cm_FightRecord->charIds[i] != -1) {
+                        o = (AICHAR *)gm_FindChar(cm_FightRecord->charIds[i]);
                         if (o != 0 && o->kind != 6 && o->kind != 7)
                             cm_GiveFightOrders((int)o);
                     }
@@ -691,9 +664,9 @@ void cm_FightLoop(char *a, int ctx)
                 t = tb_Calls;
             }
             if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner) {
-                cm_CheckFightWinner(cm_FightRecordT);
-                for (i = 0; i < cm_FightRecordT->nChars; i++) {
-                    if (cm_FightRecordT->charIds[i] != -1)
+                cm_CheckFightWinner(cm_FightRecord);
+                for (i = 0; i < cm_FightRecord->nChars; i++) {
+                    if (cm_FightRecord->charIds[i] != -1)
                         cm_RunCutOrders(&cm_CutInfos[i]);
                 }
             }
