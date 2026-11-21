@@ -6101,8 +6101,11 @@ the bytes no portable form gives.
   caller's prototype was wrong, not the callee's: `char ord_RandomCellPoint(int x, int y, D3VECTOR *out)`
   returns the char result and takes the out pointer (its one caller, cm.c, passes `&pos` and ignores the result);
   byte, no cast.
+- **An unsigned char result tested in a register (`test al,0x40` after the call, no `and eax,0xff`)**: the
+  caller's local is `unsigned char`, not `unsigned int` (d3q_Mark's `r = d3_ClipBox(..)`: an unsigned int
+  local adds the mask; the old d3_ClipBoxU cast to an unsigned int return modelled that wrong local). Byte.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
-  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick / d3_ClipBox (char result read as
+  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
   int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_MoveObj / d2_CreateWindow /
   d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it

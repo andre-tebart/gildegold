@@ -8,7 +8,6 @@
 #include "d3_engine.h"
 #include "mem.h"
 #include "d3_vtx.h"
-#define d3_ClipBoxU ((unsigned int (*)(void *, float *, float *))d3_ClipBox)  /* 0x439650 (d3_engine.h: unsigned char): @original the byte-matched d3q_Mark reads the whole unsigned int result (no 25 ff 00 00 00 after the call) */
 
 /* 0x457c30, free a node, its item list and its subtree */
 void d3q_FreeNode(D3QNODE *n)
@@ -259,13 +258,14 @@ D3BOXVERT *d3q_BoxCorners(D3QNODE *n, float *pos, float *m)
 
 void d3q_Mark(D3QNODE *n, D3OBJECT *cam, int zone)
 {
-    unsigned int r, i;
+    unsigned char r;
+    unsigned int i;
     D3QITEM *it;
     D3BOXVERT *box;
 
     if (n) {
         box = d3q_BoxCorners(n, &cam->pos.x, &cam->matrix._11);
-        r = d3_ClipBoxU(box, 0, 0);
+        r = d3_ClipBox(box, 0, 0);
         if (r & 0x40) {
             for (it = n->first; it; it = it->next) {
                 if (it->obj->material)
