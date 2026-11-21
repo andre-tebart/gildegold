@@ -1259,7 +1259,7 @@ int ai_SearchResourceWindow(AIBLD *bld);
 int ai_ExtractResourceWindow(AIBLD *bld);
 void ai_Top5Window(void);
 G8SLOT *ai_FindSettingSlots(int bldId);
-void *ai_ProdSetting(int bld);
+void *ai_ProdSetting(void *bld);
 void ai_SetSettingWeight(int bld, int good, unsigned char weight);
 void ai_RefreshProdSetting(G8BLD *b);
 void ai_SetSettingFactor(int bld, float factor);
@@ -4015,7 +4015,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
     factorCtrl = -1;
     slots = ai_FindSettingSlots(bld->id);
     memset(sliders, -1, sizeof(sliders));
-    if (slots == 0 && (slots = ai_ProdSetting((int)bld)) == 0) {
+    if (slots == 0 && (slots = ai_ProdSetting(bld)) == 0) {
         ai_MasterLetterPage = 0;
         hasSetting = 0;
     } else {

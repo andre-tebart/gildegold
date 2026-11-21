@@ -1879,7 +1879,7 @@ G8SLOT *ai_FindSettingSlots(int bldId)
    factor 1.0 and the weights of its goods (ai_FillSettingWeights) is put at the head of the chain and its slots
    returned; 0 without a group or memory */
 
-void *ai_ProdSetting(int bld)
+void *ai_ProdSetting(void *bld)
 {
     G8SETTING *rec;
     G8SLOT *slots;

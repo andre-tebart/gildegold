@@ -149,8 +149,7 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "d3_pose.h"
 #include "mission.h"
 #include "f3gm.h"
-void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
-#define ai_ProdSettingK ((int (*)(void *))ai_ProdSetting)  /* 0x5a8560 (lc.c: void *ai_ProdSetting(int bld)): @original this unit's callers pass the building pointer (gm_CreateBuilding 0x501676 pushes the record, as lc.c's own callers cast it); the result is unused */
+void *ai_ProdSetting(void *bld);    /* 0x5a8560 */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original gm_Shuffled reads the 16-bit result of the 16-bit parameter's call (movzx bp,dl push, mov si,ax / and 0xffff), as anm.c's callers */
 extern struct D2COLKEY d2_TransparentColour;  /* 0x6f0454, shp.c (the type in shp.h) */
