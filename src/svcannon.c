@@ -388,7 +388,6 @@ const float ai_CannonSwitchDist = 100.0f;  /* 0x5eec98, how far the cannon sinks
 #include "d2.h"
 #include "sv.h"
 #include "gfx.h"
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 
 /* dcp unit split: the declarations of sv_t before the moved functions */
 int ai_TutorialInitMainIntro();
@@ -1522,7 +1521,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     sc->picL = d2_CreatePicObj(0, 0, pic);
     sc->picR = d2_CreatePicObj(0, d2_ScreenH - d2_Pics[base].h, base);
     sc->win_a4 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_bottom");
-    d2_PlaceMainWindowF(sc->win_a4, 1);
+    d2_PlaceMainWindow(sc->win_a4, 1);
     d2_SetForm(sc->win_a4, 0);
     w = &d2_Wins[d2_LastWindow];
     d2_MoveObj(w->x, h - 0x19, w->parent);
@@ -1556,7 +1555,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     d2_Objs[id].interactive = 1;
     d2_Objs[sc->selBtn[2]].style = 3;
     sc->win_c0 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_top");
-    d2_PlaceMainWindowF(sc->win_c0, 1);
+    d2_PlaceMainWindow(sc->win_c0, 1);
     d2_SetForm(sc->win_c0, 0);
     w = &d2_Wins[d2_LastWindow];
     d2_MoveObj(w->x, mid - 0x4b, w->parent);
@@ -1571,7 +1570,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     d2_SetObjValue(sc->chargeBar, 0, 100, (int)(run->charge[sc->selected] * 100.0f), 1);
     d2_SetLabel(sc->chargeBar, txt_Ptrs[0x4060]);
     sc->win74 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_res");
-    d2_PlaceMainWindowF(sc->win74, 3);
+    d2_PlaceMainWindow(sc->win74, 3);
     d2_SetViewEnabled(sc->win74, 0);
     sc->resultClock = d3_Time;
 }

@@ -4722,7 +4722,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
   first; a `p = param_1;` local changes the prologue, not the tail. A pointer parameter used after a call with
   `&param` taken needs a local copy (0x4f8300).
 - **Tail call rewriting only `[esp+4]` (`mov [esp+4],eax; jmp`) of a two-argument callee**: the caller has the
-  second parameter and passes it through (d3snd_Stop).
+  second parameter and passes it through (d3snd_Stop). Likewise d2_PlaceMainWindow: `void d2_PlaceMainWindow(int view,
+  int fl) { d2_PlaceWindowScaled(d2_Views[view].wins[0], fl); }` (byte; VC6 leaves the second slot as it is).
+  Never model a pass-through argument as an undeclared one riding in the caller's slot.
 - **Global scene pointer used twice**: read into a local, `s = unk_Ptrfd7c50;` (0x4f86a0).
 - **Names-table pointer in a slot bumped by the row size beside the count**: `strcpy(names[cnt++], one)`;
   `strcpy(names[cnt], one); cnt++;` gives an offset copy (init_NameBuildings).
@@ -6015,6 +6017,8 @@ the bytes no portable form gives.
   five units and `d2_CreatePicObjS` cast macros in six all went for `short x, short y` in d2.h (byte everywhere).
   Remove a redundant unprototyped `int f();` rather than turning it into a prototype: a new parameterised
   declaration in a widely included header (cm.h) moves VC6's declaration-set tie-breaks in other units.
+- **A tail jump that leaves an argument in the caller's slot**: the argument is a parameter the function passes
+  on (see "Other call-site shapes", d2_PlaceMainWindow); its callers then call the true two-parameter prototype.
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

@@ -103,7 +103,6 @@ extern GAPDATA full_data_602568[];
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
@@ -3552,7 +3551,7 @@ int cm_FightStartDialog(CMFIGHTREC *a)
     char tc[0x400];
 
     win = d2_OpenForm(0, 0, "cutscenes\\combat_start");
-    d2_PlaceMainWindowF(win, 3);
+    d2_PlaceMainWindow(win, 3);
     cm_FightSettled = 0;
     place = gm_BuildQuery(1, 1, a->placeId);
     home = gm_BuildQuery(1, 1, a->attackerBldId);
@@ -3813,7 +3812,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     side = cm_FightWinner == 0 ? (nb > na ? cm_FightAttackerC : cm_FightDefenderC)
                                : (cm_FightWinner == cm_FightAttacker ? cm_FightDefenderC : cm_FightAttackerC);
     win = d2_OpenForm(0, 0, "cutscenes\\combat_end");
-    d2_PlaceMainWindowF(win, 3);
+    d2_PlaceMainWindow(win, 3);
     d2_SetForm(win, 2);
     io_PrintText(0x7d);
     d2_SetForm(win, 1);
@@ -4366,7 +4365,7 @@ void cm_BuildFightUI(char *a)
 
     v = d2_OpenForm(0, 0, "cutscenes\\combat");
     cm_FightForm = v;
-    d2_PlaceMainWindowF(v, 3);
+    d2_PlaceMainWindow(v, 3);
     d2_SetForm(v, 0);
     t = d2_WinCreateSlider(0x10, 0xc, 0xbf, cm_FightButtonText, d2_LastWindow);
     cm_FightButton = t;

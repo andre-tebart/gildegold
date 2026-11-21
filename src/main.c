@@ -36,7 +36,6 @@ extern int gm_PlayerRecords[688];
 #include "ecmd.h"
 #include "ts_texture.h"
 #include "menu.h"
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "ai.h"
 #include "gfx.h"
 #include "dd_vesa.h"
@@ -1073,7 +1072,7 @@ int main_SearchNetworkGame(int saved)
     list = -1;
     f = d2_OpenForm(0, 0, "Menu\\SEARCH_NETWORK");
     d2_PlaceViewWindows(f, 1);
-    d2_PlaceMainWindowF(f, 2);
+    d2_PlaceMainWindow(f, 2);
     d2_SetForm(f, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetForm(f, 1);
@@ -1400,7 +1399,7 @@ void main_Menue(void)
     d2_ShowPicture(0x797);
     again = 0;
     f = d2_OpenForm(0, 0, "MENU\\MAIN_MENU");
-    d2_PlaceMainWindowF(f, 3);
+    d2_PlaceMainWindow(f, 3);
     d2_SetForm(f, 0);
     win = d2_LastWindow;
     bnew = main_MenuButton(0, (int)txt_Ptrs[0x1c63], win);
@@ -2024,7 +2023,7 @@ int main_ChooseFamily(int unused)
     o8 = main_PlaceFamilyModel("dummy_RHETORIK_MANN", "priester_KUTTE", 2);
     o9 = main_PlaceFamilyModel("dummy_RHETORIK_FRAU", "buergerin_FRAU", 6);
     f = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
-    d2_PlaceMainWindowF(f, 1);
+    d2_PlaceMainWindow(f, 1);
     k = 4;
     cm_CreateSceneSky("Sky_Mittel_02");
     d3_SetLightSet(4, 0.0f, 1.0f, 1);
@@ -2678,7 +2677,7 @@ int main_ChooseCity(int unused, int host)
     cm_DialogFrameFlags = 0x12d6;
     cm_WaitEvent(cm_StartScript("Startmenu/A_Stadtwahl.esc"));
     f1 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
-    d2_PlaceMainWindowF(f1, 3);
+    d2_PlaceMainWindow(f1, 3);
     d2_PlaceViewWindows(f1, 1);
     d2_SetForm(f1, 0);
     io_PrintText(0x1abb);
@@ -2686,7 +2685,7 @@ int main_ChooseCity(int unused, int host)
     w = d2_ScreenW;
     d3_SetViewport((float)w, (float)ht, 0.0f, 0.0f, d3_ZNear, d3_ZFar, d3_ScaleX, w, ht);
     f2 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY");
-    d2_PlaceMainWindowF(f2, 3);
+    d2_PlaceMainWindow(f2, 3);
     d2_PlaceViewWindows(f2, 1);
     d2_SetForm(f2, 2);
     sv_ButtonRow(d2_LastWindow, 0, out, 2, txt_Ptrs[0x42cc], txt_Ptrs[0x42cd]);
@@ -4305,7 +4304,7 @@ void main_BeginPlayerRound(void)
     he_CountDownApEvents();
     if (main_GfxOn != 0) {
         w = d2_OpenForm(0, 0, "Runden\\Spielerrunde_Beginn_NEU");
-        d2_PlaceMainWindowF(w, 3);
+        d2_PlaceMainWindow(w, 3);
         d2_SetForm(w, 1);
         io_PrintText(0x7d);
         gm_ClockToDate((struct AITIME *)&ai_Time, date);

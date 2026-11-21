@@ -407,7 +407,6 @@ SHOTRESULT ai_ShotTable[3];  /* 0x6f9f60, the cannon scene's shot results (the c
 #include "d2.h"
 #include "sv.h"
 #include "gfx.h"
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
    tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
@@ -1677,7 +1676,7 @@ int ai_TutorialOpenIntro(void)
     he_OpenEventSlot((int)host, 0, 0, "tutorial\\main", 0x5ec);
     if (!ai_Tutorial->host->slot)
         return -1;
-    d2_PlaceMainWindowF(ai_Tutorial->host->slot->win, 3);
+    d2_PlaceMainWindow(ai_Tutorial->host->slot->win, 3);
     d2_CentreViewWindows(ai_Tutorial->host->slot->win);
     d2_SetForm(ai_Tutorial->host->slot->win, 0);
     sv_FitForm(d2_LastWindow);
@@ -1884,7 +1883,7 @@ void ai_TutorialOpenProgress(void)
     int i;
 
     ai_Tutorial->progressForm = d2_OpenForm(0, 0, "tutorial\\progress");
-    d2_PlaceMainWindowF(ai_Tutorial->progressForm, 3);
+    d2_PlaceMainWindow(ai_Tutorial->progressForm, 3);
     d2_SetForm(ai_Tutorial->progressForm, 0);
     i = d2_LastWindow;
     ai_Tutorial->progressSlider = d2_WinOpenSlider(d2_Wins[i].w / 2 - 0xc8, 5, 0x190, 0, 0x190,
@@ -1969,7 +1968,7 @@ int ai_TutorialStepForm(void)
         case 2: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\top_form"); break;
         case 3: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\bottom_form"); break;
         }
-        d2_PlaceMainWindowF(ai_Tutorial->stepForm, 3);
+        d2_PlaceMainWindow(ai_Tutorial->stepForm, 3);
         ai_Tutorial->stepKind = ai_Tutorial->run->steps[ai_Tutorial->step].kind;
     }
     d2_SetForm(ai_Tutorial->stepForm, 1);
@@ -2087,13 +2086,13 @@ int ai_TutorialStart(void)
     ai_Tutorial->continueObj = -1;
     ai_Tutorial->text1Win = d2_OpenForm(0, 0, "tutorial\\inline_form");
     d2_SetViewEnabled(ai_Tutorial->text1Win, 0);
-    d2_PlaceMainWindowF(ai_Tutorial->text1Win, 3);
+    d2_PlaceMainWindow(ai_Tutorial->text1Win, 3);
     ai_Tutorial->text1Shown = 0;
     ai_Tutorial->statusShown = 0;
     ai_Tutorial->text2Shown = 0;
     ai_Tutorial->text2Win = d2_OpenForm(0, 0, "tutorial\\aux_form");
     d2_SetViewEnabled(ai_Tutorial->text2Win, 0);
-    d2_PlaceMainWindowF(ai_Tutorial->text2Win, 3);
+    d2_PlaceMainWindow(ai_Tutorial->text2Win, 3);
     ai_Tutorial->phase = 0;
     ai_Tutorial->step = 0;
     ai_Tutorial->markerPhase = 0;

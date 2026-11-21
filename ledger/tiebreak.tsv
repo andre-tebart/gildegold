@@ -2536,7 +2536,7 @@ exe	0x004e0040	cm_ExecutionAftermath	cm	f96a103f9d900a98	no	byte	control=byte p1
 exe	0x004e01e0	cm_RunExecution	cm	407b054f8a3a5ef6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e0580	cm_CheckWedding	cm	1cfc5cb06eb06d5b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e06d0	cm_EndWedding	cm	b4a64cec5c42f885	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e0770	cm_RunWedding	cm	8aeee44ed8615013	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6e738f99615c6748
+exe	0x004e0770	cm_RunWedding	cmscene	e1679b08637cbeab	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	83d67d5078808f49
 exe	0x004e0e90	cm_CheckBirth	cm	f8da5e2f6ad9bcd5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e0f70	cm_RunBirth	cm	34ce41202e1a5c19	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004e1220	cm_DeathSceneCheck	cm	6950a8e8be5376d1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

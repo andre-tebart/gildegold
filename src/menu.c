@@ -31,7 +31,6 @@ extern int gm_PlayerRecords[688];
 #include "surf.h"
 #include "menu.h"
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "sv_t.h"
 #include "lc.h"
 #include "data_views.h"
@@ -662,7 +661,7 @@ int ai_LoadGameWindow(void)
     mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
-    d2_PlaceMainWindowF(win, 2);
+    d2_PlaceMainWindow(win, 2);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -720,7 +719,7 @@ int ai_JoinGameWindow(void)
     mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
-    d2_PlaceMainWindowF(win, 2);
+    d2_PlaceMainWindow(win, 2);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -1605,7 +1604,7 @@ void ai_OptionsMenu(void)
     wnd = d2_OpenForm(0, 0, "menu\\options");
     sv_SetScreenCenter(0x24087);
     d2_PlaceViewWindows(wnd, 1);
-    d2_PlaceMainWindowF(wnd, 2);
+    d2_PlaceMainWindow(wnd, 2);
     d2_SetForm(wnd, 0);
     sv_FitForm(d2_LastWindow);
     sv_ResetScreenClip();
@@ -1741,7 +1740,7 @@ int ai_SaveOptionWindow(int image)
     mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
-    d2_PlaceMainWindowF(win, 2);
+    d2_PlaceMainWindow(win, 2);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -1816,7 +1815,7 @@ int ai_SaveNameWindow(int image)
     mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
-    d2_PlaceMainWindowF(win, 2);
+    d2_PlaceMainWindow(win, 2);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -1892,7 +1891,7 @@ void ai_OptionsGfxScreen(void)
     form = d2_OpenForm(0, 0, "menu\\options_gfx");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
-    d2_PlaceMainWindowF(form, 2);
+    d2_PlaceMainWindow(form, 2);
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -2013,7 +2012,7 @@ void ai_OptionsSfxScreen(void)
     form = d2_OpenForm(0, 0, "menu\\options_sfx");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
-    d2_PlaceMainWindowF(form, 2);
+    d2_PlaceMainWindow(form, 2);
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
@@ -2102,7 +2101,7 @@ void ai_OptionsGameScreen(void)
     form = d2_OpenForm(0, 0, "menu\\options_game");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
-    d2_PlaceMainWindowF(form, 2);
+    d2_PlaceMainWindow(form, 2);
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);

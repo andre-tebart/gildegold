@@ -340,7 +340,7 @@ void d2_SetObjEnabled(int obj, int on);     /* 0x475e40, d2.h: enables / disable
 void d2_SetViewEnabled(int view, int on);   /* 0x475590, d2.c: enables / disables the objects of a view */
 void d2_PlaceViewWindows(int view, unsigned char flags); /* 0x475870, d2.c: places the view's windows
                                        by the flags of 0x4756b0 (1 = centre x, 2 = centre y) */
-void d2_PlaceMainWindow(int view); /* 0x475850, d2.c: places the view's first window (callers that pass the flags too: d2_PlaceMainWindowF in their head) */
+void d2_PlaceMainWindow(int view, int fl); /* 0x475850, d2.c: places the view's first window with placement flags fl */
 int d2_CreateRadioGroup(int n, ...);        /* 0x46c490, d2.h: the radio group of n control ids */
 void d2_RadioClear(int g);                  /* 0x46c600, d2.h: frees a radio group */
 void d2_MenuNavigate(int g);                /* 0x46c6c0, d2.h: keyboard / pointer navigation in a group */

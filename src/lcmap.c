@@ -1430,7 +1430,6 @@ void ai_BuildTownMap(LCMAPWIN *m)
 
 
 int d2_OpenForm(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original ai_SwitchRoomI pushes the flags too (0x5a78cf) */
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
 
@@ -1443,7 +1442,7 @@ int ai_OpenTownMap(LCMAPWIN *m)
     m->tile = d2_BackgroundTile;
     d2_BackgroundTile = rt_MapSurface;
     m->view = d2_OpenForm(0, 0, "Misc\\Landkarte2");
-    d2_PlaceMainWindowF(m->view, 3);
+    d2_PlaceMainWindow(m->view, 3);
     d2_SetForm(m->view, 0);
     m->screen = d2_CreateChildWindow(0x4a, 0x4c, 0x206, 0x164, 0, d2_LastWindow);
     d2_LastWindow = m->screen;

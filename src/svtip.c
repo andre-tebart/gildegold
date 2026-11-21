@@ -385,7 +385,6 @@ extern const float ai_CannonSwitchDist;
 #include "d2.h"
 #include "sv.h"
 #include "gfx.h"
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 
 /* dcp unit split: the declarations of sv_t before the moved functions */
 int ai_TutorialInitMainIntro();

@@ -9,7 +9,7 @@
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
    @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
-   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's
+   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHEI) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -6746,7 +6746,6 @@ int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
 void d2_SetObjValue();                     /* 0x475cb0 */
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 void d2_SetObjFont();                     /* 0x4760b0 */
 int io_PrintText(char *fmt, ...);                     /* 0x515960 */
 int d2_GetWinObj();                     /* 0x475b80 */
@@ -6843,7 +6842,7 @@ void sv_ChatConsole(void)
     ids[7] = -1;
     sv_ChatTime = 0;
     f = d2_OpenForm(0, 0, "misc\\chatconsole");
-    d2_PlaceMainWindowF(f, 3);
+    d2_PlaceMainWindow(f, 3);
     d2_SetForm(f, 3);
     i = 0;
     for (k = 0; k < 768; k++) {
@@ -6896,7 +6895,7 @@ void sv_UpdateQuickChat(void)
     if (sv_Frames[sv_FrameDepth].cb != (int)sv_ChatConsole && sv_ChatTime > d3_Time - 0x23a && sv_ChatTime != 0xffffffff) {
         if (sv_QuickChatForm == -1) {
             sv_QuickChatForm = d2_OpenForm(0, 0, "misc\\quickchat");
-            d2_PlaceMainWindowF(sv_QuickChatForm, 3);
+            d2_PlaceMainWindow(sv_QuickChatForm, 3);
         }
     } else if (sv_QuickChatForm != -1) {
         d2_CloseView(sv_QuickChatForm);
