@@ -2458,8 +2458,7 @@ int gm_GoodsStock(int p, int i);
 extern int gm_QueryType;
 extern int gm_QueryOwner;
 extern unsigned short gm_QueryOwnerNo;
-#define ALIGN1 __declspec(align(1))
-extern ALIGN1 char gm_QueryKind[550];
+extern unsigned char gm_QueryKind;
 extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 extern int gm_QueryScanned;
 extern ORDOBJ *gm_QueryCursor;

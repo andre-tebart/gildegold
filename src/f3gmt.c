@@ -10,11 +10,6 @@
    the clock functions 0x4fe140 .. 0x4fe350 are not defined above them in this file (a split at 0x4fe570 dropped
    two byte functions to draft / shape), so the clock belongs here; gm_FreeIconNames 0x4fdfb0 and
    gm_CountCharacters 0x4fdfd0 stay in f3gm by a reasoned guess (no caller in either object, no literal of their own).
-   Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
-   job table gm_JobTalents (0x61a688) is a view inside it, and its last 0x1c bytes, the title table
-   gm_TitleTalents (0x61a8c8) and the per-currency rate ints at 0x61a8ac (gm_CurrencyFactor; a player slot's
-   +0x54 word is the Waehrung object's prototype id, init_LoadCityINI) are one 0x140-byte block ai_Unk61a8ac:
-   the objects and their bounds are unsettled.
    Open: data: gm_TechTreeTime (0x76fdc8) takes d3_Time when gm_TechTreeWindow opens the tree, but no drafted
    reader uses it: its purpose (the tree's age, a refresh stamp) is unsettled.
    Open: the head declarations are f3gm.c's as the split copied them; trim them to what the unit uses. */
@@ -1137,8 +1132,7 @@ float gm_MapDistance(int a, int b, int c, int d)
 extern int gm_QueryType;
 extern int gm_QueryOwner;
 extern unsigned short gm_QueryOwnerNo;
-#define ALIGN1 __declspec(align(1))
-extern ALIGN1 char gm_QueryKind[550];
+extern unsigned char gm_QueryKind;
 extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 extern int gm_QueryScanned;
 extern ORDOBJ *gm_QueryCursor;
@@ -1211,8 +1205,8 @@ unsigned short *gm_QueryNext(void)
             else
                 m = 1;
         }
-        if (ok && gm_QueryKind[0] != -1)
-            m = ai_Goods[gm_QueryCursor->type].type == gm_QueryKind[0];
+        if (ok && gm_QueryKind != 0xff)
+            m = ai_Goods[gm_QueryCursor->type].type == (char)gm_QueryKind;
         if (!ok)
             m = 0;
         if (gm_QueryScanAll != 0) {
@@ -1262,8 +1256,7 @@ char *gm_Query(void *list, int n, ...)
     gm_QueryType = 0x7fff;
     gm_QueryOwner = -1;
     gm_QueryOwnerNo = 0xffff;
-    ((unsigned char *)gm_QueryKind)[0] = 0xff;   /* the kind byte as unsigned (gm_QueryNext compares it with 0xff): a char -1
-                                                   would share the owner's -1 register, the original stores immediates */
+    gm_QueryKind = 0xff;
     gm_QueryStopFirst = 0;
     scan = 0;
     gm_QueryScanAll = scan;
@@ -1286,7 +1279,7 @@ char *gm_Query(void *list, int n, ...)
                 gm_QueryOwnerNo = (unsigned short)va_arg(ap, int);
                 break;
             case 4:
-                gm_QueryKind[0] = (char)va_arg(ap, int);
+                gm_QueryKind = (unsigned char)va_arg(ap, int);
                 break;
             case 5:
                 gm_QueryStopFirst = 1;
@@ -1343,9 +1336,8 @@ extern unsigned char gm_BQClass;
 extern int gm_QueryType;
 extern int gm_QueryOwner;
 extern unsigned short gm_QueryOwnerNo;
-extern ALIGN1 char gm_QueryKind[550];
 /* ---- layout 2026-10-23: the value / price helpers 0x5085b0 .. 0x509ee0 (ROUGH drafts) ---- */
-extern ALIGN1 unsigned char ai_Unk61a8ac[0x140];  /* 0x61a8ac */
+extern int gm_CurrencyRates[16];  /* 0x61a9a0 */
 extern int ai_NextCharNumber;
 extern int ai_NextPlayerNumber;
 extern int ai_CharCount;
@@ -2775,7 +2767,6 @@ int gm_IsHomeType(unsigned char *b)
 
 int gm_JobBuildingType(int x);
 extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
-/* ai_Unk61a688: view of gm_QueryKind (tools/data_views.py) */
 extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
 void cm_BeginGroup(const char *s);                     /* 0x4c4540 */
@@ -3560,7 +3551,7 @@ void gm_ResetCharacters(void)
     ai_NextCharNumber = 0;
     ai_NextPlayerNumber = 0;
 }
-#define gm_JobTalents (*(JOBTALENTS (*)[0x5b])((char *)&gm_QueryKind + 0x2))  /* 0x61a688, the job records */
+extern JOBTALENTS gm_JobTalents[0x60];  /* 0x61a688 */
 
 /* 0x503ee0, the talents record of the job, by value (the hidden result pointer; jobs 0x5f and above: the first record) */
 
@@ -5705,7 +5696,6 @@ float gm_ItemPrice(int item, unsigned char n);
 int gm_SumListAmounts(void *list, unsigned char p);
 
 #define PLW54(k) (ai_PlayerSlots[(unsigned char)(k)].moneyGood)  /* the city id of the player slot k */
-#define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
 #define OPROTO(i) ((char *)ai_Goods + (unsigned)(i) * 0x41)
 
 extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber, gm_AllowAll, ai_NextObjectId;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc, 0x6f2448, 0x61a654 */
@@ -5715,7 +5705,7 @@ void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);         
 void ai_ResetJob(struct AICHAR *c);                     /* 0x47e940 */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 
-#define gm_TitleTalents (*(JOBTALENTS (*)[0x20])(ai_Unk61a8ac + 0x1c))  /* 0x61a8c8, the talents record per title (ORDCHAR.title) */
+extern JOBTALENTS gm_TitleTalents[0x24];  /* 0x61a8c8 */
 
 /* 0x507690, creates a character of the kind type in the first free slot (id 0xffff; with none, the first of kind 0xf
    is reused) and returns its slot, 0xffff when there is none (or no player number is left for a player kind 5 / 6 /
@@ -6129,26 +6119,26 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
 
 int gm_ConvertMoney(int a, unsigned char k)
 {
-    return (int)((double)a / PLTAB(PLW54(k)) + 0.5);
+    return (int)((double)a / gm_CurrencyRates[PLW54(k) - 0x3d] + 0.5);
 }
 /* 0x5085f0, a * the factor of the player slot k */
 
 int gm_PlayerFactor(int a, unsigned char k)
 {
-    return PLTAB(PLW54(k)) * a;
+    return gm_CurrencyRates[PLW54(k) - 0x3d] * a;
 }
-/* 0x508620, the amount a scaled by the rate of the currency object i (PLTAB, the rate table at 0x61a8ac; a
+/* 0x508620, the amount a scaled by the rate of the currency object i (gm_CurrencyRates; a
    player slot's currency is the Waehrung object's prototype id at its +0x54) */
 
 int gm_CurrencyFactor(int a, int i)
 {
-    return PLTAB(i) * a;
+    return gm_CurrencyRates[i - 0x3d] * a;
 }
 /* 0x508640, the amount a divided by the rate of the currency object i (the inverse of gm_CurrencyFactor) */
 
 int gm_CurrencyDivide(int a, int i)
 {
-    return a / PLTAB(i);
+    return a / gm_CurrencyRates[i - 0x3d];
 }
 /* 0x508660, the sum of the amounts of the objects of the list (prototype kind 9, group 1) whose prototype word is
    the currency object the player slot p carries at +0x54 */
@@ -8563,7 +8553,7 @@ int gm_CurseTargetCount(char *b)
 }
 
 /* the unit's data in the original's order: .rdata gm_MoodRanges 0x5ee160 (the first named constant after f3gm.c's
-   literals); .data the plain block gm_DayStartHours 0x617830 .. ai_Unk61a8ac, then the strings (the allocation tags
+   literals); .data the plain block gm_DayStartHours 0x617830 .. gm_CurrencyRates, then the strings (the allocation tags
    "f3_gm:lp.." and the rank log format are literals of the run);
    .bss ai_NextCharNumber 0x6f1bb8 .. gm_QueryCursor (after f3gm.c's gm_HomeSearchStart 0x6f1bb4); the common rows only
    this unit reads */
@@ -8585,10 +8575,10 @@ unsigned char gm_BQClass = 0xff;  /* 0x61a678, the query: the class of the type 
 int gm_QueryType = 32767;  /* 0x61a67c, the query: object prototype ( */
 int gm_QueryOwner = -1;  /* 0x61a680, the query: owner id (-1 = any) */
 unsigned short gm_QueryOwnerNo = 0xffff;  /* 0x61a684, the query: the owner character number gm_ObjectOwnerNo must give (0xffff = any) */
-ALIGN1 char gm_QueryKind[550] = { 255, 0, 0, 0, 0, 0, 0, 0, 105, 105, -25, -25, 105, 4, 63, 63, -67, -67, 63, 3, 63, 63, 126, 126, 42, 2, 63, 42, 84, 84, 21, 2, 63, 21, 84, 84, 21, 1, 42, 21, 84, 84, 21, 1, -109, 105, -109, 105, -67, 4, 105, 63, 105, 63, -109, 3, 105, 42, 84, 63, 105, 2, 105, 21, 63, 42, 63, 2, 105, 21, 63, 21, 63, 1, 84, 21, 63, 21, 63, 1, 105, 126, -109, 105, -46, 4, 63, 84, 105, 63, -88, 3, 63, 63, 84, 63, 126, 2, 63, 63, 63, 21, 84, 2, 42, 63, 63, 21, 84, 1, 21, 63, 63, 21, 84, 1, -46, -88, 105, 105, 105, 4, -88, 126, 63, 63, 63, 3, 126, 105, 63, 42, 63, 2, 84, 84, 63, 21, 42, 2, 84, 84, 63, 21, 21, 1, 84, 84, 42, 21, 21, 1, -25, 105, 105, 105, -109, 4, -67, 63, 63, 63, 105, 3, -109, 63, 63, 42, 84, 2, 126, 21, 42, 42, 63, 2, 126, 21, 42, 42, 42, 1, 105, 21, 42, 42, 42, 1, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105, 63, 63, 63, 2, 84, 105, 42, 21, 42, 2, 84, 105, 21, 21, 42, 1, 84, 84, 21, 21, 42, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 42, 21, 84, 126, 21, 2, 42, 21, 84, 105, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 63, 21, 105, 84, 21, 2, 42, 21, 105, 84, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -67, -88, 105, 105, 126, 4, -109, 126, 63, 63, 84, 3, 105, 105, 63, 42, 84, 2, 84, 105, 42, 21, 42, 2, 84, 84, 42, 21, 42, 1, 84, 84, 21, 21, 42, 1, -109, -109, -67, 105, 105, 4, 105, 105, -109, 63, 63, 3, 84, 84, 105, 42, 63, 2, 63, 84, 84, 21, 21, 2, 63, 63, 84, 21, 21, 1, 63, 63, 84, 21, 21, 1, 0, 0, 0, 0, 0, 1, -67, -109, -109, 105, 105, 4, -109, 105, 105, 63, 63, 3, 105, 84, 84, 42, 63, 2, 84, 63, 63, 21, 21, 2, 84, 63, 63, 21, 21, 1, 84, 63, 63, 21, 21, 1, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105 };  /* 0x61a686, the query: prototype kind (-1 = any); the
-                                   table at +2 is ai_Unk61a688 (the same storage, one block as in the original) */
-ALIGN1 unsigned char ai_Unk61a8ac[0x140] = { 0x3f, 0x2a, 0x54, 0x02, 0x69, 0x54, 0x2a, 0x15, 0x2a, 0x02, 0x54, 0x54, 0x2a, 0x15, 0x2a, 0x01, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x7e, 0x7e, 0x15, 0x00, 0x15, 0x00, 0x54, 0x54, 0x00, 0x00, 0x54, 0x54, 0x00, 0x00, 0x54, 0x00, 0x15, 0x2a, 0x00, 0x00, 0x2a, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x2a, 0x00, 0x7e, 0x7e, 0x15, 0x00, 0x15, 0x00, 0x54, 0x54, 0x00, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x2a, 0x00, 0x7e, 0x7e, 0x15, 0x00, 0x15, 0x00, 0x54, 0x54, 0x00, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x2a, 0x2a, 0x00, 0x00, 0x15, 0x00, 0x54, 0x54, 0x15, 0x15, 0x2a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x41, 0x5f, 0x4f, 0x62, 0x6a, 0x2e, 0x64, 0x61, 0x74, 0x00, 0x00, 0x00 };  /* 0x61a8ac, one block of 0x140 bytes: +0 the last 0x1c bytes of the job records (gm_JobTalents),
-   +0x1c the title records gm_TitleTalents (0x61a8c8, gm_CreateCharacter), +0xf4 an int table of 32s the player-slot factors (gm_PlayerFactor ..) index from this base */
+unsigned char gm_QueryKind = 0xff;  /* 0x61a686, the query: prototype kind (AIGOOD.type, 0xff = any) */
+JOBTALENTS gm_JobTalents[0x60] = { { { 0, 0, 0, 0, 0 }, 0 }, { { 105, 105, 231, 231, 105 }, 4 }, { { 63, 63, 189, 189, 63 }, 3 }, { { 63, 63, 126, 126, 42 }, 2 }, { { 63, 42, 84, 84, 21 }, 2 }, { { 63, 21, 84, 84, 21 }, 1 }, { { 42, 21, 84, 84, 21 }, 1 }, { { 147, 105, 147, 105, 189 }, 4 }, { { 105, 63, 105, 63, 147 }, 3 }, { { 105, 42, 84, 63, 105 }, 2 }, { { 105, 21, 63, 42, 63 }, 2 }, { { 105, 21, 63, 21, 63 }, 1 }, { { 84, 21, 63, 21, 63 }, 1 }, { { 105, 126, 147, 105, 210 }, 4 }, { { 63, 84, 105, 63, 168 }, 3 }, { { 63, 63, 84, 63, 126 }, 2 }, { { 63, 63, 63, 21, 84 }, 2 }, { { 42, 63, 63, 21, 84 }, 1 }, { { 21, 63, 63, 21, 84 }, 1 }, { { 210, 168, 105, 105, 105 }, 4 }, { { 168, 126, 63, 63, 63 }, 3 }, { { 126, 105, 63, 42, 63 }, 2 }, { { 84, 84, 63, 21, 42 }, 2 }, { { 84, 84, 63, 21, 21 }, 1 }, { { 84, 84, 42, 21, 21 }, 1 }, { { 231, 105, 105, 105, 147 }, 4 }, { { 189, 63, 63, 63, 105 }, 3 }, { { 147, 63, 63, 42, 84 }, 2 }, { { 126, 21, 42, 42, 63 }, 2 }, { { 126, 21, 42, 42, 42 }, 1 }, { { 105, 21, 42, 42, 42 }, 1 }, { { 84, 105, 63, 84, 42 }, 2 }, { { 84, 105, 63, 84, 42 }, 2 }, { { 84, 105, 63, 84, 42 }, 2 }, { { 168, 189, 105, 105, 126 }, 4 }, { { 126, 147, 63, 63, 84 }, 3 }, { { 105, 105, 63, 63, 63 }, 2 }, { { 84, 105, 42, 21, 42 }, 2 }, { { 84, 105, 21, 21, 42 }, 1 }, { { 84, 84, 21, 21, 42 }, 1 }, { { 105, 105, 168, 210, 105 }, 4 }, { { 63, 63, 126, 168, 63 }, 3 }, { { 63, 63, 105, 126, 42 }, 2 }, { { 42, 21, 84, 126, 21 }, 2 }, { { 42, 21, 84, 105, 21 }, 1 }, { { 42, 21, 84, 84, 21 }, 1 }, { { 168, 210, 105, 105, 105 }, 4 }, { { 126, 168, 63, 63, 63 }, 3 }, { { 105, 126, 63, 63, 42 }, 2 }, { { 84, 126, 42, 21, 21 }, 2 }, { { 84, 126, 21, 21, 21 }, 1 }, { { 84, 105, 21, 21, 21 }, 1 }, { { 105, 105, 168, 210, 105 }, 4 }, { { 63, 63, 126, 168, 63 }, 3 }, { { 63, 63, 105, 126, 42 }, 2 }, { { 63, 21, 105, 84, 21 }, 2 }, { { 42, 21, 105, 84, 21 }, 1 }, { { 42, 21, 84, 84, 21 }, 1 }, { { 168, 210, 105, 105, 105 }, 4 }, { { 126, 168, 63, 63, 63 }, 3 }, { { 105, 126, 63, 63, 42 }, 2 }, { { 84, 126, 42, 21, 21 }, 2 }, { { 84, 126, 21, 21, 21 }, 1 }, { { 84, 105, 21, 21, 21 }, 1 }, { { 168, 210, 105, 105, 105 }, 4 }, { { 126, 168, 63, 63, 63 }, 3 }, { { 105, 126, 63, 63, 42 }, 2 }, { { 84, 126, 42, 21, 21 }, 2 }, { { 84, 126, 21, 21, 21 }, 1 }, { { 84, 105, 21, 21, 21 }, 1 }, { { 189, 168, 105, 105, 126 }, 4 }, { { 147, 126, 63, 63, 84 }, 3 }, { { 105, 105, 63, 42, 84 }, 2 }, { { 84, 105, 42, 21, 42 }, 2 }, { { 84, 84, 42, 21, 42 }, 1 }, { { 84, 84, 21, 21, 42 }, 1 }, { { 147, 147, 189, 105, 105 }, 4 }, { { 105, 105, 147, 63, 63 }, 3 }, { { 84, 84, 105, 42, 63 }, 2 }, { { 63, 84, 84, 21, 21 }, 2 }, { { 63, 63, 84, 21, 21 }, 1 }, { { 63, 63, 84, 21, 21 }, 1 }, { { 0, 0, 0, 0, 0 }, 1 }, { { 189, 147, 147, 105, 105 }, 4 }, { { 147, 105, 105, 63, 63 }, 3 }, { { 105, 84, 84, 42, 63 }, 2 }, { { 84, 63, 63, 21, 21 }, 2 }, { { 84, 63, 63, 21, 21 }, 1 }, { { 84, 63, 63, 21, 21 }, 1 }, { { 168, 189, 105, 105, 126 }, 4 }, { { 126, 147, 63, 63, 84 }, 3 }, { { 105, 105, 63, 42, 84 }, 2 }, { { 105, 84, 42, 21, 42 }, 2 }, { { 84, 84, 42, 21, 42 }, 1 }, { { 84, 84, 21, 21, 42 }, 1 }, { { 0, 0, 0, 0, 0 }, 0 } };  /* 0x61a688, the talents record per job (gm_GetJobTalents: jobs 0 .. 0x5e; the last record is zero) */
+JOBTALENTS gm_TitleTalents[0x24] = { { { 0, 0, 0, 0, 0 }, 0 }, { { 42, 0, 126, 126, 21 }, 0 }, { { 21, 0, 84, 84, 0 }, 0 }, { { 84, 84, 0, 0, 84 }, 0 }, { { 21, 42, 0, 0, 42 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 42, 0, 126, 126, 21 }, 0 }, { { 21, 0, 84, 84, 0 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 42, 0, 126, 126, 21 }, 0 }, { { 21, 0, 84, 84, 0 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 42, 42, 0, 0, 21 }, 0 }, { { 84, 84, 21, 21, 42 }, 0 }, { { 0, 0, 0, 0, 0 }, 0 }, { { 0, 0, 0, 0, 0 }, 0 }, { { 0, 0, 0, 0, 0 }, 0 } };  /* 0x61a8c8, the talents record per title (ORDCHAR.title, gm_CreateCharacter); the records from 0x21 on are zero (the count is a reasoned guess: the table tiles the bytes up to gm_CurrencyRates) */
+int gm_CurrencyRates[16] = { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 };  /* 0x61a9a0, the rate per currency object, indexed by its prototype id - 0x3d (the code indexes from 0x61a8ac: VC6 folds the base; gm_PlayerFactor ..) */
 const float gm_MoodRanges[476] = { 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.20000005f, 2.70000005f, 2.5f, 3.0f, 2.5f, 3.0f, 2.4000001f, 2.70000005f, 2.29999995f, 2.9000001f, 2.20000005f, 2.79999995f, 2.0f, 3.0f, 16.0f, 24.0f, 2.4000001f, 3.0f, 2.5f, 3.0f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5f, 2.5f, 3.0f, 2.5f, 3.0f, 2.5f, 3.0f, 2.20000005f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.20000005f, 2.70000005f, 2.0f, 2.79999995f, 2.0999999f, 2.5999999f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.4000001f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.0f, 2.9000001f, 2.0f, 2.5999999f, 2.5999999f, 2.9000001f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 2.9000001f, 2.0999999f, 2.9000001f, 2.0999999f, 2.79999995f, 2.0999999f, 2.9000001f, 2.5f, 2.79999995f, 2.5999999f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.29999995f, 3.0f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.0f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ee160, per title group (gm_TitleGroup) the (low, high) range of each of the 14 moods of a new character */
 int ai_NextCharNumber = 0;  /* 0x6f1bb8 */
 int ai_NextPlayerNumber = 0;  /* 0x6f1bbc */

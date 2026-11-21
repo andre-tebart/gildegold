@@ -2998,7 +2998,7 @@ exe	0x004ffbf0	gm_GoodsValue	f3gm	3836209e5c5f8f3d	no	byte	control=byte p1=byte 
 exe	0x004ffc40	gm_FindGoods	f3gm	ef3306d28a47d032	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffc90	gm_MapDistance	f3gm	cda55d663378db8b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffcc0	gm_QueryNext	f3gm	bebf1a4311b2cd74	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004ffe90	gm_Query	f3gmt	e219bdbd30b1716a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
+exe	0x004ffe90	gm_Query	f3gmt	752fd3c872435e69	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	623ebd006ac9ff68
 exe	0x004fffc0	gm_FindFreeObject	f3gm	6bb86bc5b9d8222a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffff0	gm_RemoveObject	f3gm	c627346c8edca235	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00500080	gm_FreeObjectExtra	f3gm	3e7521ba111cef97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

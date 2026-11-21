@@ -71,8 +71,6 @@
 /* ai_Crimes */
 #define ai_Unk91f716             (*(char (*)[23018])((char *)&ai_Crimes + 0x16))  /* 0x91f716 */
 
-/* gm_QueryKind */
-#define ai_Unk61a688             (*(char (*)[548])((char *)&gm_QueryKind + 0x2))  /* 0x61a688 */
 
 /* d3_Cfg */
 #define d3_SortMax               (*(int *)((char *)&d3_Cfg + 0x18))  /* 0xfe73f8 */
