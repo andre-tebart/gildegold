@@ -26,7 +26,6 @@
    it only while txt_Keys keeps its original address 0xfe7e40; our link puts it at 0x6d0448, so the
    sum was 0x6e8608 and the test read an unrelated bit. */
 
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 #define AI_REPAIR_KINDS 0x7c43b4  /* the building kinds ai_DecideRepairBuilding repairs (one bit per AIBTYPE.kind) */
 
 #include "hst.h"
@@ -2885,7 +2884,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             bt = &AI_BTX[bl->type];
             if (bt->level < bt->maxLevel) {
                 k = gm_BuildingJob(bt->kind);
-                r = gm_TitleJobI(p->id, k);
+                r = gm_TitleJob(p->id, k);
                 if (r) {
                     n = gm_TitlesLeft(r);
                     n = n / 2 + n % 2;
@@ -5815,7 +5814,7 @@ int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIAR
     *b = -1e30f;
     if (f != 0)
         return 0;
-    q = gm_TitleJobI(p->id, 4);
+    q = gm_TitleJob(p->id, 4);
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (ai_FindDarkCornerTarget(p, &s1, &s2) != 0) {
             AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
@@ -5840,7 +5839,7 @@ int ai_DecideDarkCorner(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIARG s2;
     int q;
 
-    q = gm_TitleJobI(p->id, 4);
+    q = gm_TitleJob(p->id, 4);
     if (a != 0x32 && a != 0x25 && a != 0)
         return 0;
     if (f != 0)

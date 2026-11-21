@@ -347,7 +347,6 @@ extern SHOTRESULT ai_ShotTable[3];
 #include "anm.h"
 #include "bmp.h"
 #include "f3gm.h"
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): ai_PermissionBits1d 0x587b70 (shape) */
 #include "f3snd.h"
 #include "gv.h"
 #include "he.h"

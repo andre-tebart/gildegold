@@ -348,7 +348,6 @@ extern SHOTRESULT ai_ShotTable[3];
 #include "anm.h"
 #include "bmp.h"
 #include "f3gm.h"
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): ai_PermissionBits1d 0x587b70 (shape) */
 #include "f3snd.h"
 #include "gv.h"
 #include "he.h"
@@ -3133,7 +3132,7 @@ int ai_PermissionBits1d(char *ch, char *b, char *x)
     int i;
 
     bldg = &((AIBTYPE *)ai_BTypes)[((AIBLD *)b)->type];
-    v = gm_TitleJobI(((AICHAR *)ch)->id, gm_BuildingJob((unsigned char)bldg->kind));
+    v = gm_TitleJob(((AICHAR *)ch)->id, gm_BuildingJob((unsigned char)bldg->kind));
     f = 0x81;
     if (((AIBLD *)b)->masterId == ((AICHAR *)ch)->id)
         f = 0x10bd;

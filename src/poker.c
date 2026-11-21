@@ -31,7 +31,6 @@
 #include "anm.h"
 #include "cm.h"
 #include "f3gm.h"
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): 0x4ab7f0, and 0x4ab3e0 / 0x4abd00 compare it as an int */
 #include "gv.h"
 #include "he.h"
 #include "tr.h"

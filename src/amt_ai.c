@@ -25,7 +25,6 @@
    it only while txt_Keys keeps its original address 0xfe7e40; our link puts it at 0x6d0448, so the
    sum was 0x6e8608 and the test read an unrelated bit. */
 
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 #define AI_REPAIR_KINDS 0x7c43b4  /* the building kinds ai_DecideRepairBuilding repairs (one bit per AIBTYPE.kind) */
 
 #include "hst.h"

@@ -36,7 +36,6 @@
 #include "anm.h"
 #include "cm.h"
 #include "f3gm.h"
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): 0x4ab7f0, and 0x4ab3e0 / 0x4abd00 compare it as an int */
 #include "gv.h"
 #include "he.h"
 #include "tr.h"
@@ -1426,7 +1425,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_TitleJobI(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     ids[0] = 0xffff;
     ids[1] = 0xffff;
     ids[2] = 0xffff;
@@ -1539,7 +1538,7 @@ int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_TitleJobI(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     bestv = 0;
     best = 0;
     flags = (unsigned int)best;
@@ -1618,7 +1617,7 @@ int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
     AIBLD *b, *best;
     AIBTYPE *bt;
 
-    v = gm_TitleJobI(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     k = 0;
     if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money >= 2) {
         best = 0;
@@ -1695,7 +1694,7 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
     AIBLD *b;
     AIPER *o;
 
-    v = gm_TitleJobI(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     flags = 0;
     if ((p->flags1cc & 0x20) != 0 || p->money < 2)
         return 0;
