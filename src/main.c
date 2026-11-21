@@ -130,7 +130,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
-#define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
 typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
@@ -3899,7 +3898,7 @@ void main_UpdateFigures(void)
             if (ch->kind == 2 || ch->kind == 5 || ch->kind == 4) {
                 if (gm_IsBankrupt((unsigned short *)ch, 0) != 0) {
                     k = (int)-(ch->f01c + 5.0f);
-                    main_AddHealthS(ch->id, k);
+                    gm_AddHealth(ch->id, k);
                 }
             }
             if (ch->heldRounds > 0) {
