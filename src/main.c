@@ -3137,14 +3137,12 @@ void main_RundenBeginn(void)
 }
 
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
-#define MAIN_PID ((int)(main_PlayerIdInt & 0xffff))  /* the player character, as the round change reads it (a dword load masked) */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
-#define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
-#define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
+#define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, @original why: main_RoundReport pushes ai_PlayerId to gm_CharacterIncomes (unsigned id) as an unmasked dword load; Open: likely this unit saw an unsigned short parameter (header drift: a unit-local prototype instead of this view, with f3gm.h's out of view) */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
-#define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_Chars[MAIN_PLAYER].netId; (m).time = ai_Time; } while (0)
+#define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_Chars[ai_PlayerId].netId; (m).time = ai_Time; } while (0)
 
 /* 0x5384e0, the round / day change of the player: fades out (BLACK), advances the clock copy (+1 when networked (ai_GameFlags bit 2) after the first round), queues the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
    0x4c when none is pending (he_FindEvent), shows the balance page of the player (texts 0x1ef9 .. 0x1eff, 0x2051: the AP events of the player with their incomes / costs and the goods of gm_CollectCarried), takes the AP event costs, renovates the run-down
@@ -3171,7 +3169,7 @@ void main_EndRound(void)
     CHARACTER *scene;
     int weight;
 
-    fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[MAIN_PLAYER]);
+    fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
     fade = 0;
     gm_ClockSeason((unsigned)&ai_Time);
     clk = ai_Time;
@@ -3198,7 +3196,7 @@ void main_EndRound(void)
     }
     if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    gm_CollectCarried(MAIN_PLAYER, (int *)&carry);
+    gm_CollectCarried(ai_PlayerId, (int *)&carry);
     sv_FillDayPhases((int)&clk);
     sv_Season = sv_ClockSeason(&clk);
     gm_FindRichest(&rid, &k);
@@ -3265,10 +3263,10 @@ void main_EndRound(void)
         d2_SetForm(win, 1);
         io_PrintText(0x2051, &clk, (int)gm_DayStartHours[season], (int)gm_DayEndHours[season] % 0xc);
         io_PrintText(0x1ef9);
-        io_PrintText(0x1eff, ai_Chars[MAIN_PLAYER].v190);
+        io_PrintText(0x1eff, ai_Chars[ai_PlayerId].v190);
         k = 0;
         do {
-            if ((he_ApEvents[k].income != 0 || he_ApEvents[k].cost != 0 || he_ApEvents[k].name[0] != 0) && he_ApEvents[k].key == MAIN_PLAYER) {
+            if ((he_ApEvents[k].income != 0 || he_ApEvents[k].cost != 0 || he_ApEvents[k].name[0] != 0) && he_ApEvents[k].key == ai_PlayerId) {
                 if (he_ApEvents[k].income != 0) {
                     if (he_ApEvents[k].income >= 0)
                         io_PrintText(0x1efc, he_ApEvents[k].name, he_ApEvents[k].income);
@@ -3288,7 +3286,7 @@ void main_EndRound(void)
             io_PrintText(0x1efd, carry.goods[k].good + 0x253, carry.goods[k].amount);
             k++;
         }
-        io_PrintText(0x1efa, ai_Chars[MAIN_PLAYER].money);
+        io_PrintText(0x1efa, ai_Chars[ai_PlayerId].money);
         r = sv_RunFrame((int)main_EndRound, 0x24087);
         while (r != 0) {
 #ifdef REA_START
@@ -3312,8 +3310,8 @@ void main_EndRound(void)
         sv_DestroyScrollForm();
         main_Nothing();
     }
-    cm_SendMoveGoodsUnchecked(-1, ai_Chars[MAIN_PLAYER].netId, ai_OwnPlayer, -he_SumApEventCosts(MAIN_PLAYER));
-    ai_PostRandomMessages(3, ai_Chars[MAIN_PLAYER].netId);
+    cm_SendMoveGoodsUnchecked(-1, ai_Chars[ai_PlayerId].netId, ai_OwnPlayer, -he_SumApEventCosts(ai_PlayerId));
+    ai_PostRandomMessages(3, ai_Chars[ai_PlayerId].netId);
     cm_SendExSysMessage(1, 0);
     if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
@@ -3331,12 +3329,12 @@ void main_EndRound(void)
     }
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 1);
-    if (ai_MissionMode != 5 && ai_MissionMode > -1 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PLAYER) == 0) {
+    if (ai_MissionMode != 5 && ai_MissionMode > -1 && he_FindEvent(2, 0, 0x4c, 2, ai_PlayerId) == 0) {
         AIMSG msg;
 
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x4c;
-        msg.to = ai_Chars[MAIN_PLAYER].netId;
+        msg.to = ai_Chars[ai_PlayerId].netId;
         msg.fromId = msg.to;
         msg.nIds = 0;
         msg.reserved14 = 0;
@@ -3461,7 +3459,7 @@ void main_EndRound(void)
             cm_SendKillCharacter(ai_Chars[k].netId, 1);
     }
     hst_SeedPending = 1;
-    amt_TellOpenOffices((char *)&ai_Chars[MAIN_PLAYER]);
+    amt_TellOpenOffices((char *)&ai_Chars[ai_PlayerId]);
     snd_FadeMusic(1.0f, 2000);
 }
 /* 0x539620, replaces a dead / imprisoned player (character slot p, kind 6 and health 0) by a new figure: with no
@@ -3565,8 +3563,8 @@ void main_RoundReport(void)
         while ((fade->flags & 4) == 0)
             sv_RunFrame(0, sv_FrameMask);
     }
-    fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[MAIN_PID]);
-    fin->missionMoney[4] += ai_Chars[MAIN_PID].v1a0 + ai_Chars[MAIN_PID].v1a4;
+    fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
+    fin->missionMoney[4] += ai_Chars[ai_PlayerId].v1a0 + ai_Chars[ai_PlayerId].v1a4;
     d3_SetObjectPos(d3_Camera, (D3VECTOR *)fin->camPos);
     d3_SetObjectRot(d3_Camera, (D3VECTOR *)fin->camRot);
     if (main_GfxOn != 0) {
@@ -3587,12 +3585,12 @@ void main_RoundReport(void)
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
         /* the character's own money: wage in, goods bought out */
-        cash = ai_Chars[MAIN_PID].wage - ai_Chars[MAIN_PID].spent198;
-        income = ai_Chars[MAIN_PID].wage - ai_Chars[MAIN_PID].spent198;
-        if (ai_Chars[MAIN_PID].wage != 0)
-            io_PrintText(0x2008, ai_Chars[MAIN_PID].wage);
-        if (ai_Chars[MAIN_PID].spent198 != 0)
-            io_PrintText(0x2009, ai_Chars[MAIN_PID].spent198);
+        cash = ai_Chars[ai_PlayerId].wage - ai_Chars[ai_PlayerId].spent198;
+        income = ai_Chars[ai_PlayerId].wage - ai_Chars[ai_PlayerId].spent198;
+        if (ai_Chars[ai_PlayerId].wage != 0)
+            io_PrintText(0x2008, ai_Chars[ai_PlayerId].wage);
+        if (ai_Chars[ai_PlayerId].spent198 != 0)
+            io_PrintText(0x2009, ai_Chars[ai_PlayerId].spent198);
         /* the round's record: the costs, then the incomes */
         if (fin->upgradeSpent != 0) {
             io_PrintText(0x2014, fin->upgradeSpent);
@@ -3663,7 +3661,7 @@ void main_RoundReport(void)
         while (b != 0) {
             if (b->owner == ai_PlayerId || b->masterId == ai_PlayerId) {
                 t = gm_BuildingClass(b->type);
-                v = gm_BuildingBalance((unsigned char *)b, MAIN_PID, bal);
+                v = gm_BuildingBalance((unsigned char *)b, ai_PlayerId, bal);
                 if (v != 0 || (t != 5 && t != 6)) {
                     wageCost += bal[3];
                     costs += bal[0x10];
@@ -3674,7 +3672,7 @@ void main_RoundReport(void)
             b = (AIBLD *)gm_BuildNext();
         }
         /* the interest of the loans the player's banks gave */
-        nrow = gm_BuildingEvents(MAIN_PID, 0, 0xffff, (int *)loans);
+        nrow = gm_BuildingEvents(ai_PlayerId, 0, 0xffff, (int *)loans);
         j = 0;
         v = 0;
         if (nrow > 0) {
@@ -3689,13 +3687,13 @@ void main_RoundReport(void)
                 io_PrintText(0x2048, v);
         }
         /* the wages of the offices */
-        if (ai_Chars[MAIN_PID].officeKind != 0 || ai_Chars[MAIN_PID].secondOffice != 0) {
-            gm_CharacterWages(main_PlayerIdInt, 0, (unsigned char *)&wages);
-            t = ai_Chars[MAIN_PID].sex != 0 ? 0x27b : 0x253;
-            if (ai_Chars[MAIN_PID].officeKind != 0)
-                io_PrintText(0x2049, ai_Chars[MAIN_PID].officeKind + t, wages.amount);
-            if (ai_Chars[MAIN_PID].secondOffice != 0)
-                io_PrintText(0x2049, ai_Chars[MAIN_PID].secondOffice + t, wages.amount2);
+        if (ai_Chars[ai_PlayerId].officeKind != 0 || ai_Chars[ai_PlayerId].secondOffice != 0) {
+            gm_CharacterWages(ai_PlayerId, 0, (unsigned char *)&wages);
+            t = ai_Chars[ai_PlayerId].sex != 0 ? 0x27b : 0x253;
+            if (ai_Chars[ai_PlayerId].officeKind != 0)
+                io_PrintText(0x2049, ai_Chars[ai_PlayerId].officeKind + t, wages.amount);
+            if (ai_Chars[ai_PlayerId].secondOffice != 0)
+                io_PrintText(0x2049, ai_Chars[ai_PlayerId].secondOffice + t, wages.amount2);
             t = wages.amount + wages.amount2;
             net += t;
             income += t;
@@ -3717,7 +3715,7 @@ void main_RoundReport(void)
         if (wageCost != 0)
             io_PrintText(0x204a, wageCost);
         /* the interest of the player's own loans */
-        j = gm_CreditEvents(MAIN_PID, 0, (int *)loans);
+        j = gm_CreditEvents(ai_PlayerId, 0, (int *)loans);
         iv = 0;
         k = 0;
         if (0 < j) {
@@ -3737,7 +3735,7 @@ void main_RoundReport(void)
             io_PrintText(0x204d, income);
         else if (income < 0)
             io_PrintText(0x204e, income);
-        t = gm_GetGoodsValue((char *)&ai_Chars[MAIN_PID]);
+        t = gm_GetGoodsValue((char *)&ai_Chars[ai_PlayerId]);
         io_PrintText(0x2029, ((t - incomeSum) - wageCost) - iv);
         he_ShowEventBar(0xffff);
         d2_ClearSurface(d2_ScreenSurf);
@@ -3784,19 +3782,19 @@ void main_RoundReport(void)
         d2_ReleaseFade(fade);
         fade = 0;
     }
-    if (gm_IsBankrupt((unsigned short *)&ai_Chars[MAIN_PID], -(incomeSum + wageCost + iv)) != 0) {
+    if (gm_IsBankrupt((unsigned short *)&ai_Chars[ai_PlayerId], -(incomeSum + wageCost + iv)) != 0) {
         memset(&msg, 0, sizeof(msg));
         msg.kind = 9;
         msg.flags = 0x60;
         msg.thing = -1;
         msg.used = 1;
-        msg.host = ai_Chars[MAIN_PID].netId;
+        msg.host = ai_Chars[ai_PlayerId].netId;
         msg.members[0] = msg.host;
         if (fade != 0)
             d2_ReleaseFade(fade);
         cm_ExecCutscene((char *)&msg);
         if (main_ReplaceFigureOn != 0)
-            main_ReplaceFigure(MAIN_PID);
+            main_ReplaceFigure(ai_PlayerId);
         main_ReplaceFigureOn = 0;
     }
 }
@@ -4363,7 +4361,7 @@ void main_BeginPlayerRound(void)
             d2_SetForm(w, 2);
             io_PrintText(0x7d);
             d2_SetForm(w, 1);
-            io_PrintText(0x1ba0, MAIN_PLAYER, MAIN_PLAYER);
+            io_PrintText(0x1ba0, ai_PlayerId, ai_PlayerId);
             snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", -1, 0);
             i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
             while (i != 0) {
@@ -4709,7 +4707,7 @@ void main_GameLoop(int ctl)
             sv_SelectPanelObject((unsigned char *)bld, -1, ch_EmptyName);
         }
     }
-    while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_Chars[MAIN_PLAYER].kind != 6)
+    while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_Chars[ai_PlayerId].kind != 6)
         ai_PlayerId++;
     if ((ai_GameFlags & 0x80) != 0) {
         ai_TutorialStart();
@@ -4717,7 +4715,7 @@ void main_GameLoop(int ctl)
         m.msg.type = 0x87;
         m.msg.fromId = -1;
         m.msg.flags = 9;
-        m.msg.to = ai_Chars[MAIN_PLAYER].netId;
+        m.msg.to = ai_Chars[ai_PlayerId].netId;
         cm_SendLongMessage((char *)&m.msg);
     }
     /* the rounds */
@@ -4728,14 +4726,14 @@ void main_GameLoop(int ctl)
             ai_CurrentPlayer = 0;
             main_RundenBeginn();
         } else {
-            for (i = 0; i < MAIN_PLAYER; i++) {
+            for (i = 0; i < ai_PlayerId; i++) {
                 if (ai_Chars[i].kind == 6)
                     ai_CurrentPlayer++;
             }
         }
-        while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_Chars[MAIN_PLAYER].kind != 6)
+        while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_Chars[ai_PlayerId].kind != 6)
             ai_PlayerId++;
-        if (ai_Chars[MAIN_PLAYER].kind == 6) {
+        if (ai_Chars[ai_PlayerId].kind == 6) {
             if ((ai_GameFlags & 0x46) == 0) {
                 clk.time = ai_Time;
                 gm_SetTime(&clk.time, 6, 0, 0);
@@ -4810,7 +4808,7 @@ void main_GameLoop(int ctl)
                     }
                 }
             }
-            he_ShowEventBar(MAIN_PLAYER);
+            he_ShowEventBar(ai_PlayerId);
             cm_DayEndRequest = 0;
             main_DayEnding = 0;
             ai_GameFrame();
@@ -4888,7 +4886,7 @@ void main_GameLoop(int ctl)
     /* a network game ends with the reason */
     if ((ai_GameFlags & 4) != 0) {
         if (cm_LeftPlayerId != -1) {
-            if (cm_LeftPlayerId != ai_Chars[MAIN_PLAYER].netId)
+            if (cm_LeftPlayerId != ai_Chars[ai_PlayerId].netId)
                 sv_MessageBox((int)"$3AEin Spieler hat die Partie verlassen. Das Spiel wurde beendet...$2A%ia[Okay]", 0);
         } else
             sv_MessageBox((int)"$3AEs trat ein Netzwerkfehler auf! Das Spiel wurde beendet...$2A%ia[Okay]", 0);
