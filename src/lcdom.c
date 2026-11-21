@@ -2485,20 +2485,7 @@ int ai_AskHelperBonus(void)
    gm_ListWorkers' second list (the workers of the type's second title, those without a job; the mercenary book
    reads the third list); a click on a helper offers
    the dismissal 0x413f, which after the question 0x4140 takes 1000 of its health (gm_AddHealth). At the end the
-   radio group is cleared, the book closed and the camera follows
-   @deep Written whole from the original (was a stub): the helpers' book (ob_GEHILFENBUCH), the mercenary
-   book's rows (inline creation, refill from gm_ListWorkers' jobless list, the hire text of a running
-   request 6 of title 0x13, the inline free) with the personnel book's master row and cart list; the bonus
-   (ai_AskHelperBonus, pay_worker), the master hire request 7 / fire 0x31, the helper dismissal 0x413f /
-   0x4140 with gm_AddHealth(id, -1000). 1220 vs 1221 instructions, every call the same number of times, no
-   branch target differences. Left is allocation / layout: the text buffers lie elsewhere in the frame (the
-   prover stops at the first io_CharacterName: '(args + 0x8b8)' vs '(args + 0x858)'; the declaration order
-   does not move them), the sel / dismiss slots are swapped ([0x24] / [0x20]), and the message bodies'
-   stores are scheduled otherwise (the M8 lines: msg.time = ai_Time's words and the rows[i].name / d2_Objs
-   stores of the row setup crossing, as in ai_MercenaryBook). (references: M8 at +0x368: ours refers to
-   d2_LastWindow (0x6ed938), the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 4 more), explained:
-   the M8 refs are crossed stores of the same objects and the words of one struct copy (msg.time = ai_Time)
-   in another order) */
+   radio group is cleared, the book closed and the camera follows */
 
 void ai_HelperBook(AIBLD *bld, char *model)
 {
@@ -2546,6 +2533,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
     AICHARREC *master;
     AICHARREC *c;
     AIJOB *job;
+    char *owner;
 
     nWorkers = 0;
     dismissButton = -1;
@@ -2686,7 +2674,8 @@ void ai_HelperBook(AIBLD *bld, char *model)
                     dismissButton = -1;
                     sel = i;
                     if (masterRow.ch == 0 && masterRow.state != 2) {
-                        cost = (int)gm_JobCost(ai_Chars[bld->owner], bld->type, 0, -1);
+                        owner = ai_Chars[bld->owner];
+                        cost = (int)gm_JobCost(owner, bld->type, 0, -1);
                         d2_SetForm(masterRow.view, 2);
                         hireMasterButton = d2_GetWinObj(masterRow.view, 2, io_PrintText(0x1a22, cost, bt->jobs[0] + 0x130));
                     } else if (masterRow.state == 1) {
