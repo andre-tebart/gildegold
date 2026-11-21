@@ -82,8 +82,6 @@
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with: util_RandomInt
    (he_RunInnSim).
-   Open: data: he_RunHandlers (0x758600) is declared over several objects (the gfx infos 0x7588a0, the ap events
-   0x758ca0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x6f263c he_MessageFilterMask, 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, 0x6fa0e0 he_OptionsPath,
    owner he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
@@ -120,7 +118,7 @@ struct D3SM;
 
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern void (*he_RunHandlers[5544])(unsigned char *);
+extern void (*he_RunHandlers[0xa8])(unsigned char *);
 extern const unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c */
 #include "menu_types.h"
 extern GAPDATA full_data_602568[];
@@ -1243,8 +1241,8 @@ int he_InitEvents(void)
     if (he_RegisterEventTypeA2() != 0)
         return 1;
     memset(gm_CarryRecs, 0, sizeof(gm_CarryRecs));
-    memset((void *)((unsigned)&he_RunHandlers + 0x6a0), 0, 0x1400 * 4);
-    memset((void *)((unsigned)&he_RunHandlers + 0x2a0), 0, 0x100 * 4);
+    memset(he_ApEvents, 0, sizeof(he_ApEvents));
+    memset(he_GfxInfos, 0, sizeof(he_GfxInfos));
     return 0;
 }
 /* 0x53d590, frees every used record (0x14c bytes each from 0x6fab40) up to 0x6f261c */
@@ -1854,7 +1852,6 @@ char *he_FindEvent(int n, ...)
         he_Cursor = 0;
     return he_NextEvent();
 }
-#define he_GfxInfos (*(HEGFXINFO (*)[0x40])((char *)&he_RunHandlers + 0x2a0))  /* 0x7588a0 */
 
 /* 0x53e4e0, spreads the gfx infos over the object `obj` (at most 0x20) on a circle around its position: radius 100 (0 for
    a single one), each at half its own height above obj's top */
@@ -2085,25 +2082,25 @@ void he_RemoveStaleGfxInfos(void)
 
 void he_RemoveGfxInfos(int obj)
 {
-    int *p = (int *)((unsigned)&he_RunHandlers + 0x2a0);
+    HEGFXINFO *p = he_GfxInfos;
 
     do {
-        if (p[2] == obj)
-            he_FreeGfxInfo(p);
-        p += 4;
-    } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6a0));
+        if ((int)p->parent == obj)
+            he_FreeGfxInfo((int *)p);
+        p++;
+    } while ((int)p < (int)&he_GfxInfos[0x40]);
 }
 /* 0x53ec10, calls 0x4471b0 for the gfx infos of the object `obj` */
 
 void he_ShowObjectInfos(int obj, int a)
 {
-    int *p = (int *)((unsigned)&he_RunHandlers + 0x2ac);
+    HEGFXINFO *p = he_GfxInfos;
 
     do {
-        if (p[-1] == obj)
-            d3if_Show(*p, a);
-        p += 4;
-    } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6ac));
+        if ((int)p->parent == obj)
+            d3if_Show(p->obj, a);
+        p++;
+    } while ((int)&p->obj < (int)&he_GfxInfos[0x40].obj);
 }
 /* 0x53ec40, makes the event `r` due now (stage -2, end = the game clock) when its character is gone (another netId
    or kind 0xf) or dead (health 0) for the kinds of the list */
@@ -2262,13 +2259,13 @@ void he_CountDownApEvents(void)
 int he_SumApEvents(int key)
 {
     int sum = 0;
-    int *p = (int *)((unsigned)&he_RunHandlers + 0x6a8);
+    HEAPEVENT *p = he_ApEvents;
 
     do {
-        if (*p != 0 && p[-1] == key)
-            sum += *p;
-        p += 0x14;
-    } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x56a8));
+        if (p->income != 0 && p->key == key)
+            sum += p->income;
+        p++;
+    } while ((int)&p->income < (int)&he_ApEvents[0x100].income);
     return sum;
 }
 /* 0x53efb0, the sum of the values (+0xc) of the AP events with key (+4) `key` */
@@ -2276,13 +2273,13 @@ int he_SumApEvents(int key)
 int he_SumApEventCosts(int key)
 {
     int sum = 0;
-    int *p = (int *)((unsigned)&he_RunHandlers + 0x6ac);
+    HEAPEVENT *p = he_ApEvents;
 
     do {
-        if (*p != 0 && p[-2] == key)
-            sum += *p;
-        p += 0x14;
-    } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x56ac));
+        if (p->cost != 0 && p->key == key)
+            sum += p->cost;
+        p++;
+    } while ((int)&p->cost < (int)&he_ApEvents[0x100].cost);
     return sum;
 }
 

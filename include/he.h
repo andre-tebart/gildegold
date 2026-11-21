@@ -14,6 +14,7 @@ typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model show
     struct D3OBJECT *parent;            /* 0x8, the object it is shown over (he_CreateGfxObject sets it), 0: a free entry */
     struct D3OBJECT *obj;               /* 0xc, its model object (he_CreateGfxObject) */
 } HEGFXINFO;
+extern HEGFXINFO he_GfxInfos[0x40];     /* 0x7588a0, the gfx infos */
 
 void he_AllocNone(unsigned char *ev);
 void he_RunNone(unsigned char *ev);
@@ -108,7 +109,7 @@ typedef struct HEAPEVENT {              /* 0x50 bytes, an AP event (0x100 of the
     char name[0x40];                    /* 0x10, 0x3f characters */
 } HEAPEVENT;
 #pragma pack(pop)
-#define he_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (ls.c's he_RunHandlers block holds them) */
+extern HEAPEVENT he_ApEvents[0x100];  /* 0x758ca0, the AP events */
 int he_SumApEvents(int key);
 HEAPEVENT *he_AddApEvent(int key, char *name, int income, int cost);  /* 0x53eec0, registers an AP event, returns it (0 when full) */
 int he_SumApEventCosts(int key);

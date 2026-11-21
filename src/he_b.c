@@ -39,7 +39,7 @@ struct D3SM;
 
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern void (*he_RunHandlers[5544])(unsigned char *);
+extern void (*he_RunHandlers[0xa8])(unsigned char *);
 extern const unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c */
 #include "menu_types.h"
 extern GAPDATA full_data_602568[];

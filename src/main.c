@@ -188,7 +188,7 @@ extern int main_WindBank;           /* 0x75e630, the wind sound bank */
 extern int sv_FrameMask;
 extern char ai_MissionMode;
 extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
-extern void (*he_RunHandlers[5544])(unsigned char *);
+extern void (*he_RunHandlers[0xa8])(unsigned char *);
 extern int sv_PopRequest;
 
 
@@ -5267,7 +5267,9 @@ void (*he_AllocHandlers[0xa8])(struct AIJOB *ev);  /* 0x74df40, he.h: the event 
 GMCARRYREC gm_CarryRecs[0x100];  /* 0x74e1e0, f3gm_carry.h: the carried-goods records */
 struct AIJOB *he_Cursor;  /* 0x7585e0, he.h: the record he_NextEvent stands on, 0: the search ended */
 int he_EventCount;  /* 0x7585e4 */
-void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
+void (*he_RunHandlers[0xa8])(unsigned char *);  /* 0x758600, the event run handlers by type (he_SetEventHandlers) */
+HEGFXINFO he_GfxInfos[0x40];  /* 0x7588a0, he.h: the gfx infos (he_CreateGfxInfo) */
+HEAPEVENT he_ApEvents[0x100];  /* 0x758ca0, he.h: the AP events (he_AddApEvent) */
 /* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
 int main_SoundBanks[0x80];  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
 void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
