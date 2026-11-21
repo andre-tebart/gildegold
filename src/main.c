@@ -176,10 +176,10 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
     char pad190[0x64];
     char ownName[0x1c];             /* 0x1f4, the model name (AICHAR.ownName; from INIT_PLAYER.model) */
 } MAINCHARNEW;
-#define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
-#define main_LastLoadProgress (*(int *)((char *)&cm_RequestedSaveName + 0x40))  /* 0x6f2610, the last loading progress the callback drew (below the book object at +0x44) */
 extern int main_SoundBanks[0x80];   /* 0x75df20 */
-extern char cm_RequestedSaveName[72];
+extern char cm_RequestedSaveName[0x40];
+extern int main_LastLoadProgress;  /* 0x6f2610 */
+extern int main_BookObject;  /* 0x6f2614 */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern int main_NoRoundFade;        /* 0x6f25c0, 1 skips the black fade before the round page */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c: nonzero when the player reached the game's goal */
@@ -5242,7 +5242,9 @@ int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and
 int main_NoRoundFade = 0;  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared at the game start) */
 int main_UdpOpen = 0;  /* 0x6f25c4, the udp socket of the network game is open (udp_Init .. udp_Exit) */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
-char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
+char cm_RequestedSaveName[0x40] = {0};  /* 0x6f25d0, the save name a save request carried (cm.c copies it, sv_RunFrame saves) */
+int main_LastLoadProgress = 0;  /* 0x6f2610, the last loading progress the load callback drew */
+int main_BookObject = 0;  /* 0x6f2614, the book object "Buch" loaded at the game start (d3io_LoadObjectRef; released at the end) */
 int ai_NextEventId = 0;  /* 0x6f2618 */
 int he_EventTop = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
 int he_QuickTop = 0;  /* 0x6f2620 / */
