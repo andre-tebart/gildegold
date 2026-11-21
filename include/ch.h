@@ -150,13 +150,18 @@ extern int ch_LowPoly;              /* 0x631064, 2 - the ch_SetLowPoly mode */
 struct D3OBJECT; struct D3IFSCENE; char d3if_MoveObject(struct D3OBJECT *obj, struct D3IFSCENE *from, struct D3IFSCENE *to);                           /* 0x447fd0, moves obj to another scene */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */
 /* D3ANIMFLAGS as built for d3anim_StartAnim here: field-wise, so VC6 keeps the dword at 4 in a register */
-typedef struct CHANIMFLAGS {
-    union {
-        int all;
-        struct { unsigned char b0, b1, b2, b3; } c;     /* b1: 0x10 loop, 0x08 (D3ANIMFLAGS.b[1]) */
-    } u;
-    unsigned int a : 1, b : 1, r : 30;                  /* 0x04 */
-    unsigned char a8 : 1, b8 : 1, r8 : 6;               /* 0x08, b8 = D3ANIMSLOT.play */
+typedef union CHANIMFLAGS {
+    struct {
+        union {
+            int all;
+            struct { unsigned char b0, b1, b2, b3; } c; /* b1: 0x10 loop, 0x08 (D3ANIMFLAGS.b[1]) */
+            struct { unsigned char p0; unsigned char p8 : 3, f08 : 1, f10 : 1, p13 : 3; } bits;  /* byte 1 bit-wise
+                                                   (ch_AttachAni: f08 = the loop argument, f10 always set) */
+        } u;
+        unsigned int a : 1, b : 1, r : 30;              /* 0x04 */
+        unsigned char a8 : 1, b8 : 1, r8 : 6;           /* 0x08, b8 = D3ANIMSLOT.play */
+    };
+    D3ANIMFLAGS anim;                                   /* the same 12 bytes as d3anim_StartAnim takes them */
 } CHANIMFLAGS;
 struct D3ANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                                /* 0x44e4a0, loads an animation, d3_io_t.c */
 

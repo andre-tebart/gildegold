@@ -19,7 +19,6 @@ struct D3SURF;
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"
-#define d3anim_StartAnimCh ((int (*)(void *, char *, CHANIMFLAGS))d3anim_StartAnim)  /* 0x435550 (d3.h: D3ANIMFLAGS f): @original this unit passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS, as the original TU did */
 #include "ecmd.h"
 #include "d3_light.h"
 #include "bio.h"
@@ -332,7 +331,7 @@ int ocmd_AttachAnim(D3OBJECT **pobj, char **file, int *once)
         f.u.c.b0 = 0;
         f.b = 0;
         f.a = 1;
-        d3anim_StartAnimCh(obj->info, name, f);
+        d3anim_StartAnim(obj->info, name, f.anim);
     }
     if (evt_Cur->mode == 1)
         evt_Cur->waitfn = ocmd_AttachAnim;
@@ -363,7 +362,7 @@ int ocmd_PreloadAnim(D3OBJECT **pobj, char **file)
         f.u.c.b0 = 0;
         f.b = 0;
         f.a = 1;
-        d3anim_StartAnimCh(obj->info, base, f);
+        d3anim_StartAnim(obj->info, base, f.anim);
         d3_ReleaseTexture(obj->info, base);
     }
     return 0;
@@ -408,7 +407,7 @@ int ocmd_AttachAnimLooped(D3OBJECT **pobj, char **file, int *n)
         f.u.c.b0 = *n;
         f.b = 0;
         f.a = 1;
-        if (!d3anim_StartAnimCh(obj->info, name, f))
+        if (!d3anim_StartAnim(obj->info, name, f.anim))
             evt_Error(evt_Cur, evt_Cur->pc, "AttachAnimLooped(): Could not find animation-file...");
     }
     if (evt_Cur->mode == 1)
@@ -443,7 +442,7 @@ char ocmd_AttachAnimCB(D3OBJECT *obj, OCMDANIM *a)
             f.u.c.b0 = a->n;
             f.b = 0;
             f.a = 1;
-            s = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->info, name, f);
+            s = (D3ANIMSLOT *)d3anim_StartAnim(obj->info, name, f.anim);
             if (s && a->rnd) {
                 s->frame = rand() % (s->data->nframes - 1);
                 s->nextFrame = s->frame + 1;
