@@ -518,7 +518,6 @@ int he_RegisterEventTypeA2();
 #include "mission.h"
 #include "rmsg.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
@@ -2723,7 +2722,7 @@ void sv_CreateBanners(char *b);
    (case 5 block, the stage-7 search block with at), now in its type block, the completion as if (c->stage
    > c->stages) { D3VECTOR4 center; float radius; ..} break; (center is 16 bytes: the slot 0x20..0x30; it
    must conflict with now, so its block encloses now's), door = 0 before the sprintf (order), nearest =
-   &ai_BldsT[i] before best = dist in stage 5 (regs). Left: only the slot order of scene (ours 0x18) and
+   &ai_Blds[i] before best = dist in stage 5 (regs). Left: only the slot order of scene (ours 0x18) and
    dist/nearest (ours 0x1c): equal densities 2250, VC6's unstable qsort. c2frame counts: scene 9, dist 6 +
    nearest 3. A model of VC6's qsort (cutoff 8, ascending, table reversed) fitted to 4 compiles says the
    original has scene 8 OR dist+nearest 10 (one counted reference: counts are taken after allocation and
@@ -2870,15 +2869,15 @@ void he_RunConstruction(int ev)
         nearest = 0;
         best = 1e35f;
         for (i = 0; i < 0x100; i++) {
-            if (&ai_BldsT[i] != bld && ai_BldsT[i].type != 0 && ai_BldsT[i].object != 0) {
-                house = (D3OBJECT *)ai_BldsT[i].object;
+            if (&ai_Blds[i] != bld && ai_Blds[i].type != 0 && ai_Blds[i].object != 0) {
+                house = (D3OBJECT *)ai_Blds[i].object;
                 d3_PointToWorld(house, &house->pos, &v);
                 v.x -= site.pos[0];
                 v.y -= site.pos[1];
                 v.z -= site.pos[2];
                 dist = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-                if (dist < best && d3_FindObject((int)ai_BldsT[i].object, 0x100, 0, "dummy_TUER") != 0) {
-                    nearest = &ai_BldsT[i];
+                if (dist < best && d3_FindObject((int)ai_Blds[i].object, 0x100, 0, "dummy_TUER") != 0) {
+                    nearest = &ai_Blds[i];
                     best = dist;
                 }
             }
@@ -2957,14 +2956,14 @@ void he_RunConstruction(int ev)
             d3_PointToWorld(o, &o->pos, &at);
             best = 1e35f;
             for (i = 0; i < 0x100; i++) {
-                if (&ai_BldsT[i] != bld && ai_BldsT[i].type != 0 && ai_BldsT[i].object != 0) {
-                    house = (D3OBJECT *)ai_BldsT[i].object;
+                if (&ai_Blds[i] != bld && ai_Blds[i].type != 0 && ai_Blds[i].object != 0) {
+                    house = (D3OBJECT *)ai_Blds[i].object;
                     d3_PointToWorld(house, &house->pos, &v);
                     v.x -= at.x;
                     v.y -= at.y;
                     v.z -= at.z;
                     dist = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-                    if (dist < best && (house = d3_FindObject((int)ai_BldsT[i].object, 0x100, 0, "dummy_TUER")) != 0) {
+                    if (dist < best && (house = d3_FindObject((int)ai_Blds[i].object, 0x100, 0, "dummy_TUER")) != 0) {
                         best = dist;
                         door = house;
                     }
@@ -5590,7 +5589,7 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
     pos.y = (o->pos.y);
     pos.z = (o->pos.z);
     for (n = 0; n < 0x100; n++) {
-        rec = &ai_BldsT[n];
+        rec = &ai_Blds[n];
         lo = 0;
         bt = &ai_BTypes[rec->type];
         hi = 0;

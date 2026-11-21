@@ -69,7 +69,6 @@ extern int ai_EvalStack[73];
 #include "d3_pose.h"
 #include "menu.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -1119,7 +1118,7 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int
                 return 0;
             break;
         }
-        b = &ai_BldsT[j];
+        b = &ai_Blds[j];
         if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
             && (!win || (r = gm_Liking(b->owner, p->id, 1), !(r < ((float *)q)[0x11]) && !(r > ((float *)q)[0x11])))) {
             found = 1;
@@ -1155,7 +1154,7 @@ int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, un
     j = util_Random(0x100);
     max = n;
     while (cnt < max && k != 0) {
-        b = &ai_BldsT[j];
+        b = &ai_Blds[j];
         if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
             && (!win || (r = gm_Liking(b->owner, p->id, 1), !(r < ((float *)q)[0x11]) && !(r > ((float *)q)[0x11])))) {
             out[cnt] = b->id;

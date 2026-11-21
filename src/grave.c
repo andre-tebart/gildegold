@@ -19,7 +19,6 @@
 #include "d3_tools.h"
 #include "data_views.h"
 #define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define gv_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (cm.c: char[0x5a00]) as its 0x200 CRIME records */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -1772,7 +1771,7 @@ int gv_FindHeldEntry(void *a, unsigned char **o, int *e)
 
     *o = 0;
     *e = 0;
-    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+    for (i = 0, b = ai_Blds; i < 0x100; i++, b++) {
         if (b->type != 0 && ai_BTypes[b->type].kind == 0x1d) {
             r = gv_FindEntry(a, (unsigned char *)b, 0, gv_EntryHeldBy, 0xff);
             if (r != 0) {
@@ -1795,7 +1794,7 @@ int gv_FindReservedEntry(void *a, unsigned char **o, int *e)
 
     *o = 0;
     *e = 0;
-    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+    for (i = 0, b = ai_Blds; i < 0x100; i++, b++) {
         if (b->type != 0 && ai_BTypes[b->type].kind == 0x1d) {
             r = gv_FindEntry(a, (unsigned char *)b, 0, gv_EntrySameId, 0xff);
             if (r != 0) {

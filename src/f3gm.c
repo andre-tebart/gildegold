@@ -2625,7 +2625,7 @@ int gm_RichestWorth = -1000000;  /* 0x617730, the worth of gm_RichestChar (0xc80
 float gm_BirthChance[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
 extern int gm_PlayerRecords[688];
 extern int gm_ClassBuilding[32];
-char * ai_Blds;  /* 0x889f74, the buildings ( */
+AIBLD *ai_Blds;  /* 0x889f74, the buildings ( */
 signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 int gm_GoodBuilding[732];  /* 0x919f80 */
 AIGOOD *ai_Goods;  /* 0x91aaf0, the object prototypes ( */

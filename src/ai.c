@@ -23,7 +23,6 @@ typedef unsigned int SOCKET;
 #include "data_views.h"
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #include "d3_types.h"
 #include "am_types.h"                /* AIACT */
@@ -330,7 +329,7 @@ void ai_MasterUpdate(AICHAR *c)
     unsigned int sel;
 
     if (ai_IsLocalMaster(c) && (c->flags1cc & 0x3000) == 0) {
-        for (n = 0x100, b = ai_BldsT; n; n--, b++) {
+        for (n = 0x100, b = ai_Blds; n; n--, b++) {
             if (b->type) {
                 lo = 0;
                 hi = 0;
@@ -1649,7 +1648,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         if (max == 0.0f)
             max = 1.0f;
         best = 0;
-        bb = ai_BldsT;
+        bb = ai_Blds;
         for (t = 256; t; t--, bb++) {
             if (!bb->type)
                 continue;
@@ -1877,7 +1876,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
             if (max == 0.0f)
                 max = 1.0f;
             best = 0;
-            bb = ai_BldsT;
+            bb = ai_Blds;
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type) {
                     r = gm_BuildingClass(bb->type);
@@ -1947,7 +1946,7 @@ burgle:
             if (max == 0.0f)
                 max = 1.0f;
             best = 0;
-            bb = ai_BldsT;
+            bb = ai_Blds;
             for (t = 256; t; t--, bb++) {
                 if (!bb->type)
                     continue;
@@ -2137,7 +2136,7 @@ attack:
             if (max == 0.0f)
                 max = 1.0f;
             best = 0;
-            bb = ai_BldsT;
+            bb = ai_Blds;
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type) {
                     bt = &ai_BTypes[bb->type];
@@ -3304,7 +3303,7 @@ void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
    fixed: the shop and market price differences kept as one float in the FPU across the search (margin =
    gm_GoodsPrice - gm_ItemPrice, the original's fsub [esp+0x18] / fcom / fstp), the slot limit as i >= 0x80
    (cmp 0x80 / jge), the kind 2 price as gm_GoodsPrice * bld->priceRate * 0.01f (fimul [bld+0x45] / fmul
-   dword 0.01), the building walk as do { ...; k++; bld = &ai_BldsT[k]; } while (k < 256) (the original's
+   dword 0.01), the building walk as do { ...; k++; bld = &ai_Blds[k]; } while (k < 256) (the original's
    latch off += 0xa9 / lea bld), the input search as !found && k < 3, the entry buyAmount as
    min(buyerCapacity, amount). Readability: AIBLD.playerSlot (the kind 0x47 shop's player, was unk65),
    AIBLD.saved45 -> priceRate (its only reader), AISLOT.unk38 -> sellerAmount, AIENTRY.unk50 ->
@@ -3421,7 +3420,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
         }
     }
     k = 0;
-    bld = ai_BldsT;
+    bld = ai_Blds;
     do {
         if (gm_BuildingClass(bld->type) == 2) {
             o = gm_Query(bld->objList, 2, 0, 0x2a, 6);
@@ -3465,7 +3464,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
             }
         }
         k++;
-        bld = &ai_BldsT[k];
+        bld = &ai_Blds[k];
     } while (k < 256);
     for (i = 0; i < ai_NSlots; i++) {
         for (j = 0; j < ai_NEntries; j++) {

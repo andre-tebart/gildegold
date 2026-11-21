@@ -2396,19 +2396,19 @@ float ord_BuildingCapacityRatio(void)
     int a;
     int b;
     int i;
-    char *p;
-    char *r;
+    AIBLD *p;
+    AIBTYPE *r;
 
     a = 0;
     b = 0;
-    p = ai_Blds + 0xa9;
+    p = &ai_Blds[1];
     for (i = 0; i < 0x20; i++) {
-        if (*p != 0) {
-            r = (char *)ai_BTypes + (unsigned char)*p * 0x24d;
-            a += (unsigned char)r[0x247];
-            b += (unsigned char)r[0x248];
+        if (p->type != 0) {
+            r = &ai_BTypes[p->type];
+            a += r->level;
+            b += r->maxLevel;
         }
-        p += 0xa9;
+        p++;
     }
     if (b != 0)
         return (float)a / b;

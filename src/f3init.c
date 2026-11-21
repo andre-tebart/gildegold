@@ -1685,7 +1685,7 @@ void init_OpenBuilding(INIT_BLD *b)
 
 
 
-extern char *ai_Blds;              /* 0x889f74, the buildings (0xa9 bytes each, 0x100) */
+extern struct AIBLD *ai_Blds;      /* 0x889f74, the buildings (0xa9 bytes each, 0x100) */
 unsigned char init_Detail = 2;  /* 0x61adf8, the detail level of the scene (4 = high / 2 / 1 = low, a byte) */
 float init_SoundVolume = 0.699999988f;  /* 0x61adfc, 0.7f: the volume factor of a started town sound ( */
 int init_ShopScript = -1;  /* 0x61ae00, the handle of the shopping script running in the town scene (-1 = none; */
@@ -1752,7 +1752,7 @@ void init_OpenTown(void)
         ok = 0;
         k = 0;
         while (!ok) {
-            b = ai_Blds + k;
+            b = (char *)ai_Blds + k;
             if (((INIT_BLD *)b)->type != 0 && ((INIT_BLD *)b)->owner == 0xffff) {
                 cl = INIT_BTYPE(b);
                 for (j = 0; j < 6; j++) {
@@ -1865,7 +1865,7 @@ void init_OpenTown(void)
     if (init_AiTown != 0) {
         nch = 0;
         for (k = 0; k < 0xa900; k += 0xa9) {
-            b = ai_Blds + k;
+            b = (char *)ai_Blds + k;
             if (((INIT_BLD *)b)->type != 0 && ((INIT_BLD *)b)->owner == 0xffff) {
                 cl = INIT_BTYPE(b);
                 bk = *cl;
@@ -1941,7 +1941,7 @@ void init_OpenTown(void)
     for (k = 0; k < 0xa900; k += 0xa9) {
         unsigned short o;
 
-        b = ai_Blds + k;
+        b = (char *)ai_Blds + k;
         cl = INIT_BTYPE(b);
         o = ((INIT_BLD *)b)->owner;
         if (o != 0xffff && (cls[*cl] == 2 || cls[*cl] == 1) && (ai_Chars[o][2] == 5 || ai_Chars[o][2] == 4)) {
@@ -2673,7 +2673,7 @@ void init_NameBuildings(void)
                 src = (char *)ai_BuildingNames[i + *b * 0xe];
                 if (*src != 0) {
                     strcpy(one, src);
-                    bl = ai_Blds;
+                    bl = (char *)ai_Blds;
                     for (j = 0; j < 0x100; j++, bl += 0xa9) {
                         if (*bl != 0 && strcmp(bl + 5, one) == 0)
                             break;

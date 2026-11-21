@@ -640,7 +640,7 @@ void ai_HandleItemDrag(void)
                 ch = (AICHAR *)user;
                 if (ch->id == 0xffff)
                     ch = 0;
-            } else if ((char *)user >= ai_Blds && (char *)user < ai_Blds + 0xa900) {
+            } else if ((char *)user >= (char *)ai_Blds && (char *)user < (char *)&ai_Blds[0x100]) {  /* ai_Blds[0x100]: one past the table */
                 bkind = ((AIBLD *)user)->type;
                 if (bkind >= 0x58)
                     bkind = 0;

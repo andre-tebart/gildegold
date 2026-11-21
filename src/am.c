@@ -60,7 +60,6 @@ extern char ai_DataPath[608];
 #include "menu.h"
 #include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -1242,7 +1241,7 @@ int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
         }
     }
     memset(list, 0, sizeof(list));
-    bld = ai_BldsT;
+    bld = ai_Blds;
     n = 0;
     for (i = 0; i < 256; i++, bld++) {
         if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypes[bld->type].kind == 0x1d) {
@@ -2134,7 +2133,7 @@ int ai_DecideLaw8(AIPER *p, int a, int *out)
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
     found = 0;
     own = 0;
-    b = ai_BldsT;
+    b = ai_Blds;
     for (i = 0; i < 256; i++, b++) {
         if (b->type == 0x4b || b->type == 0x4c || b->type == 0x4d) {
             found++;

@@ -16,7 +16,6 @@
 #include <string.h>
 #include "poker.h"
 #include "aip.h"
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
@@ -1440,7 +1439,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
         return 0;
     if ((a != 0x44 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
-    b = ai_BldsT;
+    b = ai_Blds;
     for (i = 0x100; i != 0; i--) {
         if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x27c) != 0) {
@@ -1545,7 +1544,7 @@ int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
         return 0;
     if ((a != 0x45 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
-    b = ai_BldsT;
+    b = ai_Blds;
     for (i = 0x100; i != 0; i--) {
         if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x28a) != 0) {
@@ -1620,7 +1619,7 @@ int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
     k = 0;
     if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money >= 2) {
         best = 0;
-        b = ai_BldsT;
+        b = ai_Blds;
         for (i = 0x100; i != 0; i--) {
             if (b->type != 0 && b->owner == p->id) {
                 bt = &ai_BTypes[b->type];
@@ -1699,7 +1698,7 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
         return 0;
     if ((a != 0x47 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
-    b = ai_BldsT;
+    b = ai_Blds;
     for (i = 0; i < 0x100; i++, b++) {
         if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {

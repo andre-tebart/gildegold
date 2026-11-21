@@ -66,7 +66,6 @@ int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 d
 #include "menu.h"
 #include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -2614,7 +2613,7 @@ int ai_DecideBuildResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
     }
     if (he_FindEvent(2, 0, 0xd, 2, p->id) != 0)
         return 0;
-    b = ai_BldsT;
+    b = ai_Blds;
     for (i = 0; i < 0x100; i++, b++) {
         if (b->type != 0) {
             bt = &ai_BTypes[b->type];
@@ -5227,7 +5226,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
     money = gm_SumListAmounts(o->list, ai_OwnPlayer);
     ord_GetStatistics(d);
-    rec = ai_BldsT;
+    rec = ai_Blds;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
         if (k == 0 || ai_BTypes[rec->type].kind != 1)
@@ -5668,7 +5667,7 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     money = gm_SumListAmounts(o->list, ai_OwnPlayer);
     if (money < (util_Random(3000) + 1000) * 32)
         return 0;
-    rec = ai_BldsT;
+    rec = ai_Blds;
     for (i = 0; i < 0x100; i++, rec++) {
         if (rec->type == 0 || ai_BTypes[rec->type].kind != 3 || (rec->flags5a & 4))
             continue;
@@ -5916,7 +5915,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = 0x100;
         j = util_Random(0x100);
         for (;;) {
-            own = &ai_BldsT[j];
+            own = &ai_Blds[j];
             if (own->type != 0 && own->owner == p->id && ((1 << ai_BTypes[own->type].kind) & AI_CREDIT_KINDS)
                 && own->budget < lim[ai_BTypes[own->type].cap247])
                 break;
@@ -5928,7 +5927,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = 0x100;
         j = util_Random(0x100);
         for (;;) {
-            b = &ai_BldsT[j];
+            b = &ai_Blds[j];
             if (b->type != 0 && b->owner != p->id && ai_BTypes[b->type].kind == 5)
                 break;
             i--;
@@ -5966,7 +5965,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     i = 0x100;
     j = util_Random(0x100);
     for (;;) {
-        b = &ai_BldsT[j];
+        b = &ai_Blds[j];
         if (b->type != 0 && b->owner != p->id && ai_BTypes[b->type].kind == 5)
             break;
         i--;
@@ -6100,8 +6099,8 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         own[k] = gm_TitlesLeft(q->jobByGroup[k]);
     }
     for (k = 0; k < 0x100; k++) {
-        if (ai_BldsT[k].type != 0) {
-            bt = &ai_BTypes[ai_BldsT[k].type];
+        if (ai_Blds[k].type != 0) {
+            bt = &ai_BTypes[ai_Blds[k].type];
             cnt[gm_BuildingJob((unsigned char)bt->kind)]++;
         }
     }
@@ -6177,7 +6176,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     i = 0x100;
     j = util_Random(i);
     while (n < 4 && i != 0) {
-        b = &ai_BldsT[j];
+        b = &ai_Blds[j];
         if (b->type == 0x37 && b->owner != 0xffff && b->owner != p->id) {
             o = (G5STAMM *)gm_Query(b->objList, 2, 6, 0, 0x12d);
             if (o != 0) {
@@ -6320,7 +6319,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
         AI_ZERO(all, sizeof(all));
         AI_ZERO(best, sizeof(best));
         for (j = 0; j < 0x100; j++) {
-            b = &ai_BldsT[j];
+            b = &ai_Blds[j];
             if (b->type != 0 && b->owner != 0xffff) {
                 bt = &ai_BTypes[b->type];
                 k.LowPart = 0;

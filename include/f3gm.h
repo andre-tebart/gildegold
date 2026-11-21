@@ -177,7 +177,7 @@ extern int ai_GameFlags;  /* 0x6f23f8 */
 extern struct AIGOOD *ai_Goods;  /* 0x91aaf0 */
 int gm_RemoveObject(int *list, unsigned id);  /* 0x4ffff0 */
 void gm_KillSpieler(int c, int mode);  /* 0x503c60 */
-extern char * ai_Blds;  /* 0x889f74 */
+extern struct AIBLD *ai_Blds;  /* 0x889f74 */
 extern int ai_Difficulty;  /* 0x6f23fc */
 extern int ai_CharCount;  /* 0x6f1bc0 */
 extern int ai_NextObjectId;  /* 0x61a654 */

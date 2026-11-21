@@ -321,7 +321,7 @@ void ls_RefsToIds(void)
 
     d3if_SelectScene(0, 1);
     for (k = 0; k < 0x100; k++) {
-        b = &((AIBLD *)ai_Blds)[k];
+        b = &ai_Blds[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
@@ -353,7 +353,7 @@ void ls_IdsToRefs(void)
 
     d3if_SelectScene(0, 1);
     for (k = 0; k < 0xa900; k += 0xa9) {
-        b = (AIBLD *)(ai_Blds + k);
+        b = (AIBLD *)((char *)ai_Blds + k);
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = b;
     }
@@ -382,13 +382,13 @@ int ls_RelinkScene(int f)
 
     d3if_SelectScene(0, 1);
     for (k = 0; k < 0x100; k++) {
-        b = &((AIBLD *)ai_Blds)[k];
+        b = &ai_Blds[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
     d3_SaveScene(0, f);
     for (k = 0; k < 0x100; k++) {
-        b = &((AIBLD *)ai_Blds)[k];
+        b = &ai_Blds[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = b;
     }
@@ -434,7 +434,7 @@ int ls_WriteBuildings(int f)
     AIBLD *b;
     char c;
 
-    p = ai_Blds;
+    p = (char *)ai_Blds;
     for (i = 0x100; i != 0; i--) {
         if (*p != 0)
             n++;
@@ -443,8 +443,8 @@ int ls_WriteBuildings(int f)
     LS_W(&n, 4)
     off = 0;
     do {
-        b = (AIBLD *)(ai_Blds + off);
-        if (ai_Blds[off] != 0) {
+        b = (AIBLD *)((char *)ai_Blds + off);
+        if (((char *)ai_Blds)[off] != 0) {
             LS_W(&b->type, 1)
             LS_W(&b->id, 4)
             LS_W(b->name, 0x20)
@@ -1469,7 +1469,7 @@ char ls_HookBuildingCB(D3OBJECT *o)
     AIBLD *b;
 
     for (i = 0; i < 0xa900; i += 0xa9) {
-        b = (AIBLD *)(ai_Blds + i);
+        b = (AIBLD *)((char *)ai_Blds + i);
         if (b->type != 0 && (int)o->owner == b->id)
             init_HookObject(o, b, 2);
     }
@@ -1500,7 +1500,7 @@ int ls_ReadBuildings(int f)
     gm_ClearBuildings();
     LS_R(&n, 4)
     for (k = 0; k < n; k++) {
-        b = &((AIBLD *)ai_Blds)[k];
+        b = &ai_Blds[k];
         LS_R(&b->type, 1)
         LS_R(&b->id, 4)
         LS_R(b->name, 0x20)

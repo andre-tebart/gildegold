@@ -424,7 +424,7 @@ int gm_LoadTables(char *root)
     ai_BTypes = (AIBTYPE *)mem_Alloc(0xca78, "f3_gm:lpGebaeudePROT");
     if (ai_BTypes == 0)
         return -1;
-    ai_Blds = (char *)mem_Alloc(0xa900, "f3_gm:lpGebaeudeINST");
+    ai_Blds = (AIBLD *)mem_Alloc(0xa900, "f3_gm:lpGebaeudeINST");
     memset(ai_Blds, 0, 0xa900);
     if (ai_Blds == 0)
         return -2;
@@ -481,8 +481,8 @@ void gm_ClearBuildings(void)
 
     i = 0;
     do {
-        if (ai_Blds[i] != 0)
-            gm_FreeBuilding(ai_Blds + i);
+        if (((char *)ai_Blds)[i] != 0)
+            gm_FreeBuilding((char *)ai_Blds + i);
         i += 0xa9;
     } while (i < 0xa900);
     memset(ai_Blds, 0, 0xa900);
@@ -2627,14 +2627,14 @@ char *gm_FindBuildingById(int id)
     char *p;
 
     i = 0;
-    p = ai_Blds;
+    p = (char *)ai_Blds;
     while (((ORDBLD *)p)->type == 0 || ((ORDBLD *)p)->id != id) {
         i++;
         p += 0xa9;
         if (i >= 0x100)
             return 0;
     }
-    return ai_Blds + i * 0xa9;
+    return (char *)ai_Blds + i * 0xa9;
 }
 /* 0x502060, the number of the building kind with the name (case-insensitive; the name is at +1 of each 0x24d-byte record), 0 when none */
 
@@ -8179,7 +8179,7 @@ extern int gm_ClassBuilding[32];
 extern int gm_QueryChildStack[20488];
 extern unsigned gm_KindObjs[732];
 extern int gm_TreeRanks;
-extern char * ai_Blds;
+extern struct AIBLD *ai_Blds;
 extern int gm_GoodBuilding[732];
 extern struct AIGOOD *ai_Goods;
 extern unsigned gm_OwnNameHeads[136];

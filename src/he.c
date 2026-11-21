@@ -600,7 +600,6 @@ int he_RegisterEventTypeA2();
 #include "rmsg.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it (the headers declare it unsigned short): @original he_RunInnSim reads the full int result (util_Random(4) + 3, no 16-bit mask); every other caller of this unit reads 16 bits */
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -2500,7 +2499,7 @@ void he_TopUpCharMoney(void)
 /* the ai_Blds walk of he_SpawnFounders: i is the first building of the kind k that is the player's or nobody's
    (owner 0xffff), 0x100 when there is none (the original reuses the option loop's i for it) */
 #define HE_FIND_OWN(k) \
-    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) { \
+    for (i = 0, b = ai_Blds; i < 0x100; i++, b++) { \
         if (b->type != 0) { \
             bt = &ai_BTypes[b->type]; \
             if (bt->kind == (k) && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) \
@@ -2583,7 +2582,7 @@ void he_SpawnFounders(void)
     he_TopUpCharMoney();
     memset(cnt, 0, sizeof(cnt));
     memset(own, 0, sizeof(own));
-    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+    for (i = 0, b = ai_Blds; i < 0x100; i++, b++) {
         if (b->type != 0) {
             bt = &ai_BTypes[b->type];
             if (bt->kind < 0x21) {
@@ -2873,7 +2872,7 @@ void he_SpawnFounders(void)
                     fl = 0;
                 else if (n7a > n7b)
                     fl = 1;
-                for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+                for (i = 0, b = ai_Blds; i < 0x100; i++, b++) {
                     if (b->type != 0) {
                         bt = &ai_BTypes[b->type];
                         if (bt->kind == 7 && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) {
@@ -6669,7 +6668,7 @@ void he_BeginPlague(int ev)
     e->end = ai_Time;
     i = util_Random(0x100);
     do {
-        b = &ai_BldsT[i];
+        b = &ai_Blds[i];
         if (ai_BTypes[b->type].kind == 7) {
             p->walk = util_Random(0x100);
             p->step = ai_RandomStrides[util_Random(0x10)];
@@ -6799,7 +6798,7 @@ void he_RunPlague(int ev)
         n = 0x100;
         k = p->walk;
         do {
-            o = &ai_BldsT[k];
+            o = &ai_Blds[k];
             hi = 0;
             bt = &ai_BTypes[o->type];
             lo = 0;
@@ -8529,7 +8528,7 @@ void he_RunPopulation(int ev)
         n = 0x100;
         i = util_Random(0x100);
         while (found == 0 && n != 0) {
-            b = &ai_BldsT[i];
+            b = &ai_Blds[i];
             if (ai_BTypes[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                 && (unsigned short)b->residents < (unsigned short)kind[0])
                 found = 1;
@@ -8597,7 +8596,7 @@ void he_RunPopulation(int ev)
             n = 0x100;
             j = util_Random(0x100);
             while (found == 0 && n != 0) {
-                b = &ai_BldsT[j];
+                b = &ai_Blds[j];
                 if (ai_BTypes[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                     && (unsigned short)b->residents < (unsigned short)kind[0])
                     found = 1;
@@ -8953,7 +8952,7 @@ void he_RunDarkCorner(int ev)
         idx = d->cursor;
         n = 0x100;
         do {
-            bld = &ai_BldsT[idx];
+            bld = &ai_Blds[idx];
             lo = 0;
             bt = &ai_BTypes[bld->type];
             hi = 0;
@@ -9575,7 +9574,7 @@ void he_StartReaper(int ev)
     n = 0x100;
     k = e->reaperNext;
     do {
-        o = &ai_BldsT[k];
+        o = &ai_Blds[k];
         hi = 0;
         bt = &ai_BTypes[o->type];
         lo = 0;
@@ -9663,7 +9662,7 @@ void he_RunReaper(int ev)
             n = 0x100;
             k = e->reaperNext;
             do {
-                o = &ai_BldsT[k];
+                o = &ai_Blds[k];
                 lo = 0;
                 bt = &ai_BTypes[o->type];
                 hi = 0;
@@ -10083,7 +10082,7 @@ void he_StepWalk(HEWALKSLOT *s)
         budget = s->step;
         idx = (idx + budget) % 0x100;
         do {
-            b = &ai_BldsT[idx];
+            b = &ai_Blds[idx];
             if (b->type != 0) {
                 bt = &ai_BTypes[b->type];
                 lo = 0;
@@ -13693,7 +13692,7 @@ void he_RunSpying(int ev)
         idx = s->cursor;
         n = 0x100;
         do {
-            bld = &ai_BldsT[idx];
+            bld = &ai_Blds[idx];
             bt = &ai_BTypes[bld->type];
             hi = 0;
             lo = 0;
