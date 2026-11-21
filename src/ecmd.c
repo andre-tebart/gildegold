@@ -28,9 +28,10 @@ struct D3SURF;
 #include "d3_io_t.h"
 #include "d3_par.h"
 #include "d3_tools.h"
-#include "d3_vec.h"
 #include "mem.h"
 #include "d3_pose.h"
+
+extern const D3VECTOR d3_YAxis;         /* 0x5ebb94, @original why: ocmd_CreateEmitter (byte-matched) copies the axis as a 3-float vector; d3_vec.c defines it as a D3VECTOR4 (4 floats) */
 
 #define OCMD_DEG 0.017453292f       /* degrees to radians */
 
@@ -778,7 +779,6 @@ int ocmd_SetTransient(D3OBJECT **obj, int *mode)
     ((OCMDOBJBITS *)&(*obj)->stateFlags)->transient = *mode;
     return 1;
 }
-#define d3_YAxisXYZ (*(const D3VECTOR *)&d3_YAxis)  /* 0x5ebb94, x, y, z of the 4-float axis (d3_vec.c) */
 
 /* 0x40ef90, fills the emitter template d3_EmitterCfg (type *a, the default speeds / sizes, the direction d3_YAxis,
    the flags from *f0 / *f1) and creates a *count emitter of the texture *tex and size *size at the origin,
@@ -793,7 +793,7 @@ int ocmd_CreateEmitter(int *a, int *count, int *parent, int *size, char **tex, i
     d3_EmitterCfg.f34 = 10.0f;
     d3_EmitterCfg.f38 = 50.0f;
     d3_EmitterCfg.f3c = 30.0f;
-    d3_EmitterCfg.dir = d3_YAxisXYZ;
+    d3_EmitterCfg.dir = d3_YAxis;
     d3_EmitterCfg.f80 = 1.0f;
     d3_EmitterCfg.f8c = 255.0f;
     d3_EmitterCfg.i90 = 20;
