@@ -265,11 +265,11 @@ void gm_AddTime(AITIME *c, int hours, int mins, int secs)
 }
 /* 0x4fe1e0, sets the time of day of the clock c (hour, minute, second) */
 
-void gm_SetTime(AITIME *c, unsigned char hour, unsigned min, unsigned sec)
+void gm_SetTime(AITIME *c, unsigned char hour, unsigned char min, unsigned char sec)
 {
-    c->sec = sec & 0xff;
+    c->sec = sec;
     c->hour = hour;
-    c->min = min & 0xff;
+    c->min = min;
 }
 /* 0x4fe210, compares two clocks: -1 when a is earlier, 1 when later, 0 when equal */
 
