@@ -54,15 +54,6 @@ typedef struct D2BUF {              /* a drawing surface with its picture buffer
     D2SURF *srcSurf;                /* 0x1a8, the surface the shapes were drawn on */
 } D2BUF;
 
-#pragma pack(push, 1)
-typedef struct D2SND {              /* 0x11 bytes, d2_AnimView[]: what a type 4 object (D2OBJ::input) plays */
-    int unk00;                      /* 0x00 */
-    char unk04;
-    short x, y;                     /* 0x05 */
-    char pad09[8];
-} D2SND;
-#pragma pack(pop)
-
 typedef struct D2RGB { unsigned char r, g, b; } D2RGB;
 
 typedef struct D2SEG {              /* 0x10c bytes, one piece of the text being laid out, d2_TextSegs[] */

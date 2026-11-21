@@ -123,8 +123,8 @@ void d2_DrawPointer(void *surf, int x, int y, int a, int b)
         if (d2_PointerSprite == -1) {
             d2_DrawShape(x, y, surf, d2_PointerPic, (unsigned char)d2_PointerLook);
         } else {
-            d2_AnimView[d2_PointerSprite].x = (short)x;
-            d2_AnimView[d2_PointerSprite].y = (short)y;
+            d2_Anims[d2_PointerSprite].x = (short)x;
+            d2_Anims[d2_PointerSprite].y = (short)y;
             d2_DrawAnim(d2_PointerSprite, surf);
         }
         saved = d2_CurrentFont;

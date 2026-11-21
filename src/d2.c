@@ -1801,8 +1801,8 @@ void d2_MoveObj(short x, short y, int obj)
         }
         break;
     case 4:
-        d2_AnimView[o->input].x = x;
-        d2_AnimView[o->input].y = o->y;
+        d2_Anims[o->input].x = x;
+        d2_Anims[o->input].y = o->y;
         break;
     }
 }
