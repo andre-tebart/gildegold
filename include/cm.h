@@ -540,7 +540,6 @@ extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int cm_LobbyChatPos;  /* 0x6f0cdc */
 extern CMFIGHTREC *cm_FightRecord;  /* 0x6f0d04, the fight being run */
 extern int gm_AllowAll;  /* 0x6f2448 */
-extern char cm_Fighters[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 extern int cm_LobbyChatNext;  /* 0x9363f4 */
 typedef struct CMLOBBYSTATE {

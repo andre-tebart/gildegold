@@ -137,7 +137,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 } CMBOMB;
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -167,7 +166,8 @@ int cm_FightButton = -1;  /* 0x60cb68 */
 char * cm_PointList[32];  /* 0x930380 */
 CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
 G18POP cm_DamagePops[16];  /* 0x9304c0 */
-char cm_Fighters[21376];  /* 0x930600 */
+AICHAR cm_Fighters[32];  /* 0x930600, the fight copies of the characters in the fight */
+char cm_FightScratch[0x1000];  /* 0x934980, cleared by the fight setup (cm_SetupFightScene); no other reader known */
 struct D3OBJECT *cm_FlagObjects[32];  /* 0x935980 */
 CMGRENADE cm_Grenades[32];  /* 0x935a00, the thrown bombs */
 CMBOMB cm_Bombs[32];  /* 0x935c00, the 32 bomb records (object, time) */
@@ -479,11 +479,11 @@ int cm_FindNearCell(int a, int b, int *ox, int *oy)
 char *cm_FindFighter(int id)
 {
     int i = 0;
-    char *p;
+    AICHAR *p;
 
-    for (p = cm_Fighters + 4; (int)p < (int)(cm_Fighters + 4 + 32 * 0x21c); p += 0x21c) {
-        if (((AICHAR *)(p - 4))->id != 0xffff && ((AICHAR *)(p - 4))->netId == id)
-            return cm_Fighters + i * 0x21c;
+    for (p = cm_Fighters; (int)&p->netId < (int)&cm_Fighters[32].netId; p++) {
+        if (p->id != 0xffff && p->netId == id)
+            return (char *)&cm_Fighters[i];
         i++;
     }
     return 0;
@@ -863,12 +863,12 @@ void cm_OpenCharInfoWin(int a, char *c)
 
 void cm_UpdateCharInfoWins(int a)
 {
-    char *p;
+    AICHAR *p;
 
     cm_CloseCharInfoWins();
-    for (p = cm_Fighters; (int)p < (int)(cm_Fighters + 0x4380); p += 0x21c) {
-        if (p[0x188] != 0)
-            cm_OpenCharInfoWin(a, p);
+    for (p = cm_Fighters; (int)p < (int)&cm_Fighters[32]; p++) {
+        if (p->selected != 0)
+            cm_OpenCharInfoWin(a, (char *)p);
     }
 }
 /* 0x4cedc0, shows the damage v over the character c as a floating number (v relative to its life value f01c, in
@@ -1703,7 +1703,7 @@ void cm_ClearMarks()
     AICHAR *r;
     D3OBJECT *body;
 
-    for (r = cm_FightersT; (int)&r->scene < (int)&cm_FightersT[32].scene; r++) {
+    for (r = cm_Fighters; (int)&r->scene < (int)&cm_Fighters[32].scene; r++) {
         if (r->selected != 0)
             r->selected = 0;
         if (r->scene != 0) {
@@ -1730,17 +1730,17 @@ char *cm_AddFighter(int id, char *dummy)
 
     c = (AICHAR *)gm_FindChar(id);
     for (i = 0; i < 32; i++) {
-        if (cm_FightersT[i].id == 0xffff) {
-            memcpy(&cm_FightersT[i], c, sizeof(AICHAR));
-            cm_FightersT[i].v1ac = 0;
-            cm_FightersT[i].scene = 0;
-            gm_CreateCharModel(&cm_FightersT[i], d3_CurrentScene, 0, 0, 0, dummy);
-            cm_FightersT[i].scene->pathType = 4;
-            cm_FightersT[i].scene->flags.bytes.hi |= 0x80;
-            cm_UpdateHandObject((char *)&cm_FightersT[i]);
+        if (cm_Fighters[i].id == 0xffff) {
+            memcpy(&cm_Fighters[i], c, sizeof(AICHAR));
+            cm_Fighters[i].v1ac = 0;
+            cm_Fighters[i].scene = 0;
+            gm_CreateCharModel(&cm_Fighters[i], d3_CurrentScene, 0, 0, 0, dummy);
+            cm_Fighters[i].scene->pathType = 4;
+            cm_Fighters[i].scene->flags.bytes.hi |= 0x80;
+            cm_UpdateHandObject((char *)&cm_Fighters[i]);
             w = (AIWEAPON *)cm_CharWeapon((char *)c);
-            cm_FightersT[i].scene->walkSpeed = w->speed * 0.2857142857142857;
-            sprintf(cm_FightersT[i].scene->obj->name, "cmb_%i", cm_FightersT[i].netId);
+            cm_Fighters[i].scene->walkSpeed = w->speed * 0.2857142857142857;
+            sprintf(cm_Fighters[i].scene->obj->name, "cmb_%i", cm_Fighters[i].netId);
             item = (AIOBJ *)cm_CharWeaponItem((char *)c);
             if (item != 0) {
                 if (w->kind == 2)
@@ -1748,7 +1748,7 @@ char *cm_AddFighter(int id, char *dummy)
                 else
                     item->usesLeft = 0xf;
             }
-            return (char *)&cm_FightersT[i];
+            return (char *)&cm_Fighters[i];
         }
     }
     return 0;
@@ -1763,7 +1763,7 @@ void cm_CollectSceneChars()
 
     memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
     p = ai_SceneChars;
-    for (r = cm_FightersT; (int)&r->scene < (int)&cm_FightersT[32].scene; r++) {
+    for (r = cm_Fighters; (int)&r->scene < (int)&cm_Fighters[32].scene; r++) {
         if ((int)p >= (int)&ai_SceneChars[31])
             break;
         if (r->scene != 0 && r->scene->scene == d3_DefaultScene)
@@ -1960,12 +1960,12 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
         cm_DamagePops[i].v = 0;
         cm_DamagePops[i].c = 0;
     }
-    memset(&cm_FightersT[32], 0, 0x1000);
+    memset(cm_FightScratch, 0, sizeof(cm_FightScratch));
     memset(cm_Bombs, 0, sizeof(cm_Bombs));
     memset(cm_Grenades, 0, sizeof(cm_Grenades));
-    memset(cm_Fighters, 0, 32 * sizeof(AICHAR));
+    memset(cm_Fighters, 0, sizeof(cm_Fighters));
     for (i = 0; i < 32; i++)
-        cm_FightersT[i].id = 0xffff;
+        cm_Fighters[i].id = 0xffff;
     for (i = 0; i < 6; i++)
         cm_Portraits[i].win = -1;
     cm_FightSounds = sb_LoadSampleBank("kampf.sbf", 1);
@@ -2049,9 +2049,9 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
     n = 0;
     for (i = 0; i < 32; i++) {
-        if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0 &&
-            cm_FightersT[i].scene->scene == d3_DefaultScene)
-            ai_SceneChars[n++] = &cm_FightersT[i];
+        if (cm_Fighters[i].id != 0xffff && cm_Fighters[i].scene != 0 &&
+            cm_Fighters[i].scene->scene == d3_DefaultScene)
+            ai_SceneChars[n++] = &cm_Fighters[i];
     }
     for (i = 0; i < 9; i++) {
         sprintf(name, "WARE_0%i", i + 1);
@@ -2160,14 +2160,14 @@ void cm_EndFightScene(CMFIGHTREC *rec)
         cm_BootsObject = 0;
     }
     for (i = 0; i < 32; i++) {
-        if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0) {
+        if (cm_Fighters[i].id != 0xffff && cm_Fighters[i].scene != 0) {
             if (rec->owner == ai_Chars[ai_PlayerId].netId || net_Conn.s == INVALID_SOCKET) {
-                k = (AICHAR *)gm_FindChar(cm_FightersT[i].netId);
+                k = (AICHAR *)gm_FindChar(cm_Fighters[i].netId);
                 if (k->kind != 0xb)
-                    gm_AddHealth(k->id, cm_FightersT[i].v024 - k->v024);
+                    gm_AddHealth(k->id, cm_Fighters[i].v024 - k->v024);
             }
-            ch_Delete(cm_FightersT[i].scene);
-            cm_FightersT[i].scene = 0;
+            ch_Delete(cm_Fighters[i].scene);
+            cm_Fighters[i].scene = 0;
         }
     }
     sv_ScrollSpeed = 1.0f;
