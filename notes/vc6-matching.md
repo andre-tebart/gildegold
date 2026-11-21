@@ -6033,6 +6033,9 @@ the bytes no portable form gives.
   the parameter is `int` / `unsigned` (the body's 16-bit store and `!= 0xffff` compile the same), one prototype
   for all units; gm_AssignBuilding(unsigned char *b, unsigned master, unsigned own) replaced an unsigned short
   definition, f3init's int prototype and two cast macros (every caller byte).
+- **A common placed in another unit's .bss group**: define it (tentatively) in that one unit and declare it
+  `extern` everywhere else; a second tentative definition in the using unit is not needed for the placement
+  (d3s_EdgeX / d3s_EdgeY: d3_engine.c defines, d3s.c declares; placement unchanged).
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

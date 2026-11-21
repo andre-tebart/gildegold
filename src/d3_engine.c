@@ -2716,9 +2716,8 @@ float d3_FovY;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizonta
 D3CVERT * d3_ClipList[2][0x80];  /* 0xfc4c60, polygon vertex lists (ping-pong) */
 D3CLIPSTATE d3_ClipState;  /* 0xfc5060, d3_ClipNone, d3_ClipFlagA / B and the frustum planes d3_Planes (d3_engine.h) */
 D3SORTENT * d3_RadixDst;  /* 0xfc50c8 */
-int d3s_EdgeX[4];  /* 0xfc50d0; d3s.c's edge table, a common d3s.c declares tentatively too: LINK gives it to the first object
-                               in link order that holds one, d3_engine (the original's group) */
-int d3s_EdgeY[4];  /* 0xfc50e0; a common with d3s_EdgeX (d3s.c too) */
+int d3s_EdgeX[4];  /* 0xfc50d0; d3s.c's edge table (d3s.c declares it extern), placed with d3_engine's commons */
+int d3s_EdgeY[4];  /* 0xfc50e0; with d3s_EdgeX */
 D3OBJECT d3_TopHead;  /* 0xfc5100, list start marker */
 /* d3_TopFirst is d3_TopHead.next (0xfc52f0 = 0xfc5100 + 0x1f0): a macro in d3_engine.h */
 float d3_ViewY;  /* 0xfc5328 */

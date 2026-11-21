@@ -828,9 +828,6 @@ extern int d3s_SlopeC;
 extern int d3s_SlopeL;
 extern int d3s_CL;
 extern int d3s_SlopeR;
-int d3s_EdgeX[4];  /* 0xfc50d0; a common d3_engine.c declares tentatively too (the original's): LINK gives it to d3_engine, the
-                               first object in link order with one; LINK orders an object's commons by its name hash */
-int d3s_EdgeY[4];  /* 0xfc50e0; a common with d3s_EdgeX (d3_engine.c too) */
 extern int d3s_XL;
 extern int d3s_XR;
 extern int d3s_SpanLen;
