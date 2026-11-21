@@ -3386,7 +3386,7 @@ void main_EndRound(void)
             weight = 0;
             b = (AIBLD *)gm_BuildQuery(1, 4, k);
             while (b != 0) {
-                if (AI_KIND(b->type) == 1 || AI_KIND(b->type) == 4 || AI_KIND(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
+                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
                     if (ai_BTypesT[b->type].level == 1)
                         weight += 2;
                     else if (ai_BTypesT[b->type].level == 2)
@@ -3425,7 +3425,7 @@ void main_EndRound(void)
             }
             b = (AIBLD *)gm_BuildQuery(1, 4, k);
             while (b != 0) {
-                if (AI_KIND(b->type) == 1 || AI_KIND(b->type) == 4 || AI_KIND(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
+                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
                     if (ai_BTypesT[b->type].level == 1) {
                         b->budget = value * 2 / weight;
                         b->budget = b->budget < 0 ? 0 : b->budget;

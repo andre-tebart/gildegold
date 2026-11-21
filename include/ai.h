@@ -219,7 +219,6 @@ typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegeta
     int obj;                            /* 0x14, its 3D object */
 } AIMAPENT;
 
-#define AI_KIND(t) (((int (*)(int))gm_BuildingClass)(t))   /* the call zero-extends the byte (xor ecx,ecx; mov cl) */
 
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters: AICHAR records, defined by ahm.c as char[768][0x21c]; the units that read their fields use their ai_CharsT view */

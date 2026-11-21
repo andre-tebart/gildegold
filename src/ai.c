@@ -3425,7 +3425,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
     k = 0;
     bld = ai_BldsT;
     do {
-        if (AI_KIND(bld->type) == 2) {
+        if (gm_BuildingClass(bld->type) == 2) {
             o = gm_Query(bld->objList, 2, 0, 0x2a, 6);
             if (o) {
                 for (it = gm_Query(o->list, 1, 5); it; it = gm_QueryNext()) {
@@ -3659,7 +3659,7 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
                             if (j >= gm_NOffers)
                                 break;
                             row = &gm_Offers[j];
-                            if (row->bld != ch->bld && AI_KIND(row->bld->type) != 2 && row->goodsObj != 0) {
+                            if (row->bld != ch->bld && gm_BuildingClass(row->bld->type) != 2 && row->goodsObj != 0) {
                                 cnt = row->count;
                                 if (cnt >= ai_GoodsT[e->item].need[k]) {
                                     if (row->bld->owner != ch->bld->owner) {
@@ -3750,7 +3750,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                         if (j >= gm_NOffers)
                             break;
                         row = &gm_Offers[j];
-                        if (row->bld != ch->bld && AI_KIND(row->bld->type) != 2 && row->goodsObj != 0) {
+                        if (row->bld != ch->bld && gm_BuildingClass(row->bld->type) != 2 && row->goodsObj != 0) {
                             cnt = row->count;
                             if (cnt >= ai_GoodsT[e->item].need[k]) {
                                 s->bld = row->bld;
