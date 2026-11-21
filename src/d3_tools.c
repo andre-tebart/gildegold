@@ -11,6 +11,7 @@
 struct D3VECTOR;
 struct D3SM;
 struct D3OBJECT;
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -960,7 +961,7 @@ int d3t_MoveCameraPath(int time, int n, ...)
     D3ANIMFLAGS af;
     D3OBJECT *o;
     int i, k, step;
-    char **args = (char **)&n;
+    va_list ap;
 
     if (d3t_CamMoving)
         return 0;
@@ -969,14 +970,18 @@ int d3t_MoveCameraPath(int time, int n, ...)
     af.b[1] |= 0x14;
     af.b[8] |= 2;
     af.b[1] |= 8;
-    for (i = 0, k = 0; i < n; i++) {
-        strcpy(name, args[++k]);
+    va_start(ap, n);
+    for (i = 0; i < n; i++) {
+        strcpy(name, va_arg(ap, char *));
         if (name[0]) {
-            if (!(objs[count] = d3_FindObject(0, 0x160, 0, name)))
+            if (!(objs[count] = d3_FindObject(0, 0x160, 0, name))) {
+                va_end(ap);
                 return 0;
+            }
             count++;
         }
     }
+    va_end(ap);
     step = time / count;
     keys[0].rot.x = 0.0f;
     keys[0].rot.y = 0.0f;
@@ -1191,21 +1196,24 @@ void d3t_DeleteRain(D3TRAIN *rain)
 
 void d3t_SetRain(D3TRAIN *rain, int n, ...)
 {
-    int *args = &n;
-    int k = 0;
+    va_list ap;
+    int arg;
     int i, j, cmd, cap;
     D3TRAINDROP *drops, *drop;
 
+    va_start(ap, n);
     for (i = 0; i < n; i++) {
-        cmd = args[++k];
+        cmd = va_arg(ap, int);
         switch (cmd) {
         case 0:
         case 1:
-            if (args[++k] >= rain->capacity) {
-                cap = args[k] + 100;
+            if ((arg = va_arg(ap, int)) >= rain->capacity) {
+                cap = arg + 100;
                 drops = mem_Alloc(cap * sizeof(D3TRAINDROP), "d3t:RainDropList");
-                if (!drops)
+                if (!drops) {
+                    va_end(ap);
                     return;
+                }
                 memcpy(drops, rain->drops, rain->capacity * sizeof(D3TRAINDROP));
                 mem_Free(rain->drops);
                 rain->drops = drops;
@@ -1221,24 +1229,25 @@ void d3t_SetRain(D3TRAIN *rain, int n, ...)
                 }
             }
             if (cmd == 0) {
-                rain->count = args[k];
+                rain->count = arg;
             } else {
                 rain->oldcount = rain->count;
-                rain->newcount = args[k];
+                rain->newcount = arg;
                 rain->time30 = rain->time2c;
-                rain->time34 = rain->time2c + args[++k];
+                rain->time34 = rain->time2c + va_arg(ap, int);
             }
             break;
         case 2:
             rain->oldwindx = rain->windx;
             rain->oldwindz = rain->windz;
-            rain->newwindx = args[++k] * 0.001f;
-            rain->newwindz = args[++k] * 0.001f;
+            rain->newwindx = va_arg(ap, int) * 0.001f;
+            rain->newwindz = va_arg(ap, int) * 0.001f;
             rain->time38 = rain->time2c;
-            rain->time3c = rain->time2c + args[++k];
+            rain->time3c = rain->time2c + va_arg(ap, int);
             break;
         }
     }
+    va_end(ap);
 }
 /* 0x413f30. The parentheses around drop->pos.w and the pos.y increment set VC6's operand ranks
    (load order and add association); the partial initializer of fall only restores the wind/fall
@@ -1568,22 +1577,25 @@ void d3t_FreeSnow(D3TSNOW *snow)
 
 void d3t_SetSnow(D3TSNOW *snow, int n, ...)
 {
-    int *args = &n;
-    int k = 0;
+    va_list ap;
+    int arg;
     int i, j, cmd, cap;
     float f;
     D3TSNOWFLAKE *flakes, *flake;
 
+    va_start(ap, n);
     for (i = 0; i < n; i++) {
-        cmd = args[++k];
+        cmd = va_arg(ap, int);
         switch (cmd) {
         case 0:
         case 1:
-            if (args[++k] >= snow->capacity) {
-                cap = args[k] + 100;
+            if ((arg = va_arg(ap, int)) >= snow->capacity) {
+                cap = arg + 100;
                 flakes = mem_Alloc(cap * sizeof(D3TSNOWFLAKE), "d3t:SnowFlakeList");
-                if (!flakes)
+                if (!flakes) {
+                    va_end(ap);
                     return;
+                }
                 memcpy(flakes, snow->flakes, snow->capacity * sizeof(D3TSNOWFLAKE));
                 mem_Free(snow->flakes);
                 snow->flakes = flakes;
@@ -1599,28 +1611,29 @@ void d3t_SetSnow(D3TSNOW *snow, int n, ...)
                 }
             }
             if (cmd == 0) {
-                snow->count = args[k];
+                snow->count = arg;
             } else {
                 snow->oldcount = snow->count;
-                snow->newcount = args[k];
+                snow->newcount = arg;
                 snow->time60 = snow->time5c;
-                snow->time64 = snow->time5c + args[++k];
+                snow->time64 = snow->time5c + va_arg(ap, int);
             }
             break;
         case 2:
             snow->oldwindx = snow->windx;
             snow->oldwindz = snow->windz;
-            snow->newwindx = args[++k] * 0.001f;
-            snow->newwindz = args[++k] * 0.001f;
+            snow->newwindx = va_arg(ap, int) * 0.001f;
+            snow->newwindz = va_arg(ap, int) * 0.001f;
             snow->time68 = snow->time5c;
-            snow->time6c = snow->time5c + args[++k];
+            snow->time6c = snow->time5c + va_arg(ap, int);
             break;
         case 3:
-            j = args[++k];
+            j = va_arg(ap, int);
             snow->peak = max(snow->peak, j * 2500.0f);
             break;
         }
     }
+    va_end(ap);
 }
 /* 0x414ea0, moves the snow flakes with the camera, the wind and the fall, and projects them. The locals x and y
 keep the x update on the FPU stack and fix the sy2 operand order. Initializing fall at the top puts it below wind on the stack. @deep deep s48: c2dag: the head block is cut at 81 nodes right after move.z's fmul; the fstp move.z is the first node of the second region (h 161 against the cam04c copies' 169..171), so its place there is a height question in region 2 (flip.py's wx / wz deletions lowered it). Rounds: one parenthesised term (or the first two grouped) in each of o.x, o.y, move.x/y/z (17: best = control 4, others 10..29), each term of the wind / fall lines parenthesised (18: 6..8+), wx / wz written inline (= control), the cam04c copies after the wind lines, move.N = move.N * 0.0025f (= control), initgen: = control. Left: the move.z fstp at 0x415000. prior: deep s23: wz = snow->windz without the parentheses: 8 -> 4 ins (the viewport loads now at the original's place). Left: the move.z store (fstp) one load later than the original (after mov ecx,[eax+0x50] instead of before). All 720 orders of the move scaling / cam04c copies: no lever; climb round 1 nothing; flip.py: deleting wx = / wz = (a load fewer) or dup of a cam04c copy flips it. The fall / wind transforms through vector temporaries (fall in place via x / y, the wind source as d): worse. */

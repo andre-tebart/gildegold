@@ -4696,12 +4696,12 @@ How arguments are pushed, a call written in both arms, parameter and return type
   three split-piece reloads at one edge in ascending candidate id (c2trace) (d2_ShpBlit16HalfDark, open).
 
 ### Varargs, inline, intrinsics, asm
-- **Varargs walk `mov reg,[r+4]; add r,4`, base in the preheader**: conflicting notes, measure: `mov edi,[ecx+4];
-  add ecx,4` with the base `lea` after `nargs > 0` is `va_arg`, and `va_arg` (not walking `&n`) gives the
-  original push order; vs `lea ebx,[ebp+0xc]; mov eax,[ebx+4]; add ebx,4`, counter in memory, is `char **args =
-  (char **)&n; ... args[++k]` (d3t_MoveCameraPath, snow / rain setters), and an `int *` walk re-reading the
-  argument after a call is `int *args = &n; ... args[++k]` (base `&n` in the preheader); `p = &n; *++p` or
-  `va_arg` does not match.
+- **Varargs walk `mov reg,[r+4]; add r,4`, base in the preheader**: `<stdarg.h>`'s `va_list` / `va_start` /
+  `va_arg` / `va_end` (VC6's are plain `char *` macros, `va_end` a dead store). Never walk `&n` by hand: the
+  hand-rolled `char **args = (char **)&n; args[++k]` / `int *args = &n` / `p = &n; *++p` compile to the same
+  code as `va_arg` (d3t_MoveCameraPath, d3t_SetRain, d3t_SetSnow, gm_BuildQuery: byte either way). A value read
+  twice (`args[k]` after a call) is a named local: `if ((arg = va_arg(ap, int)) >= cap) { .. } count = arg;`
+  (byte, the original re-reads nothing it did not keep).
 - **`__inline` with `__asm`**: conflicting notes, measure: `__inline` functions containing asm were not inlined
   (asm addressing plain variables needs explicit pointer variables) vs an `__inline` `__asm` function returning
   in al is inlined (cpuid MMX test; VC6 knows what asm clobbers), and an asm block with four stack temps was an
@@ -5991,6 +5991,14 @@ Conventions and macros of the game and its engine that explain a code shape.
 - **A 4-byte gap after a vector**: the `w` of a 16-byte `D3VECTOR4`.
 - **`or dl,2` on byte +2 of a 4-byte flags struct**: `flags.b[2] |= 2` (D3TEXFLAGS). D3ANIMFLAGS.b[1] = the bits of
   D3ANIM.flags2d (0x10 loop, 0x08, 0x04, 0x02).
+
+### Portable spellings first
+The original was written in portable C wherever we checked; a non-portable spelling of ours was our modelling,
+not the original's. Write the portable form first and keep a non-portable one only with an `@original` naming
+the bytes no portable form gives.
+
+- **Varargs**: `<stdarg.h>` `va_list` / `va_start` / `va_arg` / `va_end`, never a walk from `&n` (same code,
+  see "Varargs, inline, intrinsics, asm").
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.

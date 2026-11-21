@@ -26,6 +26,7 @@ struct AICHAR;
 #include "txt_views.h"
 #include "d2.h"
 #include <windows.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2067,7 +2068,7 @@ unsigned char *gm_BuildNext(void)
 
 unsigned char *gm_BuildQuery(int n, ...)
 {
-    int *ap;
+    va_list ap;
     int i;
 
     if (ai_BTypes == 0)
@@ -2082,32 +2083,33 @@ unsigned char *gm_BuildQuery(int n, ...)
     gm_BQTested = 0;
     gm_BQStopFirst = 0;
     if (n > 0) {
-        ap = &n;
+        va_start(ap, n);
         for (i = n; i != 0; i--) {
-            switch ((unsigned char)*++ap) {
+            switch ((unsigned char)va_arg(ap, int)) {
             case 0:
-                gm_BQType = (unsigned char)*++ap;
+                gm_BQType = (unsigned char)va_arg(ap, int);
                 break;
             case 1:
-                gm_BQId = *++ap;
+                gm_BQId = va_arg(ap, int);
                 break;
             case 2:
-                strcpy(gm_BQName, (char *)*++ap);
+                strcpy(gm_BQName, va_arg(ap, char *));
                 break;
             case 3:
-                gm_BQMaster = (unsigned short)*++ap;
+                gm_BQMaster = (unsigned short)va_arg(ap, int);
                 break;
             case 4:
-                gm_BQOwner = (unsigned short)*++ap;
+                gm_BQOwner = (unsigned short)va_arg(ap, int);
                 break;
             case 5:
-                gm_BQClass = (unsigned char)*++ap;
+                gm_BQClass = (unsigned char)va_arg(ap, int);
                 break;
             case 6:
                 gm_BQStopFirst = 1;
                 break;
             }
         }
+        va_end(ap);
     }
     gm_BQCursor = (ORDBLD *)ai_Blds;
     return gm_BuildNext();
