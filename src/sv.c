@@ -5093,23 +5093,18 @@ void sv_MarkMasterCarts(void)
         }
     }
 }
-/* 0x52c4a0, releases the speech bubble of the object o (the object field sv_BubbleObjects of its bubble record) */
+/* 0x52c4a0, releases the speech bubble of the object o (the ch field of its sv_Bubbles record) */
 
 void sv_ReleaseBubble(int o)
 {
     int i;
-    int *p;
 
-    i = 0;
-    p = sv_BubbleObjects;
-    do {
-        if (*p == o) {
-            sv_BubbleObjects[i * 0x43] = 0;
+    for (i = 0; i < 0x40; i++) {
+        if ((int)sv_Bubbles[i].ch == o) {
+            sv_Bubbles[i].ch = 0;
             return;
         }
-        p += 0x43;
-        i++;
-    } while ((int)p < (int)(sv_BubbleObjects + 0x40 * 0x43));
+    }
 }
 /* 0x52c4e0, shows a speech bubble over the character ch (only one of the current scene, and one bubble per character): the text id
    text, or the own text name, goes into a free sv_Bubbles record, else into the last one stamped before now; ch's delete
@@ -7644,7 +7639,6 @@ struct D3SKYLAYER *d3_SkyLayers[6];  /* 0x760620, the sky layer handles: sv crea
 SVPLATE sv_NamePlates[0x20];  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[128];  /* 0x761f40, the status line text */
 SVBUBBLE sv_Bubbles[0x40];  /* 0x761fc0, the 64 speech bubble records */
-/* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
 int sv_SelectedChar;  /* 0x7662c0 */
 int sv_GroundplanButtons[15];  /* 0x7662e0, 15 widget ids */
 int sv_SelectedExtra;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */

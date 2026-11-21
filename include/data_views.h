@@ -33,7 +33,4 @@
 /* d3d_Config */
 #define d3_ShadowMode            (*(struct D3BITS3 *)((char *)&d3d_Config + 0x1))  /* 0xfe7671 */
 
-/* sv_Bubbles */
-#define sv_BubbleObjects         (*(int (*)[4286])((char *)&sv_Bubbles + 0x8))  /* 0x761fc8 */
-
 #endif

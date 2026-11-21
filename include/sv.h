@@ -362,9 +362,6 @@ extern struct D3TSNOW *d3t_Snow;                        /* 0x76061c, the snow sy
 extern struct D3SKYLAYER *d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */
 extern SVBUBBLE sv_Bubbles[0x40];                           /* 0x761fc0, the 64 speech bubble records */
-#ifndef DATA_VIEWS_H
-extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the object field (+8) of each bubble record */
-#endif
 extern int sv_SelectedChar;                                    /* 0x7662c0 */
 extern int sv_GroundplanButtons[15];                                /* 0x7662e0 */
 extern int sv_SelectedExtra;                                       /* 0x76631c */
