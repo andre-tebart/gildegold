@@ -680,14 +680,7 @@ void hmt_DecideElection(void)
    rank 7 or more counts 0.33, one that is not the last counted of the other two councils 0.67 more) and creates
    new characters (cm_SendCreateCharacter type 3) until each council has two: rank 7, the council's office kind
    as the previous office (0x167), money (1 + rand) * 0.5 * gv_RankWorth[7] and the council bits (the third
-   council also those of one of the other two)
-   @deep deep s32 (bonus look): the council loop runs i = 2 .. 0 with the index offset stepped at the
-   body's end (sub ecx,4; dec edi; lea eax,[edi-1]; test; jne: the exit test is on i + 1 != 0) and loads
-   cnt[i] / bits[i] at offset 0 first; ours (for (i = 3; i--; )) steps first (M8 +0xc against +0x8). for (i
-   = 2; i >= 0; i--) and the do / --i forms: draft 8 (the test reads lea eax,[edi-2]; jge), i > -1: 10, i +
-   1 != 0 / > 0: 40+, i-- > 0: 22. Left also: k = 0 (xor ebx) placed after the shuffle in the original.
-   (declaration set: no declaration set makes this text byte (every symbol-count shift 0..63 at the unit's
-   start and before the function) */
+   council also those of one of the other two) */
 
 void hmt_FillCouncils(void)
 {
@@ -729,7 +722,8 @@ void hmt_FillCouncils(void)
         p = &ai_CharsT[j];
         if (p->b00d >= 7
             && (p->kind == 6 || p->kind == 7 || p->kind == 5 || p->kind == 4 || p->kind == 3 || p->kind == 2)) {
-            for (i = 3; i--; ) {
+            for (n = 3; n != 0; n--) {
+                i = n - 1;
                 if ((p->flags1cc & hmt_ElectionExcludedBits[i]) == 0 && (hmt_ElectionGroupBits[i] & p->flags1cc) != 0) {
                     if (p->netId != last[(i + 1) % 3] && p->netId != last[(i + 2) % 3]) {
                         last[i] = p->netId;
@@ -741,8 +735,7 @@ void hmt_FillCouncils(void)
         }
     }
     gm_Shuffle(15, ids);
-    k = 0;
-    for (i = 0; i < 3; i++) {
+    for (i = 0, k = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
             id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
             h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_SexForJob(id));
