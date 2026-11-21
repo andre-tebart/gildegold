@@ -2579,8 +2579,11 @@ void ai_HelperBook(AIBLD *bld, char *model)
         io_PrintText("%s %i", 0x4143, i + 1);
     }
     d2_SetForm(book->views[2], 3);
-    halfW = d2_Wins[d2_LastWindow].w / 2;
-    halfH = d2_Wins[d2_LastWindow].h / 2;
+    {
+        D2WIN *w = &d2_Wins[d2_LastWindow];
+        halfW = w->w / 2;
+        halfH = w->h / 2;
+    }
     for (i = 0; i < 12; i++) {
         rows[i].ch = 0;
         rows[i].pic = -1;
