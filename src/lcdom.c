@@ -2072,32 +2072,29 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
    (the job's cost, the text 0x220), the fire button 0x1a21 and the promotion 0x1a25; hire sends the request 6,
    fire the message 0x31 after the question 0x1a36, promotion the message 0x32 (refused with 0x1a27 below
    four years of service). At the end the radio group is cleared, the book closed and the camera follows
-   @deep s23: the row setup in ai_HelperBook's (byte) form: D2WIN *w block for halfW / halfH, j = 0; r = 0;
-   before pg++ / vp++, rows[i].y = ..; y = rows[i].y;, the texts at px - 0x36 / y - 0x11 and y + 0x44
-   inline, j++ at the end (all five together 355 -> 106; each subset worse), bt = .. after the -1 inits
-   (106 -> 104, as the helper book). Instruction count now equal (1077), size +19. Left: (1) the click loop
-   (+0xa68..): the original walks rows in edi with the counter in ebp, ours the reverse; the original holds
-   bld in esi over the hire block (mov esi,[bld]; push esi for gm_IsHomeType hoisted above the memset) and
-   -1 in ebp after the loop (or ebp,-1; cmp ebx,ebp for sel, hireRoom = ebp, sel = ebp), ours immediates;
-   (2) the hire message's struct copy of ai_Time in another word order (M8 x2; the original loads ai_Time+8
-   first, before to); a 720-order round of the hire fill: best fromId after time (100 ins, M8 x3), not
-   kept; (3) the two inline strcpy's mov [edx+eax] vs the original's [eax+edx] (the helper book's same
-   statements are byte). climb round 1: best = that fill move (100). prior: Written whole from the original
-   (was a stub): the four-page mercenary book, the bonus split (pay_worker), the inline row creation
-   (picture 0x5db, the two texts, the first six entry controls), the per-frame refill from gm_ListWorkers'
-   third list (jobless characters), the inline fill (portrait, name, opinion slider; the hire text 0x1a24
-   for a running request 6 of title 0x13; 'no character' with the controls freed), the clicks (hire request
-   6 with hireTitle 0x13, fire 0x31, promotion 0x32 or the refusal 0x1a27). 1075 vs 1077 instructions,
-   every call the same number of times. Left is allocation / scheduling: in the row setup ours keeps the
-   picture x (px) in ebx and y in a slot, the original y in ebx and px in a slot ('+ add ebx, 0x44' against
-   '- mov eax, [esp + 0x24] / add eax, 0x44'), which moves the d2_Objs / rows[i].name stores (the two M8
-   lines at +0x368 / +0x384 are those crossed stores) and the msg.time = ai_Time copy is stored in another
-   word order (M8 at +0xc31 / +0xc3b). The prover stops at gm_PlayerFactor's byte argument (ai_OwnPlayer
-   pushed through dl with other upper bits). Tried: the declaration order of y / px; the opinion's (v +
-   128.0) * 100.0 kept in a double (that settled the M10 fold of 100 / 255). (references: M8 at +0x368:
-   ours refers to d2_LastWindow (0x6ed938), the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3
-   more), explained: the M8 refs are crossed stores of the same objects (rows[i].name / d2_Objs) and the
-   words of one struct copy (msg.time = ai_Time) in another order) */
+   @deep s23: the row setup in ai_HelperBook's (byte) form (D2WIN *w block, j = 0; r = 0; first, y read
+   back from rows[i].y, the texts at px - 0x36 inline, j++ at the end; bt after the -1 inits: 355 -> 104),
+   the hire cost through a named owner = ai_Chars[bld->owner] as the helper book's master hire (104 -> 32:
+   bld then held in esi over the hire block, -1 in ebp), the hire request filled type, flags, to, fromId,
+   time, hireRows[sel] (a 720-order round: 32 -> 4, shape). Left: the two inline strcpy's of the refill
+   loop (hireText / emptyText) store through [edx+eax] where the original has [eax+edx] (operand order of
+   the copy's address add, same registers); ai_HelperBook's identical statements compile to [eax+edx]; the
+   buffers' declaration order is no lever. prior: Written whole from the original (was a stub): the
+   four-page mercenary book, the bonus split (pay_worker), the inline row creation (picture 0x5db, the two
+   texts, the first six entry controls), the per-frame refill from gm_ListWorkers' third list (jobless
+   characters), the inline fill (portrait, name, opinion slider; the hire text 0x1a24 for a running request
+   6 of title 0x13; 'no character' with the controls freed), the clicks (hire request 6 with hireTitle
+   0x13, fire 0x31, promotion 0x32 or the refusal 0x1a27). 1075 vs 1077 instructions, every call the same
+   number of times. Left is allocation / scheduling: in the row setup ours keeps the picture x (px) in ebx
+   and y in a slot, the original y in ebx and px in a slot ('+ add ebx, 0x44' against '- mov eax, [esp +
+   0x24] / add eax, 0x44'), which moves the d2_Objs / rows[i].name stores (the two M8 lines at +0x368 /
+   +0x384 are those crossed stores) and the msg.time = ai_Time copy is stored in another word order (M8 at
+   +0xc31 / +0xc3b). The prover stops at gm_PlayerFactor's byte argument (ai_OwnPlayer pushed through dl
+   with other upper bits). Tried: the declaration order of y / px; the opinion's (v + 128.0) * 100.0 kept
+   in a double (that settled the M10 fold of 100 / 255). (references: M8 at +0x368: ours refers to
+   d2_LastWindow (0x6ed938), the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3 more), explained:
+   the M8 refs are crossed stores of the same objects (rows[i].name / d2_Objs) and the words of one struct
+   copy (msg.time = ai_Time) in another order) */
 
 void ai_MercenaryBook(AIBLD *bld, char *model)
 {
@@ -2143,6 +2140,7 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
     AICHARREC *master;
     AICHARREC *c;
     AIJOB *job;
+    char *owner;
 
     nWorkers = 0;
     hireButton = -1;
@@ -2367,7 +2365,8 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
                 fireButton = -1;
                 promoteButton = -1;
                 if (rows[i].ch == 0) {
-                    cost = (int)gm_JobCost(ai_Chars[bld->owner], bld->type, -1, 1);
+                    owner = ai_Chars[bld->owner];
+                    cost = (int)gm_JobCost(owner, bld->type, -1, 1);
                     d2_SetForm(rows[i].view, 2);
                     hireButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a22, cost, 0x220));
                 } else if (rows[i].state == 1) {
@@ -2385,10 +2384,10 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
                 job->tourCounters[sel] = 1;
             } else {
                 memset(&msg, 0, sizeof(msg));
-                msg.fromId = bld->id;
                 msg.type = 6;
                 msg.flags = 1;
                 msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
                 msg.time = ai_Time;
                 msg.hireRows[sel] = 1;
                 if (gm_IsHomeType(bld) != 0)
