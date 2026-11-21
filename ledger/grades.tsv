@@ -4394,7 +4394,7 @@ exe	0x005af1d0	ai_TransportWindow	lcdom	draft	readable	deep
 exe	0x005b2090	ai_LoadTownMap	lcdom	byte	readable		
 exe	0x005b2180	ai_MapPick	lcdom	byte	readable		
 exe	0x005b2530	ai_NewStorageSlotWindow	lcdom	shape	readable	deep	
-exe	0x005b26b0	ai_StorageWindow	lcdom	draft	readable	deep	
+exe	0x005b26b0	ai_StorageWindow	lcdom	byte	readable		
 exe	0x005b3130	ai_TalentWindow	lcdom	byte	readable		
 exe	0x005b3630	ai_SabotageCallback	lcdom	byte	readable		
 exe	0x005b3ad0	ai_EspionageAmountCB	lcdom	byte	readable		
@@ -4410,7 +4410,7 @@ exe	0x005b5310	ai_PamphletAmountCB	lcdom	byte	readable
 exe	0x005b5610	ai_PamphletWindow	lcdom	byte	readable		
 exe	0x005b5690	ai_NoticeBoardWindow	lcdom	draft	readable	deep	
 exe	0x005b5a20	ai_BardWindow	lcdom	byte	readable		
-exe	0x005b5e80	ai_FeastWindow	lcdom	draft	readable	deep	
+exe	0x005b5e80	ai_FeastWindow	lcdom	byte	readable		
 exe	0x005b6950	ai_SellBuildingWindow	lcdom	byte	readable		
 exe	0x005b6b20	ai_RenovationWindow	lcdom	byte	readable		
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lcdom	byte	readable		

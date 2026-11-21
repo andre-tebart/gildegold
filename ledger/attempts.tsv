@@ -153,6 +153,7 @@ exe	0x005b4820	ai_BribeAmountCB	1
 exe	0x005b4c60	ai_DrohbriefAmountCB	1
 exe	0x005b5690	ai_NoticeBoardWindow	1
 exe	0x005ba750	lc_UpdateGoodsReserves	1
+exe	0x005bba00	ai_TrainingWindow	1
 exe	0x005c4150	ai_FamilyTreeWindow	1
 exe	0x005ccc10	ai_Miracle	1
 exe	0x005cff70	ai_UseGoodSendHome	1
