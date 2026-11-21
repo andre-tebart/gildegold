@@ -695,7 +695,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     original loads the high word before the AMOUNTCFG memset's rep stosd; `cfg.filter = gypsyFilter` loads both
     after. ai_UseGoodCharmOfficials, ai_BewitchOrder, ai_HomageWindow byte; ai_SermonWindow and
     ai_UseGoodCharmPartner draft -> shape, ai_HatredWindow 24 -> 16 by the same edit (tools: a script over every
-    `X.filter = gypsyFilter;` of a below-byte function, one `dcp try` each).
+    `X.filter = gypsyFilter;` of a below-byte function, one `dcp try` each). That held only while gypsyFilter
+    was `volatile`: as a plain const `cfg.filter = gypsyFilter` compiles to the same code as the word copy, and
+    the word copies are gone (gypsyFilterWords is left only for lcdom's high-word-only copy).
   - **A named local for a call argument computed by a ternary** (`fl = p->sex != 0 ? F1 : F0;` then the call):
     the original loads the record pointer before `sub esp` and pushes the buffer address after the flag byte
     (ai_FindCandidateIds, its twin ai_DecideSuitor: byte).

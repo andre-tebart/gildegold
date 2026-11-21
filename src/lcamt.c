@@ -38,7 +38,6 @@ struct D3SM;
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -7279,8 +7278,7 @@ int ai_DismissOfficeAsk(AICHARREC *me, LCORDMSG *m)
         cfg.kind = 6;
         cfg.option14 = 3;
         cfg.mode = 0x400;
-        cfg.classMask[0] = gypsyFilterWords[0];
-        cfg.classMask[1] = gypsyFilterWords[1];
+        cfg.filter = gypsyFilter;
         txt_Format(caption, 0x1d98);
         txt_Format(caption2, 0x1d99);
         ch = (AICHARREC *)ai_SpecialAmountListWindow(ownerKind.col, (unsigned int *)&cfg, caption, caption2, 0);
@@ -7452,8 +7450,7 @@ int ai_BewitchOrder(AICHARREC *me, LCORDMSG *m)
         memset(&cfg, 0, sizeof(cfg));
         cfg.mode = 0x400;
         cfg.kind = 6;
-        cfg.classMask[0] = gypsyFilterWords[0];
-        cfg.classMask[1] = gypsyFilterWords[1];
+        cfg.filter = gypsyFilter;
         if (me->sex == 0)
             txt_Format(text, 0x1dae, 0x1daf);
         else
@@ -7742,8 +7739,7 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x400;
     cfg.kind = 6;
-    cfg.classMask[0] = gypsyFilterWords[0];
-    cfg.classMask[1] = gypsyFilterWords[1];
+    cfg.filter = gypsyFilter;
     txt_Format(text, 0x1dcf);
     a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     if (a == 0)
@@ -10778,8 +10774,7 @@ int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
         cfg.option14 = 3;
         cfg.mode = 0x400;
         cfg.kind = 6;
-        cfg.classMask[0] = gypsyFilterWords[0];
-        cfg.classMask[1] = gypsyFilterWords[1];
+        cfg.filter = gypsyFilter;
         target = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x9c], 0, 0);
         if (target == 0)
             return 0;
@@ -10955,8 +10950,7 @@ int ai_UseGoodCharmPartner(AICHARREC *ch, G8USEVIEW *use)
         cfg.flags = 1;
         cfg.kind = 6;
         cfg.mode = ((lc_CharRecs[ai_PlayerId].sex != 0) + 1) | 0x400;
-        cfg.classMask[0] = gypsyFilterWords[0];
-        cfg.classMask[1] = gypsyFilterWords[1];
+        cfg.filter = gypsyFilter;
         target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
         if (target == 0)
             return 0;

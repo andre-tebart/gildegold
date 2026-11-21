@@ -36,7 +36,6 @@ struct D3SM;
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];

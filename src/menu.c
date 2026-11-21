@@ -30,7 +30,6 @@ extern int gm_PlayerRecords[688];
 #include "d3_vec.h"
 #include "surf.h"
 #include "menu.h"
-#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words (as lc.c / lcamt.c) */
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "sv_t.h"
@@ -3034,8 +3033,7 @@ void ai_HomageWindow(int building)
     cfg.flags = 1;
     cfg.mode = 0x400;
     cfg.kind = 6;
-    cfg.classMask[0] = gypsyFilterWords[0];
-    cfg.classMask[1] = gypsyFilterWords[1];
+    cfg.filter = gypsyFilter;
     target = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x4209], 0, 0);
     if (target == 0) {
         sv_CameraFollow();

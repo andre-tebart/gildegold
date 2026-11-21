@@ -146,7 +146,6 @@ struct D3SM;
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -11739,8 +11738,7 @@ void ai_SermonWindow(AIBLD *bld)
                 memset(&cfg, 0, sizeof(cfg));
                 cfg.mode = 0x400;
                 cfg.kind = 6;
-                cfg.classMask[0] = gypsyFilterWords[0];
-                cfg.classMask[1] = gypsyFilterWords[1];
+                cfg.filter = gypsyFilter;
                 txt_Format(title, 0x19a2);
                 priest = (AICHARREC *)ai_AmountMenu(&cfg, title, 0, 0);
                 sermon = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
