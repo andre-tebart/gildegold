@@ -282,7 +282,6 @@ extern unsigned char kb_Last;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 #define U_I(a) (*(int *)(a))
 

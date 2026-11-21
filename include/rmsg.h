@@ -25,8 +25,6 @@ typedef struct G14REC {
 
 
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);                                            /* 0x4fe2c0 */
-#define G14_4FEA50(a, o, b, k) ((int (*)(int, void *, int, int))gm_FindById)(a, o, b, k)  /* object out 2nd */
-#define G14_5087F0(a, b) ((float (*)(int, unsigned char))gm_ItemPrice)(a, b)  /* ai.h: int n */
 
 
 extern unsigned int ai_RandomSeed;       /* 0x6f0730, random seed of the messages */

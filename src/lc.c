@@ -706,7 +706,6 @@ int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
 
 struct AMTREC;  /* file-scope tag for the prototypes below */
 
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 struct AITIME;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
 

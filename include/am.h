@@ -553,7 +553,6 @@ int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);  
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
 int gm_BuildingKindCost(int c, int kind);                                               /* 0x509dc0 */
@@ -755,7 +754,6 @@ int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIAR
 int gm_BuildingKindCost(int c, int kind);                                               /* 0x509dc0 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
-#define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_CharCurrency)((AIPER *)(p), (k))  /* am.h: returns int */
 int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x498a80 */
 int ai_DecideUpgradeResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2);                 /* 0x498b80 */
 int amt_GetColumnOfficesOwned(int col, int max, struct AMTREC *out);                                      /* 0x4e7040 */
@@ -843,7 +841,6 @@ int ai_ExecuteSaveAps(G5CH *p, AIARG *s1, AIARG *s2);                           
 int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
 /* unk_48e070.h declares ai_FindWantedItems with its AIPX / AIRECX views (unify at the join) */
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                           /* 0x4a5760 */
-#define G8_4FEA50(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)  /* ai.h: other types */
 int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
 #define ai_FindUsableGoodP(id) ((void *(*)(int))ai_FindUsableGood)(id)
@@ -946,7 +943,6 @@ int ai_BuyObjectApExec(G5CH *p, AIARG *s1, AIARG *s2);  /* unlinked: LINK folds 
 int ai_UpgradeBusinessApDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_UpgradeBusinessApExec(G5CH *p, AIARG *s1, AIARG *s2);  /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */
-#define G8_4C4830(a, b, k, d) ((void (*)(int, unsigned int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a, b, k, d)  /* above: c is int */
 /* 0x4c4830 with an int c (unk_48e070.h: unsigned char) */
 #define G8_4C4830I(a, b, c, d) ((void (*)(int, unsigned int, int, int))cm_SendMoveGoodsUnchecked)(a, b, c, d)
 
