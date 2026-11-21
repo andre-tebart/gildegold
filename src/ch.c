@@ -1087,7 +1087,7 @@ void ch_LoadLowAnims(CHARACTER *ch, int n, ...)
             if (!r)
                 r = d3_LoadAnimFile(file, buf, 1);
             if (r) {
-                d3_AttachAnimF(ch->lowPolyBody->material->animCtl, buf, f.anim);
+                d3anim_StartAnim(ch->lowPolyBody->material->animCtl, buf, f.anim);
                 d3_ReleaseTexture(ch->lowPolyBody->material->animCtl, buf);
             }
         }

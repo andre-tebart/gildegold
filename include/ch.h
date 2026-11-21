@@ -388,7 +388,6 @@ char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); /* 0x411860 */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */
 #define d3_LoadAnimFile ((int (*)(char *, char *, int))d3_LoadAnimStream)                    /* 0x44e4a0, returns int */
-#define d3_AttachAnimF ((int (*)(void *, char *, D3ANIMFLAGS))d3anim_StartAnim)                   /* 0x435550 with the d3.h flags type */
 
 void ch_LoadLowAnims(CHARACTER *ch, int n, ...);                                        /* 0x404360 */
 int ch_AttachAni(CHARACTER *ch, char *name, unsigned char loop);                        /* 0x4044a0 */
