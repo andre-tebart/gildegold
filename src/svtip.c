@@ -743,7 +743,6 @@ int ai_OpenBuildingTooltip(int idx)
 
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
-#define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original ai_OpenItemTooltip recomputes each row y (slot * 0x16 + 0x28) per call instead of strength-reducing it: a short y, as d2_WinOpenPic's (sv.c has the same cast) */
 
 /* 0x588310, opens the item tooltip view of the goods item idx: the form "ToolTip\ToolTip_Objekte_Waffen" when
    the item has a weapon record (ai_FindWeaponRecord) with a nonzero id, else "ToolTip\ToolTip_Objekte_Handelsgut",
@@ -767,7 +766,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    six-compare (best o9 53 ins / 574 bytes, nothing moves the layout). Next: a form where the arms differ
    before cross-jumping (a value per arm through a local, the list written by a helper), or the 0x225 chain
    as a macro shared with the 0x1c1 test at the end. prior: 273 -> 53 ins: d2_WinOpenPicStyled called with
-   a short y (cast macro d2_WinOpenPicStyledS, as sv.c; the row y is recomputed per call, loop counters in
+   a short y (its true short x, short y prototype; the row y is recomputed per call, loop counters in
    memory: -101), the staff loop as an index loop over ai_CharsT (countdown edx 0x300: -117),
    (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair). Left: only the type 0x17/0x25 chain layout
    (all 49 code ins, 0x58869f..0x588843): the original puts each arm inline after an inverted last compare,
@@ -844,7 +843,7 @@ int ai_OpenItemTooltip(int idx)
         id = item->in[k];
         amount = item->need[k];
         if (id != 0) {
-            d2_WinOpenPicStyledS(0, slot * 0x16 + 0x28, id + 0xdf, d2_LastWindow, -2);
+            d2_WinOpenPicStyled(0, slot * 0x16 + 0x28, id + 0xdf, d2_LastWindow, -2);
             io_PrintText("%i %s$N", amount, id * 2 + 0x9a8);
             slot++;
         }
@@ -855,7 +854,7 @@ int ai_OpenItemTooltip(int idx)
     for (i = 0; i < 37; i++) {
         for (k = 0; k < 10; k++) {
             if (gm_BuildingItemGroups[i].items[k] == idx && idx != 0x1cd) {
-                d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, gm_BuildingItemGroups[i].key + 0x427, d2_LastWindow, -2);
+                d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, gm_BuildingItemGroups[i].key + 0x427, d2_LastWindow, -2);
                 io_PrintText("%s$N", gm_BuildingItemGroups[i].key * 0xe + 0x48e);
                 slot++;
             }
@@ -895,7 +894,7 @@ int ai_OpenItemTooltip(int idx)
     }
     for (k = 0; k < n; k++) {
         id = list[k];
-        d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
+        d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
         io_PrintText("%s$N", id * 0xe + 0x48e);
         slot++;
     }
@@ -903,7 +902,7 @@ int ai_OpenItemTooltip(int idx)
           (idx != 0x1c7 && (idx == 0x1c4 || idx == 0x1c5 || idx == 0x1c6 || idx == 0x2af || idx == 0x2b0))) ||
         idx == 0x1c7) {
         if (item->type == 0x17 || item->type == 0x25) {
-            d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, 0x444, d2_LastWindow, -2);
+            d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, 0x444, d2_LastWindow, -2);
             io_PrintText("%s$N", 0x624);
             slot++;
         }

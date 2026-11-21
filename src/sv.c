@@ -8,7 +8,7 @@
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade). The
-   @original cast macros (d2_PutPixelRGBc, d2_WinOpenPicStyledS, d2_OpenFormS, ai_SwitchRoomI) record the parameter types the original's
+   @original cast macros (d2_PutPixelRGBc, d2_OpenFormS, ai_SwitchRoomI) record the parameter types the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -1838,9 +1838,7 @@ extern int sv_SelectedChar;
 extern char sv_PlayerBarKind;
 #define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, the member list rows (he.c and sv.c declare int[576]) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
-int d2_WinOpenPicStyled();                     /* 0x473350 */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: sv_OpenPlayerBar computes x = d2_ScreenW - 0x68 in 16 bits (sub cx, 0x68; push ecx) */
-#define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original: sv_UpdateMemberList computes the y of each call afresh (a short y, as d2_WinOpenPic's) */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
@@ -1994,14 +1992,14 @@ void sv_UpdateMemberList(unsigned char *g)
         if (im0 != -1) {
             if (sv_MemberRows[n].icon[0] == -1) {
                 if (im0 >= 0xdf && im0 <= 0x3bb)
-                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyled(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[0] = d2_WinOpenPic(0x38, n * 0x4e + 0x10, im0, d2_LastWindow);
             } else if (im0 != sv_D2Objs[sv_MemberRows[n].icon[0]].pic) {
                 d2_RemoveObj(sv_MemberRows[n].icon[0]);
                 sv_MemberRows[n].icon[0] = -1;
                 if (im0 >= 0xdf && im0 <= 0x3bb)
-                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyled(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[0] = d2_WinOpenPic(0x38, n * 0x4e + 0x10, im0, d2_LastWindow);
             }
@@ -2009,14 +2007,14 @@ void sv_UpdateMemberList(unsigned char *g)
         if (im1 != -1) {
             if (sv_MemberRows[n].icon[1] == -1) {
                 if (im1 >= 0xdf && im1 <= 0x3bb)
-                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyled(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[1] = d2_WinOpenPic(0x38, n * 0x4e + 0x28, im1, d2_LastWindow);
             } else if (im1 != sv_D2Objs[sv_MemberRows[n].icon[1]].pic) {
                 d2_RemoveObj(sv_MemberRows[n].icon[1]);
                 sv_MemberRows[n].icon[1] = -1;
                 if (im1 != 0)                   /* the original tests im1 != 0 here, not the range */
-                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyled(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[1] = d2_WinOpenPic(0x38, n * 0x4e + 0x28, im1, d2_LastWindow);
             }
@@ -2063,7 +2061,6 @@ int d2_GetWinObj();                     /* 0x475b80 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void sv_UpdatePanel(void);                     /* 0x52a050 */
-int d2_WinOpenPicStyled();                     /* 0x473350 */
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 void ai_InitWind(int type, int id, float *from, float *to);                     /* 0x5dbc30 */
 void d3t_FreeSnow();                     /* 0x414b50 */
@@ -3897,7 +3894,7 @@ void sv_RefreshPanel(void)
         for (i = 0; i < n; i++) {
             icon = icons[i];
             if (icon >= 0xdf && icon < 0x3bb)
-                sv_PanelWidgets[i] = d2_WinOpenPicStyledS(x + 0x32, i * 0x1a + 0x38, icon, d2_LastWindow, -2);
+                sv_PanelWidgets[i] = d2_WinOpenPicStyled(x + 0x32, i * 0x1a + 0x38, icon, d2_LastWindow, -2);
             else
                 sv_PanelWidgets[i] = d2_WinOpenPic(x + 0x32, i * 0x1a + 0x38, icon, d2_LastWindow);
         }
@@ -4003,7 +4000,7 @@ void sv_RefreshPanel(void)
     do {
         if (x >= 0x83)
             return;
-        *q = d2_WinOpenPicStyledS(x, 0x28, goods->id + 0xdf, d2_LastWindow, -2);
+        *q = d2_WinOpenPicStyled(x, 0x28, goods->id + 0xdf, d2_LastWindow, -2);
         sprintf(amount, "%i", gm_ListAmount(load, goods));
         o = d2_CreateWinText(x - 2, 0x1c, amount, d2_LastWindow);
         ((D2OBJ *)d2_Objs)[o].interactive = 1;

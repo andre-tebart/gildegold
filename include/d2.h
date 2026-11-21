@@ -389,7 +389,7 @@ void d2_RaiseObject(int obj);                                 /* 0x472f50 */
 void d2_RaiseWindow(int win);                                 /* 0x472fd0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);       /* 0x4731d0, picture object on a window (defined with
                                                                int x, y; callers above it pass shorts) */
-int d2_WinOpenPicStyled(int x, int y, int pic, int win, int a);    /* 0x473350 */
+int d2_WinOpenPicStyled(short x, short y, int pic, int win, int a);    /* 0x473350 */
 void d2_SetObjText(int obj, char *text);                     /* 0x4734d0, sets the text of a text object */
 int d2_CreateWinText(short x, short y, char *text, int win);    /* 0x473650, text label on a window */
 int d2_CreateScreenText(short x, short y, char *text);             /* 0x473860, text label on the screen */

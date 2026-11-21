@@ -4317,10 +4317,10 @@ int d2_WinOpenPic(short x, short y, int pic, int win)
 }
 /* 0x473350, the same without the horizontal scroll, and with a style */
 
-int d2_WinOpenPicStyled(int x, int y, int pic, int win, int a)
+int d2_WinOpenPicStyled(short x, short y, int pic, int win, int a)
 {
     D2WIN *w = &d2_Wins[win];
-    int obj;
+    int obj, bw, bh;
 
 
     if (!w->active)
@@ -4342,9 +4342,9 @@ int d2_WinOpenPicStyled(int x, int y, int pic, int win, int a)
         d2_Objs[obj].disabled = d2_Objs[w->parent].disabled;
         d2_ScaleObject(obj, a);
         w->nobjs++;
-        d2_GetFrameSize(w, &x, &win);
-        if ((short)y + d2_Objs[obj].h > w->contentHeight)
-            w->contentHeight = (short)y + x * 2 + d2_Objs[obj].h;
+        d2_GetFrameSize(w, &bw, &bh);
+        if (y + d2_Objs[obj].h > w->contentHeight)
+            w->contentHeight = y + bw * 2 + d2_Objs[obj].h;
     }
     return obj;
 }

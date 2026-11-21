@@ -6056,6 +6056,21 @@ the bytes no portable form gives.
   cm_GetSlotState). Several sets of candidates per unit tried in one batch (one scratch script applying each
   set, building, comparing the whole snapshot) found one in a round or two; dcp grade's "N unused typedefs"
   number did not reproduce (stale row), so measure.
+- **Callers push a short (`k * 0x31 + 0x11` recomputed per call, no movsx) but the definition passes `&x` /
+  `&win` to an `int *` out-parameter**: the parameters are `short`, and the out-values were own locals VC6 packed
+  into the dead parameter slots (see "Dead parameter slots"). d2_WinOpenPicStyled(short x, short y, ..) with
+  `int bw, bh; d2_GetFrameSize(w, &bw, &bh)` compiles byte and replaced the d2_WinOpenPicStyledS casts (lc, sv,
+  svtip) and five K&R `int f();` declarations (which conflict with a short prototype).
+- **A handle stored as `int` where the owner's API takes a typed pointer (sample banks, sblib's SBSAMPLE,
+  d3snd's D3SOUND)**: type the handle variables and fields (`struct SBBANK *snd_Bank`, `struct SBSAMPLE
+  *smp`), move the owner's record into its header when another unit reads its fields (SBENTRY into sblib.h, the
+  unit's SNDHANDLE / G16SMP views went), and call the owner's prototype. Globals, fields and locals of pointer
+  type compile the same as int (sb_PlaySampleI, sb_SetRestartC, sb_PlayH, sb_SetPanH, sb_SetVolumeI,
+  d3snd_*I: 40 casts, every function unchanged). Where one API's int handles reach many units (the voice
+  banks of snd_PlayVoice / snd_QueueVoice), a data cast at the hand-over inside the owner beats a function
+  cast.
+- **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
+  of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
   definition must return int (`mov eax,edx` / `xor eax,eax`; unsigned short gives `mov ax,dx`), and
   `(unsigned short)util_Random(n)` gives `mov esi,eax; and esi,0xffff` (106 functions fall): the original's
