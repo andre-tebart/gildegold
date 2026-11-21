@@ -614,9 +614,9 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int n
                     fl.s.b1 = mt->c7;
                     fl.s.c1 = mt->c2;
                     if (mt->name[2][0] == 0)
-                        tex = D3BGF_TEXLOAD(m->texnames + k * 0x40, fl, ((mt->c3 << 4 | mt->c6) * 2 | mt->c5) * 2, mt->c8 << 4 | mt->c9);
+                        tex = (D3TEXHANDLE *)tex_Load(m->texnames + k * 0x40, fl.f, ((mt->c3 << 4 | mt->c6) * 2 | mt->c5) * 2, mt->c8 << 4 | mt->c9);
                     else
-                        tex = D3BGF_TEXLOAD(m->texnames + k * 0x40, fl, (((mt->c3 << 4 | mt->c6) * 2 | mt->c5) * 2) | 1, mt->c8 << 4 | mt->c9);
+                        tex = (D3TEXHANDLE *)tex_Load(m->texnames + k * 0x40, fl.f, (((mt->c3 << 4 | mt->c6) * 2 | mt->c5) * 2) | 1, mt->c8 << 4 | mt->c9);
                     mi = tex ? tex - (D3TEXHANDLE *)d3_Textures : -1;
                     for (j = 0; j < m->npolys; j++) {
                         if (!used2[j] && m->polys[j].mat == k) {

@@ -387,7 +387,7 @@ D3FLMAP *d3io_ReadFloor(void *f, unsigned int version)
                         if (name[0]) {
                             fl.all = 0;
                             fl.s.b0 = 0x7f;
-                            tex = D3IO_TEXLOAD(name, fl, (c2 & 0xf) << 2 | c3 & 1, 0);
+                            tex = (D3TEXHANDLE *)tex_Load(name, fl.f, (c2 & 0xf) << 2 | c3 & 1, 0);
                             if (tex)
                                 tex_Reload(tex, 0);
                         }

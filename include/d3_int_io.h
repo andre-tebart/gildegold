@@ -60,8 +60,6 @@ typedef struct D3IOLIGHTKEY {       /* D3LIGHTENTRY (0x38 bytes) as the reader f
 } D3IOLIGHTKEY;
 #define D3IO_KEYS(o) ((D3IOLIGHTKEY *)D3_X(o)->light)
 
-/* tex_Load with its real argument types (ts_texture.c); d3.h declares the last two as int */
-#define D3IO_TEXLOAD ((D3TEXHANDLE *(*)(char *, D3IOFLAGS, unsigned char, unsigned char))tex_Load)
 
 #ifndef UNK_401000_H                /* bio.h's, for the includers without it (the bio.h / d3_fl.h clash is gone) */
 void bio_rd_c(struct VFSFILE *f, char *c);                                                        /* 0x401180 */

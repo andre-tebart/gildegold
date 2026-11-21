@@ -16,8 +16,6 @@ typedef union D3BGFFLAGS {          /* tex_Load flags as the loader builds them 
         unsigned char b3;
     } s;
 } D3BGFFLAGS;
-/* tex_Load with its real argument types (ts_texture.c); d3.h declares the last two as int */
-#define D3BGF_TEXLOAD ((D3TEXHANDLE *(*)(char *, D3BGFFLAGS, unsigned char, unsigned char))tex_Load)
 
 typedef struct D3BGFPOLY {          /* 0x38 bytes, D3BGF::polys */
     float uv[3][2];                 /* 0x00 */
