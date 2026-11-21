@@ -35,6 +35,7 @@ struct AICHAR;
 #include "di_input.h"
 #include "data_views.h"
 #include "amt.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 extern char ai_Crimes[];
 #define GAPDATA __declspec(align(1)) unsigned char
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
@@ -144,8 +145,6 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "f3gm.h"
 #include "f3gmt.h"
 void *ai_ProdSetting(void *bld);    /* 0x5a8560 */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original gm_Shuffled reads the 16-bit result of the 16-bit parameter's call (movzx bp,dl push, mov si,ax / and 0xffff), as anm.c's callers */
 extern struct D2COLKEY d2_TransparentColour;  /* 0x6f0454, shp.c (the type in shp.h) */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: unk_LoadIconNames stores the key byte by byte (mov byte [0x6f0455], 0xff; [0x6f0454] and [0x6f0456] = bl), not through the D2COLKEY word gb */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
@@ -809,9 +808,9 @@ void gm_SyncMarket(unsigned p)
                     m = (ORDOBJ *)gm_Query(o2->list, 1, 0, rec.item);
                 if (m != 0) {
                     if (rec.offer == 0)
-                        rec.offer = (unsigned char)util_RandomU(0xff);
+                        rec.offer = (unsigned char)util_Random(0xff);
                     else
-                        rec.offer += util_RandomU(8) + 0x18;
+                        rec.offer += util_Random(8) + 0x18;
                     rec.amount = rec.offer <= 0x80;
                 } else
                     rec.amount = 0;
@@ -902,13 +901,13 @@ void gm_RandomMarketShake(int unused)
     unsigned k;
     GMSTOCK *g;
 
-    if (util_RandomU(2) != 0) {
-        for (n = util_RandomU(2) & 0xffff; n > 0; n--) {
-            k = util_RandomU(0x54) & 0xffff;
+    if (util_Random(2) != 0) {
+        for (n = util_Random(2); n > 0; n--) {
+            k = util_Random(0x54);
             g = (GMSTOCK *)(init_StockBlocks + ai_OwnPlayer * 0x2a90) + k;
             if (g->item != 0 && g->amount != 0) {
                 rec = *g;
-                if (util_RandomU(1) != 0) {
+                if (util_Random(1) != 0) {
                     rec.mean = rec.demand * 1.5;
                     rec.price = gm_ItemPrice(g->item, 100) * 1.5;
                 } else {
@@ -1668,7 +1667,7 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
             pos[2] = 0;
         }
         if (proto != 0x136) {
-            pick = util_RandomU(3) & 0xffff;
+            pick = util_Random(3);
             if (pick == 0)
                 model = ch_Create("arbeiter_KARREN", (D3VECTOR *)pos);
             else if (pick == 1)
@@ -2337,7 +2336,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
         }
     }
     if (n != 0)
-        strcpy(b->name, names[util_RandomU(n)]);
+        strcpy(b->name, names[util_Random(n)]);
     for (i = 0; i < 0x40; i++) {
         u = bt->objs[i];
         if (u == 0)
@@ -4490,7 +4489,7 @@ int gm_CatchDisease(ORDCHAR *c, int *kind, float *health)
     if ((w & (0xf << 25)) == 0)
         empty[7] = 1;
     found = -1;
-    f = util_RandomU(8);
+    f = util_Random(8);
     n = 8;
     do {
         if (empty[f] == 1) {
@@ -4506,7 +4505,7 @@ int gm_CatchDisease(ORDCHAR *c, int *kind, float *health)
     disease = found + 2;
     if (gm_GetDisease(disease, (int *)&rec) == 0)
         return 0;
-    v = util_RandomU(rec.range);
+    v = util_Random(rec.range);
     cost = (int)(v * rec.cost);
     if (kind != 0)
         *kind = v != 0 ? disease : 0;
@@ -4553,7 +4552,7 @@ float gm_CatchPlague(ORDCHAR *c)
         return 0.0f;
     if (gm_GetDisease(1, (int *)&rec) == 0)
         return 0.0f;
-    v = util_RandomU(rec.range);
+    v = util_Random(rec.range);
     if (v == 0)
         return 0.0f;
     nw = ((v ^ w) & 0xf) ^ w;
@@ -4593,7 +4592,7 @@ int gm_CatchMinorDisease(ORDCHAR *c)
     if ((w & (7 << 14)) == 0)
         empty[3] = 1;
     found = -1;
-    f = util_RandomU(4);
+    f = util_Random(4);
     n = 4;
     do {
         if (empty[f] == 1) {
@@ -4608,7 +4607,7 @@ int gm_CatchMinorDisease(ORDCHAR *c)
     disease = kinds[found];
     if (gm_GetDisease(disease, (int *)&rec) == 0)
         return 0;
-    v = util_RandomU((int)((unsigned)rec.range * 0.5));
+    v = util_Random((int)((unsigned)rec.range * 0.5));
     if (v == 0)
         return 0;
     cost = (int)(v * rec.cost);
@@ -4659,7 +4658,7 @@ int gm_CatchUpperDisease(ORDCHAR *c)
     if ((w & (3 << 23)) == 0)
         empty[3] = 1;
     found = -1;
-    f = util_RandomU(4);
+    f = util_Random(4);
     n = 4;
     do {
         if (empty[f] == 1) {
@@ -4674,7 +4673,7 @@ int gm_CatchUpperDisease(ORDCHAR *c)
     disease = kinds[found];
     if (gm_GetDisease(disease, (int *)&rec) == 0)
         return 0;
-    v = util_RandomU((int)((unsigned)rec.range * 0.5));
+    v = util_Random((int)((unsigned)rec.range * 0.5));
     if (v == 0)
         return 0;
     cost = (int)(v * rec.cost);
@@ -4730,7 +4729,7 @@ int gm_CureDisease(ORDCHAR *c)
     if ((w & (0xf << 25)) > 0)
         held[7] = 1;
     found = -1;
-    f = util_RandomU(8);
+    f = util_Random(8);
     n = 8;
     do {
         if (held[f] == 1) {
@@ -4798,7 +4797,7 @@ int gm_CureMinorDisease(ORDCHAR *c)
     if ((w & (7 << 14)) > 0)
         held[3] = 1;
     found = -1;
-    f = util_RandomU(4);
+    f = util_Random(4);
     n = 4;
     do {
         if (held[f] == 1) {
@@ -4855,7 +4854,7 @@ int gm_CureUpperDisease(ORDCHAR *c)
     if ((w & (0xf << 8)) > 0)
         held[3] = 1;
     found = -1;
-    f = util_RandomU(4);
+    f = util_Random(4);
     n = 4;
     do {
         if (held[f] == 1) {
@@ -4928,8 +4927,8 @@ void gm_Shuffled(unsigned char n, int *out)
     if (n >= 2) {
         cnt = n / 2 + (n / 4 > 1 ? n / 4 : 1);
         for (swaps = 0; swaps < cnt; ) {
-            a = util_RandomS(n);
-            b = util_RandomS(n);
+            a = util_Random(n);
+            b = util_Random(n);
             if (a != b) {
                 t = out[a];
                 out[a] = out[b];
@@ -4954,8 +4953,8 @@ void gm_Shuffle(unsigned n, int *out)
         cnt = (n >> 1) + m;
         if (0 < cnt) {
             do {
-                a = util_RandomU(n);
-                b = util_RandomU(n) & 0xffff;
+                a = util_Random(n);
+                b = util_Random(n);
                 if (a != b) {
                     t = out[a];
                     out[a] = out[b];
@@ -4977,11 +4976,11 @@ char gm_RandomAge(unsigned char n)
     char r;
 
     if (n == 0) {
-        r = (char)util_RandomU(0x2a);
+        r = (char)util_Random(0x2a);
         r += 0x15;
         return r;
     }
-    r = (char)util_RandomU((float)n >= 42.0f ? 0xb : 6);
+    r = (char)util_Random((float)n >= 42.0f ? 0xb : 6);
     n += r;
     return n;
 }
@@ -5835,7 +5834,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         av = (GVAVATAR *)gv_AllocAvatar();
         c->kind = 3;
         if (av != 0) {
-            r = util_RandomU(8);
+            r = util_Random(8);
             c->v054 = 0x59a;
             c->v1f0 = av->id;
             c->jobId = av->jobId;
@@ -5852,7 +5851,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
             c->w050 = (unsigned short)ai_NextCharNumber++;
             c->f014 = util_RandomSq() * 7.0f + 30.0f;
             c->f020 = 12.0f;
-            c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+            c->f010 = util_Random((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
             c->f018 = c->f01c;
             if (r < 2)
                 c->b217 = 0x58;
@@ -5931,7 +5930,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         for (i = 0; i < 14; i++) {
             f = util_RandomF();
             c->mood[i][0] = (float)(1.0 - f) * p2->mood[i][0] + f * p1->mood[i][0];
-            rr = util_RandomU(10);
+            rr = util_Random(10);
             c->mood[i][2] = rr + 900.0;
             c->mood[i][1] = c->mood[i][0] * 0.001;
         }
@@ -5998,7 +5997,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         c->f01c = 1000.0f;
         c->f014 = (util_RandomSq() * 7.0f + 30.0f) * 0.6f + (p2->f014 + p1->f014) * 0.2;
         c->f020 = 12.0f;
-        c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+        c->f010 = util_Random((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
         c->f018 = c->f01c;
         for (i = 0; i < 0x300; i++) {
             ai_Relations[i][c->id] = (char)(util_Random(0x40) - 0x20);
@@ -6019,7 +6018,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         c->job = 0;
         c->title = (char)a7;
         w = gm_TitleGroup((unsigned char)a6);
-        r = util_RandomU(8);
+        r = util_Random(8);
         if (c->kind != 3) {
             if (w == 0xb || w == 0xc)
                 c->b217 = r >= 4 ? 0x56 : 0x4e;
@@ -6039,7 +6038,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         for (i = 0; i < 14; i++) {
             c->mood[i][0] = util_RandomF() * (gm_MoodRanges[w * 0x1c + i * 2 + 1] - gm_MoodRanges[w * 0x1c + i * 2])
                 + gm_MoodRanges[w * 0x1c + i * 2];
-            rr = util_RandomU(10);
+            rr = util_Random(10);
             c->mood[i][2] = rr + 900.0;
             c->mood[i][1] = c->mood[i][0] * 0.001;
         }
@@ -6110,14 +6109,14 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         c->f01c = 1000.0f;
         c->f014 = util_RandomSq() * 7.0f + 30.0f;
         c->f020 = 12.0f;
-        c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+        c->f010 = util_Random((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
         c->f018 = c->f01c;
-        strncpy(c->family, txt_FamilyNames[util_RandomU(0x95)], 0xf);
+        strncpy(c->family, txt_FamilyNames[util_Random(0x95)], 0xf);
     }
     if (c->textVariant == 0)
-        strncpy(c->first, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
+        strncpy(c->first, txt_MaleFirstNames[util_Random(0xbf)], 0xf);
     else
-        strncpy(c->first, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
+        strncpy(c->first, txt_FemaleFirstNames[util_Random(0x70)], 0xf);
     a = (float)c->w00a;
     if (a > c->f020) {
         l = c->f01c;
@@ -6132,7 +6131,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
     memset(&c->flags1b4, 0, 0x10);
     ai_ResetJob((struct AICHAR *)c);
     if (c->kind == 3 || c->kind == 4 || c->kind == 2 || c->kind == 0x13)
-        c->skills[2 + util_RandomU(3)] += 0x2a;
+        c->skills[2 + util_Random(3)] += 0x2a;
     sprintf(buf, "----->PlayerID= %i PlayerName= %s", ai_NextObjectId, c->first);
     return (unsigned short)idx;
 }
@@ -7145,7 +7144,7 @@ int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
     return n;
 }
 /* 0x50a250, the credit offers of the bank b to the person p: up to cnt offers (amount, term 2 .. 7, interest) written to out; returns 3, or 0 when b has no owner, p or cnt is 0 or the bank already has 9 credits running (gm_BuildingEvents). A player (kind 6) gets the bank's kept offers (ORDBLD.credits) while one of them is taken (-1) or within the bank's money (gm_SumSlotAmounts); before day 6 a bank of a computer owner tops its money up to 0.2 of the player's worth (at most 64000, cm_SendMoveGoods). New offers: at most worth (gm_GetWorth) x 0.3 (0.6 / 0.45 for the orders 0xf / 0xb of ord_DispatchOrder) and half the bank's money, each 70 .. 100 % of it (the first 1/4, the second 1/2); the interest lies between 0.7 and 1.5 of the bank's v65 by the term, less (liking - 50) / 20 (gm_Liking) for a player or a computer player at a computer bank; a player's offers are kept
-   @deep deep s26: the 70 .. 100 % factor matched: (float)(-util_RandomU(0x1e) * 0.01) + 1.0 keeps the
+   @deep deep s26: the 70 .. 100 % factor matched: (float)(-util_Random(0x1e) * 0.01) + 1.0 keeps the
    original's neg eax / fadd 1.0 (a double expression folds to fsubr; toy compile: a float local or float
    cast of the product is the only form that keeps the neg) -> shape 4 ins / 58 bytes, padded size right.
    Left: the original's xor esi,esi (all = 0) between push esi and push edi, before the first guard. all =
@@ -7219,12 +7218,12 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
     lim = worth * rate;
     maxAmount = (int)GM_MIN(lim, budget * 0.5);
     for (k = 0; k < cnt; k++) {
-        amount = (int)(((float)(-util_RandomU(0x1e) * 0.01) + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
+        amount = (int)(((float)(-util_Random(0x1e) * 0.01) + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
         if (k == 0)
             amount = (int)(amount * 0.25);
         else if (k == 1)
             amount = (int)(amount * 0.5);
-        term = util_RandomU(6) + 2;
+        term = util_Random(6) + 2;
         interest = (int)(bank->v65 * 0.7 + (bank->v65 * 1.5 - bank->v65 * 0.7) * (term / 6.0f));
         if (ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7 && (ch->kind == 6 || ch->kind == 7)) {
             interest = (int)((float)interest - (float)((gm_Liking(*p, bank->owner, 1) - 50.0f) * 0.01) * 5.0f);

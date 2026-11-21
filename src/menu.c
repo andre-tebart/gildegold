@@ -59,7 +59,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_fl.h"
 #include "dd_vesa.h"
 #include "ch.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
@@ -2916,7 +2916,7 @@ void ai_CurseTargetWindow(int building)
     value = 0;
     memcpy(&when, &ai_Time, sizeof(AITIME));
     gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
-    when.hour = util_RandomU(cls) + 0x15;
+    when.hour = util_Random(cls) + 0x15;
     when.min = 0;
     form = d2_OpenForm(0, 0, "Locations\\zigeuner\\blutrache");
     d2_SetPointerSprite(0, 0);
@@ -2945,7 +2945,7 @@ void ai_CurseTargetWindow(int building)
             } else {
                 memcpy(&when, &ai_Time, sizeof(AITIME));
                 gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
-                when.hour = util_RandomU(2) + 0x15;
+                when.hour = util_Random(2) + 0x15;
                 when.min = 0;
                 d2_SetObjValue(share, 0, 100, 0);
             }

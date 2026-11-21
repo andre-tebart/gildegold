@@ -32,10 +32,10 @@ extern int gm_PlayerRecords[688];
 #include "d3_interface.h"
 #include "err.h"
 #include "d3_pose.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ai.h: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #pragma pack(push, 1)
 typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
     union {
@@ -1331,8 +1331,8 @@ int amt_CreateApplicant(int k)
     if (amt_GetCreateRanges(k, &r) == 0)
         return -1;
     if (amt_Flip == 2)
-        amt_Flip = util_RandomU(2) & 0xffff;
-    e = gm_TitleNumber(util_RandomU(12) + 1, util_RandomU(r.i7 - r.i6 + 1) + r.i6);
+        amt_Flip = util_Random(2);
+    e = gm_TitleNumber(util_Random(12) + 1, util_Random(r.i7 - r.i6 + 1) + r.i6);
     v = cm_SendCreateCharacter(0x13, -1, -1, util_Random(((AMTRANGEW *)&r)->word1 - ((AMTRANGEW *)&r)->word0 + 1) + ((AMTRANGEW *)&r)->word0, -1, e, 0, amt_Flip);
     amt_Flip = 1 - amt_Flip;
     return v;
@@ -1354,10 +1354,10 @@ int amt_InitApplicant(char *c, int k)
         return 0;
     if (amt_GetCreateRanges(k, &r) == 0)
         return 0;
-    x = util_RandomU(r.i3 - r.i2 + 1);
+    x = util_Random(r.i3 - r.i2 + 1);
     a = x + r.i2;
     cm_SendMoveGoodsUnchecked(((AMTCHARVIEW *)c)->netId, -1, ai_OwnPlayer, a);
-    x = util_RandomU(r.i5 - r.i4 + 1);
+    x = util_Random(r.i5 - r.i4 + 1);
     b = x + r.i4;
     cm_BeginFieldBlock(c, ((AMTCHARVIEW *)c)->netId);
     cm_AddFieldDelta(1, 1, 0xd, &b);
@@ -1533,7 +1533,7 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
                 sv_PumpNet();
             continue;
         }
-        m = util_RandomU(k);
+        m = util_Random(k);
         left = k;
         do {
             if (cnt[m] == best) {
@@ -2106,7 +2106,7 @@ void amt_CalcZuenfte(unsigned int kind)
         t = &ai_BTypesT[bld];
         ai_BuildingName(bld, buf);
         cnt = ai_FindBauplaetze(buf, list);
-        j = list[util_RandomU(cnt)];
+        j = list[util_Random(cnt)];
         i = 0;
         while (j == 0) {
             if (i >= cnt)
@@ -2411,7 +2411,7 @@ int amt_ExecutePriceMessage(char *c, int *m)
                                 }
                                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x4000000, 0);
                                 gm_SendMoneyDelta(AMT_NETID(c), -3);
-                                r = util_RandomU(3) & 0xffff;
+                                r = util_Random(3);
                                 if (m[2] == 1) {
                                     txt_Format(buf, r + 0x1656, m[1] + 0x1648);
                                     txt_Format(msg, 0x1655, buf, id * 2 + 0x9a8, id2 * 2 + 0x9a8);

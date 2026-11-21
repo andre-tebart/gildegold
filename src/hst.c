@@ -32,7 +32,7 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #include "tr.h"
 #include "d2.h"
 #include "gfx.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -251,7 +251,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
     } else {
         c = 0;
         if (sel == 0) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
@@ -263,7 +263,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
                 i = (i + 1) % 0x300;
             }
         } else if (sel == 1) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
@@ -276,7 +276,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
             }
         } else {
             pick = 0;
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
@@ -328,7 +328,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
     } else {
         c = 0;
         if (sel == 0) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 1 && ai_IsLivingCharacter((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)
@@ -340,7 +340,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
                 i = (i + 1) % 0x300;
             }
         } else if (sel == 1) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 1 && ai_IsLivingNonPlayer((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)
@@ -353,7 +353,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
             }
         } else {
             pick = 0;
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 1) {
@@ -402,7 +402,7 @@ int ai_TokenRandomOfficeHolder(int mode, G12ARG *args, int k, char *fmt, char *o
     } else {
         c = 0;
         if (sel == 0) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 0 && ai_IsLivingCharacter((unsigned short)i) && G12_TITLED(i)
@@ -414,7 +414,7 @@ int ai_TokenRandomOfficeHolder(int mode, G12ARG *args, int k, char *fmt, char *o
                 i = (i + 1) % 0x300;
             }
         } else if (sel == 1) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)
@@ -427,7 +427,7 @@ int ai_TokenRandomOfficeHolder(int mode, G12ARG *args, int k, char *fmt, char *o
             }
         } else {
             pick = 0;
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (G12_B(i, 9) == 0) {
@@ -478,7 +478,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
     } else {
         c = 0;
         if (sel == 0) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingCharacter((unsigned short)i) && G12_TITLED(i) && ai_NotInLists(ai_CharsT[i].netId)) {
@@ -489,7 +489,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
                 i = (i + 1) % 0x300;
             }
         } else if (sel == 1) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i) && ai_NotInLists(ai_CharsT[i].netId)) {
@@ -501,7 +501,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
             }
         } else {
             pick = 0;
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)) {
@@ -724,7 +724,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
     } else {
         c = 0;
         if (sel == 0) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingCharacter((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId)) {
@@ -735,7 +735,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
                 i = (i + 1) % 0x300;
             }
         } else if (sel == 1) {
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingNonPlayer((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId)) {
@@ -747,7 +747,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
             }
         } else {
             pick = 0;
-            i = util_RandomU(0x300);
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_CHURCHJOB(i)) {
@@ -851,7 +851,7 @@ int ai_TokenRandomRich(int mode, G12ARG *args, int k, char *fmt, char *out)
         }
         if (found == 0)
             return 0;
-        c = &ai_CharsT[ids[util_RandomU(5)]];
+        c = &ai_CharsT[ids[util_Random(5)]];
         if (mode == 0)
             args[k].id = c->netId;
     }
@@ -975,7 +975,7 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
         }
         if (found == 0)
             return 0;
-        c = &ai_CharsT[ids[util_RandomU(5)]];
+        c = &ai_CharsT[ids[util_Random(5)]];
         if (mode == 0)
             args[k].id = c->netId;
     }
@@ -1010,8 +1010,8 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
         /* @original the outer loop counts i, which the search reuses: it repeats the search until a
            search ends on 0x2ff (the original's inc / cmp 0x300 after each search) */
         for (i = 0; i < 0x300; i++) {
-            step = steps[(unsigned short)util_RandomU(4)];
-            i = (unsigned short)util_RandomU(0x300);
+            step = steps[util_Random(4)];
+            i = util_Random(0x300);
             n = 0x300;
             while (n != 0) {
                 if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)) {

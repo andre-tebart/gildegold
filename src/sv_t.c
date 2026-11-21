@@ -402,6 +402,7 @@ SHOTRESULT ai_ShotTable[3];  /* 0x6f9f60, the cannon scene's shot results (the c
 #include "d2.h"
 #include "sv.h"
 #include "gfx.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
    tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
@@ -4488,7 +4489,7 @@ int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
     msg.time = ai_Time;
     msg.arg[1] = rec->slots[slot].id;
     msg.arg[0] = rec->id;
-    msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
+    msg.arg[4] = util_Random(0x5a0) + 1000;
     cm_SendLongMessage((char *)&msg);
     return 1;
 }
@@ -4790,7 +4791,7 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
                 msg.fromId = ((AIBLD *)obj)->id;
                 msg.time = ai_Time;
                 msg.arg[0] = rec->id;
-                msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
+                msg.arg[4] = util_Random(0x5a0) + 1000;
                 msg.arg[1] = idx;
                 cm_SendLongMessage((char *)&msg);
                 sv_PopRequest = 1;

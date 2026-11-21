@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "poker.h"
-#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -35,6 +34,7 @@
 #include "he.h"
 #include "tr.h"
 #include "lc.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 
 /* 0x4a7140, starts a game of character p in g: the stake from p's money, the deck, two random opponents */
@@ -58,7 +58,7 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
     if (10000.0 > d)
         d = 10000.0;
     ai_PokerTable->money = gm_PlayerFactor((int)(d / (log10(d) + 1.0) * 0.1f), ai_OwnPlayer);
-    ai_PokerTable->stake = ai_PokerTable->money / (util_RandomU(3) + 7);
+    ai_PokerTable->stake = ai_PokerTable->money / (util_Random(3) + 7);
     ai_PokerTable->stake2 = ai_PokerTable->stake;
     ai_PokerTable->winner = 4;
     for (k = 0; k < 6; k++) {
@@ -72,12 +72,12 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
         if (i != 0)
             n->female = ai_PokerOpponents[0].female == 0;
         else
-            n->female = (unsigned char)util_RandomU(2);
-        n->variant = (unsigned char)util_RandomU(4) + 1;
-        strncpy(n->nname, txt_FamilyNames[util_RandomU(0x95)], 15);
+            n->female = (unsigned char)util_Random(2);
+        n->variant = (unsigned char)util_Random(4) + 1;
+        strncpy(n->nname, txt_FamilyNames[util_Random(0x95)], 15);
         if (n->female == 0) {
-            strncpy(n->vname, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
-            switch (util_RandomU(4)) {
+            strncpy(n->vname, txt_MaleFirstNames[util_Random(0xbf)], 15);
+            switch (util_Random(4)) {
             case 0:
                 ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buerger_MANN") + 0x639;
                 break;
@@ -92,8 +92,8 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
                 break;
             }
         } else {
-            strncpy(n->vname, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
-            switch (util_RandomU(4)) {
+            strncpy(n->vname, txt_FemaleFirstNames[util_Random(0x70)], 15);
+            switch (util_Random(4)) {
             case 0:
                 ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buergerin_frau") + 0x639;
                 break;
@@ -126,7 +126,7 @@ int ai_PokerDealRound(G10GAME *g)
     g->dealt = 0;
     g->pot = 0;
     g->phase = 0;
-    g->turn = util_RandomU(3);
+    g->turn = util_Random(3);
     g->winHand = 0;
     for (i = 0; i < 24; i++) {
         ai_PokerDeck[i].owner = 3;
@@ -139,7 +139,7 @@ int ai_PokerDealRound(G10GAME *g)
         s->bet = 0;
         s->strategy = 0;
         s->swapped = -1;
-        s->bold = util_RandomU(5) == 1;
+        s->bold = util_Random(5) == 1;
         s->strategy = 0;
         s->foldedAt = -1;
         s++;
@@ -275,7 +275,7 @@ int ai_PokerDrawCard(int owner)
         return -1;
     if (ai_PokerTable->left > 10) {
         do
-            i = util_RandomU(24);
+            i = util_Random(24);
         while (ai_PokerDeck[i].owner != 3);
     } else {
         for (i = 0; i < 24; i++)
@@ -336,7 +336,7 @@ void ai_PokerNpcExchange(void)
         st = &ai_PokerTable->seat[s];
         switch (st->strategy) {
         case 0:
-            k = util_RandomU(3);
+            k = util_Random(3);
             break;
         case 1:
             if (pairs == 1) {
@@ -505,7 +505,7 @@ void ai_PokerNpcFold(void)
                     if (st->bold != 0) {
                         if (suitN > 2)
                             st->foldedAt = ai_PokerTable->phase;
-                    } else if (suitN > 1 || util_RandomU(4) == 1) {
+                    } else if (suitN > 1 || util_Random(4) == 1) {
                         st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
@@ -527,7 +527,7 @@ void ai_PokerNpcFold(void)
                         int any;
 
                         m = ai_PokerFindPair(st->card, 0, 7, &any);
-                        if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(4) == 1)
+                        if (ai_PokerTable->dealt < 5 && m == 3 && util_Random(4) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
@@ -536,7 +536,7 @@ void ai_PokerNpcFold(void)
                         int any;
 
                         m = ai_PokerFindPair(st->card, 0, 7, &any);
-                        if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(5) == 1)
+                        if (ai_PokerTable->dealt < 5 && m == 3 && util_Random(5) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
@@ -925,9 +925,9 @@ void ai_PokerNpcSetStake(void)
 {
     if (ai_PokerTable->turn != 0) {
         if (ai_PokerTable->seat[ai_PokerTable->turn].bold != 0)
-            ai_PokerTable->stake2 = util_RandomU(ai_PokerTable->money - ai_PokerTable->stake) + ai_PokerTable->stake;
+            ai_PokerTable->stake2 = util_Random(ai_PokerTable->money - ai_PokerTable->stake) + ai_PokerTable->stake;
         else
-            ai_PokerTable->stake2 = util_RandomU(ai_PokerTable->money - ai_PokerTable->stake >> 1) + ai_PokerTable->stake;
+            ai_PokerTable->stake2 = util_Random(ai_PokerTable->money - ai_PokerTable->stake >> 1) + ai_PokerTable->stake;
     }
 }
 

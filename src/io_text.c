@@ -27,6 +27,7 @@ extern D2WIN d2_Wins[];
 #include "tr.h"
 #include "ch.h"
 #include "err.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 struct AITIME;
@@ -938,7 +939,7 @@ int io_PrintText(char *fmt, ...)
                         err_Message("io_Text(): Missing Random-Text (e.g. {r1})...");
                         break;
                     }
-                    p = txt_Ptrs[i + (unsigned short)util_Random(n)];
+                    p = txt_Ptrs[i + util_Random(n)];
                     if (p == 0)
                         break;
                     memmove(&buf[pos - len + strlen(p) - 5], &buf[pos], strlen(buf) + len - pos + 5);
@@ -1518,7 +1519,7 @@ void txt_Format(char *out, int id0, ...)
                         err_Message("io_Text(): Missing Random-Text (e.g. {r1})...");
                         break;
                     }
-                    p = txt_Ptrs[i + (unsigned short)util_Random(n)];
+                    p = txt_Ptrs[i + util_Random(n)];
                     if (p == 0)
                         break;
                     memmove(&buf[pos - len + strlen(p) - 5], &buf[pos], strlen(buf) + len - pos + 5);

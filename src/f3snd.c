@@ -61,7 +61,7 @@
 #include "txt.h"                      /* txt_Language */
 #include "bio.h"
 #include "cm.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
@@ -532,7 +532,7 @@ void snd_EnterBuilding(void)
 found:
     for (j = 0; j < 6 && e->names[j][0] != 0; j++)
         ;
-    j = util_RandomU(j);
+    j = util_Random(j);
     if (strlen(e->names[j]) == 0)
         return;
     strcpy(snd_LocationTracks[i].track, e->names[j]);
@@ -578,10 +578,10 @@ void snd_PlayOutdoorTrack(void)
         return;
     }
     do {
-        r = util_RandomU(0x75) % 4;
+        r = util_Random(0x75) % 4;
         switch (season) {
         case 0:
-            if (util_RandomU(0xb) < 4)
+            if (util_Random(0xb) < 4)
                 strcpy(t, "CD2\\KraeuterUndPhiolen.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\Burgfraeulein.mp3");
@@ -592,7 +592,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_SPRING selected: %s.", t);
             break;
         case 1:
-            if (util_RandomU(0xb) < 3)
+            if (util_Random(0xb) < 3)
                 strcpy(t, "CD3\\Heldenglanz.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\Burgfraeulein.mp3");
@@ -603,7 +603,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_SUMMER selected: %s.", t);
             break;
         case 2:
-            if (util_RandomU(0xb) < 3)
+            if (util_Random(0xb) < 3)
                 strcpy(t, "CD3\\DerStolzenTraum.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\AufDenStrassen.mp3");
@@ -614,7 +614,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_AUTUMN selected: %s.", t);
             break;
         case 3:
-            if (util_RandomU(0xb) < 4)
+            if (util_Random(0xb) < 4)
                 strcpy(t, "CD3\\SchmerzlichErinnerung.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\AufDenStrassen.mp3");
@@ -743,7 +743,7 @@ void snd_UpdateMusic(void)
             snd_TrackBuilding = b2;
         snd_TrackRoom = room;
         prio = snd_LocationTracks[i].prio;
-        if (util_RandomU(0x80) < prio) {
+        if (util_Random(0x80) < prio) {
             k = 0;
             if (snd_TrackBuilding != 0)
                 kind = ai_BTypesT[*snd_TrackBuilding].kind;
@@ -1033,7 +1033,7 @@ void snd_PlayWorkerClick(G16CHARCLICK *c)
 {
     int r;
 
-    r = util_RandomU(2);
+    r = util_Random(2);
     if (c->kind == 0x14)
         r = 0;
     if (snd_VoiceBankClick != 0 && r == 0) {
@@ -1130,7 +1130,7 @@ void snd_PlayFavourComment(void)
    (gm_Liking / 33) picks "_SCHLECHTE_GUNST" (0), "_MITTLERE_GUNST" (1) or "_GUTE_GUNST" (2 and up); with the
    building's goods list empty (AIRECIPE.count 0) the variation is 3, else the random r. a is the character's
    scene record (AITASK). x is volatile because the original reloads it from its slot before every use
-(matching trick, do not clean). @deep deep s43: without volatile (int x, int x[1], an ok flag from an if / else of the two list calls: all one code, 12 ins) VC6 threads the decided x test: on the count == 0 path x is known 1, so it keeps x in eax (mov eax,1 before the je) and drops the arm-0 reload; the original stores 1 to the slot, joins, and reloads x in each of the three level arms, i.e. nothing in the original let VC6 know x at the join. With volatile only the pop esi placement is left (ours before the je, the original between test ebx and jne). Also tried: x = 0 after util_RandomU (14), the three arms as one call with x ? 3 : r each (91). Open: the ordinary construct that blocks the jump threading (x's address escaping, x set through a pointer / another variable, a different flag form). prior: near-byte sweep s22: left the pop esi placed before je (ours) vs after the test ebx (original) around the goods-list call; not worked (the volatile x is the open question: an ordinary form that spills x is the first lever). */
+(matching trick, do not clean). @deep deep s43: without volatile (int x, int x[1], an ok flag from an if / else of the two list calls: all one code, 12 ins) VC6 threads the decided x test: on the count == 0 path x is known 1, so it keeps x in eax (mov eax,1 before the je) and drops the arm-0 reload; the original stores 1 to the slot, joins, and reloads x in each of the three level arms, i.e. nothing in the original let VC6 know x at the join. With volatile only the pop esi placement is left (ours before the je, the original between test ebx and jne). Also tried: x = 0 after util_Random (14), the three arms as one call with x ? 3 : r each (91). Open: the ordinary construct that blocks the jump threading (x's address escaping, x set through a pointer / another variable, a different flag form). prior: near-byte sweep s22: left the pop esi placed before je (ours) vs after the test ebx (original) around the goods-list call; not worked (the volatile x is the open question: an ordinary form that spills x is the first lever). */
 
 void ai_FavourComment(char *a)
 {
@@ -1142,7 +1142,7 @@ void ai_FavourComment(char *a)
     int level;
 
     x = 0;
-    r = util_RandomU(3);
+    r = util_Random(3);
     c = (AICHAR *)((AITASK *)a)->body->owner;
     if (c == 0)
         return;

@@ -232,7 +232,6 @@ typedef struct INIT_TERRAIN {
 #include "data_views.h"
 #include "d3_snd.h"
 #include "sblib.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 /* the object list of init_LoadSiteScene (0x510770): the count, the objects by name and the name substring the
@@ -380,6 +379,7 @@ void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0
 #include "menu_types.h"
 #include "ch.h"
 #include "f3gm.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
 extern int init_StatusForm;
@@ -963,7 +963,7 @@ void init_StartNewGame(int unused)
     c = (INIT_CHAR *)ai_Chars[0];
     do {
         if (c->id != 0xffff && c->kind < 5) {
-            money = gm_PlayerFactor((util_RandomU(0x122) & 0xffff) + 10, ai_OwnPlayer);
+            money = gm_PlayerFactor(util_Random(0x122) + 10, ai_OwnPlayer);
             cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldValues(4, 1, INIT_FIELD_MONEY, &money);
             cm_SendFieldDeltas();
@@ -1003,7 +1003,7 @@ void init_StartNewGame(int unused)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = cm_SendCreateCharacter(0, -1, -1, util_RandomU(8) + 0x10, -1, (char)util_RandomU(3) + 4, 0, 0);
+        rec[i] = cm_SendCreateCharacter(0, -1, -1, util_Random(8) + 0x10, -1, (char)util_Random(3) + 4, 0, 0);
         i++;
     } while (i < 8);
     cm_EndSendGroup();
@@ -1015,7 +1015,7 @@ void init_StartNewGame(int unused)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = cm_SendCreateCharacter(0xb, -1, -1, util_RandomU(8) + 0x10, -1, 0, 0x13, 0);
+        rec[i] = cm_SendCreateCharacter(0xb, -1, -1, util_Random(8) + 0x10, -1, 0, 0x13, 0);
         cm_SendExSellObject(-2, -1, 0x154, 1, ai_OwnPlayer, 0);
         i++;
     } while (i < 8);
@@ -1050,8 +1050,8 @@ void init_CreateOpponents(int n, int m, int *list)
 
     prm = 0;
     i = 0;
-    idx = util_RandomU(m);
-    step = util_RandomU(2) != 0 ? 1 : 3;
+    idx = util_Random(m);
+    step = util_Random(2) != 0 ? 1 : 3;
     price[0] = 500;
     price[1] = 750;
     price[2] = 1000;
@@ -1076,7 +1076,7 @@ void init_CreateOpponents(int n, int m, int *list)
         ids[i] = cm_SendCreateCharacter(5, -1, -1, 0x10, -1, prm, 0, 2);
         cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(price[ai_Opponents[i]], ai_OwnPlayer));
         if (init_BonusStart != 0)
-            cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(util_RandomU(5000) + 5000, ai_OwnPlayer));
+            cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(util_Random(5000) + 5000, ai_OwnPlayer));
     }
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0) {
@@ -1138,7 +1138,7 @@ void init_PlaceOffices(int n, int *out, int *ids)
     tab[12] = 0x58;
     tab[13] = 0x51;
     tab[14] = 0x2d;
-    s = util_RandomU(0xf);
+    s = util_Random(0xf);
     if (0 < n) {
         q = out;
         do {
@@ -1163,15 +1163,15 @@ void init_PlaceOffices(int n, int *out, int *ids)
    @deep match-deep 48: kept: ai_FloatOne for the 1.0f of fl (resolves the open M10: the original refers
    to the pooled datum) and the age table t[30] split from lv[10] / money[10] (the frame now puts ids at
    the original's 0x138; 219 -> 191 ins). headers sample insensitive. Tried with no change (= control):
-   msg0 with (unsigned short) / & 0xffff on util_RandomU(2), (float) cast in the msg4 product, (unsigned
+   msg0 with (unsigned short) / & 0xffff on util_Random(2), (float) cast in the msg4 product, (unsigned
    char) level index; frameorder.py probes: local names never move the frame (ties of references per byte
    are not broken by name), one ids reference fewer moves ids above all office structs. t stores grouped by
    value: 213 vs 219 (before the split). Left: frame order of kind / ob1 / ob3 / ob2 / rec (original 0xf0
    kind, 0x108 ob1, 0x120 ob3, 0x1b0 ob2, 0x1c8 rec; ours ob1 0xf0, ob2 0x108, ob3 0x120, rec 0x1b0, kind
    0x1c8: the original's reference density differs), the t[] init constant registers (original eax=0x12
    first, ebp=0 late), the t add loop i*4 vs the original's byte offset (add esi,4 / cmp 0x78), msg0 = 2 in
-   ebx across the office loop (push ebx for util_RandomU(2)) where ours stores the immediate, the level
-   reloaded from kind+8 after util_RandomU(2) (ours keeps it in esi from the msg5 expression), the money
+   ebx across the office loop (push ebx for util_Random(2)) where ours stores the immediate, the level
+   reloaded from kind+8 after util_Random(2) (ours keeps it in esi from the msg5 expression), the money
    product order ((r+1)*fl)*(msg3*0.01) vs ours (r+1)*(msg3*0.01)*fl, the spouse loop's u/v/k registers
    (ebx/edx/ecx vs ebx/ecx/edx) (tiebreak: not measured (dcp headers sample init_CreateStartCharacters))
    prior: read against the whole original 0x50e690..0x50f0a1 and corrected: signed level /3 and int money
@@ -1215,7 +1215,7 @@ int init_CreateStartCharacters(int unused)
     gm_Shuffle(6, t + 24);
     memset(f0, 0, sizeof(f0));
     for (i = 0; i < 30; i++)
-        t[i] += util_RandomU(3) & 0xffff;
+        t[i] += util_Random(3);
     n = 0;
     p = (INIT_CHAR *)ai_Chars[0];
     do {
@@ -1240,7 +1240,7 @@ int init_CreateStartCharacters(int unused)
     init_PlaceOffices(30 - n, out + n, ids + n);
     for (i = n; i < 30; i++) {
         cm_BeginSendGroup();
-        if (cnt < 3 && i * 4 > 0x30 && util_RandomU(4) == 0) {
+        if (cnt < 3 && i * 4 > 0x30 && util_Random(4) == 0) {
             h = cm_SendCreateCharacter(0x10, -1, -1, 0x10, -1, 0, 0, 0);
             cnt++;
         } else {
@@ -1265,8 +1265,8 @@ int init_CreateStartCharacters(int unused)
         amt_GetOffice((unsigned char)ids[k], &rec);
         amt_GetKind(rec.kindWord & 0xff, &kind);
         age = (unsigned short)t[k];
-        msg5 = (char)((util_RandomU(0x2a) & 0xffff) + ((int)(kind.levelWord & 0xff) / 3 + 1) * 21.0f);
-        msg0 = util_RandomU(2) + lv[kind.levelWord & 0xff];
+        msg5 = (char)(util_Random(0x2a) + ((int)(kind.levelWord & 0xff) / 3 + 1) * 21.0f);
+        msg0 = util_Random(2) + lv[kind.levelWord & 0xff];
         w = money[kind.levelWord & 0xff];
         msg3 = gm_PlayerFactor(w - (int)(util_RandomF() * w * -0.5f), ai_OwnPlayer);
         ch = f0[k];
@@ -1275,9 +1275,9 @@ int init_CreateStartCharacters(int unused)
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         if (ch->kind == 3) {
             cm_AddFieldDelta(1, 1, 0x84, &msg5);
-            if (util_RandomU(2) != 0) {
+            if (util_Random(2) != 0) {
                 fl = util_RandomF() + 1.0f;
-                msg4 = (unsigned)(((util_RandomU(8) & 0xffff) + 1) * fl * (msg3 * 0.01f));
+                msg4 = (unsigned)((util_Random(8) + 1) * fl * (msg3 * 0.01f));
                 cm_AddFieldDelta(4, 1, 0x1ac, &msg4);
             }
         }
@@ -1330,42 +1330,42 @@ int init_CreateStartCharacters(int unused)
             cm_AddFieldDelta(4, 1, 0x5c, &u->netId);
             cm_SendFieldDeltas();
             if (n > 5) {
-                w = gm_TitleNumber(gm_TitleGroup(util_RandomU(2) != 0 ? u->jobId : v->jobId), 1);
+                w = gm_TitleNumber(gm_TitleGroup(util_Random(2) != 0 ? u->jobId : v->jobId), 1);
                 msg4 = 2;
                 j = cm_SendCreateCharacter(8, u->netId, v->netId, n, -1, w, 0, 2);
                 while (j != -1 && cm_GetSlotState(j) == 0)
                     sv_PumpNet();
                 ch = (INIT_CHAR *)cm_GetSlotValue(j);
-                cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
+                cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, (util_Random(0x400) + 0x200) * 0x20);
                 cm_BeginFieldBlock((char *)ch, ch->netId);
                 cm_AddFieldDelta(1, 1, 0xd, &msg4);
                 cm_SendFieldDeltas();
             }
-            cm_SendRelations(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
-            j = cm_SendRelations(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+            cm_SendRelations(u->netId, v->netId, util_Random(0x20) + 0x60, 0);
+            j = cm_SendRelations(v->netId, u->netId, util_Random(0x20) + 0x60, 0);
             while (j != -1 && cm_GetSlotState(j) == 0)
                 sv_PumpNet();
         }
     } while (u != 0 && v != 0);
     for (i = 8; i != 0; i--) {
         msg0 = 2;
-        msg1 = (util_RandomU(9) & 0xffff) + 1;
+        msg1 = util_Random(9) + 1;
         h = cm_SendCreateCharacter(3, -1, -1, util_Random(4) + 0xf, -1,
-            gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 0);
+            gm_TitleNumber(util_Random(0xc) + 1, util_Random(2) + 1), 0, 0);
         while (h != -1 && cm_GetSlotState(h) == 0)
             sv_PumpNet();
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
-        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
+        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, (util_Random(0x400) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);
         cm_SendFieldDeltas();
         h = cm_SendCreateCharacter(3, -1, -1, util_Random(4) + 0xe, -1,
-            gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 1);
+            gm_TitleNumber(util_Random(0xc) + 1, util_Random(2) + 1), 0, 1);
         while (h != -1 && cm_GetSlotState(h) == 0)
             sv_PumpNet();
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
-        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
+        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, (util_Random(0x400) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);
@@ -1431,7 +1431,7 @@ void init_CreateOpeningObjects(void)
                     } else {
                         cm_SendExSellObject(o1->objId, -1, g, 2 - (i != 0), ai_OwnPlayer, 0);
                         if (i == 0) {
-                            cm_SendExSellObject(o2->objId, -1, goods[0], (util_RandomU(0x14) & 0xffff) + 0x14, ai_OwnPlayer, 0);
+                            cm_SendExSellObject(o2->objId, -1, goods[0], util_Random(0x14) + 0x14, ai_OwnPlayer, 0);
                         }
                     }
                     switch (g) {
@@ -2017,8 +2017,8 @@ void init_OpenTown(void)
             m = 0;
             for (j = i + 1; j < 0x300; j++) {
                 if (((INIT_CHAR *)ai_Chars[j])->kind == 6 || ((INIT_CHAR *)ai_Chars[j])->kind == 7 || ((INIT_CHAR *)ai_Chars[j])->kind == 5 || ((INIT_CHAR *)ai_Chars[j])->kind == 3 || ((INIT_CHAR *)ai_Chars[j])->kind == 4 || ((INIT_CHAR *)ai_Chars[j])->kind == 2) {
-                    cm_SendRelations(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
-                    h = cm_SendRelations(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
+                    cm_SendRelations(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, util_Random(0x40) - 0x20, 0);
+                    h = cm_SendRelations(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, util_Random(0x40) - 0x20, 0);
                     m += 2;
                     while (h != -1 && m % 10 == 0 && cm_GetSlotState(h) == 0)
                         sv_PumpNet();
@@ -2306,7 +2306,7 @@ int init_StartNetworkGame(char *name)
     WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ini);
     WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ini);
     d2_ClearSurface((struct D2SURF *)d2_ScreenSurf);
-    s = util_RandomU(2);
+    s = util_Random(2);
     d2_ShowPicture((s != 1 ? 3 : 0) + 0x78e);
     d2_DrawAll();
     if ((cm_NetFlags & 1) != 0) {

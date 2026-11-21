@@ -312,7 +312,6 @@ struct SBSAMPLE;
 extern TUTSTATE *const ai_Tutorial;
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_SeanceGhost reads the 16-bit result (mov si, ax) */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -480,6 +479,7 @@ void sv_SetStatusText(char *s); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 double _CIfmod();
 #include <math.h>
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
 typedef struct CANNONROT {  /* ai_CannonCamera's rotation / position vector: three floats and a word cleared as an int */
     float x, y, z;
@@ -2154,7 +2154,7 @@ void ai_SeanceRollFormulas(int n, int *ids, int *variants, int base)
     int r;
 
     for (i = 0; i < n; i += 2) {
-        r = util_Random(3) & 0xffff;
+        r = util_Random(3);
         variants[i] = r;
         variants[i + 1] = r;
         ids[i] = base + r;
@@ -2207,16 +2207,16 @@ void ai_SeanceGhost(AIBLD *rec, GVSEANCE *ev)
             cm_SendProofExecuted(ids[i], ai_CharsT[ai_PlayerId].netId);
         he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 1);
         io_PrintText(0x40ef, 0x40cc, accuser->id);
-        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8), 0xfa);
     } else if (mode == 1) {
-        r = util_RandomU(0x200);
+        r = util_Random(0x200);
         n = (r + 0x200) << 5;
         cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
         io_PrintText(0x40f0, 0x40cc, n);
-        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8), 0xfa);
     } else {
         io_PrintText(0x40d3, 0x40cc);
-        snd_QueueVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8) & 0xffff, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8), 0xfa);
     }
     do {
         if (dm_L.rup != 0)
@@ -2271,10 +2271,10 @@ void ai_SeanceSacrifice(AIBLD *rec, GVSEANCE *ev)
     d2_ClickedId = -1;
     d2_SetForm(win, 1);
     if (mode == 0) {
-        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8), 0xfa);
         io_PrintText(0x40f1, 0x40cc, amount);
     } else {
-        snd_QueueVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8) & 0xffff, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8), 0xfa);
         io_PrintText(0x40d3, 0x40cc);
     }
     do {
@@ -2333,7 +2333,7 @@ void ai_SeanceGift(AIBLD *rec, GVSEANCE *ev)
     if ((st[0] == 6 && st[2] == 0) || st[1] == 0xf) {
         mode = 1;
     } else {
-        i = util_Random(0xf) & 0xffff;
+        i = util_Random(0xf);
         while (gifts[i].value != 0)
             i = (i + 1) % 0xf;
         item = gifts[i].item;
@@ -2353,16 +2353,16 @@ void ai_SeanceGift(AIBLD *rec, GVSEANCE *ev)
         cm_SendExSellObject(ai_CharsT[ai_PlayerId].netId, -1, item, 1, ai_OwnPlayer, 0);
         he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 2);
         io_PrintText(0x40f2, 0x40cc, item * 2 + 0x9a8);
-        snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff);
+        snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8));
     } else if (mode == 1) {
-        r = util_RandomU(0x400);
+        r = util_Random(0x400);
         n = (r + 1000) << 5;
         cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
         io_PrintText(0x40f3, 0x40cc, n);
-        snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff);
+        snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8));
     } else {
         io_PrintText(0x40d3, 0x40cc);
-        snd_PlayVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8) & 0xffff);
+        snd_PlayVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8));
     }
     do {
         if (dm_L.rup != 0)
@@ -3209,10 +3209,10 @@ void ai_GraveyardChatter(char *unused)
     }
     if (cnt == 0)
         return;
-    n = util_Random(cnt) & 0xffff;
+    n = util_Random(cnt);
     x = list[n];
     if (cnt > 1) {
-        n = util_Random(cnt) & 0xffff;
+        n = util_Random(cnt);
         y = list[n];
         if (y == x) {
             n++;

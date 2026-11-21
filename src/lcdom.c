@@ -803,6 +803,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* dcp unit split: the declarations of lc before the moved functions */
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void d2_CentreViewWindows(int view);
@@ -1196,7 +1197,7 @@ unsigned short ai_RandomDomizilGoodNotIn(int nObjs, unsigned short *objs)
     int found;
     G9DOMIZIL *entry;
 
-    i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
+    i = util_Random((unsigned short)ai_DomizilCount);
     for (n = ai_DomizilCount; n != 0; n--) {
         entry = &ai_DomizilTable[i];
         found = 0;
@@ -1222,7 +1223,7 @@ unsigned short ai_DomizilGoodInRange(int from, int to)
     int i;
     G9DOMIZIL *entry;
 
-    i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
+    i = util_Random((unsigned short)ai_DomizilCount);
     n = ai_DomizilCount;
     if (ai_DomizilCount == 0)
         return 0;

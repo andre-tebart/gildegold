@@ -13,7 +13,6 @@
 #include "gv.h"
 #include "di_input.h"
 #include "data_views.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3sm_GetVertexI ((int (*)(D3SM *, int, int, int))d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's caller reads an int result and passes its own int z through (byte-matched ord_RandomCellPoint 0x4f86e5: push ecx, no 0f be c0 after the call) */
 #include "d3_types.h"
 #include "ahm.h"
@@ -29,6 +28,7 @@
 #include "ch.h"
 #include "d2.h"
 #include "d3_sm.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
@@ -1777,8 +1777,8 @@ void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py)
 
     gv_GetTableRecord(kind, (int *)&rec);
     gm_FindById((int *)&b, 0, 0, who);
-    x = util_RandomU(8);
-    y = util_RandomU(8);
+    x = util_Random(8);
+    y = util_Random(8);
     if (b != 0 && b->object != 0) {
         ord_GetGridCell((char *)&b->object->pos, &x, &y);
         ORD_CELLS[y + x * 8].b += rec.guilt;
@@ -1811,8 +1811,8 @@ void ord_SubGridAmount(int who, unsigned char kind)
 
     gv_GetTableRecord(kind, (int *)&rec);
     gm_FindById((int *)&b, 0, 0, who);
-    x = util_RandomU(8);
-    y = util_RandomU(8);
+    x = util_Random(8);
+    y = util_Random(8);
     if (b != 0 && b->object != 0) {
         ord_GetGridCell((char *)&b->object->pos, &x, &y);
         ORD_CELLS[y + x * 8].b -= rec.guilt;
@@ -1837,8 +1837,8 @@ int ord_RandomCellPoint(int x, int y, int z)
 
     hmap = (D3SM *)d3_Scenes[0].hmap;
     n = hmap->size / 8;
-    a = util_RandomU(n) + n * x;
-    b = util_RandomU(n) + n * y;
+    a = util_Random(n) + n * x;
+    b = util_Random(n) + n * y;
     return d3sm_GetVertexI(hmap, a, b, z);
 }
 /* 0x4f8700, picks a random object id for the character c (-1 without one): the ids of its two buildings
@@ -1890,13 +1890,13 @@ int ord_RandomObjectId(char *c)
     }
     while (n < 16 && tries != 0) {
         tries--;
-        idx = util_RandomU(4) * 5 + util_RandomU(5);
+        idx = util_Random(4) * 5 + util_Random(5);
         k = 0;
         o = (ORDBLD *)gm_BuildQuery(1, 5, kinds[idx]);
         while (o != 0 && k < 3) {
             if (n >= 16)
                 break;
-            if (util_RandomU(4) < 3) {
+            if (util_Random(4) < 3) {
                 list[n] = o->id;
                 n++;
                 k++;
@@ -1904,7 +1904,7 @@ int ord_RandomObjectId(char *c)
             o = (ORDBLD *)gm_BuildNext();
         }
     }
-    return list[util_RandomU(n)];
+    return list[util_Random(n)];
 }
 /* 0x4f8890, copies the kind record i (below 0x58) of ord_KindTable to out; 0 for a bad i */
 int ord_GetKindRecord(int i, int *out)
@@ -2303,15 +2303,15 @@ void ord_UpdateMessageEvent(void)
         } else if (r.stage == 1) {
             int t[16] = { 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2 };
 
-            r.phase = t[util_RandomU(0x10)] + 1;
+            r.phase = t[util_Random(0x10)] + 1;
         } else if (r.stage == 2) {
             int t[16] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2 };
 
-            r.phase = t[util_RandomU(0x10)] + 1;
+            r.phase = t[util_Random(0x10)] + 1;
         } else {
             int t[16] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2 };
 
-            r.phase = t[util_RandomU(0x10)] + 1;
+            r.phase = t[util_Random(0x10)] + 1;
         }
         if (r.phase == 1) {
             msg.kind = 0x59;
@@ -2319,13 +2319,13 @@ void ord_UpdateMessageEvent(void)
             msg.target = -1;
             msg.time = ai_Time;
             msg.mode = 2;
-            msg.value = util_RandomU(3) * 3;
+            msg.value = util_Random(3) * 3;
             msg.time = ai_Time;
             msg.time.min = 0;
             if (ai_Time.hour < 0x17 && ai_Time.hour >= 7)
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4), util_Random(2) * 0x1e, 0);
             else
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4) + 7, util_Random(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         } else if (r.phase == 2) {
             msg.kind = 0x4e;
@@ -2337,9 +2337,9 @@ void ord_UpdateMessageEvent(void)
             msg.time = ai_Time;
             msg.time.min = 0;
             if (ai_Time.hour >= 0x17)
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4) + 7, util_Random(2) * 0x1e, 0);
             else
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4), util_Random(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         } else if (r.phase == 3) {
             msg.kind = 0x50;
@@ -2350,9 +2350,9 @@ void ord_UpdateMessageEvent(void)
             msg.value = -1;
             msg.limit = 1000;
             if (ai_Time.hour >= 0x17)
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4) + 7, util_Random(2) * 0x1e, 0);
             else
-                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_Random(4), util_Random(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         }
         r.stage = r.phase;

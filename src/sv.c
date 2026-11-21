@@ -218,8 +218,8 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "rt.h"
 #include "gfx.h"
 #include "cm.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e90 movsx edx, [d2_ScreenW]; sub edx, 0x50; push edx): the short x of the definition narrows it to 16 bits, so the original unit saw an int prototype */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
 
@@ -2190,14 +2190,14 @@ void sv_SetupWeather(struct AITIME *t, int reroll)
     sv_SeasonClimate = ai_SeasonClimate[ai_OwnPlayer * 0xbd + season];
     if (reroll != 0) {
         if (season == 3) {
-            sv_WinterWeather = (util_RandomU(100) < sv_CloudChance / 2) + 1;
+            sv_WinterWeather = (util_Random(100) < sv_CloudChance / 2) + 1;
         } else
             sv_WinterWeather = 0;
         for (i = 0; i < 24; i++)
             sv_Weather.clouds[i] = 0;
         for (i = 0; i < 24; i++) {
-            if (util_RandomU(100) < sv_CloudChance)
-                sv_Weather.clouds[i] = (unsigned short)util_Random(sv_CloudChance * 10);
+            if (util_Random(100) < sv_CloudChance)
+                sv_Weather.clouds[i] = util_Random(sv_CloudChance * 10);
             if ((int)sv_Weather.clouds[i] > 700)
                 sv_Weather.clouds[i] = (sv_Weather.clouds[i] & 1) + 999;
             else if ((int)sv_Weather.clouds[i] > 500)
@@ -2207,7 +2207,7 @@ void sv_SetupWeather(struct AITIME *t, int reroll)
             else
                 sv_Weather.clouds[i] = 0;
             if (sv_WinterWeather == 0 && (int)sv_Weather.clouds[i] >= 999)
-                sv_Weather.storm[i] = (unsigned short)util_Random(3);
+                sv_Weather.storm[i] = util_Random(3);
             else
                 sv_Weather.storm[i] = 0;
         }
@@ -5231,9 +5231,9 @@ void sv_SpeakPicked(void)
             if (v == 0xb || v == 0xc)
                 plain = 0;
             if (plain) {
-                kind = util_RandomU(4) + 1;
+                kind = util_Random(4) + 1;
             } else {
-                kind = util_RandomU(4) + 1;
+                kind = util_Random(4) + 1;
                 if (kind == 3)
                     kind = 4;
             }
@@ -5244,117 +5244,117 @@ void sv_SpeakPicked(void)
                 switch (c->jobKind) {
                 case 0x49:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->u.id)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x124a, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x124a, r->owner, r);
                     break;
                 case 0x44:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->u.id)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1259, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x1259, r->owner, r);
                     break;
                 case 0x28:
-                    txt_Format(text, util_RandomU(3) + 0x124d);
+                    txt_Format(text, util_Random(3) + 0x124d);
                     break;
                 case 0x3c:
                     if ((c = (AICHAR *)gm_FindChar(job->u.id)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1253, c->id);
+                        txt_Format(text, util_Random(3) + 0x1253, c->id);
                     break;
                 case 0x14:
                     if (c->bld != 0) {
                         if (ai_BTypesT[c->bld->type].kind == ' ')
-                            txt_Format(text, util_RandomU(3) + 0x1286);
+                            txt_Format(text, util_Random(3) + 0x1286);
                         else
-                            txt_Format(text, util_RandomU(3) + 0x1256);
+                            txt_Format(text, util_Random(3) + 0x1256);
                     }
                     break;
                 case 0x19:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->u.id)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x125c, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x125c, r->owner, r);
                     break;
                 case 0x62:
-                    txt_Format(text, util_RandomU(3) + 0x125f);
+                    txt_Format(text, util_Random(3) + 0x125f);
                     break;
                 case 0x18:
                     if ((c = (AICHAR *)gm_FindChar(job->id4)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1262, c->id);
+                        txt_Format(text, util_Random(3) + 0x1262, c->id);
                     break;
                 case 0x40:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->u.id)) != 0 && r->owner != 0xffff)
-                        txt_Format(text, util_RandomU(3) + 0x1265, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x1265, r->owner, r);
                     break;
                 case 0x43:
-                    txt_Format(text, util_RandomU(3) + 0x1268);
+                    txt_Format(text, util_Random(3) + 0x1268);
                     break;
                 case 0x61:
-                    txt_Format(text, util_RandomU(3) + 0x126b);
+                    txt_Format(text, util_Random(3) + 0x126b);
                     break;
                 case 0x48:
-                    txt_Format(text, util_RandomU(3) + 0x126e);
+                    txt_Format(text, util_Random(3) + 0x126e);
                     break;
                 case 100:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->id2)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1271, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x1271, r->owner, r);
                     break;
                 case 0x65:
-                    txt_Format(text, util_RandomU(3) + 0x1274);
+                    txt_Format(text, util_Random(3) + 0x1274);
                     break;
                 case 0x1a:
                     if ((c = (AICHAR *)gm_FindChar(job->id3)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1277, c->id);
+                        txt_Format(text, util_Random(3) + 0x1277, c->id);
                     break;
                 case 0x3f:
                 case 0x75:
                     if ((r = (AIBLD *)gm_FindBuildingById(job->u.id)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x1250, r->owner, r);
+                        txt_Format(text, util_Random(3) + 0x1250, r->owner, r);
                     break;
                 case 0x89:
                     if ((c = (AICHAR *)gm_FindChar(job->id2)) != 0)
-                        txt_Format(text, util_RandomU(3) + 0x127a, c->id);
+                        txt_Format(text, util_Random(3) + 0x127a, c->id);
                     break;
                 case 0x8e:
-                    txt_Format(text, util_RandomU(3) + 0x127d);
+                    txt_Format(text, util_Random(3) + 0x127d);
                     break;
                 case 0xa1:
-                    txt_Format(text, util_RandomU(3) + 0x1280);
+                    txt_Format(text, util_Random(3) + 0x1280);
                     break;
                 case 0x8c:
                     if (c->bld != 0) {
                         cls = &ai_BTypesT[c->bld->type];
                         if (cls->kind == 0x1d)
-                            txt_Format(text, util_RandomU(3) + 0x1283);
+                            txt_Format(text, util_Random(3) + 0x1283);
                         else if (cls->kind == 0x1f)
-                            txt_Format(text, util_RandomU(3) + 0x1289);
+                            txt_Format(text, util_Random(3) + 0x1289);
                     }
                     break;
                 default:
-                    kind = util_RandomU(4) + 1;
+                    kind = util_Random(4) + 1;
                     if (!plain && kind == 3)
                         kind = 4;
                     break;
                 }
             }
         } else {
-            kind = util_RandomU(4) + 1;
+            kind = util_Random(4) + 1;
         }
         if (kind >= 0 && kind <= 4)
             id = kind * 15 + 0x11e9;
-        if (util_RandomU(2) == 0 && he_FindEvent(1, 0, 0x52) != 0)
+        if (util_Random(2) == 0 && he_FindEvent(1, 0, 0x52) != 0)
             kind = 5;
         ord_GetStatistics((int *)st);
         switch (kind) {
         case 1:
             id = (int)(3.0 * (st[1] * 5.0) + id);
-            id += util_RandomU(3);
+            id += util_Random(3);
             break;
         case 2:
             id = (int)(3.0 * (ord_BuildingCapacityRatio() * 5.0) + id);
-            id += util_RandomU(3);
+            id += util_Random(3);
             break;
         case 3:
             id = (int)(3.0 * (st[2] * 5.0) + id);
-            id += util_RandomU(3);
+            id += util_Random(3);
             break;
         case 4:
             id = (int)(3.0 * (st[0] * 5.0) + id);
-            id += util_RandomU(3);
+            id += util_Random(3);
             break;
         case 5:
             if (hst_KeyNext != -1) {
@@ -5362,7 +5362,7 @@ void sv_SpeakPicked(void)
                     if (*txt_Ptrs[hst_KeyNext - 5 + n] == 0)
                         break;
                 }
-                id = util_RandomU(n - 1) + hst_KeyNext - 5;
+                id = util_Random(n - 1) + hst_KeyNext - 5;
             }
             break;
         }
@@ -6953,17 +6953,17 @@ void sv_UpdateWeather(void)
         w = (float)(sqrt(wy * wy + wx * wx) * (c + 0x96) * 0.125);
         if (sv_SkyLayersT[1]->alpha == 0) {
             if (c < 0x32) {
-                k = util_RandomU(4);
+                k = util_Random(4);
                 if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
-                k = util_RandomU(3);
+                k = util_Random(3);
                 if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
-                k = util_RandomU(2);
+                k = util_Random(2);
                 if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
@@ -6976,17 +6976,17 @@ void sv_UpdateWeather(void)
         }
         if (sv_SkyLayersT[1]->alpha == 0xff) {
             if (c < 0x32) {
-                k = util_RandomU(4);
+                k = util_Random(4);
                 if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
-                k = util_RandomU(3);
+                k = util_Random(3);
                 if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
-                k = util_RandomU(2);
+                k = util_Random(2);
                 if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
@@ -7016,16 +7016,16 @@ void sv_WeatherFrame(void)
         d3t_DrawRain(d3t_Rain);
     if (d3t_Snow != 0)
         d3t_DrawSnow(d3t_Snow);
-    if (sv_Weather.storm[ai_Time.hour] != 0 && (util_RandomU(300) == 0 || (sv_Weather.storm[ai_Time.hour] == 3 && util_RandomU(100) == 0))) {
+    if (sv_Weather.storm[ai_Time.hour] != 0 && (util_Random(300) == 0 || (sv_Weather.storm[ai_Time.hour] == 3 && util_Random(100) == 0))) {
         sv_Weather.thunderStart = d3_Time;
-        sv_Weather.thunderLen = util_RandomU(8) + 8;
+        sv_Weather.thunderLen = util_Random(8) + 8;
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
     if (d3_CurrentScene == 0) {
         if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && sv_Weather.clouds[ai_Time.hour - 1] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
             /* the hour store in both arms (tail-merged) gives the original's registers: the hour in ecx,
                sv_SunRaysHour in eax */
-            if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0) {
+            if (util_Random(0x80) > 0x60 && d3t_SunRays == 0) {
                 d3t_CreateSunRays();
                 sv_SunRaysHour = ai_Time.hour;
             } else

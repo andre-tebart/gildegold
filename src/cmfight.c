@@ -87,8 +87,8 @@ extern GAPDATA full_data_602568[];
 #include "gv.h"
 #include "poker.h"
 #include "gfx.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d3sm_PickK ((int (*)(D3SM *, int, int, int *, int *))d3sm_Pick)  /* 0x45f2b0 (d3_sm.c: char d3sm_Pick(D3SM *, int, int, int *, int *)): @original this unit's callers read an int result (byte-matched cm_UpdatePointer 0x4cf73a: and eax, 0xff after the call) */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
@@ -317,7 +317,7 @@ char cm_FightWeaponLoss(char *ch)
 
     if (c != 0 && (c->flags1c8 & 0x20000000) != 0) {
         neg = c->b1c5;
-        if (util_RandomU(10) < (unsigned char)neg) {
+        if (util_Random(10) < (unsigned char)neg) {
             v = -neg;
             cm_DiscardWeapons((char *)c);
             cm_BeginFieldBlock((char *)c, c->netId);
@@ -2291,7 +2291,7 @@ void cm_FightIntro(char *a)
 
     d2_CutsceneActive = 1;
     if (snd_MusicEnabled != 0) {
-        r = util_RandomU(100) & 0xffff;
+        r = util_Random(100);
         if (r < 0x14)
             snd_PlaySpecialTrack("cd2\\Krieg.mp3");
         else if (r < 0x28)
@@ -3670,7 +3670,7 @@ int cm_FightStartDialog(CMFIGHTREC *a)
                     st = 50;
                 else if (sel == b3)
                     st = 90;
-                if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
+                if (util_Random(0x5a) + 10 <= st) {
                     home = gm_BuildQuery(1, 1, a->attackerBldId);
                     txt_Format(tb, 0x1142);
                     cm_MessageBox(tb, 0);
@@ -3693,16 +3693,16 @@ int cm_FightStartDialog(CMFIGHTREC *a)
             if (a->defenders[i] != -1)
                 n++;
         }
-        if (n == 0 || (unsigned short)util_RandomU(5) > a->escort) {
+        if (n == 0 || util_Random(5) > a->escort) {
             st = 0;
-            r = (unsigned short)util_RandomU(4);
+            r = util_Random(4);
             if (r == 0)
                 st = 10;
             else if (r == 1)
                 st = 90;
             else if (r >= 2)
                 st = 50;
-            if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
+            if (util_Random(0x5a) + 10 <= st) {
                 home = gm_BuildQuery(1, 1, a->attackerBldId);
                 fv = (float)(st * 0.01);
                 res = 0;
@@ -4024,7 +4024,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
         k = 0;
         if (!gm_TitleJob(cm_FightAttackerC->id, gm_BuildingJob(bt->kind)) || bt->kind == 0xd || bt->kind == 0xc ||
             bt->kind == 0xb)
-            k = (unsigned short)util_RandomU(3) + 1;
+            k = util_Random(3) + 1;
         if (k == 0) {
             txt_Format(bb, 0x11a4, cm_FightAttackerC->id, ca);
             cm_MessageBox(bb, 0);
@@ -4260,7 +4260,7 @@ void cm_RunFight(CMFIGHTREC *a)
         id = a->defenders[i];
         if (id != -1 && (ch = (AICHAR *)gm_FindChar(id)) != 0 && ch->health != 0 && ch->health != 4) {
             sa = (int)(cm_FightStrength((char *)ch) + sa);
-            r = (unsigned short)util_RandomU(10);
+            r = util_Random(10);
             gm_AddHealth(ch->id, -r * 20);
         }
     }
@@ -4268,11 +4268,11 @@ void cm_RunFight(CMFIGHTREC *a)
         id = a->attackers[i];
         if (id != -1 && (ch = (AICHAR *)gm_FindChar(id)) != 0 && ch->health != 0 && ch->health != 4) {
             sb = (int)(cm_FightStrength((char *)ch) + sb);
-            r = (unsigned short)util_RandomU(10);
+            r = util_Random(10);
             gm_AddHealth(ch->id, -r * 20);
         }
     }
-    if ((unsigned short)util_RandomU(30) + sb > (unsigned short)util_RandomU(30) + sa)
+    if (util_Random(30) + sb > util_Random(30) + sa)
         win = G20_DEF;
     else
         win = G20_ATT;
@@ -4396,7 +4396,7 @@ void cm_FighterAct(CMFIGHTSLOT *f)
         tgt->v024 = f->health;
     if (!(k != 0 && (k->id == 0x174 || k->id == 0x176))) {
         if (f->hit != 0 && ((x = c->scene->actions) == 0 || x->type == 0x2d || x->type == 0x3a)) {
-            if ((unsigned short)util_RandomU(10) > 8) {
+            if (util_Random(10) > 8) {
                 if (side->netId == cm_FightAttackerC->netId)
                     snd_QueueVoice(c->id, cm_AttackerAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
                 else
@@ -4639,7 +4639,7 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
         !(cm_CharObjDistXZ((char *)c, (char *)g->scene->obj) > k->range)) {
         if (c->scene->actions != 0)
             return -1;
-        r = util_RandomU(0xff);
+        r = util_Random(0xff);
         side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
         if (r > 0xff - (int)((k->accuracy * 0.01) * c->sk83))
             hit = 1;

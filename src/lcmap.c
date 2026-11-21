@@ -16,7 +16,6 @@
 #define GAPDATA __declspec(align(1)) unsigned char
 
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
-#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
 struct SBSAMPLE;
 struct D3SM;
 #include "txt_views.h"
@@ -808,6 +807,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* dcp unit split: the declarations of lc before the moved functions */
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void d2_CentreViewWindows(int view);
@@ -2307,8 +2307,8 @@ void ai_ShowPartingNews(unsigned short *cRec, unsigned short *pRec)
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        txt_Format(ai_NewsText, 0x132f, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x1333 : 0x1330), p->id,
-                   (util_Random(3) & 0xffff) + 0x1336, ai_PlayerSlots[ai_OwnPlayer]);
+        txt_Format(ai_NewsText, 0x132f, c->id, util_Random(3) + (p->sex != 0 ? 0x1333 : 0x1330), p->id,
+                   util_Random(3) + 0x1336, ai_PlayerSlots[ai_OwnPlayer]);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
@@ -2328,8 +2328,8 @@ void ai_ShowFeudNews(unsigned short *cRec, unsigned short *pRec)
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        txt_Format(local, (util_Random(3) & 0xffff) + 0x1340, c->id);
-        txt_Format(ai_NewsText, 0x1339, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x133d : 0x133a), p->id,
+        txt_Format(local, util_Random(3) + 0x1340, c->id);
+        txt_Format(ai_NewsText, 0x1339, c->id, util_Random(3) + (p->sex != 0 ? 0x133d : 0x133a), p->id,
                    local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
@@ -2347,8 +2347,8 @@ void ai_ShowPartnerNews(unsigned short *cRec, unsigned short *pRec)
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        txt_Format(local, (util_Random(3) & 0xffff) + 0x134a, c->id);
-        txt_Format(ai_NewsText, 0x1343, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x1347 : 0x1344), p->id,
+        txt_Format(local, util_Random(3) + 0x134a, c->id);
+        txt_Format(ai_NewsText, 0x1343, c->id, util_Random(3) + (p->sex != 0 ? 0x1347 : 0x1344), p->id,
                    local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
@@ -2394,7 +2394,7 @@ void ai_PlagueNews(void)
     G8CHARREC *c;
     int v;
 
-    v = util_RandomS(3);
+    v = util_Random(3);
     sprintf(local, "_KATASTROPHE_PEST_HS_0%i", v);
     txt_Format(ai_NewsText, v + 0x20c7);
     c = (G8CHARREC *)ai_Chars;
@@ -2413,7 +2413,7 @@ void ai_PlagueMessage(G8CHARREC *c, void *bld)
     char local[64];
     int v;
 
-    v = util_RandomS(2);
+    v = util_Random(2);
     if (c->kind == 6 || c->kind == 7) {
         sprintf(local, "_KATASTROPHE_PEST_HS_0%i", v + 3);
         txt_Format(ai_NewsText, v + 0x20ca);
@@ -2430,7 +2430,7 @@ void ai_PlagueMessageAll(void)
     int v;
     int i;
 
-    v = util_RandomS(2);
+    v = util_Random(2);
     sprintf(local, "_KATASTROPHE_PEST_HS_%i", v + 0x12);
     txt_Format(ai_NewsText, v + 0x20cd);
     for (i = 0; i < 0x300; i++) {
@@ -2626,10 +2626,10 @@ void ai_HauntingText(unsigned short *chrId, int victim, unsigned int end)
     switch (ls_GetLanguage()) {
     case 0:
     case 2:
-        txt_Format(ai_NewsText, 0x409b, (util_Random(3) & 0xffff) + 0x409c, *chrId, end, *chrId);
+        txt_Format(ai_NewsText, 0x409b, util_Random(3) + 0x409c, *chrId, end, *chrId);
         break;
     case 1:
-        txt_Format(ai_NewsText, 0x409b, (util_Random(3) & 0xffff) + 0x409c, *chrId, *chrId, end);
+        txt_Format(ai_NewsText, 0x409b, util_Random(3) + 0x409c, *chrId, *chrId, end);
         break;
     }
     he_ShowNews(((AICHARREC *)victim)->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_FRIEDHOF_11");

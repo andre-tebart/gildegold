@@ -21,7 +21,7 @@
 #include "d3_vec.h"
 #include "d3_pose.h"
 #include "menu.h"
-#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* 0x4bb810, allocates the animal list ("anm:animals") and resets the animal count and the first record */
 void anm_Alloc(void)
@@ -59,8 +59,8 @@ void anm_Update(void)
     if (d3_Time > anm_LastSpawn + 0x15e) {
         ANMREC *a;
 
-        if ((int)(util_RandomS(m * 2) - m) > anm_NAnimals && s != 3 && (a = anm_NewAnimal()) != 0) {
-            switch (util_RandomS(100) > 0x1e ? util_RandomS(5) + 3 : util_RandomS(2)) {
+        if ((int)(util_Random(m * 2) - m) > anm_NAnimals && s != 3 && (a = anm_NewAnimal()) != 0) {
+            switch (util_Random(100) > 0x1e ? util_Random(5) + 3 : util_Random(2)) {
             case 1:
                 anm_CreateCat(a);
                 break;
@@ -163,7 +163,7 @@ void anm_UpdateBird(ANMREC *a)
         if (!gm_IsHomeType((unsigned char *)b) && !gm_IsType10((unsigned char *)b) && b->object != 0)
             bs[n++] = b;
     }
-    f = bs[util_RandomS(n)];
+    f = bs[util_Random(n)];
     e = f->object;
     d3_PointToWorld(e, e + 0x4c, q);
     k = 0;
@@ -313,18 +313,18 @@ void anm_UpdateCat(ANMREC *a)
 
     if (((CHARACTER *)a->obj)->anim != 0)
         return;
-    if (util_RandomS(100) > 0x1e) {
+    if (util_Random(100) > 0x1e) {
         if (a->kind == 0) {
-            if (util_RandomS(100) > 0x32)
-                ch_QueueAnim(a->obj, "bewegung/stehen", util_RandomS(3) + 1);
+            if (util_Random(100) > 0x32)
+                ch_QueueAnim(a->obj, "bewegung/stehen", util_Random(3) + 1);
             else
-                ch_QueueAnim(a->obj, "bewegung/bellen", util_RandomS(3) + 1);
+                ch_QueueAnim(a->obj, "bewegung/bellen", util_Random(3) + 1);
         } else
-            ch_QueueAnim(a->obj, "bewegung/stehen", util_RandomS(3) + 1);
+            ch_QueueAnim(a->obj, "bewegung/stehen", util_Random(3) + 1);
         return;
     }
     h = ((G15SCENE *)d3_DefaultScene)->hmap;
-    n = util_RandomS(3) + 1;
+    n = util_Random(3) + 1;
     n = rd_PointsNear(a->pos, n, pts);
     if (n > 0) {
         for (p = pts; n != 0; n--, p++) {
@@ -351,15 +351,15 @@ void anm_UpdateSheep(ANMREC *a)
 
     if (((CHARACTER *)a->obj)->anim != 0)
         return;
-    if (util_RandomS(100) > 0x14) {
-        if (util_RandomS(100) > 0x32)
-            ch_QueueAnim(a->obj, "bewegung/stehen", util_RandomS(3) + 1);
+    if (util_Random(100) > 0x14) {
+        if (util_Random(100) > 0x32)
+            ch_QueueAnim(a->obj, "bewegung/stehen", util_Random(3) + 1);
         else
-            ch_QueueAnim(a->obj, "bewegung/fressen", util_RandomS(3) + 1);
+            ch_QueueAnim(a->obj, "bewegung/fressen", util_Random(3) + 1);
         return;
     }
     h = ((G15SCENE *)d3_DefaultScene)->hmap;
-    n = util_RandomS(3) + 1;
+    n = util_Random(3) + 1;
     n = rd_PointsNear(a->pos, n, pts);
     if (n > 0) {
         for (p = pts; n != 0; n--, p++) {
@@ -385,7 +385,7 @@ int rd_DoorPos(float *pos)
             bs[(unsigned short)n++] = b;
         b = (G15BLD *)gm_BuildNext();
     }
-    b = bs[util_RandomS(n)];
+    b = bs[util_Random(n)];
     o = d3_FindObject(b->object, 0x300, 0, "dummy_TUER");
     if (o != 0)
         d3_PointToWorld(o, o + 0x4c, pos);
@@ -406,8 +406,8 @@ int rd_PointsNear(float *pos, int n, float (*pts)[4])
     h = ((G15SCENE *)d3_DefaultScene)->hmap;
     d3_GetHeightAt(h, pos, &px, &pz, &py);
     for (i = 0; i < n; i++) {
-        x = util_RandomS(10) - 4 + px;
-        z = util_RandomS(10) - 4 + pz;
+        x = util_Random(10) - 4 + px;
+        z = util_Random(10) - 4 + pz;
         if (h->size - 2 < x)
             x = h->size - 2;
         if (x < 2)
@@ -442,7 +442,7 @@ char *rd_RandomNamedObject(char *name)
     d3_ForEachObject(d3_DefaultScene, 0, 0x380, rd_CollectNamed, &f);
     if (f.n == 0)
         return 0;
-    return f.objs[util_RandomS(f.n)];
+    return f.objs[util_Random(f.n)];
 }
 
 char anm_KindNames[8][0x20] = { "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" };  /* 0x602688, "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" */

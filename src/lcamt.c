@@ -809,6 +809,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* dcp unit split: the declarations of lc before the moved functions */
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void d2_CentreViewWindows(int view);
@@ -5822,13 +5823,13 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                     if (gain > 0)
                         rounds = min(gain, 3);
                     if (gain <= 0)
-                        r = util_Random(5) & 0xffff;
+                        r = util_Random(5);
                     else if (gain == 1)
-                        r = (util_Random(5) & 0xffff) + 5;
+                        r = util_Random(5) + 5;
                     else if (gain == 2)
-                        r = (util_Random(4) & 0xffff) + 9;
+                        r = util_Random(4) + 9;
                     else
-                        r = (util_Random(3) & 0xffff) + 0xc;
+                        r = util_Random(3) + 0xc;
                     txt_Format(answer, 0x1cf9, p->id, r + 0x1d02);
                     ev->pairRound += rounds;
                     if (ev->pairRound >= ev->pairRounds) {
@@ -6672,7 +6673,7 @@ int ai_BlackmailWindow(AICHARREC *me, AICHARREC *victim)
     do {
         if (d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
-                if (held >= (int)(util_Random(8) & 0xffff)) {
+                if (held >= (int)(util_Random(8))) {
                     due = ai_Time;
                     gm_AddTime(&due, 0x60, 0, 0);
                     memset(&msg, 0, sizeof(msg));
@@ -6748,7 +6749,7 @@ int ai_BlackmailBuildingListener(AICHARREC *me, LCORDMSG *m)
         if (victim == 0)
             return 0x60;
         open[0] = gv_HeldCrimeIdsOf(victim->netId, ids, me->id);  /* the count in open[0]: the original's slot */
-        if (open[0] >= (int)(util_Random(8) & 0xffff)) {
+        if (open[0] >= (int)(util_Random(8))) {
             AIMSG msg;
 
             due = ai_Time;
@@ -6827,7 +6828,6 @@ int ai_BlackmailBuildingListener(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_BlackmailContactWindow reads the 16-bit result (mov si, ax at 0x5c9ac3), as ai.c / am.c / amt.c do */
 
 /* 0x5c9990, the blackmail contact's letter window "misc\perga_rolle" (the pick callback ai_BlackmailContact hands
    ai_AmountMenu) for the picked character ch: one already marked (powerFlags 0x400) gives the text 0x1d7f and 0.
@@ -6873,8 +6873,8 @@ int ai_BlackmailContactWindow(AICHARREC *ch)
         if (d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
                 if (sv_CheckMoney(&((AICHARREC *)ai_Chars)[ai_PlayerId], 2) != 0) {
-                    text2 = util_RandomU(9) + 0x1d76;
-                    text1 = util_RandomU(9) + 0x1d6d;
+                    text2 = util_Random(9) + 0x1d76;
+                    text1 = util_Random(9) + 0x1d6d;
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x47;
                     msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
@@ -6935,8 +6935,8 @@ int ai_BlackmailContact(AICHARREC *me, LCORDMSG *m)
         victim = (AICHARREC *)gm_FindChar(m->target);
         if (victim == 0)
             return 0x60;
-        text2 = util_RandomU(9) + 0x1d76;
-        text1 = util_RandomU(9) + 0x1d6d;
+        text2 = util_Random(9) + 0x1d76;
+        text1 = util_Random(9) + 0x1d6d;
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x47;
         msg.to = me->netId;
@@ -7327,7 +7327,7 @@ int ai_MisappropriationWindow(AICHARREC *me, LCORDMSG *m)
         return 0x60;
     }
     gm_CharacterWages(owner->id, 0, (unsigned char *)&wages);
-    sum = (int)(wages.amount * ((float)((util_Random(0xb0) & 0xffff) + 0x19) * 0.005f));
+    sum = (int)(wages.amount * ((float)(util_Random(0xb0) + 0x19) * 0.005f));
     if (me->kind != 6) {
         if (me->money < 4)
             return 0x20;
@@ -7708,8 +7708,8 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
         price = (int)((float)(gm_GetWorth(b->id) + gm_GetWorth(a->id)) * 0.02f);
         if (gm_GetGoodsValue(me) < price)
             return 0x20;
-        r1 = util_RandomU(0x1e) + 3;
-        r2 = util_RandomU(0x1e) + 3;
+        r1 = util_Random(0x1e) + 3;
+        r2 = util_Random(0x1e) + 3;
         o1 = gm_Opinion(a->id, b->id);
         o2 = gm_Opinion(b->id, a->id);
         cm_SendRelations(a->netId, b->netId, r1 - o1 - 0x7f, 1);
@@ -7754,8 +7754,8 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
                 if (sv_CheckMoney(me, 4) != 0 && sv_CheckGoodAmount((char *)me, price, ai_OwnPlayer) != 0) {
                     int r1, r2, o1, o2;
 
-                    r1 = util_RandomU(0x1e) + 3;
-                    r2 = util_RandomU(0x1e) + 3;
+                    r1 = util_Random(0x1e) + 3;
+                    r2 = util_Random(0x1e) + 3;
                     o1 = gm_Opinion(a->id, b->id);
                     o2 = gm_Opinion(b->id, a->id);
                     cm_SendRelations(a->netId, b->netId, r1 - o1 - 0x7f, 1);
@@ -7979,7 +7979,7 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
                     txt_Format(news, 0x1dde);
                     sv_MessageBox(news, 0);
                     worker = 0;
-                    i = util_RandomU(0x300);
+                    i = util_Random(0x300);
                     for (n = 0x300; n != 0; n--, i = (i + 1) % 0x300) {
                         if (((AICHARREC *)ai_Chars)[i].id != 0xffff && ((AICHARREC *)ai_Chars)[i].bld == bld &&
                             ((AICHARREC *)ai_Chars)[i].kind == 0) {
@@ -8031,8 +8031,8 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
     int t;
 
     if (me->kind != 6) {
-        r1 = util_RandomU(0x28) + 0xf;
-        r2 = util_RandomU(0x28) + 0xf;
+        r1 = util_Random(0x28) + 0xf;
+        r2 = util_Random(0x28) + 0xf;
         if (me->money < 3)
             return 0x20;
         a = (AICHARREC *)gm_FindChar(m->target);
@@ -8079,8 +8079,8 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
                 if (sv_CheckMoney(me, 3) != 0) {
-                    r1 = util_RandomU(0x28) + 0xf;
-                    r2 = util_RandomU(0x28) + 0xf;
+                    r1 = util_Random(0x28) + 0xf;
+                    r2 = util_Random(0x28) + 0xf;
                     cm_SendRelations(a->netId, b->netId, r1, 1);
                     cm_SendRelations(b->netId, a->netId, r2, 1);
                     cm_SendMoneyDelta(me->netId, -3);
@@ -8145,7 +8145,7 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
         for (i = 0; i < 768; i++) {
             c = &((AICHARREC *)ai_Chars)[i];
             if (c->id != 0xffff && c->kind < 0xa && c->kind != 6 && c->kind != 7 && c->faith != me->faith &&
-                skill > (int)(util_RandomU(0x7e) + c->skills[4])) {
+                skill > (int)(util_Random(0x7e) + c->skills[4])) {
                 cm_BeginFieldBlock((char *)c, c->netId);
                 cm_AddFieldDelta(1, 1, 0xc, &faith);
                 cm_SendFieldDeltas();
@@ -8181,7 +8181,7 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
                     for (i = 0; i < 768; i++) {
                         c = &((AICHARREC *)ai_Chars)[i];
                         if (c->id != 0xffff && c->kind < 0xa && c->kind < 0xa && c->faith != me->faith &&
-                            skill > (int)(util_RandomU(0x7e) + c->skills[4])) {
+                            skill > (int)(util_Random(0x7e) + c->skills[4])) {
                             n++;
                             cm_BeginFieldBlock((char *)c, c->netId);
                             cm_AddFieldDelta(1, 1, 0xc, &faith);
@@ -8329,7 +8329,7 @@ void ai_Miracle(AICHARREC *me, int which)
         gm_FindById((int *)&bld, 0, 0, out);
         c = &((AICHARREC *)ai_Chars)[bld->owner];
         worth = gm_GetWorth(c->id);
-        price = (int)((util_RandomU(3) + 2) * (worth * 0.01));
+        price = (int)((util_Random(3) + 2) * (worth * 0.01));
         cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, price);
         txt_Format(text, 0x1df8, c->id, bld, c->id, price, &ai_PlayerSlots[ai_OwnPlayer][0x20]);
     } else if (which == 1) {
@@ -8346,7 +8346,7 @@ void ai_Miracle(AICHARREC *me, int which)
             if (c->id == 0xffff)
                 continue;
             if (c->v024 < -20) {
-                if (util_RandomU(2) != 0) {
+                if (util_Random(2) != 0) {
                     v = abs(c->v024 / 2);
                     cm_BeginFieldBlock((char *)c, c->netId);
                     cm_AddFieldDelta(4, 1, 0x24, &v);
@@ -8371,7 +8371,7 @@ void ai_Miracle(AICHARREC *me, int which)
             return;
         gm_FindById((int *)&bld, 0, 0, out);
         c = &((AICHARREC *)ai_Chars)[bld->owner];
-        level = bld->level - util_RandomU(0x10) - 10;
+        level = bld->level - util_Random(0x10) - 10;
         if (level <= 0)
             return;
         cm_BeginFieldBlock((char *)bld, bld->id);
@@ -8405,7 +8405,7 @@ void ai_Miracle(AICHARREC *me, int which)
             return;
         c = &((AICHARREC *)ai_Chars)[(unsigned short)id];
         skill = -1;
-        i = util_RandomU(5);
+        i = util_Random(5);
         j = 5;
         while (j != 0) {
             if (c->skills[i] < 0xe7) {
@@ -8451,7 +8451,7 @@ void ai_Miracle(AICHARREC *me, int which)
         kinds.HighPart = 1;
         if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.QuadPart, 0.0f, 100.0f, &out) == 0)
             return;
-        price = (int)((float)(util_RandomU(5) + 3) * worth * 0.01f);
+        price = (int)((float)(util_Random(5) + 3) * worth * 0.01f);
         gm_FindById((int *)&bld, 0, 0, out);
         cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, price);
         txt_Format(text, 0x1dff, c->id, bld, c->id, price);
@@ -8485,7 +8485,7 @@ int ai_MiracleWindow(void *chp, int *m)
         if (ch->money < 4)
             return 0x20;
         cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-        ai_Miracle(ch, util_Random(6) & 0xffff);
+        ai_Miracle(ch, util_Random(6));
         return 0x10;
     }
     if (ch->kind == 6) {
@@ -8501,7 +8501,7 @@ int ai_MiracleWindow(void *chp, int *m)
                 if (d2_ClickedId == 0) {
                     if (sv_CheckMoney((char *)ch, 4) != 0) {
                         cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-                        ai_Miracle(ch, util_Random(6) & 0xffff);
+                        ai_Miracle(ch, util_Random(6));
                         ret = 1;
                         sv_PopRequest = 1;
                     }
@@ -8683,7 +8683,7 @@ int ai_OpenTrial(AICHARREC *me, AICHARREC *target, int n, int byFaith)
             }
         }
         if (msg.arg[2] == -1) {
-            if (util_RandomU(2) != 0) {
+            if (util_Random(2) != 0) {
                 msg.arg[2] = ((AICHARREC *)ai_JudgeCatholic)->netId;
                 seated[1] = ((AICHARREC *)ai_JudgeCatholic)->id;
             } else {
@@ -10318,7 +10318,7 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
     }
     if (target != 0) {
         level = ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1;
-        id = util_Random(0x300) & 0xffff;
+        id = util_Random(0x300);
         for (n = 0x300; n != 0; n--, id = (id + 1) % 0x300) {
             if (id != target->id && id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
                 lc_CharRecs[id].officeKind != 0) {
@@ -10326,7 +10326,7 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
                 break;
             }
         }
-        id = util_Random(0x300) & 0xffff;
+        id = util_Random(0x300);
         for (n = 0x300; n != 0; n--, id = (id + 7) % 0x300) {
             if (id != target->id && id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff &&
                 lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
@@ -10334,7 +10334,7 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
                 break;
             }
         }
-        id = util_Random(0x300) & 0xffff;
+        id = util_Random(0x300);
         for (n = 0x300; n != 0; n--, id = (id + 13) % 0x300) {
             if (id != target->id && id != ch->id && id != pick[0]->id && id != pick[1]->id &&
                 lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
@@ -10423,7 +10423,7 @@ int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
     int i;
 
     use->handled = 1;
-    id = util_Random(0x300) & 0xffff;
+    id = util_Random(0x300);
     for (n = 0x300; n != 0; n--, id = (id + 1) % 0x300) {
         if (id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
             lc_CharRecs[id].sex != ch->sex && lc_CharRecs[id].officeKind != 0) {
@@ -10431,7 +10431,7 @@ int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
             break;
         }
     }
-    id = util_Random(0x300) & 0xffff;
+    id = util_Random(0x300);
     for (n = 0x300; n != 0; n--, id = (id + 7) % 0x300) {
         if (id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
             lc_CharRecs[id].sex != ch->sex) {
@@ -10439,7 +10439,7 @@ int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
             break;
         }
     }
-    id = util_Random(0x300) & 0xffff;
+    id = util_Random(0x300);
     for (n = 0x300; n != 0; n--, id = (id + 13) % 0x300) {
         if (id != ch->id && id != pick[0]->id && id != pick[1]->id && lc_CharRecs[id].id != 0xffff &&
             lc_CharRecs[id].kind < 10 && lc_CharRecs[id].sex != ch->sex) {
@@ -10661,7 +10661,7 @@ int ai_UseGoodHarmBuilding(AICHARREC *ch, G8USEVIEW *use)
         if (bld == 0)
             return 0;
     }
-    cm_SendRelations(target->id, lc_CharRecs[bld->owner].netId, -20 - (util_Random(0x20) & 0xffff), 1);
+    cm_SendRelations(target->id, lc_CharRecs[bld->owner].netId, -20 - util_Random(0x20), 1);
     for (i = 0; i < 0x300; i++) {
         if (lc_CharRecs[i].kind == 0 && lc_CharRecs[i].bld == bld)
             gm_AddHealth(i, -((util_RandomF() * 0.2f + 0.1f) * lc_CharRecs[i].f01c));
@@ -10774,8 +10774,8 @@ int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
         if (target == 0)
             return 0;
     }
-    id = util_RandomU(0x300);
-    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    id = util_Random(0x300);
+    step = ai_CharWalkSteps[util_Random(0x10)];
     n = 3;
     do {
         if (lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].officeKind != 0 && &lc_CharRecs[id] != ch &&
@@ -10784,8 +10784,8 @@ int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
         id = (id + step) % 0x300;
     } while (n != 0);
     for (i = 0; i < 3; i++)
-        cm_SendRelations(target->netId, pick[i]->netId, (util_Random(0x20) & 0xffff) + 20, 1);
-    gm_AddHealth(target->id, -50 - (util_Random(0x40) & 0xffff));
+        cm_SendRelations(target->netId, pick[i]->netId, util_Random(0x20) + 20, 1);
+    gm_AddHealth(target->id, -50 - util_Random(0x40));
     if (target->kind == 6 || target->kind == 7) {
         txt_Format(news, 0x100d, pick[0]->id, pick[0]->id, pick[1]->id, pick[2]->id);
         he_ShowNews(target->netId, -1, news, 1, 0x5fb, 0);

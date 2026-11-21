@@ -422,7 +422,6 @@ extern D3SCENE *ch_Saved0;                  /* 0x631084, scene whose ground ch_G
 extern D3SCENE *ch_Saved1;                  /* 0x631088, the same for ch_Ground1 */
 extern int ch_LastUpdate;                   /* 0x5f1224 */
 
-int util_Random(unsigned short n);                                                      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, see ch4 block */
 
 /* ---- 0x405810..0x406e40 (worker ch3): sit / stand / gate / take / drop actions ---- */

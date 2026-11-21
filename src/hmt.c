@@ -13,7 +13,6 @@
 #include <string.h>
 #include "hmt.h"
 #include "data_views.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -34,6 +33,7 @@
 #include "tr.h"
 #include "ch.h"
 #include "gv.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* ai.h declares cm_AddFieldValues with an int field; the caller 0x4ac2f0 passes an unsigned short (no masking) */
 
@@ -49,7 +49,7 @@ unsigned short hmt_RandomRecord(short k)
     unsigned short r;
 
     do
-        r = util_RandomU(0x33);
+        r = util_Random(0x33);
     while ((short)r == k);
     return r;
 }
@@ -66,9 +66,9 @@ unsigned short hmt_RandomTextOffset(unsigned short k)
         /* @original both arms draw the same range: the original still loads e->textSet (mov ecx,[eax+8])
            and tail-calls util_Random(10) from one merged arm (hmt_RecordTextId tests textSet the same way) */
         if (e->textSet == 0)
-            ret = util_RandomU(10);
+            ret = util_Random(10);
         else
-            ret = util_RandomU(10);
+            ret = util_Random(10);
     }
     return ret;
 }
@@ -142,7 +142,7 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
     e = hmt_GetRecord(k);
     if (e != 0) {
         if (e->kind == 0 && e->id <= 4) {
-            v = util_RandomU(8) + 8;
+            v = util_Random(8) + 8;
             v = (unsigned char)min((float)(char)v, 252.0f - ((unsigned char *)p)[e->id + 0x80]);
             cm_BeginFieldBlock((AIPER *)p, p->netId);
             cm_AddFieldValues(1, 1, e->id + 0x80, &v);
@@ -150,7 +150,7 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
         } else if (e->kind == 1) {
             for (i = 0; i < 768; i++) {
                 if (ai_CharsT[i].netId != p->netId && gm_TitleGroup(ai_CharsT[i].jobId) == e->id)
-                    cm_SendRelations(p->netId, ai_CharsT[i].netId, util_RandomU(4) + 3, 0);
+                    cm_SendRelations(p->netId, ai_CharsT[i].netId, util_Random(4) + 3, 0);
             }
         }
     }
@@ -455,12 +455,12 @@ void hmt_Begin(void)
         if (ev.id == -1 && hmt_Event != -1) {
             r = hmt_Find(hmt_Event, &kind);
             if (r != 0 && r->begin <= year)
-                cm_SendCreateCharacter(0x15, hmt_Event, -1, util_RandomU(8) + 0x19, -1, 0, 0, 0);
+                cm_SendCreateCharacter(0x15, hmt_Event, -1, util_Random(8) + 0x19, -1, 0, 0, 0);
         }
         if (ps.id == -1 && hmt_Person != -1) {
             r = hmt_Find(hmt_Person, &kind);
             if (r != 0 && r->begin <= year)
-                cm_SendCreateCharacter(0x16, hmt_Person, -1, util_RandomU(8) + 0x19, -1, 0, 0, 0);
+                cm_SendCreateCharacter(0x16, hmt_Person, -1, util_Random(8) + 0x19, -1, 0, 0, 0);
         }
     }
 }
@@ -730,7 +730,7 @@ void hmt_FillCouncils(void)
     gm_Shuffle(15, ids);
     for (i = 0, k = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
-            id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
+            id = gm_TitleNumber(ids[k++], util_Random(3) + 4);
             h = cm_SendCreateCharacter(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_SexForJob(id));
             while (h != -1 && !cm_GetSlotState(h))
                 sv_PumpNet();
@@ -747,7 +747,7 @@ void hmt_FillCouncils(void)
             cm_SendFieldDeltas();
             bits = hmt_ElectionGroupBits[i];
             if (i == 2)
-                bits |= hmt_ElectionGroupBits[util_RandomU(i)];
+                bits |= hmt_ElectionGroupBits[util_Random(i)];
             cm_SendSetField(p->netId, 0x1cc, 4, bits, 0);
         }
     }
@@ -817,7 +817,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     c->b00c = 0;
     for (j = 0; j < 768; j++) {
         for (k = 0; k < 768; k++) {
-            ai_Relations[j][k] = (char)util_RandomU(0x40) - 0x20;
+            ai_Relations[j][k] = (char)util_Random(0x40) - 0x20;
             ai_RelationMemory[j][k] = 0;
         }
     }
@@ -834,7 +834,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     c->f010 = 330.0f;
     c->f018 = 1000.0f;
     for (j = 0; j < 5; j++)
-        c->skills[j] = (unsigned char)(util_RandomU(0x2a) + 210.0f);
+        c->skills[j] = (unsigned char)(util_Random(0x2a) + 210.0f);
     c->b00d = 9;
     gm_AddObjekt(c->netId, ai_PlayerSlotsT[ai_OwnPlayer].moneyGood, HMT_START_MONEY);
     pl = 0xffff;
@@ -905,7 +905,7 @@ void hmt_NextPerson(void)
 
 int hmt_RandomHeadIcon(void)
 {
-    return util_RandomU(2) + 0x639;
+    return util_Random(2) + 0x639;
 }
 
 int hmt_CurrentPerson = 0;  /* 0x6f0710, idx of the person in play, -1 for none */

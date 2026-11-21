@@ -34,7 +34,7 @@
 #include "d3_pose.h"
 #include "vfs.h"
 #include "chc.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 char ch_AnimPath[0x100] = "x:\\gfx\\engine\\animations\\character";  /* 0x5f1120 */
@@ -1526,8 +1526,8 @@ int ch_RandomNear(D3VECTOR *pos, D3VECTOR *out)
     if (!h)
         return 0;
     d3_GetHeightAt(h, pos, &x, &z, &y);
-    nx = util_RandomU(10) - 4 + x;
-    nz = util_RandomU(10) - 4 + z;
+    nx = util_Random(10) - 4 + x;
+    nz = util_Random(10) - 4 + z;
     if (h->size - 2 < nx)
         nx = h->size - 2;
     if (nx < 2)

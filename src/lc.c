@@ -916,6 +916,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 /* 0x58bbd0, sets up the production window's tables: the grid rows ai_ProdRows / ai_ProdRows2 (no title picture),
    the 16 goods columns ai_ProdColumns (no inputs, x 0x10, y 8 + i * 0x78, no windows or pictures), the column
    slots ai_ProdColumnSlots (at 0x1a / 0x10 + i * 0x45) and the goods grids ai_ProdGoods / ai_ProdGoods2 (four
@@ -2758,7 +2759,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
         err_Message(buf);
         return 0;
     }
-    idx = util_Random(n) & 0xffff;
+    idx = util_Random(n);
     if (((AIBTYPE *)ai_BTypes)[kind].kind == '!')
         idx = ((AICHARREC *)ai_Chars)[ai_PlayerId].sex != 1;
     if (ai_BuildingName(kind, bname) == 0)
@@ -2809,7 +2810,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                     rot.z = model->rotation.z;
                     d3if_Delete(model);
                 }
-                strcpy(path, names[util_Random(n) & 0xffff]);
+                strcpy(path, names[util_Random(n)]);
                 model = d3_LoadGroup(path, 0, 0);
                 if (model == 0) {
                     sprintf(buf, "lc_GebaeudeAusrichten(): Could not load 3D-Object-Group '%s'...", path);
@@ -6377,7 +6378,7 @@ void ai_TavernRulesWindow(void)
 }
 /* 0x597780, draws three dice (134 B): the window's objects are removed (d2_RemoveWindowObjects), the caption is
    printed (io_PrintText "$C$Z%s"), then the three dice cells at x = 0x1c + i * 0x3a (0 every 8) and y = 0x1d
-   (0x46 after 8), each a d2_WinOpenPic with the random picture 0x75b + (util_Random(6) & 0xffff) */
+   (0x46 after 8), each a d2_WinOpenPic with the random picture 0x75b + util_Random(6) */
 
 void ai_DrawDice(char *caption)
 {
@@ -6391,7 +6392,7 @@ void ai_DrawDice(char *caption)
     x = 0x1c;
     y = 0x1d;
     do {
-        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
+        d2_WinOpenPic(x, y, util_Random(6) + 0x75b, d2_LastWindow);
         i++;
         if (i % 8 == 0)
             x = 0;
@@ -6434,7 +6435,7 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
                 x += 0x3a;
             y = i > 7 ? 0x46 : 0x1d;
         }
-        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
+        d2_WinOpenPic(x, y, util_Random(6) + 0x75b, d2_LastWindow);
     } else {
         x = 0x1c;
         y = 0x1d;
@@ -6447,7 +6448,7 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
                 x += 0x3a;
             y = i > 7 ? 0x46 : 0x1d;
         }
-        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
+        d2_WinOpenPic(x, y, util_Random(6) + 0x75b, d2_LastWindow);
     }
 }
 /* 0x597920, draws one side of a dice duel as thrown (as ai_DrawDuelDice without the random cell): the
@@ -10272,7 +10273,7 @@ void ai_CitizenRightWindow(AIBLD *b)
                 if (ai_TutorialOff() == 0)
                     gm_AddTime(&msg.time, 0, 5, 0);
                 else
-                    gm_AddTime(&msg.time, (unsigned short)util_Random(3) + 1, 0, 0);
+                    gm_AddTime(&msg.time, util_Random(3) + 1, 0, 0);
                 due = msg.time;
                 msg.rankUp.rank = 2;
                 msg.rankUp.ch = me->netId;

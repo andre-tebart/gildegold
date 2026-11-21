@@ -26,7 +26,7 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 
 extern char ch_EmptyName[];  /* 0x631090, the shared empty string "" (ch.c) */
 
-unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: the function masks its argument to 16 bits (0x42ec00: test si,si; and esi,0xffff) and the shuffler passes the count through mov cx,WORD PTR ds:0x6f0e28 (0x4eadd8), so this TU's callers were compiled against the 16-bit parameter and result (ai.h's view is int) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: the function masks its argument to 16 bits (0x42ec00: test si,si; and esi,0xffff) and the shuffler passes the count through mov cx,WORD PTR ds:0x6f0e28 (0x4eadd8), so this TU's callers were compiled against the 16-bit parameter and result; every calling unit declares it so) */
 
 /* 0x4eaa50, the character the alchemist object p (building kind 0x1e) belongs to: the character with the id of the record at +0x65; 0 when p is another kind or has no record */
 char *ahm_OwnerChar(unsigned char *p)
@@ -147,9 +147,9 @@ void ahm_ShufflePlayers(int init)
     srand(ai_WalkSeed.seed & 0xffff);
     ahm_ShuffleTable();
     if (init != 0) {
-        ai_WalkX = util_Random(0x19) & 0xffff;
-        ai_WalkDX = ahm_Tab[util_Random(8) & 0xffff];
-        ai_WalkY = util_Random(0x19) & 0xffff;
+        ai_WalkX = util_Random(0x19);
+        ai_WalkDX = ahm_Tab[util_Random(8)];
+        ai_WalkY = util_Random(0x19);
         t = util_Random(8);
         ai_WalkIndex = 0;
         ai_WalkDY = ahm_Tab[t];
@@ -198,7 +198,7 @@ AHMGRID *ahm_RandomRecipe(char *c)
             step++;
             r = (int)step % ai_RecipePrototypeCount;
         }
-        pos = util_Random(ai_RecipePrototypeCount) & 0xffff;
+        pos = util_Random(ai_RecipePrototypeCount);
         k = ai_RecipePrototypeCount;
         while (k != 0) {
             if (ahm_SlotOf(c, ai_RecipePrototypes[pos].rcp.id) == 0)

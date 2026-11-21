@@ -58,7 +58,7 @@ extern char ai_DataPath[608];
 #include "d3_tools.h"
 #include "d3_pose.h"
 #include "menu.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -189,7 +189,7 @@ int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2)
 /* 0x48e470, the decide of the AI method "UseSecretRoom" (0x41): a character of kind 3 takes no part; a
    master (its class 0x1e building found by p->id) without the cabinet object 0x266 wants one built
    (ai_ChooseSubAction, 0.22 of the weight), else one of the four payment ways ai_DecideSecretRoom0 .. 3
-   (chosen by util_RandomU(4)) pays; 0 when none applies. */
+   (chosen by util_Random(4)) pays; 0 when none applies. */
 
 int ai_DecideSecretRoom(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 {
@@ -223,7 +223,7 @@ int ai_DecideSecretRoom(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     if (he_EventOnBuilding(bld->id))
         return 0;
-    switch (util_RandomU(4)) {
+    switch (util_Random(4)) {
     case 0:
         r = ai_DecideSecretRoom0(p, &s1, &s2);
         break;
@@ -257,7 +257,7 @@ int ai_DecideSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
     if (p->money < 0x10)
         return 0;
     flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
-    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
+    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_Random(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
     m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
@@ -284,7 +284,7 @@ int ai_DecideSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
     AIPX *c;
 
     flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
-    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
+    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_Random(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
     t = amt_GetKindLevel(((unsigned char *)c)[0x166]) / 3 + 2;
@@ -315,7 +315,7 @@ int ai_DecideSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
     AIPX *c;
 
     flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
-    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &cid))
+    if (!ai_PickPartnerChain(p, 1, &flags, 0, util_Random(0x20) + 32.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
     f = (float)(amt_GetKindLevel(((unsigned char *)c)[0x166]) / 3 + 2);
@@ -576,7 +576,7 @@ int ai_DecideCannonTower(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     m.s.lo = 0xe07c43b4;
     m.s.hi = 1;
-    if (!ai_PickActionBuilding((AIPER *)p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, m.q, 0, (float)(util_Random(0x20) + 0x20), &v))
         return 0;
     gm_FindById((int)&b2, 0, 0, v);
     if (!b2)
@@ -747,7 +747,7 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
                 goto fail;
             if (p->flags1cc & 0x40000000)
                 goto fail;
-            r = util_RandomU(15);
+            r = util_Random(15);
             while (rec[r].value)
                 r = (r + 1) % 15;
             o1->kind = 2;
@@ -760,7 +760,7 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         }
     } else if (!st[2])
         goto fail;
-    r = util_RandomU(15);
+    r = util_Random(15);
     while (rec[r].value < 1)
         r = (r + 1) % 15;
     o1->kind = 1;
@@ -776,7 +776,7 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         int flags;
 
         flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
-        if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 10.0f, &id))
+        if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_Random(0x20) + 10.0f, &id))
             goto fail;
         o2->kind = 7;
         o2->ref = AIC[id].netId;
@@ -796,7 +796,7 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
             if (out != -1)
                 goto done;
         }
-        if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 16.0f, &out))
+        if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_Random(0x20) + 16.0f, &out))
             goto fail;
     done:
         o2->kind = 4;
@@ -935,7 +935,7 @@ AIPX *ai_PickRandomBuildingChar(AIBLD *b)
     }
     if (n < 2)
         return 0;
-    return &AIC[list[util_RandomU(n)]];
+    return &AIC[list[util_Random(n)]];
 }
 /* 0x48ff50, way 0 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): with money and a 0x1fc object in the graveyard, picks one of its characters and a partner chain for message 0x88 and a building of the partner */
 
@@ -958,7 +958,7 @@ int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x88, 3, b->id))
         return 0;
     flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
-    if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
+    if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_Random(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
     if (q->bld2)
@@ -1011,8 +1011,8 @@ int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     int x;
     LARGE_INTEGER mask;
 
-    u1 = util_RandomU(3);
-    u2 = util_RandomU(3);
+    u1 = util_Random(3);
+    u2 = util_Random(3);
     o1->arg2 = 1;
     o1->ref2 = b->id;
     n = (u2 + 2) * (u1 + 2);
@@ -1030,7 +1030,7 @@ int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         if (x != -1)
             goto done;
     }
-    if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_Random(0x20) + 19.0f, &x))
         return 0;
 done:
     o2->arg = u2;
@@ -1076,7 +1076,7 @@ int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x89, 3, b->id))
         return 0;
     flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500, as in way 0 */
-    if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
+    if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_Random(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
     o2->ref2 = q->netId;
@@ -1135,7 +1135,7 @@ int ai_DecideGraveyardOwner3(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x8a, 3, b->id))
         return 0;
     o2->ref = c->netId;
-    return util_RandomU(3) == 0;
+    return util_Random(3) == 0;
 }
 /* 0x490600, way 3 of the "Graveyard Owner" execute: sends message 0x8a (flag 1) from the building to the character with the way's AIARG (ref) */
 
@@ -1182,7 +1182,7 @@ int ai_DecideGraveyardOwner(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     r[1] = ai_DecideGraveyardOwner1(p, (AIBLD *)v, &s1[1], &s2[1]);
     r[2] = ai_DecideGraveyardOwner2(p, (AIBLD *)v, &s1[2], &s2[2]);
     r[3] = ai_DecideGraveyardOwner3(p, (AIBLD *)v, &s1[3], &s2[3]);
-    i = util_RandomU(4);
+    i = util_Random(4);
     n = 4;
     do {
         if (r[i]) {
@@ -1277,9 +1277,9 @@ int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     }
     if (n == 0)
         return 0;
-    if (util_RandomU(8) + p->age < 0x23)
+    if (util_Random(8) + p->age < 0x23)
         return 0;
-    bld = list[util_RandomU(n)];
+    bld = list[util_Random(n)];
     r2 = gv_FindEntry(0, bld, 0, gv_EntryIsFree, 0xff);
     if (r2 == 0)
         return 0;
@@ -1375,7 +1375,7 @@ int ai_DecideLawSeverity(AIPER *p, int a, int *out)
     gv_GetTableRecord(0, &d);
     if (x > 1.0f) {
         if (w > u && d.cur < 2) {
-            *out = util_RandomU(2) + d.cur + 1;
+            *out = util_Random(2) + d.cur + 1;
             return 1;
         }
         if (x > 1.4f) {
@@ -1383,7 +1383,7 @@ int ai_DecideLawSeverity(AIPER *p, int a, int *out)
             return 1;
         }
     } else if (u > v && d.cur > 2) {
-        *out = d.cur - util_RandomU(3) - 1;
+        *out = d.cur - util_Random(3) - 1;
         return 1;
     }
     return 0;
@@ -1603,14 +1603,14 @@ int ai_DecideIncomeTaxRate(AIPER *p, int a, int *out)
         o = gm_Query(b->objList, 2, 6, 0, 0x115);
         m = gm_SumListAmounts(o->list, ai_OwnPlayer);
         if (m < (int)(amt_GetOwnedOfficePay() * 0.25f) * 3)
-            n += util_RandomU(3) + 1;
+            n += util_Random(3) + 1;
         if (d.cur - 3 > n) {
-            *out = d.cur - util_RandomU(3) - 1;
+            *out = d.cur - util_Random(3) - 1;
             *out = max(d.min, *out);
             return 1;
         }
         if (d.cur + 3 < n) {
-            *out = util_RandomU(3) + d.cur + 1;
+            *out = util_Random(3) + d.cur + 1;
             *out = min(d.max, *out);
             return 1;
         }
@@ -1654,14 +1654,14 @@ int ai_DecideGuildTaxRate(AIPER *p, int a, int *out)
             o = gm_Query(b->objList, 2, 6, 0, 0x115);
             m = gm_SumListAmounts(o->list, ai_OwnPlayer);
             if (m < amt_GetOwnedOfficePay() * 3)
-                n += util_RandomU(3) + 1;
+                n += util_Random(3) + 1;
             if (d.cur - 3 > n) {
-                *out = d.cur - util_RandomU(2) - 1;
+                *out = d.cur - util_Random(2) - 1;
                 *out = max(d.min, *out);
                 return 1;
             }
             if (d.cur + 3 < n) {
-                *out = util_RandomU(2) + d.cur + 1;
+                *out = util_Random(2) + d.cur + 1;
                 *out = min(d.max, *out);
                 return 1;
             }
@@ -1709,11 +1709,11 @@ int ai_DecideTradeTaxRate(AIPER *p, int a, int *out)
         k = d.max - d.min;
         if (t == 8) {
             if (d.cur > (int)(k * 0.33f + d.min)) {
-                *out = util_RandomU(3) + d.min;
+                *out = util_Random(3) + d.min;
                 return 1;
             }
         } else if (d.cur < (int)(k * 0.66f + d.min)) {
-            *out = d.max - util_RandomU(3);
+            *out = d.max - util_Random(3);
             return 1;
         }
     }
@@ -1750,11 +1750,11 @@ int ai_DecideBankRate(AIPER *p, int a, int *out)
         k = d.max - d.min;
         if (t == 9) {
             if (d.cur < (int)(k * 0.55f + d.min)) {
-                *out = d.max - util_RandomU(6);
+                *out = d.max - util_Random(6);
                 return 1;
             }
         } else if (d.cur > (int)(k * 0.45f + d.min)) {
-            *out = util_RandomU(6) + d.min;
+            *out = util_Random(6) + d.min;
             return 1;
         }
     }

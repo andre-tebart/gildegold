@@ -49,7 +49,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_fl.h"
 #include "dd_vesa.h"
 #include "ch.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
@@ -554,7 +554,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_RandomU(3) + 0x4253, 0x4256);
+                txt_Format(text, util_Random(3) + 0x4253, 0x4256);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);
@@ -585,7 +585,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_RandomU(3) + 0x4253, 0x4257);
+                txt_Format(text, util_Random(3) + 0x4253, 0x4257);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);
@@ -697,7 +697,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_RandomU(3) + 0x4253, 0x4258);
+                txt_Format(text, util_Random(3) + 0x4253, 0x4258);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);

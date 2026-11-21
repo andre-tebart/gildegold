@@ -88,7 +88,7 @@ extern GAPDATA full_data_602568[];
 #include "gv.h"
 #include "poker.h"
 #include "gfx.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
@@ -2040,7 +2040,7 @@ void cm_TrialAskAI(CMCUTINFO *r, AIPLAN *m)
     case 6:
         if (r->playerId != m->ids[1])
             return;
-        r->session.answer = util_RandomU(2) & 0xffff;
+        r->session.answer = util_Random(2);
         return;
     case 4:
         id = r->playerId;
@@ -2334,7 +2334,7 @@ void cm_RunDuel(G28REC *m)
 
         hita = 0;
         hitb = 0;
-        r = util_RandomU(3) - 5;
+        r = util_Random(3) - 5;
         w = 0;
         a = (AICHAR *)gm_FindChar(m->members[0]);
         b = (AICHAR *)gm_FindChar(m->members[1]);
@@ -2778,7 +2778,7 @@ int cm_ExecutionAftermath(G28REC *m)
     }
     return 1;
 }
-#define CUT_NAMEREC(c) ((c) != 0 ? (char *)gm_CharNameRecord((c)->id) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1))  /* a character's name record, a random one for none */
+#define CUT_NAMEREC(c) ((c) != 0 ? (char *)gm_CharNameRecord((c)->id) : (char *)gm_NameRecord(util_Random(2), util_Random(0x5e) + 1))  /* a character's name record, a random one for none */
 /* 0x4e01e0, one execution (the scene callback of the execution event, cm_RegisterSceneKind kind 5) of the delinquent
    m->members[0] with the others m->members[1] .. [3], the way m->variant 0 .. 4 (head, gallows (1, 2), shovel, cannon):
    the scene "Richtplatz.ed3" with a random sky of a random weather (1 heavy, 2 medium, else fair; the heavy one also calls
@@ -3113,7 +3113,7 @@ void cm_RunBirth(G28REC *m)
         }
         if (cm_RunSceneTicksOrClick(0x3e8, 0, 0) == 0) {
             for (k = cm_Random(4) + 2; k > 0; k--)
-                cm_QueueVoice(-8, bank, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
+                cm_QueueVoice(-8, bank, "_GEBURT_GESCHREI", cm_Random(5), util_Random(0x800) + 0x3e8);
             cm_RunSceneTicksOrClick(0x1b58, 0, 0);
         }
     }

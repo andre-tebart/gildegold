@@ -52,7 +52,7 @@ void tr_shutdown(void)
     } else
         __asm int 3
 }
-/* 0x42ec00 */
+/* 0x42ec00; returns int, but the units that call it see unsigned short util_Random(unsigned short n) in their headers (ai.h, cm.h ..: they read 16 bits); tr.c includes none of them */
 
 int util_Random(unsigned short n)
 {

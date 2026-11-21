@@ -42,6 +42,7 @@ struct AICHAR;
 #include "di_input.h"
 #include "data_views.h"
 #include "amt.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 extern char ai_Crimes[];
 #define GAPDATA __declspec(align(1)) unsigned char
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
@@ -150,7 +151,6 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "mission.h"
 #include "f3gm.h"
 void *ai_ProdSetting(void *bld);    /* 0x5a8560 */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 extern struct D2COLKEY d2_TransparentColour;  /* 0x6f0454, shp.c (the type in shp.h) */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: unk_LoadIconNames stores the key byte by byte (mov byte [0x6f0455], 0xff; [0x6f0454] and [0x6f0456] = bl), not through the D2COLKEY word gb */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
@@ -971,7 +971,7 @@ unsigned *gm_CharNameRecord(int id)
             return (unsigned *)&((GMHEAD *)gm_OwnNameHeads)[gm_OwnNameHeadLast];
         }
         if (ORD_CHARS[id].kind == 0x11)
-            return (unsigned *)((GMHEAD *)gm_SpyHeads + (util_RandomU(3) & 0xffff));
+            return (unsigned *)((GMHEAD *)gm_SpyHeads + util_Random(3));
         if (k != 0) {
             if (ORD_CHARS[id].textVariant == 0)
                 p = (GMHEAD *)gm_JobHeadsMale;
@@ -1476,7 +1476,7 @@ float gm_DailyCharacterStep(unsigned short *id)
         gm_NetMsgCount++;
     }
     if (c->flags1cc & 2) {
-        t = c->f01c - ((util_RandomU(0x10) & 0xffff) + 0x11);
+        t = c->f01c - (util_Random(0x10) + 0x11);
         cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
@@ -1981,7 +1981,7 @@ void gm_PopulationStep(void)
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];
         if (c->id != 0xffff && c->health != 0 && c->kind == 3
-            && (c->w00a >= util_RandomU(4) + 0x2c || !((float)n < 652.80005f))
+            && (c->w00a >= util_Random(4) + 0x2c || !((float)n < 652.80005f))
             && c->job == 0 && c->appliedOffice == 0 && c->job2 == 0 && gm_IsNoPlayerKin(c) != 0) {
             gm_AddHealth(c->id, (int)-(c->f01c + 1.0f));
             n--;
@@ -2012,7 +2012,7 @@ void gm_PopulationStep(void)
                 if (c->level < 2)
                     cm_AddFieldValue(1, 1, (char *)&c->level - cm_FieldObject, &level);
                 cm_SendFieldValues();
-                cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, (util_RandomU(0x800) + 0x800) * level * 0x20);
+                cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, (util_Random(0x800) + 0x800) * level * 0x20);
                 settled++;
             }
             continue;
@@ -2023,26 +2023,26 @@ void gm_PopulationStep(void)
                 kids++;
         }
     }
-    if (kids < 6 && util_RandomU(4) == 0) {
+    if (kids < 6 && util_Random(4) == 0) {
         h = cm_SendCreateCharacter(0x10, -1, -1, util_Random(4) + 0x10, -1, 0, 0, 0);
         while (h != -1 && cm_GetSlotState(h) == 0)
             sv_PumpNet();
         if (cm_GetSlotState(h) == 1) {
             settled++;
             nc = ORD_CHAR(cm_GetSlotValue(h));
-            cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_RandomU(0x2000) + 10000) * 0x40);
+            cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_Random(0x2000) + 10000) * 0x40);
         }
     }
     if (!((float)n > 652.80005f)) {
-        t = settled < 0x1e ? (0x28 - settled) / 2 : settled < 0x28 ? util_RandomU(2) + 1 : 0;
+        t = settled < 0x1e ? (0x28 - settled) / 2 : settled < 0x28 ? util_Random(2) + 1 : 0;
         for (i = 0; i < t; i++) {
-            h = cm_SendCreateCharacter(3, -1, -1, 0x14, -1, gm_TitleNumber(util_RandomU(0xc) + 1, util_RandomU(2) + 1), 0, 2);
+            h = cm_SendCreateCharacter(3, -1, -1, 0x14, -1, gm_TitleNumber(util_Random(0xc) + 1, util_Random(2) + 1), 0, 2);
             while (h != -1 && cm_GetSlotState(h) == 0)
                 sv_PumpNet();
             if (cm_GetSlotState(h) == 1) {
-                int office = util_RandomU(0xc) + 10;
+                int office = util_Random(0xc) + 10;
                 nc = ORD_CHAR(cm_GetSlotValue(h));
-                cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_RandomU(0x400) + 0x400) * 0x40);
+                cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_Random(0x400) + 0x400) * 0x40);
                 cm_BeginFieldBlock((char *)nc, nc->netId);
                 cm_AddFieldValue(1, 1, (char *)&nc->prevOffice - cm_FieldObject, &office);
                 cm_SendFieldValues();
@@ -2078,7 +2078,7 @@ unsigned short gm_CreateRandomChild(int age)
 
     range = 0x300;
     for (tries = 0; tries < 0x10; tries++) {
-        a = util_RandomU(range);
+        a = util_Random(range);
         if (ORD_CHARS[a].id == 0xffff)
             range = range * 3 / 4;
         else if (ORD_CHARS[a].kind < 6 && !((float)ORD_CHARS[a].w00a < ORD_CHARS[a].f020) && ORD_CHARS[a].health != 0) {
@@ -2086,7 +2086,7 @@ unsigned short gm_CreateRandomChild(int age)
             for (k = 3; k < 8; k++)
                 if (ORD_CHARS[a].relatives[k] != -1)
                     n++;
-            if (util_RandomU(0x100) + 1 < chance[n])
+            if (util_Random(0x100) + 1 < chance[n])
                 break;
         } else
             a = 0xffff;
@@ -2094,7 +2094,7 @@ unsigned short gm_CreateRandomChild(int age)
     if (a == 0xffff)
         return 0;
     for (tries = 0; tries < 0x10; tries++) {
-        b = util_RandomU(range);
+        b = util_Random(range);
         if (ORD_CHARS[b].id == 0xffff)
             range = range * 3 / 4;
         else if (ORD_CHARS[b].kind < 6 && !((float)ORD_CHARS[b].w00a < ORD_CHARS[b].f020) && ORD_CHARS[b].health != 0) {
@@ -2102,7 +2102,7 @@ unsigned short gm_CreateRandomChild(int age)
             for (k = 3; k < 8; k++)
                 if (ORD_CHARS[b].relatives[k] != -1)
                     n++;
-            if (util_RandomU(0x100) + 1 < chance[n])
+            if (util_Random(0x100) + 1 < chance[n])
                 break;
         } else
             b = 0xffff;
@@ -2187,7 +2187,7 @@ ORDBLD *gm_FindHome(int unused, ORDBLD *o)
             list[n] = b;
             b = (ORDBLD *)gm_BuildNext();
         }
-        return list[util_RandomU(n)];
+        return list[util_Random(n)];
     }
     return pick;
 }

@@ -510,7 +510,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     -1 instead of 0xff (a -1 cached in ebx).
 - **Size queue s18 (byte or padded size by these)**:
   - `mov edi,1; push 2` hoisted above a half test (`test ax,ax; push 2; je`) whose arms both run into
-    the next `util_RandomU(2)` test: that next test written in EACH arm (both arms then start with the
+    the next `util_Random(2)` test: that next test written in EACH arm (both arms then start with the
     same instructions and VC6 hoists them); `d = 1` in both arms alone gave the `mov` but not the push
     (ai_MsgBuildingGetsItemType31 byte).
   - A vector's pad word stored from the cached zero register (`mov [esp+0x3c],ebx` for `a.w = 0`, while
@@ -814,7 +814,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     any operand order of the product with the local is one code (ai_TransportFromLager, both loops, byte).
   - **`neg eax; fild; fmul 0.01; fadd 1.0` against ours `fmul; fsubr 1.0`**: a double expression `-r * 0.01 +
     1.0` always folds to fsubr (every cast and grouping); a float conversion of the product keeps the neg:
-    `(float)(-util_RandomU(0x1e) * 0.01) + 1.0` (or a float local) (gm_GetCreditOffers 7 -> 4 ins, draft ->
+    `(float)(-util_Random(0x1e) * 0.01) + 1.0` (or a float local) (gm_GetCreditOffers 7 -> 4 ins, draft ->
     shape). Toy compiles (`toycc.py` in the s25 scratch) settle such folds in one run.
   - **A redundant second test the original keeps (`cmp al,6; jne` behind the kind-7 path, the kind-6 path
     threaded past it)**: two ifs on the same field, `if (kind != 6 && kind != 7) {..return} if (kind == 6)
@@ -878,7 +878,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     loop keeps f): byte; any other f / i / k assignment of the three, a separate i for one loop, while forms:
     = control. Generate all assignments in one `dcp try` (27 rows) before any spelling of the address.
   - **A statement in both arms instead of a named result** (the s27 lever, again): ai_PokerNpcSetStake's
-    `n = bold ? d : d >> 1; stake2 = util_RandomU(n) + stake` as the whole store in each arm (VC6 merges the
+    `n = bold ? d : d >> 1; stake2 = util_Random(n) + stake` as the whole store in each arm (VC6 merges the
     call tails; the argument becomes a temporary in edx): byte. evt_FindLogic's `(&& test) || (|| test)` as two
     ifs each with `return s + n` (n's second reference ranks it above end: esi / edi swap): byte.
   - **A complete-constant ternary**: `(p->sex != 0 ? 0x133d : 0x133a) + pick` for `pick + (sex ? 3 : 0) +
@@ -959,7 +959,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     the record `c = &ai_CharsT[i]` (edi).
   - **Loop forms by the test after the decrement**: he_FindMeetingSlot's `dec edi; mov esi,edx; test edi,edi;
     jne` is `i--;` as a statement before the slot step with `while (i != 0)` (for (..; i != 0; i--) folds the
-    test away); the outer counter decremented at the head of its do loop; the random start as util_RandomU
+    test away); the outer counter decremented at the head of its do loop; the random start as util_Random
     (mov si,ax). A product of 50 loop forms in one dcp try found the outer form, the inner needed the
     statement form. ai_DomizilGoodInRange: the guard on the global (`ai_DomizilCount == 0`) where the original
     tests the loaded value, not the n copy.
@@ -1419,7 +1419,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     random factors written inline put the temps in the original's slots).
   - **A temp of one arm computed in eax and stored, the variable in memory, the other arm's int temp in another
     slot**: block-local `int add, adj;` in each arm and the bonus defined once per arm as `bonus = adj + 0x19`
-    (he_TrialPayment); then **`add esp,4; shl esi,5` at the join after three calls** = `(util_RandomU(n) + b) * 32`
+    (he_TrialPayment); then **`add esp,4; shl esi,5` at the join after three calls** = `(util_Random(n) + b) * 32`
     in each arm: the equal tails cross-jump and take the pending `add esp` along.
   - **A late local packed with an early one in the original** (the tail's `slot` in p / k's slot): the tail copy of
     the word handler kept its slot in the parameter `k` (hst_ParseCommandline_2nd_Pass byte, @original comment).
@@ -3111,7 +3111,7 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   ternary of whole sums) x init order: one round of 32. (ai_EvalMoodWeights 54 -> byte; ai_EvalGuiltWeights is
   the w > 0 variant)
 - **A copy `n = cnt` placed after the call that uses cnt** (`cnt = f(); if (cnt == 0) return 0; i =
-  util_RandomU(cnt); n = cnt;`): the block of `i = ..` then holds one candidate more (P 4 instead of 3), i's
+  util_Random(cnt); n = cnt;`): the block of `i = ..` then holds one candidate more (P 4 instead of 3), i's
   priority rises 6 and it outranks q; the copy before the test or `n = f(); cnt = n;` left i one point short
   (c2dag --alloc on a scratch copy of the unit: per-block P compared). (ai_ChooseObjectTarget, byte)
 - **Callee-saved registers swapped (ebx <-> edi / esi) and no respelling reaches it**: count P (c2prio) and add
@@ -3307,8 +3307,8 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   temporary.
 - **A value kept across the next call as a 16-bit move** (`call util_Random; mov bx,ax; push esi; and
   ebx,0xffff; call gm_BuildingLevel; cmp eax,ebx`): NO local, `if (gm_BuildingLevel(b) <
-  util_RandomU(0x5a))`; the temporary gets the leftover ebx, value and weight take edi / ebp. Any named local
-  (`lim`, every type and scope) takes edi. The 16-bit move needs the 16-bit prototype (`util_RandomU`);
+  util_Random(0x5a))`; the temporary gets the leftover ebx, value and weight take edi / ebp. Any named local
+  (`lim`, every type and scope) takes edi. The 16-bit move needs the 16-bit prototype (util_Random's unsigned short header declaration);
   `(unsigned short)util_Random()` gives `mov ebx,eax` (main_EndRound byte).
 - **A cheap expression kept in a callee-saved register across calls and modified in place** (`mov edi,[i]; shl
   edi,7; push edi` .. four calls .. `add edi,0xc; push edi`): a NAMED local assigned where the original computes
@@ -4616,9 +4616,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
 
 ### Return types of callees
 - **`mov si,ax` / `and esi,0xffff` after a call (not `mov esi,eax`)**: the callee's result is a 16-bit type at
-  this call site (a unit view `((unsigned short (*)(unsigned short))util_Random)`), not a cast of an int result
-  (gm_Shuffled). Into an `int` local, not an `unsigned short` one (that gives `mov esi,eax`):
-  `int v; v = util_RandomS(2);` (ai_PlagueMessageAll, ai_PlagueNews byte).
+  this call site (the headers' `unsigned short util_Random(unsigned short n)`, while tr.c defines it int), not a
+  cast of an int result (gm_Shuffled). Into an `int` local, not an `unsigned short` one (that gives `mov esi,eax`):
+  `int v; v = util_Random(2);` (ai_PlagueMessageAll, ai_PlagueNews byte).
 - **Callee returns in al, result passed straight on**: declare `unsigned int`; `unsigned char` adds `and
   eax,0xff`.
 - **`test al,al` and the `return 0` without `xor al,al`**: the callee returns `char`: local prototype `char
@@ -4631,9 +4631,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
   / `AHM_FR ((unsigned (*)())ls_Read)` -> direct calls (ahm.h: vfs_fwrite unsigned @original, ls_Read int), same
   bytes (0x4ecf10, 0x4ed040), Q7-clean.
 - **`mov si,ax` / `mov di,ax` then `and esi,0xffff` right after `call util_Random`** (ours `mov esi,eax; and esi,0xffff`
-  later, or the int result in eax): the caller read the 16-bit result: the unit's `util_RandomU` / `util_RandomS`
-  cast, into an `int` local (`int v; v = util_RandomS(2);`, ai_PlagueMessage byte) or inline in the expression
-  (`x / 16000 + util_RandomU(2)`, he_AllocTransport byte). Grep the original for it: several queue functions have it.
+  later, or the int result in eax): the caller read the 16-bit result of the headers' unsigned short declaration,
+  into an `int` local (`int v; v = util_Random(2);`, ai_PlagueMessage byte) or inline in the expression
+  (`x / 16000 + util_Random(2)`, he_AllocTransport byte). Grep the original for it: several queue functions have it.
 
 ### Argument count different from the definition (K&R victims, Q7)
 - **More pushes than the callee reads** (`ai_FillSaveSlots` from 0x5d4080 / 0x5d42b0 / 0x5d45d0 / 0x5d4920 pushes
@@ -6097,17 +6097,27 @@ the bytes no portable form gives.
   the code is the same. Where a callback is called with (r, ctx) and tail-jumps on, both the callback and the
   tail-jump targets take the pair (cm_DuelAskPlayer, cm_DuelRoundDialog).
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
-  stays @original): util_Random (16-bit result), d3sm_GetVertex / d3sm_Pick / d3_ClipBox (char result read as
+  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_GetVertex / d3sm_Pick / d3_ClipBox (char result read as
   int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_MoveObj / d2_CreateWindow /
   d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
-- **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: no portable form. The
-  definition must return int (`mov eax,edx` / `xor eax,eax`; unsigned short gives `mov ax,dx`), and
-  `(unsigned short)util_Random(n)` gives `mov esi,eax; and esi,0xffff` (106 functions fall): the original's
-  units saw a 16-bit return type. util_RandomU / util_RandomS stay @original.
+- **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: the units saw another
+  declaration than the defining unit (header drift). tr.c defines `int util_Random(unsigned short n)` (`mov
+  eax,edx` / `xor eax,eax`; an unsigned short definition gives `mov ax,dx`); every calling unit declares
+  `unsigned short util_Random(unsigned short n);  /* @original .. */` in its head, after its includes (dcp check's
+  M5 wants a header to repeat the definition's spelling and a unit's own view in its head; ahm.c had it already),
+  and no header declares it. That declaration replaced 33 util_RandomU / util_RandomS cast macros and main.c's
+  util_RandomInt and made 100 `& 0xffff` masks / 137 `(unsigned short)` casts at the calls redundant (removed, same
+  code); every caller byte except he_RunInnSim's `guests = util_Random(4) + 3` (int read, no mask: he.c's one
+  util_RandomInt cast stays @original; he.c reads 16 bits in 18 other functions, a unit cannot declare both). An
+  `(unsigned short)` cast of an int result is not the same (`and esi,0xffff`, 106 functions fell). The
+  parameter stays unsigned short (an int parameter: 17 functions fall). Not checked across units by VC6 or LINK:
+  undefined behaviour in principle, fine in each unit, as in the original. he_LabIncident's `he_SetLifeByAge(c,
+  util_Random(3) + 1)` pushed without mask: he_SetLifeByAge takes `unsigned short num` (its body read
+  `(unsigned short)num`).
 - **Identifiers that a Windows SDK header defines as macros**: mingw's windows.h includes dlgs.h, which
   defines `ctl1` (0x04A0) and the `cmb*` / `lst*` / `stc*` / `scr*` .. control ids (VC98's DLGS.H has no ctl1).
   Do not name locals after them; lc.c / rt.c's ctl1 / ctl2 locals are exchangeCtl / feeCtl and loadCtls /

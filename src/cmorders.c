@@ -82,7 +82,7 @@ extern GAPDATA full_data_602568[];
 #include "gv.h"
 #include "poker.h"
 #include "gfx.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
@@ -414,7 +414,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                     if (k->kind == 2)
                         hit = 1;
                     else {
-                        r = util_RandomU(0xff);
+                        r = util_Random(0xff);
                         if ((AICHAR *)c->bld == cm_FightDefenderC)
                             st = (int)(k->accuracy * 0.01 * c->sk83 * cm_DefenseFactor);
                         else
@@ -678,7 +678,7 @@ void cm_FightLoop(char *a, int ctx)
     AICHAR *o;
 
     t = tb_Calls - 0x15e;
-    r = util_RandomU(100);
+    r = util_Random(100);
     cm_CollectSceneChars();
     cm_BuildFightUI(a);
     cm_FightAmbient = 0;

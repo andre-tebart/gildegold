@@ -64,7 +64,7 @@ int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 d
 #include "d3_tools.h"
 #include "d3_pose.h"
 #include "menu.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -117,12 +117,12 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         }
     }
     if (idx == 1)
-        v = util_RandomU(3);
+        v = util_Random(3);
     else {
         if (idx == 0)
-            v = util_RandomU(2);
+            v = util_Random(2);
         else
-            v = idx - util_RandomU(2);
+            v = idx - util_Random(2);
     }
     r = util_RandomF();
     for (i = 0; i < 5; i++) {
@@ -132,11 +132,11 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         }
     }
     memset(&ai_DuelOpponent, 0, sizeof(ai_DuelOpponent));
-    ai_DuelOpponent.sex = (unsigned char)util_RandomU(2);
+    ai_DuelOpponent.sex = (unsigned char)util_Random(2);
     if (ai_DuelOpponent.sex == 0)
-        strncpy(ai_DuelOpponent.name, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
+        strncpy(ai_DuelOpponent.name, txt_MaleFirstNames[util_Random(0xbf)], 15);
     else
-        strncpy(ai_DuelOpponent.name, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
+        strncpy(ai_DuelOpponent.name, txt_FemaleFirstNames[util_Random(0x70)], 15);
     switch (cls) {
     case 1:
         base = 0x15;
@@ -160,7 +160,7 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         break;
     }
     for (i = 0; i < 5; i++) {
-        c = (char)util_RandomU(mul);
+        c = (char)util_Random(mul);
         ai_DuelOpponent.stat[i] = c + (char)base + 1;
     }
     ai_DuelOpponent.kind = 10;
@@ -277,19 +277,19 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
     if (lvl >= 4)
         lvl = 4;
     if (k != 0) {
-        h = util_RandomU(3);
+        h = util_Random(3);
         *n = 3;
         if (f > 0.8888f) {
-            sv = util_RandomU(0x10);
+            sv = util_Random(0x10);
             extra = sv ? 2 : 3;
         } else if (f > 0.5555f) {
-            sv = util_RandomU(0x10);
+            sv = util_Random(0x10);
             extra = sv ? 1 : 2;
         } else if (f > 0.3333f) {
-            sv = util_RandomU(4);
+            sv = util_Random(4);
             extra = sv ? 0 : 1;
         } else {
-            sv = util_RandomU(8);
+            sv = util_Random(8);
             extra = sv ? 0 : 1;
         }
         roll = util_RandomF();
@@ -342,7 +342,7 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
             t[best] = (unsigned char)__min(6, t[best] + extra);
             return;
         }
-        j = util_RandomU(3);
+        j = util_Random(3);
         t[j] = (unsigned char)__min(6, t[j] + extra);
         return;
     }
@@ -358,21 +358,21 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
         else if (sum < 6)
             best = 1;
         else
-            best = util_RandomU(3) - 1;
+            best = util_Random(3) - 1;
     } else if (f > 0.44) {
         if (sum > 13)
             best = -1;
         else if (sum < 5)
             best = 1;
         else
-            best = util_RandomU(3) - 1;
+            best = util_Random(3) - 1;
     } else {
         if (sum > 14)
             best = -1;
         else if (sum < 4)
             best = 1;
         else
-            best = util_RandomU(3) - 1;
+            best = util_Random(3) - 1;
     }
     for (i = 0; i < 6; i++) {
         if (r <= ag_Chance[lvl][i]) {
@@ -551,7 +551,7 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
     char v;
 
     q = 0;
-    r = util_RandomU(3);
+    r = util_Random(3);
     if (p == 0 || o == 0 || p->sel == 0 || p->money < 2)
         return 0;
     if (p->sel == 7) {
@@ -564,12 +564,12 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         cnt = amt_GetColumnOffices(kind.col, 6, offices);
         if (cnt == 0)
             return 0;
-        i = util_RandomU(cnt);
+        i = util_Random(cnt);
         n = cnt;
         do {
             if (p->netId != offices[i].owner && (q = AG_CH(offices[i].owner)) != 0) {
                 liking = gm_Liking(p->id, q->id, 1);
-                if (liking < util_RandomU(30) + 40.0f)
+                if (liking < util_Random(30) + 40.0f)
                     break;
                 q = 0;
             }
@@ -581,7 +581,7 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         unsigned short id;
 
         flags = 0xc00;
-        if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_RandomU(30) + 40.0f, &id) == 0)
+        if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_Random(30) + 40.0f, &id) == 0)
             goto release;
         q = (AGCH *)&ai_CharsT[id];
     } else
@@ -591,9 +591,9 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         cm_BeginFieldBlock(o, o->objId);
         cm_AddFieldDelta(4, 1, 0x1e, &q->netId);
         cm_AddFieldDelta(1, 1, 0x22, &v);
-        v = (char)util_RandomU(8);
+        v = (char)util_Random(8);
         cm_AddFieldDelta(1, 1, 0x1c, &v);
-        v = (char)util_RandomU(8);
+        v = (char)util_Random(8);
         cm_AddFieldDelta(1, 1, 0x1d, &v);
         cm_SendFieldDeltas();
         return 1;
@@ -641,7 +641,7 @@ AGCH *ai_FindSuccessor(AGCH *p)
         }
     }
     if (m != 0)
-        found = list[util_RandomU(m)];
+        found = list[util_Random(m)];
     if (p->kind == 5) {
         if (found != 0)
             return found;
@@ -714,21 +714,21 @@ int ai_PlanWorth(AIPLAN *q)
     d = gm_Liking(c->id, b->id, 1) * 0.01f;
     if (x * 1.1f > d * 0.9f && x < d)
         return 0;
-    return util_RandomU(2);
+    return util_Random(2);
 }
 /* 0x4941b0, the AI accuser's answer to the trial's torture question (request kind 1 of the trial's ask-AI callback
    cm_TrialAskAI): a coin toss, 1 to torture the accused */
 
 int ai_DecideTorture(AIPLAN *q)
 {
-    return util_RandomU(2) != 0;
+    return util_Random(2) != 0;
 }
 /* 0x4941d0, the AI accuser's pick of the torture instrument (request kind 2 of cm_TrialAskAI): a random 0 .. 6, the
    index of the seven instruments (plan.instrument) */
 
 int ai_DecideTortureInstrument(AIPLAN *q)
 {
-    return util_RandomU(7);
+    return util_Random(7);
 }
 /* 0x4941e0, the torturer's mercy in the trial (request kind 3 of the trial's ask-AI callback cm_TrialAskAI):
    the torturer (c28) gives in (1) when he likes the accused (c18) by more than 20 over the accuser (c14), goes on
@@ -750,7 +750,7 @@ int ai_DecideTortureMercy(AIPLAN *q)
         return 1;
     if (y - x > 20.0f)
         return 0;
-    return util_RandomU(2);
+    return util_Random(2);
 }
 /* 0x4942a0, a level from the score: score / 4, clamped to 2..6 */
 
@@ -990,7 +990,7 @@ void ai_RollStudyOffers(AIC4 *ch, int *out)
         if (f[i] > m)
             m = f[i];
         out[i * 3 + 1] = t[i][0];
-        out[i * 3 + 2] = t[i][util_RandomU(3) + 1];
+        out[i * 3 + 2] = t[i][util_Random(3) + 1];
     }
     for (i = 0; i < 3; i++) {
         f[i] = 1.0f / m * f[i];
@@ -1050,19 +1050,19 @@ int ai_EvalFest(AIGRP *g, int send)
     for (i = 0; i < g->n; i++) {
         switch (g->mem[i].d) {
         case -2:
-            v = -0x10 - util_RandomU(0x10);
+            v = -0x10 - util_Random(0x10);
             break;
         case -1:
-            v = -8 - util_RandomU(8);
+            v = -8 - util_Random(8);
             break;
         case 0:
-            v = util_RandomU(8) + 8;
+            v = util_Random(8) + 8;
             break;
         case 1:
-            v = util_RandomU(0x10) + 0x10;
+            v = util_Random(0x10) + 0x10;
             break;
         case 2:
-            v = util_RandomU(0x10) + 0x18;
+            v = util_Random(0x10) + 0x18;
         }
         if (send)
             cm_SendRelations(g->leader->netId, g->mem[i].ch->netId, v, 1);
@@ -1437,10 +1437,10 @@ void ai_RollCharFlags(void)
     for (i = 0; i < 768; i++) {
         c = (AIPER *)&ai_CharsT[i];
         if (c->kind == 3) {
-            f |= util_RandomU(2) ? 2 : 0;
-            f |= util_RandomU(3) ? 4 : 0;
-            f |= util_RandomU(3) ? 8 : 0;
-            f |= util_RandomU(2) ? 0x10 : 0;
+            f |= util_Random(2) ? 2 : 0;
+            f |= util_Random(3) ? 4 : 0;
+            f |= util_Random(3) ? 8 : 0;
+            f |= util_Random(2) ? 0x10 : 0;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldDelta(4, 1, 0x1e8, &f);
             cm_SendFieldDeltas();
@@ -1630,7 +1630,7 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     if (!count)
         return 0;
-    k = util_RandomU(5);
+    k = util_Random(5);
     while (!valid[k])
         k = (k + 1) % 5;
     if (p->kind == 3) {
@@ -1744,8 +1744,8 @@ int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     if (he_FindEvent(2, 2, p->id, 0, 0x60))
         return 0;
-    ka = util_RandomU(5);
-    kb = util_RandomU(5);
+    ka = util_Random(5);
+    kb = util_Random(5);
     for (i = 0; i < 5; i++) {
         memset(q, 0, sizeof(q));
         v = jt.skills[i];
@@ -1808,7 +1808,7 @@ int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     k = ka;
     if (sum == 2) {
-        if (!util_RandomU(2))
+        if (!util_Random(2))
             k = kb;
     } else if (!valid[ka])
         k = kb;
@@ -1965,7 +1965,7 @@ int ai_DecideBribe(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         return r;
     }
-    if ((p->flags1e8 & 0x400) && util_RandomU(8))
+    if ((p->flags1e8 & 0x400) && util_Random(8))
         return 0;
     if (p->kind == 3) {
         if (!(p->flags1e8 & 2))
@@ -2014,7 +2014,7 @@ int ai_DecideBribe(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if (p->flags1cc & 0x1c000)
                 return 0;
             flags = 0x10000500;
-            if (!ai_PickPartnerChain(p, 1, &flags, 0, util_RandomU(25) + 10.0, &cid))
+            if (!ai_PickPartnerChain(p, 1, &flags, 0, util_Random(25) + 10.0, &cid))
                 return 0;
             c = (AIPER *)&ai_CharsT[cid];
         }
@@ -2124,7 +2124,7 @@ int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         } else if (ai_Time.hour >= 13 && p->appliedOffice == 0 && gm_ExpectedDeathAge(p) - p->age >= 3) {
             k = amt_GetOfficeCandidates(p, 2, list);
             if (k == 0) {
-                if (util_RandomU(4) == 0) {
+                if (util_Random(4) == 0) {
                     AIARG s1;
                     AIARG s2;
 
@@ -2138,7 +2138,7 @@ int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     }
                 }
             } else {
-                r = list[util_RandomU(k) * 3];
+                r = list[util_Random(k) * 3];
                 if (r != 0 && r <= 0x1b) {
                     o1->ref = r;
                     o1->kind = 10;
@@ -2354,7 +2354,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     int i, d, v;
 
     if (o1->kind == 0) {
-        d = util_RandomU(0x24) + 0x23;
+        d = util_Random(0x24) + 0x23;
         best = 0;
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {
@@ -3151,14 +3151,14 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return r;
         }
         gv_GetTableRecord(0x18, &d);
-        if (d.cur && !util_RandomU(4) && !ai_Partner)
+        if (d.cur && !util_Random(4) && !ai_Partner)
             return 0;
         if (o1->kind == 0) {
             mask.LowPart = 0x344015;
             mask.HighPart = 1;
             x = -1;
             if ((ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
-                || ai_PickActionBuilding(p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x)) {
+                || ai_PickActionBuilding(p, 6, mask.QuadPart, 0, util_Random(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
                 if (y && y->owner != 0xffff && he_NoEvent88Pair(&ai_CharsT[y->owner], (AICHAR *)p)) {
                     memset(buf, 0, sizeof(buf));
@@ -3300,7 +3300,7 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 return r;
             }
             gv_GetTableRecord(0x15, &d);
-            if (!d.cur || util_RandomU(3) || ai_Partner) {
+            if (!d.cur || util_Random(3) || ai_Partner) {
                 if (o1->kind == 0) {
                     /* @original cid is a local of this block: its slot is shared with g (the frame), so its
                        scope ends before the gm_Mix call */
@@ -3308,7 +3308,7 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         unsigned short cid;
 
                         flags = AI_CHAIN_BEATUP;
-                        t = util_RandomU(0x20) + 32.0f;
+                        t = util_Random(0x20) + 32.0f;
                         if (!ai_PickPartnerChain(p, 1, &flags, 0, t, &cid))
                             return 0;
                         c = (AIPER *)&ai_CharsT[cid];
@@ -3427,7 +3427,7 @@ int ai_ExecuteCitizenship(G5CH *p)
     cm_SendFieldDeltas();
     cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x4000);
     t = ai_Time;
-    gm_AddTime(&t, util_RandomU(4) + 1, util_RandomU(8) * 7, 0);
+    gm_AddTime(&t, util_Random(4) + 1, util_Random(8) * 7, 0);
     if (((AIPER *)p)->kind == 5) {
         n = 0;
         for (i = 0; i < 768; i++) {
@@ -3530,7 +3530,7 @@ int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
             sum += ai_CharsT[i].b1c5;
         }
     }
-    if (util_RandomU(4) + (float)sum / n < 6.0f)
+    if (util_Random(4) + (float)sum / n < 6.0f)
         return 0;
     memset(&rec, 0, sizeof(rec));
     rec.item = 0x161;
@@ -3666,7 +3666,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    i = util_RandomU(12);
+    i = util_Random(12);
     while (recs[i].value < 1)
         i = (i + 1) % 12;
     s2.kind = 1;
@@ -3681,7 +3681,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         unsigned short id;
 
         flags = (p->sex != 0 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
-        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
         s1.ref = ai_CharsT[id].netId;
@@ -3691,7 +3691,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         unsigned short id;
 
         flags = (p->sex != 1 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
-        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
         s1.ref = ai_CharsT[id].netId;
@@ -3761,7 +3761,7 @@ int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if ((st[0] != 6 || st[2] != 0) && st[1] != 2) {
             if (st[0] < 6) {
                 if (st[2] == 0) {
-                    i = util_RandomU(2);
+                    i = util_Random(2);
                     while (recs[i].value != 0)
                         i = (i + 1) % 2;
                     s1.kind = 2;
@@ -3781,7 +3781,7 @@ int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             } else if (st[2] == 0) {
                 return 0;
             }
-            i = util_RandomU(2);
+            i = util_Random(2);
             while (recs[i].value < 1)
                 i = (i + 1) % 2;
             s2.kind = 1;
@@ -3861,7 +3861,7 @@ int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if ((st[0] != 6 || st[2] != 0) && st[1] != 4) {
             if (st[0] < 6) {
                 if (st[2] == 0) {
-                    i = util_RandomU(4);
+                    i = util_Random(4);
                     while (recs[i].value != 0)
                         i = (i + 1) % 4;
                     s1.kind = 2;
@@ -3881,7 +3881,7 @@ int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             } else if (st[2] == 0) {
                 return 0;
             }
-            i = util_RandomU(4);
+            i = util_Random(4);
             while (recs[i].value < 1)
                 i = (i + 1) % 4;
             s1.kind = 1;
@@ -3948,7 +3948,7 @@ int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         memset(&rec, 0, sizeof(rec));
         if (p->ailments != 0)
             rec.item = 0x17e;
-        else if (util_RandomU(3) != 0)
+        else if (util_Random(3) != 0)
             return 0;
         else
             rec.item = 0x175;
@@ -4083,7 +4083,7 @@ int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if ((st[0] != 6 || st[2] != 0) && st[1] != n) {
             if (st[0] < 6) {
                 if (st[2] == 0) {
-                    i = util_RandomU(n);
+                    i = util_Random(n);
                     while (recs[i].value != 0)
                         i = (i + 1) % n;
                     s2.kind = 2;
@@ -4103,7 +4103,7 @@ int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             } else if (st[2] == 0) {
                 return 0;
             }
-            i = util_RandomU(n);
+            i = util_Random(n);
             while (recs[i].value < 1)
                 i = (i + 1) % n;
             s2.kind = 1;
@@ -4218,7 +4218,7 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if ((st[0] != 6 || st[2] != 0) && st[1] != 12) {
             if (st[0] < 6) {
                 if (st[2] == 0) {
-                    i = util_RandomU(12);
+                    i = util_Random(12);
                     while (recs[i].value != 0)
                         i = (i + 1) % 12;
                     s1.ref = recs[i].item;
@@ -4238,7 +4238,7 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             } else if (st[2] == 0) {
                 return 0;
             }
-            i = util_RandomU(12);
+            i = util_Random(12);
             while (recs[i].value < 1)
                 i = (i + 1) % 12;
             s1.kind = 1;
@@ -4264,9 +4264,9 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 mask.HighPart = 1;
                 v = -1;
                 if (!(ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
-                    && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
+                    && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_Random(0x40), &v))
                     return 0;
-            } else if (ai_PickPartnerChain((AIPER *)p, n, (int *)flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
+            } else if (ai_PickPartnerChain((AIPER *)p, n, (int *)flags, 0.0f, (float)util_Random(0x40), id) == 0) {
                 return 0;
             }
             switch (rp->item) {
@@ -4389,7 +4389,7 @@ int ai_DecideUseSafetyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     AIARG s1;
                     AIARG s2;
 
-                    i = util_RandomU(10);
+                    i = util_Random(10);
                     while (recs[i].value != 0)
                         i = (i + 1) % 10;
                     s1.ref = recs[i].item;
@@ -4413,7 +4413,7 @@ int ai_DecideUseSafetyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 AIARG s1;
                 AIARG s2;
 
-                i = util_RandomU(10);
+                i = util_Random(10);
                 while (recs[i].value < 1)
                     i = (i + 1) % 10;
                 s1.ref = recs[i].entryId;
@@ -4601,11 +4601,11 @@ int ai_DecideSpy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     G5CH *c;
 
     flags = AI_CHAIN_SPY;
-    r = util_RandomU(3);
+    r = util_Random(3);
     money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (f != 0)
         return 0;
-    if (ai_PickPartnerChain((AIPER *)p, 1, (int *)&flags, 0, (float)util_RandomU(0x19) + 10.0, &id) == 0)
+    if (ai_PickPartnerChain((AIPER *)p, 1, (int *)&flags, 0, (float)util_Random(0x19) + 10.0, &id) == 0)
         return 0;
     c = &G5_CHARS[id];
     w = gm_GetWorth(p->id) * 0.005f;
@@ -4700,7 +4700,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (f == 0 && (p->netId & 3) == ai_Time.year % 4 && (p->netId & 7) == (int)ai_Time.hour % 8) {
         guilt = gv_CulpritGuilt(p->netId);
         graves = gv_CountOwnedGraves(p->netId);
-        if (util_RandomU(8) + 8 <= guilt) {
+        if (util_Random(8) + 8 <= guilt) {
             i = 0;
             b = AI_501190_3(1, 5, 7);
             if (b != 0) {
@@ -4709,7 +4709,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         list[i++] = b;
                 } while ((b = AI_BUILDNEXT()) != 0);
                 if (i != 0) {
-                    b = list[util_RandomU(i)];
+                    b = list[util_Random(i)];
                     if (p->money < 4) {
                         /* the price: the character's worth, its guilt and the owner's liking, clamped */
                         money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
@@ -4934,7 +4934,7 @@ int ai_DecidePamphlets(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIARG t2;
     int r;
 
-    if (f == 0 && (!(p->flags1e8 & 0x100) || util_RandomU(4) == 0)) {
+    if (f == 0 && (!(p->flags1e8 & 0x100) || util_Random(4) == 0)) {
         if (p->bld2 == 0 && p->kind != 3) {
             /* no house: get one first */
             s1.arg = 1;
@@ -5000,7 +5000,7 @@ int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIARG s2;
     int r;
 
-    if (f == 0 && (!(p->flags1e8 & 0x200) || util_RandomU(8) == 0)) {
+    if (f == 0 && (!(p->flags1e8 & 0x200) || util_Random(8) == 0)) {
         if (p->bld2 == 0 && p->kind != 3) {
             /* no house: get one first */
             s1.arg = 1;
@@ -5300,7 +5300,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         AIARG s2;
 
     lvl = best->level;
-    if (lvl - util_RandomU(0x20) >= 0x42)
+    if (lvl - util_Random(0x20) >= 0x42)
         return 0;
     s1.ref = best->id;
     s1.kind = 4;
@@ -5429,7 +5429,7 @@ int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o = gm_Query(y->objList, 2, 6, 0, 0x115);
     money = gm_SumListAmounts(o->list, ai_OwnPlayer);
-    if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
+    if (!(y->flags5a & 4) && y->level < util_Random(0x40) + 0x25) {
         s1.kind = 4;
         s1.ref = y->id;
         s1.arg = 1;
@@ -5474,11 +5474,11 @@ int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     ord_GetStatistics(d);
     if (y->type == 0x24) {
         act = 0x25;
-        if (util_RandomU(0x200) + d[6] < 1250.0f)
+        if (util_Random(0x200) + d[6] < 1250.0f)
             return 0;
     } else if (y->type == 0x25) {
         act = 0x26;
-        if (util_RandomU(0x400) + d[6] < 5000.0f)
+        if (util_Random(0x400) + d[6] < 5000.0f)
             return 0;
     } else
         return 0;
@@ -5552,7 +5552,7 @@ int ai_DecideMayorPrison(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (o == 0)
         return 0;
     money = gm_SumListAmounts(o->list, ai_OwnPlayer);
-    if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
+    if (!(y->flags5a & 4) && y->level < util_Random(0x40) + 0x25) {
         s1.kind = 4;
         s1.ref = y->id;
         s1.arg = 1;
@@ -5597,11 +5597,11 @@ int ai_DecideMayorPrison(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     ord_GetStatistics(d);
     if (y->type == 0x11) {
         act = 0x12;
-        if (util_RandomU(0x200) + d[6] < 1250.0f)
+        if (util_Random(0x200) + d[6] < 1250.0f)
             return 0;
     } else if (y->type == 0x12) {
         act = 0x13;
-        if (util_RandomU(0x400) + d[6] < 5000.0f)
+        if (util_Random(0x400) + d[6] < 5000.0f)
             return 0;
     } else
         return 0;
@@ -5667,14 +5667,14 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o = (AIOBJ *)gm_Query(b->objList, 2, 6, 0, 0x115);
     money = gm_SumListAmounts(o->list, ai_OwnPlayer);
-    if (money < (util_RandomU(3000) + 1000) * 32)
+    if (money < (util_Random(3000) + 1000) * 32)
         return 0;
     rec = ai_BldsT;
     for (i = 0; i < 0x100; i++, rec++) {
         if (rec->type == 0 || ai_BTypesT[rec->type].kind != 3 || (rec->flags5a & 4))
             continue;
         lvl = rec->level;
-        if (lvl < util_RandomU(0x40) + 0x25) {
+        if (lvl < util_Random(0x40) + 0x25) {
             AIARG s1;
             AIARG s2;
 
@@ -5708,7 +5708,7 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 best[0] = rec;
         }
     }
-    if (util_RandomU(8) != 0)
+    if (util_Random(8) != 0)
         return 0;
     if (cnt[0] != 0 && best[0] != 0) {
         o1->kind = 4;
@@ -5894,7 +5894,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int i, n, h, j, best;
     float m;
 
-    lim[0] = ai_RandomStrides[util_RandomU(0x10)];
+    lim[0] = ai_RandomStrides[util_Random(0x10)];
     if (((unsigned char *)p)[2] == 3)
         return 0;
     if (a != 0x33 && a != 0x13 && a != 0x10 && a != 0x11)
@@ -5905,7 +5905,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             n++;
         while (he_NextEvent() != 0);
     }
-    if (util_RandomU(10) < n + 1)
+    if (util_Random(10) < n + 1)
         return 0;
     if (a == 0x33) {
         h = min(max(ai_Time.hour - 8, 0), 10);
@@ -5915,7 +5915,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         lim[2] = (int)(m * 12800.0f);
         lim[3] = (int)(m * 25600.0f);
         i = 0x100;
-        j = util_RandomU(0x100);
+        j = util_Random(0x100);
         for (;;) {
             own = &ai_BldsT[j];
             if (own->type != 0 && own->owner == p->id && ((1 << ai_BTypesT[own->type].kind) & AI_CREDIT_KINDS)
@@ -5927,7 +5927,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 return 0;
         }
         i = 0x100;
-        j = util_RandomU(0x100);
+        j = util_Random(0x100);
         for (;;) {
             b = &ai_BldsT[j];
             if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
@@ -5965,7 +5965,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (o1->kind != 0x12)
         return 0;
     i = 0x100;
-    j = util_RandomU(0x100);
+    j = util_Random(0x100);
     for (;;) {
         b = &ai_BldsT[j];
         if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
@@ -6060,7 +6060,7 @@ int ai_EvalChangeProfession(float *a, float *b, int i, G5CH *p, int f, AIARG *o1
     if (n < 3)
         return 0;
     if (n < 6) {
-        if (util_RandomU(n - 1) == 0)
+        if (util_Random(n - 1) == 0)
             return 0;
         return ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
     }
@@ -6106,8 +6106,8 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             cnt[gm_BuildingJob((unsigned char)bt->kind)]++;
         }
     }
-    n = util_RandomU(4) + 1;
-    r = util_RandomU(0x10);
+    n = util_Random(4) + 1;
+    r = util_Random(0x10);
     for (c = 0x10;; ) {
         if (r != 0 && own[r] == 0 && cnt[r] < n)
             break;
@@ -6166,7 +6166,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int found, step, i, j, n, k, m, v;
     float sum;
 
-    step = ai_RandomStrides[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_Random(0x10)];
     found = -1;
     if (p->flags1c8 & AI_CHF_STAMMTISCH)
         return 0;
@@ -6176,7 +6176,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     n = 0;
     i = 0x100;
-    j = util_RandomU(i);
+    j = util_Random(i);
     while (n < 4 && i != 0) {
         b = &ai_BldsT[j];
         if (b->type == 0x37 && b->owner != 0xffff && b->owner != p->id) {
@@ -6214,7 +6214,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 sum = gm_Liking(p->id, c->id, 1) + sum;
             }
         }
-        if (k == 0 && util_RandomU(4) == 0) {
+        if (k == 0 && util_Random(4) == 0) {
             o1->kind = 4;
             o1->ref = bl[found]->id;
             o1->arg = 'leav';
@@ -6235,7 +6235,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         return 0;
     }
-    j = util_RandomU(n);
+    j = util_Random(n);
     for (i = n; i != 0; ) {
         if (free[j] == 1) {
             found = j;
@@ -6380,7 +6380,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
                 d = 1;
             }
             if (d == 0)
-                d = util_RandomU(4) - 1;
+                d = util_Random(4) - 1;
             if (d != -1 && d != 1)
                 return 0;
             o1->kind = 0x15;
@@ -6426,7 +6426,7 @@ int ai_DecideGuildRiot(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0x807d4190;
     m.HighPart = 1;
-    if (!ai_PickActionBuilding((AIPER *)p, 6, m.QuadPart, 0, (float)(util_RandomU(0x20) + 0x20), &b))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, m.QuadPart, 0, (float)(util_Random(0x20) + 0x20), &b))
         return 0;
     gm_FindById((int)&y, 0, 0, b);
     if (y == 0)
@@ -6555,13 +6555,13 @@ int ai_PickDislikedColumn(G5CH *p)
         }
     }
     for (i = 6; i != 0; i--) {
-        a = util_RandomU(3);
-        b = util_RandomU(3);
+        a = util_Random(3);
+        b = util_Random(3);
         t = order[a];
         order[a] = order[b];
         order[b] = t;
-        a = util_RandomU(3) + 3;
-        b = util_RandomU(3) + 3;
+        a = util_Random(3) + 3;
+        b = util_Random(3) + 3;
         t = order[a];
         order[a] = order[b];
         order[b] = t;
@@ -6613,13 +6613,13 @@ int ai_PickLikedColumn(G5CH *p)
         }
     }
     for (i = 6; i != 0; i--) {
-        x = util_RandomU(3);
-        y = util_RandomU(3);
+        x = util_Random(3);
+        y = util_Random(3);
         t = order[x];
         order[x] = order[y];
         order[y] = t;
-        x = util_RandomU(3) + 3;
-        y = util_RandomU(3) + 3;
+        x = util_Random(3) + 3;
+        y = util_Random(3) + 3;
         t = order[x];
         order[x] = order[y];
         order[y] = t;
@@ -6726,7 +6726,7 @@ int ai_EvalUpgradeGuild(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AI
         bl = gm_BuildQuery(1, 5, 0x1a);
     if (bl == 0)
         return 0;
-    if (bl->level < util_RandomU(0x10) + 0x32) {
+    if (bl->level < util_Random(0x10) + 0x32) {
         AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
@@ -6787,7 +6787,7 @@ int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o = (AIOBJ *)gm_Query(bl->objList, 2, 6, 0, 0x142);
     money = gm_SumListAmounts((void *)o->list, ai_OwnPlayer);
     lvl = bl->level;
-    if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
+    if (lvl < util_Random(0x10) + 0x32 && !(bl->flags5a & 4)) {
         AIARG s1;
         AIARG s2;
 
@@ -7001,10 +7001,10 @@ int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     price = (int)(gm_GetWorth(p->id) * 0.015f);
     if (gm_CharCurrency((AIPER *)p, ai_OwnPlayer) < price * 6)
         return 0;
-    q = util_RandomU(0xf) + 1;
+    q = util_Random(0xf) + 1;
     if (p->kind == 5) {
         fin = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
-        m = util_RandomU(0x10);
+        m = util_Random(0x10);
         for (n = 0x10; n != 0; n--) {
             if (m != 0 && fin->jobByGroup[m] == 0) {
                 q = m;
@@ -7104,7 +7104,7 @@ int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         vb = max((float)x.skills[sk], 1.0f);
         s[n] = best->skills[rec[n].b] / va + best->skills[sk] / vb;
     }
-    if (util_RandomU(2) != 0) {
+    if (util_Random(2) != 0) {
         m = s[0] > s[1] ? 0 : 1;
         if (!(s[m] > s[2]))
             m = 2;

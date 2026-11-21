@@ -68,7 +68,7 @@ extern int ai_EvalStack[73];
 #include "d3_tools.h"
 #include "d3_pose.h"
 #include "menu.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -269,10 +269,10 @@ void ai_FillNearRing(AICHAR *c)
             if (*sz < cnt)
                 break;
         }
-        ai_NearRingCursor->next = &ai_NearRing[util_RandomU(cnt)];
-        ai_NearRingCursor->step = ai_RingStrides[util_RandomU(g)];
+        ai_NearRingCursor->next = &ai_NearRing[util_Random(cnt)];
+        ai_NearRingCursor->step = ai_RingStrides[util_Random(g)];
         if (ai_NearRingCursor->step > 1 && ai_NearRingCount % ai_NearRingCursor->step == 0)
-            ai_NearRingCursor->step += (util_RandomU(2) != 0 ? 2 : 0) - 1;
+            ai_NearRingCursor->step += (util_Random(2) != 0 ? 2 : 0) - 1;
     } else {
         ai_NearRingCursor->next = ai_NearRing;
         ai_NearRingCursor->step = 1;
@@ -526,7 +526,7 @@ int ai_PickBuildSite(AIPER *p, int name)
         memset(list, 0, sizeof(list));
         n = ai_FindBauplaetze(buf, list);
         if (n != 0) {
-            if (p->bld2 != 0 && AI_BX(p->bld2)->object != 0 && util_RandomU(3) != 0) {
+            if (p->bld2 != 0 && AI_BX(p->bld2)->object != 0 && util_Random(3) != 0) {
                 obj = AI_BX(p->bld2)->object;
                 d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)o);
                 r = 0;
@@ -567,7 +567,7 @@ int ai_PickBuildSite(AIPER *p, int name)
                 d3if_SelectScene(scene, 1);
                 return r;
             }
-            k = util_RandomU(n);
+            k = util_Random(n);
             for (i = n; i != 0; i--) {
                 if (list[k] != 0) {
                     d3if_SelectScene(scene, 1);
@@ -893,7 +893,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     int step, n, found, win;
     float r;
 
-    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_Random(0x10)];
     i = 0;
     memset(q, 0, sizeof(q));
     win = 0;
@@ -917,7 +917,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
             ((unsigned short *)&q[7])[0] = p->id;
         n = 0x300;
         found = 0;
-        c = util_RandomU(0x300);
+        c = util_Random(0x300);
         while (!found) {
             if (n == 0) {
                 if (!found)
@@ -946,7 +946,7 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
     int step, k, found, win;
     float r;
 
-    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_Random(0x10)];
     memset(q, 0, sizeof(q));
     win = 0;
     len = n * 2;
@@ -965,7 +965,7 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
         win = 1;
     found = 0;
     k = 0x300;
-    c = util_RandomU(0x300);
+    c = util_Random(0x300);
     while (!found) {
         if (k == 0) {
             if (!found)
@@ -996,7 +996,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     unsigned char t;
     float r;
 
-    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_Random(0x10)];
     win = 0;
     memset(q, 0, sizeof(q));
     memset(&q[7], 0xff, 8 * 4);
@@ -1007,7 +1007,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     rank = gm_CharPrevLevel(p->id, 0);
     cnt = 0;
     k = 0x300;
-    i = util_RandomU(0x300);
+    i = util_Random(0x300);
     while (cnt < n && k != 0) {
         t = ai_CharsT[i].kind;
         if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId != 0 && ai_CharsT[i].jobId != 'R'
@@ -1020,7 +1020,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
         i = (i + step) % 0x300;
     }
     k = 0x300;
-    i = util_RandomU(0x300);
+    i = util_Random(0x300);
     while (cnt < n && k != 0) {
         t = ai_CharsT[i].kind;
         if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId == 0
@@ -1046,7 +1046,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
     int step, n, found, win, home;
     float r;
 
-    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_Random(0x10)];
     i = 0;
     memset(q, 0, sizeof(q));
     win = 0;
@@ -1071,7 +1071,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
             ((unsigned short *)&q[7])[0] = p->id;
         n = 0x300;
         found = 0;
-        c = util_RandomU(0x300);
+        c = util_Random(0x300);
         while (!found) {
             if (n == 0) {
                 if (!found)
@@ -1103,7 +1103,7 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int
     int step, n, found, win, j;
     float r;
 
-    step = ai_RandomStrides[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_Random(0x10)];
     win = 0;
     q[2] = (unsigned int)mask;
     found = 0;
@@ -1114,7 +1114,7 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int
     if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     n = 0x100;
-    j = util_RandomU(0x100);
+    j = util_Random(0x100);
     while (!found) {
         if (n == 0) {
             if (!found)
@@ -1144,7 +1144,7 @@ int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, un
     int step, k, cnt, win, j, max;
     float r;
 
-    step = ai_RandomStrides[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_Random(0x10)];
     cnt = 0;
     win = 0;
     q[5] = 0;
@@ -1154,7 +1154,7 @@ int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, un
     if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     k = 0x100;
-    j = util_RandomU(0x100);
+    j = util_Random(0x100);
     max = n;
     while (cnt < max && k != 0) {
         b = &ai_BldsT[j];
@@ -1217,12 +1217,12 @@ int ai_AimCannon(AIPER *p, AIBLD *b, AIBLD *t)
     if (ai_BuildingAimPoints(b, pa, t, pb) != 0)
         return 0;
     gv_BuildingCannon(b, &r2, &r);
-    r = util_RandomU(r + 1);
+    r = util_Random(r + 1);
     gv_CannonKind(r, &kind);
     if (p->money < kind.level)
         return 0;
     f = gv_CannonItemFactor(b);
-    r2 = util_RandomU(r2 + 1);
+    r2 = util_Random(r2 + 1);
     ai_SphereVolume(ai_IronDensity, ai_CannonBalls[r].c, par);
     ai_PositionShare(ai_CannonBalls[r].a, f * ai_CannonBalls[r].b, par, v94);
     rng[0] = v94[0];

@@ -442,7 +442,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     unsigned char patrolOn;             /* 0x33, of a guard cart: nonzero for the carts the patrol event 0xa6 steps (he_RunPatrolEvent) */
     char pad34[2];
     unsigned char reportGuard;          /* 0x36, of a spy report: (reasoned) the guard level it found: the AI burgles only
-                                           when reportKnow reaches util_RandomU(20) + twice it (ai.c 0x481ef0); the reports
+                                           when reportKnow reaches util_Random(20) + twice it (ai.c 0x481ef0); the reports
                                            window shows it after reportKnow (text 0x19fc) */
     unsigned char reportKnow;           /* 0x37, of a spy report: how much it knows, in percent (ai.c spies again below a
                                            random 50 .. 99; the round settlement lowers it by twice the building's rank and

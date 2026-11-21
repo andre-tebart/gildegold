@@ -269,7 +269,6 @@ void main_PlayOutro(void);
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void ai_ClearTurnTable(void);           /* 0x587de0, sv_t.c: not in sv_t.h (adding it there moves sv_t's drafts ai_TutorialInitChapter3 / ai_TutorialInitChapter5) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-#define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
    "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0, an LSHEADER: +5 the name, from which the city point is created (ai_CreateCityPoint, its dummy "dummy_<NAME>"), +0x30 slotByte the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
@@ -310,6 +309,7 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #include "mission.h"
 #include "rmsg.h"
 #include "d3_fl.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319), main_PlayerCountDialog the same after its clamp (0x53281b) */
@@ -2805,7 +2805,7 @@ void main_LoadingScreen(void)
     d2_CutsceneActive = 1;
     d2_ClearScreen();
     sv_SetScreenCenter(0x24087);
-    s = (short)util_RandomInt(2);
+    s = (short)util_Random(2);
     d2_ShowPicture(((s != 1) ? 3 : 0) + 0x78e);
     d2_DirtyRectLeft[0] = -1;
     d2_DirtyRectRight = -1;
@@ -2900,7 +2900,6 @@ int main_PreloadSound(char *f)
         memset(buf, 0, 0x100);
         fgets(buf, 0x100, fp);
         if (strstr(buf, "//") == 0 && (inc = strstr(buf, "#include")) != 0) {
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
             q = strchr(inc, 0x22);
             if (q == 0)
                 return 0;
@@ -3398,7 +3397,7 @@ void main_EndRound(void)
                         weight += 8;
                 }
                 if (ai_IsLocalMaster(&ai_CharsT[k]) != 0 || ai_CharsT[k].kind == 1) {
-                    if (gm_BuildingLevel((char *)b) < util_RandomU(0x5a)) {
+                    if (gm_BuildingLevel((char *)b) < util_Random(0x5a)) {
                         cost = (float)gm_EquipmentValue((unsigned char *)b, 100) * 0.005f;
                         if (32.0f > cost)
                             cost = 32.0f;
@@ -3536,9 +3535,9 @@ void main_ReplaceFigure(unsigned p)
         } while ((int)e < (int)((AIJOB *)he_Events + 0x400));
         ch->kind = 5;
         if (ch->flag9 == 0) {
-            strcpy(ch->name, txt_MaleFirstNames[(unsigned short)util_RandomInt(0xbf)]);
+            strcpy(ch->name, txt_MaleFirstNames[util_Random(0xbf)]);
         } else {
-            strcpy(ch->name, txt_FemaleFirstNames[(unsigned short)util_RandomInt(0x70)]);
+            strcpy(ch->name, txt_FemaleFirstNames[util_Random(0x70)]);
         }
         ch->seq = (short)ai_NextCharNumber;
         memset(ch->clear, 0xff, sizeof(ch->clear));
@@ -4056,10 +4055,10 @@ void main_SettleRound(unsigned short pl)
                         }
                     }
                 }
-                if ((unsigned short)util_Random(100) > 0x1e) {
+                if (util_Random(100) > 0x1e) {
                     kind = bt->kind;
                     if (kind != 0xd && kind != 0xc && kind != 0xb && kind != 0x10 && (c->flags5a & 1) == 0 && kind != 10) {
-                        int d = (util_Random(3) & 0xffff) + 2;
+                        int d = util_Random(3) + 2;
 
                         gm_ChangeBuildingState((unsigned char *)c, -d);
                         cnt++;
@@ -4153,8 +4152,8 @@ void main_SettleRound(unsigned short pl)
                             cnt++;
                             m = gm_Opinion(pl, q->id) + rel;
                             if (m < -0x1a) {
-                                if (-(int)(util_Random(0x4a) & 0xffff) < m) {
-                                    if ((unsigned short)util_Random(100) > 0x32) {
+                                if (-(int)(util_Random(0x4a)) < m) {
+                                    if (util_Random(100) > 0x32) {
                                         AIMSG msg4;     /* 0x33 */
 
                                         memset(&msg4, 0, sizeof(msg4));
@@ -4164,7 +4163,7 @@ void main_SettleRound(unsigned short pl)
                                         msg4.time = ai_Time;
                                         msg4.flags = 1;
                                         msg4.arg[0] = q->netId;
-                                        gm_AddTime((struct AITIME *)&msg4.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        gm_AddTime((struct AITIME *)&msg4.time, util_Random(6) + 4, 0, 0);
                                         cm_SendLongMessage((char *)&msg4);
                                     } else {
                                         AIMSG msg1;     /* 0x1b to the master; 0x34 */
@@ -4176,7 +4175,7 @@ void main_SettleRound(unsigned short pl)
                                         msg1.time = ai_Time;
                                         msg1.flags = 1;
                                         msg1.arg[0] = q->netId;
-                                        gm_AddTime((struct AITIME *)&msg1.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        gm_AddTime((struct AITIME *)&msg1.time, util_Random(6) + 4, 0, 0);
                                         cm_SendLongMessage((char *)&msg1);
                                     }
                                     cnt++;
@@ -4270,7 +4269,7 @@ void main_BeginPlayerRound(void)
     }
     ai_PlayerId = (unsigned short)cur;
     he_RunEveryFrameEvents();
-    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_CheckCD() != 1) {
+    if ((ai_GameFlags & 4) == 0 && util_Random(10) > 6 && main_CheckCD() != 1) {
         do {
             d2_CutsceneActive = 0;
             sv_FrameMask = 0x24087;
@@ -4445,7 +4444,7 @@ void main_CreateStartCouple(void)
         mother->seq = a->seq;
         mother->coat = a->coat;
         mother->rel.child = a->netId;
-        t = txt_FemaleFirstNames[(unsigned short)util_Random(0x70)];
+        t = txt_FemaleFirstNames[util_Random(0x70)];
         d = mother->firstName;
         do {
             c = *t++;
@@ -4455,7 +4454,7 @@ void main_CreateStartCouple(void)
         father->seq = a->seq;
         father->coat = a->coat;
         father->rel.child = a->netId;
-        t = txt_MaleFirstNames[(unsigned short)util_Random(0xbf)];
+        t = txt_MaleFirstNames[util_Random(0xbf)];
         d = father->firstName;
         do {
             c = *t++;
@@ -4476,8 +4475,8 @@ void main_CreateStartCouple(void)
         cm_SendRelations(mother->netId, a->netId, 0x7f, 0);
         cm_SendRelations(father->netId, mother->netId, 0x7f, 0);
         cm_SendRelations(mother->netId, father->netId, 0x7f, 0);
-        cm_SendMoveGoods(father->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
-        cm_SendMoveGoods(mother->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
+        cm_SendMoveGoods(father->netId, -1, ai_OwnPlayer, (util_Random(0x200) + 500) * 0x20);
+        cm_SendMoveGoods(mother->netId, -1, ai_OwnPlayer, (util_Random(0x200) + 500) * 0x20);
         if (ai_MissionMode > -1)
             ai_NewMission(a->netId, init_PlayerProfile.mission, 0);
         for (k = 0; k < 5; k++)
@@ -5151,8 +5150,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
                 }
             }
             ai_GameFlags = 9;
-            init_PlayerProfile.tool1 = (unsigned char)util_RandomInt(0x5f) + 1;
-            init_PlayerProfile.tool2 = (unsigned char)util_RandomInt(0x5f) + 1;
+            init_PlayerProfile.tool1 = (unsigned char)util_Random(0x5f) + 1;
+            init_PlayerProfile.tool2 = (unsigned char)util_Random(0x5f) + 1;
             init_PlayerProfile.job = (unsigned char)k;
             init_PlayerProfile.status = 0x12;
             init_PlayerProfile.coat = 0x59a;

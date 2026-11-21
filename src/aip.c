@@ -16,7 +16,6 @@
 #include <string.h>
 #include "poker.h"
 #include "aip.h"
-#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -40,6 +39,7 @@
 #include "he.h"
 #include "tr.h"
 #include "lc.h"
+unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 
 /* 0x4a8760, decide callback: character p (or the one of the ctx record, kind 2) picks a partner in its district
    (a character with flag 1 within 33 units, else one of a higher rank within 40..71), into m (kind 7) */
@@ -87,7 +87,7 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
         who[i] = (AICHAR *)gm_FindChar(rec[i].id);
     for (i = n; i < 6; i++)
         who[i] = 0;
-    r = util_RandomU(6);
+    r = util_Random(6);
     j = 6;
     while (j != 0) {
         if (who[r] != 0 && id != who[r]->netId
@@ -105,7 +105,7 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
     }
     if (info.lvl == 3 || info.lvl == 6 || info.lvl == 9 || p->sel != 7)
         return 0;
-    r = util_RandomU(6);
+    r = util_Random(6);
     j = 6;
     while (j != 0) {
         c = who[r];
@@ -113,7 +113,7 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
             if (amt_GetKind(c->officeKind, &info2) == 0)
                 return 0;
             if (info2.lvl > info.lvl && rec[r].k == 1
-                && gm_Liking(c->id, p->id, 1) < (float)util_RandomU(0x20) + 40.0f) {
+                && gm_Liking(c->id, p->id, 1) < (float)util_Random(0x20) + 40.0f) {
                 o = who[r];
                 break;
             }
@@ -158,19 +158,19 @@ int ai_DecidePartnerOtherSex(int a, AICHAR *p, int c, int d, AIARG *m)
     if (p->money < 3)
         return 0;
     flags = p->sex != 0 ? PARTNER_FLAGS_SEX1 : PARTNER_FLAGS_SEX0;
-    if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
+    if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, (float)util_Random(0x40), &id) == 0)
         return 0;
     m->kind = 7;
     m->ref = ai_CharsT[id].netId;
     /* a count 1..5: a roll of 0..money/2 - 1 when it is above 1, else 1 (the macro rolls twice, as the original) */
-    m->arg = min(util_RandomU(p->money / 2) > 1 ? util_RandomU(p->money / 2) : 1, 5);
+    m->arg = min(util_Random(p->money / 2) > 1 ? util_Random(p->money / 2) : 1, 5);
     return 1;
 }
 /* 0x4a8bf0, eval callback: one in four */
 
 int ai_EvalOneInFour(void)
 {
-    return util_RandomU(4) == 0;
+    return util_Random(4) == 0;
 }
 /* 0x4a8c10, eval callback: always */
 
@@ -187,7 +187,7 @@ int ai_EvalOwnTimeSlot(int a, AIPER *p)
 
     id = p->netId;
     if ((id & 3) == ai_Time.year % 4 && (id & 7) == ai_Time.hour % 8)
-        return util_RandomU(4) == 0;
+        return util_Random(4) == 0;
     return 0;
 }
 /* 0x4a8c80, decide callback: two characters near p (0x4a58d0), into m (kind 7) */
@@ -199,7 +199,7 @@ int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, AIARG *m)
 
     flags[0] = PARTNER_FLAGS_ANY;
     flags[1] = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 2, flags, 0, (float)util_RandomU(0x40), id) == 0)
+    if (ai_PickPartnerChain(p, 2, flags, 0, (float)util_Random(0x40), id) == 0)
         return 0;
     m->kind = 7;
     m->ref = ((AIPER *)ai_CharsT)[id[0]].netId;
@@ -216,7 +216,7 @@ int ai_DecideNearChar(int a, AIPER *p, int c, int d, AIARG *m)
     if (p->money < 3)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_Random(0x12) + 32.0f, &id) == 0)
         return 0;
     m->kind = 7;
     m->ref = ((AIPER *)ai_CharsT)[id].netId;
@@ -238,13 +238,13 @@ int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, AIARG *m)
     if (ai_Partner != 0)
         ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.all, 0, 100.0f, &k);
     if (k == -1) {
-        if (ai_PickActionBuilding(p, 6, mask.all, 0, (float)util_RandomU(0x20) + 32.0f, &k) == 0)
+        if (ai_PickActionBuilding(p, 6, mask.all, 0, (float)util_Random(0x20) + 32.0f, &k) == 0)
             return 0;
     }
     b = gm_BuildQuery(1, 1, k);
     if (b == 0)
         return 0;
-    i = util_RandomU(0x300);
+    i = util_Random(0x300);
     n = 0x300;
     o = 0;
     while (n != 0) {
@@ -266,9 +266,9 @@ int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, AIARG *m)
 
 int ai_EvalTitleGroup7(int a, AIPER *p)
 {
-    if (gm_TitleGroup(p->jobId) == 7 && util_RandomU(3) != 0)
+    if (gm_TitleGroup(p->jobId) == 7 && util_Random(3) != 0)
         return 1;
-    return util_RandomU(4) == 0;
+    return util_Random(4) == 0;
 }
 /* 0x4a8f20, decide callback: a chain of two characters p rates in 33..77+roll (ai_PickPartnerChain, either sex)
    that do not both like each other above 60, into m (kind 7, both netIds) */
@@ -281,7 +281,7 @@ int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, AIARG *m)
 
     flags[0] = PARTNER_FLAGS_ANY;
     flags[1] = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 2, flags, 33.0f, (float)util_RandomU(0x18) + 77.0f, id) == 0)
+    if (ai_PickPartnerChain(p, 2, flags, 33.0f, (float)util_Random(0x18) + 77.0f, id) == 0)
         return 0;
     l1 = gm_Liking(id[0], id[1], 1);
     l2 = gm_Liking(id[1], id[0], 1);
@@ -322,7 +322,7 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
     AICHAR *o;
     unsigned char k;
 
-    lim = util_RandomU(4) + 2;
+    lim = util_Random(4) + 2;
     if (p->officeKind != 13) {
         n = gv_RankCulprits(ids, cnt, p->id);
         if (n != 0) {
@@ -351,7 +351,7 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 
 int ai_EvalOwnYearTurn(int a, AICHAR *p)
 {
-    if (p->money >= 8 && p->netId % 4 == ai_Time.year % 4 && util_RandomU(4) == 0)
+    if (p->money >= 8 && p->netId % 4 == ai_Time.year % 4 && util_Random(4) == 0)
         return 1;
     return 0;
 }
@@ -377,7 +377,7 @@ int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
         n = ai_FindCandidates((AIPER *)p, 12, fl, 30.0f, 100.0f, ids);
         if (n != 0) {
             m->kind = 7;
-            m->ref = ai_CharsT[ids[util_RandomU(n)]].netId;
+            m->ref = ai_CharsT[ids[util_Random(n)]].netId;
             return 1;
         }
     }
@@ -393,7 +393,7 @@ int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
     AICHAR *o;
     unsigned char k;
 
-    lim = util_RandomU(8) + 5;
+    lim = util_Random(8) + 5;
     if (p->officeKind != 13) {
         n = gv_RankCulprits(ids, cnt, p->id);
         if (n > 0) {
@@ -463,7 +463,7 @@ int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, AIARG *m)
     if (p->money < 2)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_Random(0x20) + 40.0f, &id) == 0)
         return 0;
     if (he_NoEvent4bPair(p, &((AIPER *)ai_CharsT)[id]) == 0)
         return 0;
@@ -481,7 +481,7 @@ int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, AIARG *m)
 
     if (p->money >= 3 && (p->flags1c8 & 0x400) == 0) {
         flags = PARTNER_FLAGS_ANY;
-        if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
+        if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_Random(0x20) + 18.0f, &id) != 0
             && (((AIPER *)ai_CharsT)[id].flags1c8 & 0x400) == 0
             && util_RandomF() + gm_Mix(p, &((AIPER *)ai_CharsT)[id], 3) >= 1.0f) {
             m->kind = 7;
@@ -502,7 +502,7 @@ int ai_DecideFarChar(int a, AIPER *p, int c, int d, AIARG *m)
     if ((p->flags1cc & 0x80000) != 0)
         return 0;
     flags = PARTNER_FLAGS_ANY_OFFICE;
-    if (ai_PickPartnerChain(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 20.0f, (float)util_Random(0x20) + 32.0f, &id) == 0)
         return 0;
     m->kind = 7;
     m->ref = ((AIPER *)ai_CharsT)[id].netId;
@@ -521,7 +521,7 @@ int ai_DecideCloseChar(int a, AIPER *p, int c, int d, AIARG *m)
     if (p->money < 8)
         return 0;
     flags = PARTNER_FLAGS_ANY_OFFICE;
-    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_Random(0x10) + 18.0f, &id) == 0)
         return 0;
     m->kind = 7;
     m->ref = ((AIPER *)ai_CharsT)[id].netId;
@@ -558,11 +558,11 @@ int ai_DecideColumn4Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m)
         who[i] = (AICHAR *)gm_FindChar(rec[i].owner);
     for (i = n; i < 6; i++)
         who[i] = 0;
-    r = util_RandomU(6);
+    r = util_Random(6);
     i = 6;
     do {
         if (who[r] != 0 && id != who[r]->netId
-            && gm_Liking(who[r]->id, p->id, 1) < (float)util_RandomU(0x10) + 16.0f) {
+            && gm_Liking(who[r]->id, p->id, 1) < (float)util_Random(0x10) + 16.0f) {
             o = who[r];
             if (o == 0)
                 return 0;
@@ -605,11 +605,11 @@ int ai_DecideColumn5Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m)
         who[i] = (AICHAR *)gm_FindChar(rec[i].owner);
     for (i = n; i < 6; i++)
         who[i] = 0;
-    r = util_RandomU(6);
+    r = util_Random(6);
     i = 6;
     do {
         if (who[r] != 0 && id != who[r]->netId
-            && gm_Liking(who[r]->id, p->id, 1) < (float)util_RandomU(0x10) + 16.0f) {
+            && gm_Liking(who[r]->id, p->id, 1) < (float)util_Random(0x10) + 16.0f) {
             o = who[r];
             if (o == 0)
                 return 0;
@@ -667,7 +667,7 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         }
         if (n1 != 0) {
             if (n2 != 0)
-                side = util_RandomU(2);
+                side = util_Random(2);
             else
                 side = 0;
         } else {
@@ -677,13 +677,13 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         }
         if (side == 0) {
             ctx[0] = 1;
-            k = l1[util_RandomU(n1)];
+            k = l1[util_Random(n1)];
             kind = 3;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
         } else {
             ctx[0] = 2;
-            k = l2[util_RandomU(n2)];
+            k = l2[util_Random(n2)];
             kind = 4;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
@@ -889,7 +889,7 @@ int ai_DecideVisitAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         }
         if (n1 != 0) {
             if (n2 != 0)
-                side = util_RandomU(2);
+                side = util_Random(2);
             else
                 side = 0;
         } else {
@@ -899,13 +899,13 @@ int ai_DecideVisitAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         }
         if (side == 0) {
             ctx[0] = 1;
-            k = l1[util_RandomU(n1)];
+            k = l1[util_Random(n1)];
             kind = 3;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
         } else {
             ctx[0] = 2;
-            k = l2[util_RandomU(n2)];
+            k = l2[util_Random(n2)];
             kind = 4;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
@@ -1013,7 +1013,7 @@ int ai_PickPamphletTarget(AIPER *p, int c, AIARG *m)
     if (p->money < 1)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_Random(0x40), &id) == 0)
         return 0;
     if (he_NoEvent35Pair(p, &((AIPER *)ai_CharsT)[id], &k) == 0)
         return 0;
@@ -1039,7 +1039,7 @@ int ai_DecideLittleKnownChar(AICHAR *p, AIARG *in, AIARG *m)
     AICHAR *o;
 
     if (p->money >= 2 && (n = gv_RankCulprits(ids, cnt, p->id)) != 0) {
-        i = util_RandomU(n);
+        i = util_Random(n);
         j = n;
         do {
             o = (AICHAR *)gm_FindChar(ids[i]);
@@ -1047,13 +1047,13 @@ int ai_DecideLittleKnownChar(AICHAR *p, AIARG *in, AIARG *m)
                 return 0;
             if (he_NoEvent2ePair((int)p, (int)o) == 0)
                 return 0;
-            if (gm_Liking(p->id, o->id, 1) < (double)util_RandomU(0x3d) + 20.0
-                && cnt[i] < util_RandomU(4) + 2) {
+            if (gm_Liking(p->id, o->id, 1) < (double)util_Random(0x3d) + 20.0
+                && cnt[i] < util_Random(4) + 2) {
                 m->kind = 7;
                 m->ref = o->netId;
                 m->arg2 = o->id;
-                in->arg = util_RandomU(cnt[i]) + 1;
-                in->arg2 = util_RandomU(3);
+                in->arg = util_Random(cnt[i]) + 1;
+                in->arg2 = util_Random(3);
                 return 1;
             }
             j--;
@@ -1078,7 +1078,7 @@ int ai_DecideCharPair(AIPER *p, int c, AIARG *m)
     if (p->money < 3)
         return 0;
     ids[0] = p->id;
-    if (ai_PickPartnerInRange(p, PARTNER_FLAGS_ANY, 4, ids, 0.0f, util_RandomU(0x10) + 33.0, &id) == 0)
+    if (ai_PickPartnerInRange(p, PARTNER_FLAGS_ANY, 4, ids, 0.0f, util_Random(0x10) + 33.0, &id) == 0)
         return 0;
     ids[1] = id;
     if (ai_PickPartnerInRange(p, PARTNER_FLAGS_ANY, 4, ids, 50.0f, 100.0f, &id2) == 0)
@@ -1109,7 +1109,7 @@ int aip_ExecPamphlet(AIPER *p, int c, AIARG *m)
     msg.fromId = msg.to;
     msg.flags = 2;
     msg.pamphlet.when = ai_Time;
-    msg.pamphlet.variant = (unsigned char)util_RandomU(0x1d);
+    msg.pamphlet.variant = (unsigned char)util_Random(0x1d);
     msg.pamphlet.about = o->netId;
     cm_BeginGroup("aip_ExecPamphlet");
     cm_SendLongMessage(&msg);
@@ -1239,7 +1239,7 @@ int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out)
         return -1;
     if (!tie)
         return c[bi]->netId;
-    r = util_RandomU(4);
+    r = util_Random(4);
     i = 4;
     found = 0;
     do {
@@ -1334,8 +1334,8 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
                 bld = gm_BuildNext();
             } while (bld != 0);
             if (n != 0) {
-                s = &shops[util_RandomU(n)];
-                k = util_RandomU(3);
+                s = &shops[util_Random(n)];
+                k = util_Random(3);
                 bld = s->bld;
                 o = s->obj;
                 tries = 3;
@@ -1343,7 +1343,7 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
                     if (gv_EvidencePrice(o->recs[k], &ai_CharsT[bld->owner], &price, &who, &x) != 0
                         && !(money * 0.05f < price)) {
                         amt_GetKind(ai_CharsT[(unsigned short)who].officeKind, &kind);
-                        if (util_RandomU(12) > kind.level)
+                        if (util_Random(12) > kind.level)
                             return 0;
                         if (util_RandomF() < 0.5f) {
                             memset(a, 0, sizeof(*a));
@@ -1461,7 +1461,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
     if (best == 0 || bestv == 0)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     s = amt_GetKindLevel(o->officeKind) / 3 + 2;
@@ -1566,7 +1566,7 @@ int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
     if (best == 0 || bestv == 0)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     money = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.25f);
@@ -1577,7 +1577,7 @@ int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
     }
     if (k == 0)
         return 0;
-    r = util_RandomU(k + 1);
+    r = util_Random(k + 1);
     m->ref = o->netId;
     k = r > 1 ? r : 1;
     m->ref2 = r;
@@ -1650,7 +1650,7 @@ int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
             } else if (k >= 4) {
                 k = 4;
             }
-            r = util_RandomU(k);
+            r = util_Random(k);
             if (r < 4)
                 k = 2;
             else
@@ -1705,10 +1705,10 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = PARTNER_FLAGS_ANY;
-            if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+            if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
-            n = util_RandomU(p->money < 8 ? p->money : 8);
+            n = util_Random(p->money < 8 ? p->money : 8);
             if (n <= 2)
                 n = 2;
             m->ref = o->netId;
