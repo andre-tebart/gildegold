@@ -67,7 +67,6 @@ extern GAPDATA full_data_602568[];
 #define G17_S(m, o) (*(short *)&(m).data[o])
 /* the block at 0x936420 is 0x24 bytes: the count then the eight player states at +4 (one object, so the
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
-#define cm_LobbyPlayers ((CMLOBBYPLAYER *)cm_LobbyRecords)  /* 0x9364e0, the eight lobby player records (the CMJOIN cm_JoinChar follows at +0x2c0) */
 #define ai_WeaponRecords ((AIWEAPON *)ai_WeaponRecordData)  /* 0x60c7c0, the ten 0x5c-byte weapon records ai_FindWeaponRecord searches (a view) */
 
 #include "f3init.h"
@@ -6577,7 +6576,7 @@ int cm_ExClearRoute(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4cd350, a free slot of the eight CMLOBBYPLAYER records of cm_LobbyRecords (id 0), 0: none */
+/* 0x4cd350, a free slot of the eight CMLOBBYPLAYER records of cm_LobbyPlayers (id 0), 0: none */
 
 char *cm_LobbyFreeRecord()
 {
@@ -6706,7 +6705,7 @@ int cm_LobbyAllReady()
 void cm_LobbyStart(int lobbyId, int value)
 {
     memset(cm_LobbyList, 0, 0x24);
-    memset(cm_LobbyRecords, 0, 0x2b8);
+    memset(cm_LobbyPlayers, 0, sizeof(cm_LobbyPlayers));
     cm_LobbyStateFlags.open = 1;
     cm_LobbyPlayerId = lobbyId;
     cm_LobbyHelloValue = value;
@@ -6928,7 +6927,7 @@ extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
 extern unsigned int cm_LobbyList[9];
 extern CMNETGAME cm_NetGame;
-extern char cm_LobbyRecords[752];
+extern CMLOBBYPLAYER cm_LobbyPlayers[8];
 extern int cm_LobbyPlayerId;
 extern int cm_LobbyHelloValue;
 extern G17MSG cm_RecvPool[0x2000];
@@ -7009,7 +7008,8 @@ CMLOBBYSTATE cm_LobbyStateFlags;  /* 0x936400, the lobby state cm_LobbyState han
                                     (tools/exe/commongaps.py); 20 taken */
 unsigned int cm_LobbyList[9];  /* 0x936420, the count then the eight player states (0x24 bytes) */
 CMNETGAME cm_NetGame;  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
-char cm_LobbyRecords[752];  /* 0x9364e0 */
+CMLOBBYPLAYER cm_LobbyPlayers[8];  /* 0x9364e0, the eight lobby player records */
+CMJOIN cm_JoinChar;  /* 0x9367a0, the joined character (main_JoinNetworkGame) */
 int cm_LobbyPlayerId;  /* 0x9367d0, this player's lobby id */
 int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value */
 G17MSG cm_RecvPool[0x2000];  /* 0x9367e0, the free receive records */

@@ -58,7 +58,6 @@ extern int sv_PopRequest;
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
 
-#define cm_JoinChar (*(CMJOIN *)((char *)&cm_LobbyRecords + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
 
 
 void d2_FocusInput(); int sprintf(char *buf, const char *fmt, ...);
