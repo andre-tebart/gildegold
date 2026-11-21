@@ -378,7 +378,7 @@ extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy (14 bytes) */
 extern int cm_SaveAcks[][2];  /* 0x76fa20 */
 extern int ai_Evidence[0x800][2];  /* 0x91b6e0, pairs (character netId, crime id): the character holds evidence of the crime (0x4f3640) */
 extern char ai_Crimes[];  /* 0x91f700 */
-extern char cm_CutInfos[16][0x35c];  /* 0x92cae0 */
+extern CMCUTINFO cm_CutInfos[16];  /* 0x92cae0, the cutscene (fight) records */
 extern int cm_DayEndRequest;  /* 0xf31144 */
 extern int hst_SeedPending;  /* 0xf83650 */
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */

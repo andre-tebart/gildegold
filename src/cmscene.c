@@ -33,7 +33,6 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "evt.h"
 #include "data_views.h"
 #include "menu_types.h"
-extern char cm_CutInfos[16][0x35c];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -92,7 +91,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
-#define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
@@ -223,7 +221,7 @@ CMKIND cm_Kinds[12];  /* 0x92c500, the scene kind table: run, callbacks, flag, c
 char cm_SceneState[1152];  /* 0x92c600 */
 int cm_SceneChars[16];  /* 0x92ca80 */
 int cm_SavedNoGroup;  /* 0x92cac0 */
-char cm_CutInfos[16][0x35c];  /* 0x92cae0 */
+CMCUTINFO cm_CutInfos[16];  /* 0x92cae0 */
 float cm_OrderChances[0xb4];  /* 0x9300a0 */
 int cm_TallyNo = 0;  /* 0x6f0d68, the "no" pictures of the deposition tally (cm_TallyStack's stack 1) */
 int cm_TallyYes = 0;  /* 0x6f0d6c, the "yes" pictures of the deposition tally (cm_TallyStack's stack 0) */
@@ -394,28 +392,28 @@ void cm_RunCouncilSession(G28REC *a)
         /* the members: the voters first, then the other present characters as observers */
         for (i = 0; i < nh; i++) {
             a->members[i] = holders[i]->netId;
-            cm_CutInfosT[i].playerId = holders[i]->netId;
-            cm_CutInfosT[i].session.observer = 0;
-            cm_CutInfosT[i].ready = 0;
-            cm_CutInfosT[i].valid = 1;
+            cm_CutInfos[i].playerId = holders[i]->netId;
+            cm_CutInfos[i].session.observer = 0;
+            cm_CutInfos[i].ready = 0;
+            cm_CutInfos[i].valid = 1;
         }
         m = nh;
         for (i = 0; i < npresent; i++) {
             for (j = 0; j < nh; j++)
-                if (cm_CutInfosT[j].playerId == present[i]->netId)
+                if (cm_CutInfos[j].playerId == present[i]->netId)
                     goto member;        /* already a voter */
             a->members[m] = present[i]->netId;
-            cm_CutInfosT[m].playerId = present[i]->netId;
-            cm_CutInfosT[m].ready = 0;
-            cm_CutInfosT[m].valid = 1;
-            cm_CutInfosT[m].session.observer = 1;
+            cm_CutInfos[m].playerId = present[i]->netId;
+            cm_CutInfos[m].ready = 0;
+            cm_CutInfos[m].valid = 1;
+            cm_CutInfos[m].session.observer = 1;
             m++;
         member:;
         }
         a->used = (unsigned char)m;
         for (; m < 16; m++) {
             a->members[m] = -1;
-            cm_CutInfosT[m].playerId = -1;
+            cm_CutInfos[m].playerId = -1;
         }
         sv_SyncText(&ch_EmptyName);
         view = d2_OpenForm(0, 0, "cutscenes\\sitzung_main");
@@ -509,7 +507,7 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetViewEnabled(view, 1);
             /* each voter's answer: a picture on its stack, its voice and remark */
             for (i = 0; i < nh; i++) {
-                s = &cm_CutInfosT[i];
+                s = &cm_CutInfos[i];
                 if ((unsigned)s->session.answer >= 3)
                     continue;
                 c = (AICHAR *)gm_FindChar(s->playerId);
@@ -556,7 +554,7 @@ void cm_RunCouncilSession(G28REC *a)
                 cm_RunSceneTicks(0xfa0);
                 if (a->host == ai_Chars[ai_PlayerId].netId) {
                     for (i = 0; i < nh; i++) {
-                        s = &cm_CutInfosT[i];
+                        s = &cm_CutInfos[i];
                         if (s->playerId == holder->netId)
                             continue;
                         if (s->session.answer == 0)
@@ -579,7 +577,7 @@ void cm_RunCouncilSession(G28REC *a)
                 cm_RunSceneTicks(0xfa0);
                 if (a->host == ai_Chars[ai_PlayerId].netId) {
                     for (i = 0; i < nh; i++) {
-                        s = &cm_CutInfosT[i];
+                        s = &cm_CutInfos[i];
                         if (s->playerId == holder->netId)
                             continue;
                         if (s->session.answer == 0)
@@ -739,7 +737,7 @@ void cm_RunCouncilSession(G28REC *a)
                 d2_SetViewEnabled(view, 1);
                 /* each voter's vote: its row and the applicant's row lit, a picture on the applicant's stack */
                 for (i = 0; i < nh; i++) {
-                    s = &cm_CutInfosT[i];
+                    s = &cm_CutInfos[i];
                     if (s->session.answer != -1) {
                         for (e = 0; e < napp; e++) {
                             if (elect.ids[e] == s->session.answer) {
@@ -1404,10 +1402,10 @@ void cm_RunTrial(G28REC *m)
     if (m->host == ai_Chars[ai_PlayerId].netId)
         gv_RetireCrimeIds(c1->netId, nlist, list);
     cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"1");
-    for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[1]; i++)
+    for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[1]; i++)
         ;
-    plan.amount = cm_CutInfosT[i].session.amount;
-    plea = cm_CutInfosT[i].session.answer;
+    plan.amount = cm_CutInfos[i].session.amount;
+    plea = cm_CutInfos[i].session.answer;
     cm_SetViewEnabled(cm_TextBox, 1);
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
@@ -1445,9 +1443,9 @@ void cm_RunTrial(G28REC *m)
         cm_SetViewEnabled(cm_TextBox, 0);
         cm_RunSceneParty((char *)m, (int)&plan);
         cm_WaitEvent(ev);
-        for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[0]; i++)
+        for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[0]; i++)
             ;
-        k = cm_CutInfosT[i].session.answer;
+        k = cm_CutInfos[i].session.answer;
         cm_SetViewEnabled(cm_TextBox, 1);
         d2_SetForm(cm_TextBox, 0);
         io_PrintText("$C");
@@ -1494,11 +1492,11 @@ void cm_RunTrial(G28REC *m)
             ev = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"0");
             cm_SetViewEnabled(cm_TextBox, 0);
             cm_RunSceneParty((char *)m, (int)&plan);
-            for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[0]; i++)
+            for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[0]; i++)
                 ;
             cm_WaitEvent(ev);
             ev2 = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"1");
-            sel = cm_CutInfosT[i].session.answer & 0xf;
+            sel = cm_CutInfos[i].session.answer & 0xf;
             plan.instrument = max(min(sel, 6), 0);
             plan.tries = ai_PlanLevel(&plan);
             plan.answer = 0;
@@ -1521,9 +1519,9 @@ void cm_RunTrial(G28REC *m)
             plan.mode = 3;
             cm_SetViewEnabled(cm_TextBox, 0);
             cm_RunSceneParty((char *)m, (int)&plan);
-            for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[5]; i++)
+            for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[5]; i++)
                 ;
-            plan.answer = cm_CutInfosT[i].session.answer;
+            plan.answer = cm_CutInfos[i].session.answer;
             end = names + strlen(names);
             head = (GMHEAD *)gm_CharNameRecord(p->id);
             if (head != 0)
@@ -1633,7 +1631,7 @@ void cm_RunTrial(G28REC *m)
     cm_SetViewEnabled(cm_TextBox, 0);
     cm_RunSceneParty((char *)m, (int)&plan);
     cm_UnloadVoiceBank(bank6);
-    for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[2]; i++)
+    for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[2]; i++)
         ;
     bankE = cm_LoadVoiceBank((int)"PROZESS_6_ABSTIMMUNG_ERGEBNISSE.sbf", 0);
     cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", (int)ch_EmptyName);
@@ -1642,8 +1640,8 @@ void cm_RunTrial(G28REC *m)
     io_PrintText("$C");
     io_PrintText(0x1528, c2->id);
     cm_WaitTicks(2);
-    votes = cm_CutInfosT[i].session.answer;
-    cm_QueueVoice(c2->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i].session.answer * 3, 100);
+    votes = cm_CutInfos[i].session.answer;
+    cm_QueueVoice(c2->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfos[i].session.answer * 3, 100);
     io_PrintText(0x152c + votes);
     cm_WaitTicks(2);
     cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)"1");
@@ -1653,7 +1651,7 @@ void cm_RunTrial(G28REC *m)
         AICHAR *assessor;
         int vote;
 
-        vote = cm_CutInfosT[i + 1].session.answer;
+        vote = cm_CutInfos[i + 1].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-1.esc", (int)ch_EmptyName);
         d2_SetForm(cm_TextBox, 0);
         assessor = (AICHAR *)gm_FindChar(plan.ids[3]);
@@ -1661,16 +1659,16 @@ void cm_RunTrial(G28REC *m)
         io_PrintText(0x1528, assessor->id);
         cm_WaitTicks(2);
         io_PrintText(0x152c + vote);
-        cm_QueueVoice(c3->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 1].session.answer * 3, 100);
+        cm_QueueVoice(c3->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfos[i + 1].session.answer * 3, 100);
         cm_WaitTicks(2);
-        votes += cm_CutInfosT[i + 1].session.answer;
+        votes += cm_CutInfos[i + 1].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"2");
     }
     if (plan.ids[4] != -1) {
         AICHAR *assessor;
         int vote;
 
-        vote = cm_CutInfosT[i + 2].session.answer;
+        vote = cm_CutInfos[i + 2].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-2.esc", (int)ch_EmptyName);
         d2_SetForm(cm_TextBox, 0);
         assessor = (AICHAR *)gm_FindChar(plan.ids[4]);
@@ -1678,9 +1676,9 @@ void cm_RunTrial(G28REC *m)
         io_PrintText(0x1528, assessor->id);
         cm_WaitTicks(2);
         io_PrintText(0x152c + vote);
-        cm_QueueVoice(c4->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 2].session.answer * 3, 100);
+        cm_QueueVoice(c4->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfos[i + 2].session.answer * 3, 100);
         cm_WaitTicks(2);
-        votes += cm_CutInfosT[i + 2].session.answer;
+        votes += cm_CutInfos[i + 2].session.answer;
         cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"2");
     }
     cm_UnloadVoiceBank(bankE);
@@ -1696,9 +1694,9 @@ void cm_RunTrial(G28REC *m)
         cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
         cm_SetViewEnabled(cm_TextBox, 0);
         cm_RunSceneParty((char *)m, (int)&plan);
-        for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[2]; i++)
+        for (i = 0; i < m->used && cm_CutInfos[i].playerId != plan.ids[2]; i++)
             ;
-        sentence = cm_CutInfosT[i].session.answer;
+        sentence = cm_CutInfos[i].session.answer;
         if ((unsigned)sentence >= 4 && c0->kind == 6 && c1->officeKind != 0)
             ai_CountMissionEvent(c0, 0x13);
         cm_SetViewEnabled(cm_TextBox, 1);
@@ -3521,8 +3519,8 @@ void cm_RunAuction(G28REC *m)
         if (rounds > 6 && cm_Random(3) != 0)
             cm_QueueVoice(cm_Random(4) != 0 ? -4 : -2, bankRemarks, "_VERSTEIGERUNG_KOMMENTARE", cm_Random(6), cm_Random(0x200) + 0x32);
         for (i = 0; i < m->used; i++) {
-            if (cm_CutInfosT[i].session.click != 0 && chars[i] != 0) {
-                req.bids[i] = cm_CutInfosT[i].session.answer;
+            if (cm_CutInfos[i].session.click != 0 && chars[i] != 0) {
+                req.bids[i] = cm_CutInfos[i].session.answer;
                 if (top < req.bids[i]) {
                     top = req.bids[i];
                     best = i;
@@ -4245,29 +4243,29 @@ int cm_ResetCutInfos(char *m)
     int j, i, q;
 
     for (j = 0; j < 16; j++) {
-        cm_CutInfosT[j].fresh = 1;
-        cm_CutInfosT[j].valid = 0;
-        cm_CutInfosT[j].ready = 0;
-        cm_CutInfosT[j].recvFlag = 1;
+        cm_CutInfos[j].fresh = 1;
+        cm_CutInfos[j].valid = 0;
+        cm_CutInfos[j].ready = 0;
+        cm_CutInfos[j].recvFlag = 1;
         if (party != 0) {
-            cm_CutInfosT[j].playerId = party->members[j];
+            cm_CutInfos[j].playerId = party->members[j];
             if (party->kind == 3) {
                 for (i = 0; i < party->used; i++) {
-                    if (cm_CutInfosT[i].playerId == -1)
+                    if (cm_CutInfos[i].playerId == -1)
                         continue;
                     /* @original the playerId is tested twice: VC6 drops the second test, but the second reference
                        makes playerId the row walk's base (cmp [esi]; lea eax,[esi+0x88]) */
-                    if (cm_CutInfosT[i].playerId != -1) {
+                    if (cm_CutInfos[i].playerId != -1) {
                         for (q = 0; q < 16; q++) {
-                            cm_CutInfosT[i].entries[q].charId = -1;
-                            cm_CutInfosT[i].entries[q].state = 0;
+                            cm_CutInfos[i].entries[q].charId = -1;
+                            cm_CutInfos[i].entries[q].state = 0;
                         }
                     }
                 }
             }
         } else
-            cm_CutInfosT[j].playerId = -1;
-        cm_CutInfosT[j].text[0] = 0;
+            cm_CutInfos[j].playerId = -1;
+        cm_CutInfos[j].text[0] = 0;
     }
 }
 /* 0x4e3750, 1 when every member of the party m has answered: no cutscene record of its first m->used ones is still fresh
@@ -4280,7 +4278,7 @@ int cm_PartyAnswered(char *m)
 
     ok = 1;
     for (i = 0; i < party->used; i++) {
-        if (cm_CutInfosT[i].fresh != 0 && cm_CutInfosT[i].valid == 0 && cm_CutInfosT[i].playerId != -1) {
+        if (cm_CutInfos[i].fresh != 0 && cm_CutInfos[i].valid == 0 && cm_CutInfos[i].playerId != -1) {
             ok = 0;
             break;
         }
@@ -4297,7 +4295,7 @@ int cm_ShowPartyTexts(char *m)
     CMCUTINFO *s;
     int i;
 
-    s = cm_CutInfosT;
+    s = cm_CutInfos;
     for (i = 0; i < party->used; i++, s++) {
         if (s->recvFlag == 0 && s->valid != 0) {
             d2_SetForm(party->window, 0);
@@ -4328,16 +4326,16 @@ int cm_PrevPartyMember(char *m, int n)
    ones), until cm_PartyAnswered. The counter cm_ScenePartyRuns grows by one per run; the random seed is kept
    @deep deep s54: the copies r of the three askPlayer / askOther blocks as block locals (CMCUTINFO r; in
    each block; next stays function-scope, block-local next 75..87): 69 -> 65; in the player's turn r =
-   cm_CutInfosT[me] before cm_PartyTurn = me: 63. Left only the all-at-once owner loop: the original keeps
+   cm_CutInfos[me] before cm_PartyTurn = me: 63. Left only the all-at-once owner loop: the original keeps
    the members IV (&party->members[i]) in esi as a split piece over head / tests / latch (reload mov
    esi,[esp+0x24] only at the body's end) and loads the cut IV for the valid test into ecx; ours keeps the
    members IV in memory (c2trace pass 3 piece: head use +4, reload -4, latch use +4, latch store -4 =
    savings 0). KEY: ONE more reference of party->members[i] in that loop's head or test chain (region r1,
-   w2) is the whole lever: '|| party->members[i] == 0' after the valid test plus r = cm_CutInfosT[i] BEFORE
+   w2) is the whole lever: '|| party->members[i] == 0' after the valid test plus r = cm_CutInfos[i] BEFORE
    cm_CutChar = c = 2 ins, only the probe's own cmp [esi],0 / je left. Every compare form keeps its code
    (== -1, > 0x7fffffff, (char) casts, &party->members[i] == 0, an id pointer test before the deref; after
    the deref it folds with no reference). A reference in the body (r2 / r3) or after the loop does not
-   help. Late-removed constructs that do count: a repeated test (cm_CutInfosT[i].valid != 0 again: no code,
+   help. Late-removed constructs that do count: a repeated test (cm_CutInfos[i].valid != 0 again: no code,
    one more cut IV reference; a dead && right side does not count), identical-arm ternaries in the call
    argument ((i < 16 ? M : M) and other i-against-constant conditions: 14 ins, but the i compare is LFTR'd
    onto the cut IV, which then takes edi; conditions on memory keep a load + test). Two latch copies (while
@@ -4350,7 +4348,7 @@ int cm_PrevPartyMember(char *m, int n)
    tests, gm_FindChar parameter types; worse: the A counter as prev / me (77 / 67), a hand-rotated loop
    (95). climb 3 rounds from the tree, 2 from r-first: nothing; climb from the probe: only r-first. Open:
    which ordinary statement gives that one reference without code. prior: s51: climb round 1 found the
-   lever: in the owner's turn loop of the one-after-the-other run, next = cm_CutInfosT[i] copied before the
+   lever: in the owner's turn loop of the one-after-the-other run, next = cm_CutInfos[i] copied before the
    cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds: nothing). Left: (1) the all-at-once
    owner loop's IV slots: the original has the cut-record IV at 0x10, i at 0x14, the members IV at 0x18 and
    keeps the members IV in esi for the gm_FindChar argument (reloaded from its slot at the latch, the rep
@@ -4396,14 +4394,14 @@ void cm_RunSceneParty(char *m, int ctx)
             if (((AICHAR *)cm_CutChar)->kind == 6) {
                 cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                 cm_SceneTimedOut = 0;
-                ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&cm_CutInfosT[i], ctx);
+                ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&cm_CutInfos[i], ctx);
             } else {
                 cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                 if (cb != 0)
-                    cb(&cm_CutInfosT[i], ctx);
+                    cb(&cm_CutInfos[i], ctx);
             }
             d2_SetForm(party->window, 0);
-            io_PrintText(cm_CutInfosT[i].text);
+            io_PrintText(cm_CutInfos[i].text);
             io_PrintText("$A");
         }
     } else if (ai_GameFlags & 4) {
@@ -4415,10 +4413,10 @@ void cm_RunSceneParty(char *m, int ctx)
                     CMCUTINFO r;
 
                     c = (AICHAR *)gm_FindChar(party->members[i]);
-                    if (c == 0 || c->kind == 6 || c->kind == 7 || cm_CutInfosT[i].valid != 0)
+                    if (c == 0 || c->kind == 6 || c->kind == 7 || cm_CutInfos[i].valid != 0)
                         continue;
                     cm_CutChar = (char *)c;
-                    r = cm_CutInfosT[i];
+                    r = cm_CutInfos[i];
                     cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                     if (cb != 0)
                         cb(&r, ctx);
@@ -4438,7 +4436,7 @@ void cm_RunSceneParty(char *m, int ctx)
                 if (party->members[i] == ((AICHAR *)cm_CutChar)->netId) {
                     CMCUTINFO r;
 
-                    r = cm_CutInfosT[i];
+                    r = cm_CutInfos[i];
                     cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                     cm_SceneTimedOut = 0;
                     ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&r, ctx);
@@ -4471,10 +4469,10 @@ void cm_RunSceneParty(char *m, int ctx)
             while (cm_PartyAnswered(m) == 0) {
                 cm_ShowPartyTexts(m);
                 sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
-                if (me != -1 && (me == 0 || cm_CutInfosT[prev].valid == 1) && cm_CutInfosT[me].valid == 0) {
+                if (me != -1 && (me == 0 || cm_CutInfos[prev].valid == 1) && cm_CutInfos[me].valid == 0) {
                     CMCUTINFO r;
 
-                    r = cm_CutInfosT[me];
+                    r = cm_CutInfos[me];
                     cm_PartyTurn = me;
                     cm_CutChar = (char *)gm_FindChar(party->members[me]);
                     cm_ShowPartyTexts(m);
@@ -4496,11 +4494,11 @@ void cm_RunSceneParty(char *m, int ctx)
                         c = (AICHAR *)gm_FindChar(party->members[i]);
                         if (c == 0 || c->kind == 6 || c->kind == 7)
                             continue;
-                        if (i != 0 && cm_CutInfosT[cm_PrevPartyMember(m, i)].valid != 1)
+                        if (i != 0 && cm_CutInfos[cm_PrevPartyMember(m, i)].valid != 1)
                             continue;
-                        if (cm_CutInfosT[i].valid != 0)
+                        if (cm_CutInfos[i].valid != 0)
                             continue;
-                        next = cm_CutInfosT[i];
+                        next = cm_CutInfos[i];
                         cm_PartyTurn = i;
                         cm_CutChar = (char *)c;
                         cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
@@ -4731,9 +4729,9 @@ void cm_ExecCutscene(char *m)
     cm_ResetCutInfos(m);
     if (party->host == ai_Chars[ai_PlayerId].netId) {
         for (i = 0; i < 16; i++) {
-            cm_CutInfosT[i].ready = 0;
-            cm_CutInfosT[i].fresh = 0;
-            cm_CutInfosT[i].valid = 0;
+            cm_CutInfos[i].ready = 0;
+            cm_CutInfos[i].fresh = 0;
+            cm_CutInfos[i].valid = 0;
             if (party->members[i] != -1 && (c = (AICHAR *)gm_FindChar(party->members[i])) != 0) {
                 int v = -1;
 
@@ -5033,8 +5031,8 @@ int cm_CutInfoById(int id)
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (cm_CutInfosT[i].playerId == id)
-            return (int)&cm_CutInfosT[i];
+        if (cm_CutInfos[i].playerId == id)
+            return (int)&cm_CutInfos[i];
     }
     return 0;
 }
@@ -5120,8 +5118,8 @@ int cm_RemovePartyMember(int id, int who)
     }
     if (cm_CurrentFight != 0 && *cm_CurrentFight == id) {
         for (i = 0; i < 16; i++) {
-            if (cm_CutInfosT[i].playerId == who) {
-                cm_CutInfosT[i].playerId = -1;
+            if (cm_CutInfos[i].playerId == who) {
+                cm_CutInfos[i].playerId = -1;
                 break;
             }
         }
