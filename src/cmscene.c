@@ -22,7 +22,6 @@
 #include "cm.h"
 #include "cmscene.h"
 #include "d2.h"
-#define cm_DuelChooseRoundR ((void (*)(CMCUTINFO *))cm_DuelChooseRound)  /* @original cm_DuelAskPlayer jumps to it with its own arguments in place (a tail jmp, byte-matched): called with r alone, the duel record stays on the stack */
 #include "d3.h"
 struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3SKY *s, int first, char *tex, D3TEXFLAGS flags, float scale, float offset, float vscale, float voffset);  /* 0x45d880 */
 #include "d3_tools.h"
@@ -2632,7 +2631,7 @@ int cm_DuelAftermath(G28REC *m)
    name, the timer slider): r->duel.round = 1 (the cheat) for the answer 0, 0 for the answer 1 and when the time runs
    out; r's text cleared */
 
-void cm_DuelRoundDialog(CMCUTINFO *r)
+void cm_DuelRoundDialog(CMCUTINFO *r, G28REC *m)
 {
     int view, dlg;
 
@@ -2722,12 +2721,12 @@ void cm_DuelAskAI(CMCUTINFO *r)
 /* 0x4dfff0, the player's round of the duel (the player's callback of the scene kind 4): the round dialog
    cm_DuelRoundDialog without the party scene, else the party's choice cm_DuelChooseRound */
 
-void cm_DuelAskPlayer(CMCUTINFO *r)
+void cm_DuelAskPlayer(CMCUTINFO *r, G28REC *m)
 {
     if (cm_ScenePartyRuns == 0)
-        cm_DuelRoundDialog(r);
+        cm_DuelRoundDialog(r, m);
     else
-        cm_DuelChooseRoundR(r);
+        cm_DuelChooseRound(r, m);
 }
 /* 0x4e0010, the run function of scene kind 0, the picture show: loads the scene "cutscene_toby.ed3", runs the party
    twice (its members' texts, the kind's callbacks are the noop) and leaves the scene */

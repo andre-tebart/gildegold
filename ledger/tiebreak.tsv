@@ -2530,7 +2530,7 @@ exe	0x004dfa20	cm_DuelAftermath	cm	bd9fdfaccb90c57c	no	byte	control=byte p1=byte
 exe	0x004dfcb0	cm_DuelRoundDialog	cm	fec32a8e410a2ed7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004dfdd0	cm_DuelChooseRound	cm	866f2d0148c224cb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004dff80	cm_DuelAskAI	cm	20bca090d604e976	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004dfff0	cm_DuelAskPlayer	cm	97426aa6ff902182	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x004dfff0	cm_DuelAskPlayer	cmscene	c4c18124e7573c8a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	fc2db23e44a19c29
 exe	0x004e0010	cm_RunPictureShow	cm	011b4f8c47ef4c60	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e0040	cm_ExecutionAftermath	cm	f96a103f9d900a98	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e01e0	cm_RunExecution	cm	407b054f8a3a5ef6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3311,7 +3311,7 @@ exe	0x00522040	sv_PanelImage	sv	cd3599dd5dd512fa	no	byte	control=byte p1=byte p2
 exe	0x00522100	sv_SetPanelEnabled	sv	cb3a00beb37ac5f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00522280	sv_ClosePanelWidgets	sv	8d1a8f808f07108a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005223c0	sv_DestroyScreen	sv	8965bc5fd472037f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005224a0	sv_LoadGroundplan	sv	8fd5d9fa934d3041	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=12 (stopped at the goal)	cbf9f94da1f9f8fe
+exe	0x005224a0	sv_LoadGroundplan	sv	ef0f853f07a13ce0	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=12 (stopped at the goal)	27f65883f3006dba
 exe	0x005229b0	sv_UpdateGroundplan	sv	fd3808a642c2c1c2	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	d8781dc03ebd17fa
 exe	0x00522ec0	sv_SetResearchClass	sv	eb283724bbc55f92	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00522f10	sv_UpdateCityPanel	sv	f813a50bbd9aaad9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

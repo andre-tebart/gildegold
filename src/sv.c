@@ -8,7 +8,7 @@
    the wind update), sv_t.h and mission.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade). The
-   @original cast macros (d2_PutPixelRGBc) record the parameter types the original's
+   @original cast macro d2_AddHitRectI records the parameter type the original's
    calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
@@ -218,7 +218,7 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "rt.h"
 #include "gfx.h"
 #include "cm.h"
-#define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e9c sub edx, 0x50 / 0x521ea1 push edx) */
+#define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e90 movsx edx, [d2_ScreenW]; sub edx, 0x50; push edx): the short x of the definition narrows it to 16 bits, so the original unit saw an int prototype */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
@@ -975,7 +975,6 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 int d2_FindPic(char *name);                     /* 0x468890 */
 char *strupr(char *);                     /* 0x5ea986 */
 extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here) */
-#define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour(char *a, char *b);                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
@@ -1064,7 +1063,7 @@ loaded:
     for (y = 0; y < sv_GroundplanSurf->h; y++)
         for (x = 0; x < sv_GroundplanSurf->w; x++) {
             d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
-            d2_PutPixelRGBc(x, y, rgb[0], rgb[1], rgb[2], sv_GroundplanView);
+            d2_PutPixelRGB(x, y, rgb[0], rgb[1], rgb[2], sv_GroundplanView);
         }
     d2_UnlockSurface(sv_GroundplanView);
     if (sv_GroundplanSurf != 0) {

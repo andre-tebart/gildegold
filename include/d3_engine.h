@@ -442,7 +442,7 @@ extern char d3_ClipInfo[64][0x68];          /* 0xfc3020 */
 void d3s_UpdateObject(D3OBJECT *obj);       /* 0x45ca20, d3s.c */
 void d3s_UpdateObjectAt(D3OBJECT *obj);     /* 0x45ca60, d3s.c */
 struct D3OBJECT; struct D3LINFO; struct D3MATRIX; void d3_TransformVerts(struct D3OBJECT *obj, struct D3LINFO *info, struct D3MATRIX *m);                             /* 0x459300 */
-void d3_MirBeginFrame(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4554b0, d3_mir.h (d3_engine.c calls it through its D3OBJECT ** view d3_MirBeginFrameE) */
+void d3_MirBeginFrame(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4554b0, d3_mir.h */
 void d3_ProjectMesh(D3OBJECT *obj);                                                     /* 0x438f60 */
 
 /* float to int with fistp (current rounding mode) */
