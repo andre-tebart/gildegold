@@ -1638,7 +1638,7 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
     char text2[0x400];
     G9DOMIZILROW oldRows[12];
     char text3[0x400];
-    char text4[1008];
+    char text4[0x400];
     int halfH;
     int pg;
     int j;
