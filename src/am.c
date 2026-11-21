@@ -847,7 +847,7 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
         o = gm_Query(p->inventory, 1, 1, s1->ref);
         if (!o)
             return 0;
-        g = (float *)ai_FindUsableGoodP(o->id);
+        g = (float *)ai_FindUsableGood(o->id);
         if (g) {
             u.obj = o;
             u.target = s2->ref;

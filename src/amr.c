@@ -3583,7 +3583,7 @@ int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = s2->ref;
@@ -3720,7 +3720,7 @@ int ai_ExecuteUseReputationObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.effect = 0;
@@ -3818,7 +3818,7 @@ int ai_ExecuteUseApsObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = -1;
@@ -3910,7 +3910,7 @@ int ai_ExecuteUseEducationObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = -1;
@@ -4002,7 +4002,7 @@ int ai_ExecuteUseHealthObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = -1;
@@ -4161,7 +4161,7 @@ int ai_ExecuteUseDynastyObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = (AIOBJ *)gm_Query((void *)p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = s2->ref;
@@ -4333,7 +4333,7 @@ int ai_ExecuteUseMeanObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = s2->ref;
@@ -4454,7 +4454,7 @@ int ai_ExecuteUseSafetyObject(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = -1;
@@ -4508,7 +4508,7 @@ int ai_ExecuteUsePerfume(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = s2->ref;
@@ -4567,7 +4567,7 @@ int ai_ExecuteUseTrank(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o == 0)
         return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
+    g = (float *)ai_FindUsableGood(o->id);
     if (g != 0) {
         u.obj = o;
         u.target = s2->ref;

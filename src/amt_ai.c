@@ -770,7 +770,7 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
         for (i = 0; i < n; i++) {
             if (e->id != rec[i].item)
                 continue;
-            d = (G9DOMIZIL *)ai_FindUsableGoodP(e->id);
+            d = (G9DOMIZIL *)ai_FindUsableGood(e->id);
             if (d == 0) {
                 rec[i].value = -1;
                 st[1]++;
@@ -791,7 +791,7 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
         }
     }
     for (i = 0; i < n; i++) {
-        if (rec[i].entryId == -1 && (d = (G9DOMIZIL *)ai_FindUsableGoodP(rec[i].item)) != 0 && (d->mask & p->goodsMask))
+        if (rec[i].entryId == -1 && (d = (G9DOMIZIL *)ai_FindUsableGood(rec[i].item)) != 0 && (d->mask & p->goodsMask))
             st[1]++;
     }
 }

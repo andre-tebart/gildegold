@@ -839,7 +839,6 @@ int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2);   
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                           /* 0x4a5760 */
 int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
-#define ai_FindUsableGoodP(id) ((void *(*)(int))ai_FindUsableGood)(id)
 int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
 int ai_ExecuteUseReputationObject(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
 int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ab60 */
