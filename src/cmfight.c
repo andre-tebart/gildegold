@@ -142,7 +142,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
-#define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
@@ -180,7 +179,7 @@ G18POP cm_DamagePops[16];  /* 0x9304c0 */
 char cm_Fighters[21376];  /* 0x930600 */
 struct D3OBJECT *cm_FlagObjects[32];  /* 0x935980 */
 CMGRENADE cm_Grenades[32];  /* 0x935a00, the thrown bombs */
-int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
+CMBOMB cm_Bombs[32];  /* 0x935c00, the 32 bomb records (object, time) */
 float cm_FightCellScale;  /* 0x935d00 */
 int cm_CharInfoWins[32];  /* 0x935d20 */
 char * cm_HoverObject = 0;  /* 0x6f0ce0 */
@@ -560,10 +559,10 @@ CMBOMB *cm_LayBomb(D3VECTOR *p)
     rot.y = 0;
     rot.z = 0;
     for (i = 0; i < 32; i++) {
-        if (cm_BombsT[i].obj == 0) {
-            b = &cm_BombsT[i];
+        if (cm_Bombs[i].obj == 0) {
+            b = &cm_Bombs[i];
             b->obj = d3_CreateObject(0, p, &rot, "ob_BOMBE");
-            cm_BombsT[i].time = d3_Time;
+            cm_Bombs[i].time = d3_Time;
             return b;
         }
     }
@@ -589,7 +588,7 @@ int cm_UpdateBombs()
     cnt = 0;
     w = (AIWEAPON *)ai_FindWeaponRecord(0x174);
     for (i = 0; i < 32; i++) {
-        rec = &cm_BombsT[i];
+        rec = &cm_Bombs[i];
         if (rec->obj == 0)
             continue;
         cnt++;

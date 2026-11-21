@@ -46,6 +46,7 @@ struct VFSDIR;
 #include "menu_types.h"
 #include "ai_types.h"
 
+extern int cm_Bombs[0x40];  /* 0x935c00, @original why: sv_InitTick (byte-matched) clears the bomb records as 0x40 ints; cmfight.c, which owns them, reads CMBOMB[32] */
 extern int d2_HitUnderPointer;
 
 
@@ -7661,6 +7662,5 @@ char cm_ChatLog[2048];  /* 0x75fba0 */
 int ai_SceneChars[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
 int * d3t_Rain;  /* 0x760618, the rain level */
 int sv_FrameMask;  /* 0x760638 */
-extern int cm_Bombs[0x40];
 extern int d2_HitWindow;
 extern struct D3RECT d2_DirtyRect;
