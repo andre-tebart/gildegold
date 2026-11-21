@@ -601,7 +601,7 @@ int ai_TokenBestInn(int mode, G12ARG *args, int k, char *fmt, char *out)
     if (mode == 2)
         return 0;
     if (mode == 1) {
-        AI_4FEA50_4((int *)&pick, 0, 0, args[k].id);
+        gm_FindById((int *)&pick, 0, 0, args[k].id);
         if (pick == 0)
             return 0;
     } else {

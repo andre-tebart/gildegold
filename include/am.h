@@ -490,7 +490,6 @@ typedef char ai_AssertAIPX[sizeof(AIPX) == 0x21c ? 1 : -1];
 
 #define AIC ((AIPX *)ai_Chars)
 /* ai.h declares gm_FindById for another use; here it fills an int and takes three more */
-#define AI_4FEA50_4(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)
 
 typedef AIARG AIARGX;                   /* 0x48e070..0x48f250 spell it so */
 

@@ -425,7 +425,7 @@ int ai_MsgPayPct1to3BuildingType11(G14MSG *m)
     mask.HighPart = 0;
     if (!ai_PickActionBuilding((AIPER *)c, 6, mask.QuadPart, 0, 100.0f, &o))
         return 0x400;
-    if (!AI_4FEA50_4(&r, 0, 0, o))
+    if (!gm_FindById(&r, 0, 0, o))
         return 0x400;
     k = util_Random(3) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
