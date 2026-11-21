@@ -534,7 +534,7 @@ int cm_OtherBuilding(char *a, char *b);  /* 0x4ce270 */
 struct CMBOMB *cm_LayBomb(struct D3VECTOR *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
-char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
+char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c */
 float gm_HealthRatio(short *c);  /* 0x4fc8e0, f3gm.h */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
