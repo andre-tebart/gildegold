@@ -2150,6 +2150,18 @@ copied back into short predecessors only after all of this.
     call tail 23, a 20-ins x87 / call tail 20 -> never merged).
   - `move` (FUN_107120b9 -> FUN_107711fb, skip 0x1070a6e9): the same for a label nothing falls into (behind a
     jmp / ret), no size limit; the first reference's copy is deleted and the kept copy moved in front of L.
+  - What `pair` compares (C2.DLL FUN_10712300 / FUN_10712797, read 2026-11-21): opcode, class, the low 12 flag
+    bits, and both operand lists by kind, each operand's type word included; `kb` operands (kind 0xb) are
+    skipped. A local's address (`lea k3`) compares by symbol (FUN_10703bb6): two block-local arrays VC6 packed
+    into one slot compare EQUAL when they have the same size and UNEQUAL when they differ, though the code is the
+    same. The run's size is summed up to 20 (pair bytes prints the sum, saturating at 22), plus a counter on each jmp.
+  - **Two equal message exits `txt_Format(buf, id, ..); sv_MessageBox(buf, 0); return 0;` cross-jumped in ours,
+    each with its own epilogue in the original, the registers equal on both sides**: each exit had its own
+    block-local buffer of a different size (`char haunt[0x400]` / `char none[0x200]`, the window's `note[0x400]`
+    in its button arm). VC6 packs them into one slot, so the frame and code are the original's, and the pair merge
+    stops at the `lea`. Equal sizes merge again, one function-scope buffer merges, and a buffer that is not packed
+    grows the frame (ai_DrohbriefAmountCB 50 -> byte; a probe `other-mb` calling another symbol showed the merge
+    was the whole difference).
 - **Reading a tail hunk**: `c2tail.py SRC FUNC --tries` lists what was compared and merged with source lines;
   `--il merge` shows which block falls into the exit label; `C2DAG_TRYDUMP=1` prints a pair's equal count and
   size. A tail merged in ours and not in the original (or the reverse) is almost always another block in

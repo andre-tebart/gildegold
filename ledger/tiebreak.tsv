@@ -4402,7 +4402,7 @@ exe	0x005b4340	ai_EvidenceDetailsWindow	lc	2056edf4ba1420c7	no	byte	control=byte
 exe	0x005b4590	ai_EvidenceBookWindow	lc	defd816edb0c869b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005b4820	ai_BribeAmountCB	lc	2a2a1870eccc6106	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b4bf0	ai_OpenRobberBribe	lc	705d9b79b55ee331	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	5e11cae15e2e89f9
-exe	0x005b4c60	ai_DrohbriefAmountCB	lc	afe0d003b2a984c6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005b4c60	ai_DrohbriefAmountCB	lcdom	b27219cb38170baa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6a6525665da1aaf8
 exe	0x005b4fb0	ai_DrohbriefWindow	lc	35a3aa88560f4ecf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005b5010	ai_DenounceWindow	lc	9727076e248860f4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b5310	ai_PamphletAmountCB	lc	d9eb0847d831bb5c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

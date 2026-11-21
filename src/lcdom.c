@@ -5567,41 +5567,7 @@ void ai_OpenRobberBribe(int bld)
    the player's talent 4) asks: its button takes the 2 (cm_SendMoneyDelta) and, when a random number plus the
    mix of the two characters (gm_Mix 4) reaches 1, sends the quarrel message 0x2e from ch to the player (text
    0x175b), else tells the letter failed (0x175c); the second button or a right click close it. Returns 1 once
-   the letter went out, else 0
-   @deep the 50 ins are ONE mechanism, now measured exactly (c2tail/dag/vdiff): the two guard message exits
-   (0x409f = M1, 0x1756 = M2) end [add esp,0x14; xor eax,eax; jmp Lexit], and the pair merger merges M1's
-   copy into M2's (equal run 9 ins, pair bytes 22, both fall-through-entered); that gives M2's block a jump
-   pred, so the guards' tiny [xor; jmp] pairs then cascade into it and everything funnels into one shared
-   epilogue at +0xf1. The original refused the (M1,M2) pair, so the epilogue-copy-back inlined every exit.
-   Eliminated this session: (a) register route (probe rotates [entry..M1], climb's swap@28 me/n order
-   rotates [M2..], both refuse the pair but the rotated registers are visible damage - and the original's
-   M1/M2 temps are IDENTICAL (ecx,edx,eax both), so its refusal was not registers, provably); (b)
-   else-forms (crime/noevent guard inverted so the kept copy is jump-entered) 91-101 ins, the walk then
-   lays that exit in front of Lexit and the final return loses its fall-in; (c) declaration set: dcp's
-   verdict 'not byte under the sets tried' + direct test, 1/7/33 extern shifts before the function all
-   still fire merge 3 (no allocation ties pending to flip); (d) decided tests: duplicated guards and a
-   decided sent test all compile to the control's code (VC6 drops them before the graph); (e) s13's forms
-   (return sent everywhere, initializer, char sent, id guards as one ||). Byte shape twins in this unit
-   (read their spellings): ai_PamphletAmountCB (same sent=0 + same 3 id guards + 3 message exits, byte) and
-   ai_SabotageCallback (5 message exits, byte): their message exits never align (each sits after a
-   different rotation count, their id/lea temps differ per exit) so no big pair merges and their plain
-   guards' tiny pairs all refuse -> inline epilogues everywhere; ours aligns (the me/n block between M1 and
-   M2 consumes 0 mod 3 rotation) so the pair fires. Open: what refused the original's aligned (M1,M2) - not
-   registers (identical), not fall-through states, not run size (structural), not the declaration set, not
-   decided tests; something the pair model in the notes misses. Best kept: none (control 50; the swap 38
-   has the right exit layout but its L26b8 order and M2 temps are visibly wrong - kept nothing, the tree is
-   the control). Next: vlist the L26b8 C1 temp order against the original's scheduled order; the guide's
-   outside-the-text causes (a macro body, a callee prototype, a struct member type) in a dcp try of the
-   unit. prior: s13 (size queue): the original stores sent = 0 to its slot [esp+0xc] in the first block
-   (test esi; mov [esp+0xc],0; jne), ours sinks the store past the guards into the window path; with the
-   store at the top VC6 gives every early return its own inline epilogue as the original: the probe {
-   static int *probe; probe = &sent; } after sent = 0 removes all tail hunks (50 -> 34 ins, the rest the
-   probe's own frame slot). So the open question is what keeps the original's zero store at the top (sent
-   is memory-homed in both: sent = 1 stored from the eax shared with sv_PopRequest = 1). No lever (dcp try,
-   = control or worse): return sent at the guards / the message exits / everywhere, int sent = 0
-   initializer, sent = 0 after the first guard (52), char sent (62), the three id guards as one || (57).
-   Next: what else reads or takes sent before the guards in the original (a second use, a call taking
-   &sent), or sent as another variable's reuse. */
+   the letter went out, else 0 */
 
 int ai_DrohbriefAmountCB(AICHARREC *ch)
 {
@@ -5615,7 +5581,6 @@ int ai_DrohbriefAmountCB(AICHARREC *ch)
     AICHARREC *me;
     AIWINDOWROW row;
     AIMSG msg;
-    char note[0x400];
 
     sent = 0;
     if (ch == 0)
@@ -5627,15 +5592,20 @@ int ai_DrohbriefAmountCB(AICHARREC *ch)
     if (sv_CheckMoney(ai_Chars[ai_PlayerId], 2) == 0)
         return 0;
     if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
-        txt_Format(note, 0x409f, ch->id);
-        sv_MessageBox(note, 0);
+        /* @original each message has its own block-local text buffer, packed into one frame slot; the 0x1756
+           one is smaller: two buffers of one size compare equal and VC6 cross-jumps the two message exits into
+           one, of different sizes it keeps both with their own epilogue as the original */
+        char haunt[0x400];
+        txt_Format(haunt, 0x409f, ch->id);
+        sv_MessageBox(haunt, 0);
         return 0;
     }
     me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
     n = gv_HeldCrimeCount(ch->netId, ai_PlayerId);
     if (n <= 0) {
-        txt_Format(note, 0x1756, ch->id);
-        sv_MessageBox(note, 0);
+        char none[0x200];
+        txt_Format(none, 0x1756, ch->id);
+        sv_MessageBox(none, 0);
         return 0;
     }
     if (sv_CheckMoney(ai_Chars[ai_PlayerId], 2) == 0)
@@ -5661,6 +5631,7 @@ int ai_DrohbriefAmountCB(AICHARREC *ch)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
+                char note[0x400];
                 cm_SendMoneyDelta(me->netId, -2);
                 chance = gm_Mix((int)me, (int)ch, 4);
                 if (util_RandomF() + chance >= 1.0f) {
