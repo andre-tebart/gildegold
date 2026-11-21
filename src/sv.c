@@ -7398,7 +7398,7 @@ void sv_UpdateClock(void)
 {
     int t, h, m;
 
-    if ((ai_TimeCopy.hour >= 0x17 || ai_Time.hour >= 0x17) && (ai_GameFlagsB & 0x80) == 0)
+    if ((ai_TimeCopy.hour >= 0x17 || ai_Time.hour >= 0x17) && (ai_GameFlags & 0x80) == 0)
         return;
     t = (int)(((float)ai_OptionSpeed * 0.00625f + 0.5) * main_ClockScale);
     h = t / 3600;

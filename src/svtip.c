@@ -1546,7 +1546,7 @@ void ai_SpeedKeys(void)
         ai_Quicksave();
         key = kb_Last;
     }
-    fl = ai_GameFlagsB;
+    fl = ai_GameFlags;
     if ((fl & 4) == 0) {
         if (key == 0x4e) {
             cm_RaiseSpeedLevel();
