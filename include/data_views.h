@@ -33,14 +33,6 @@
 /* d3d_Config */
 #define d3_ShadowMode            (*(struct D3BITS3 *)((char *)&d3d_Config + 0x1))  /* 0xfe7671 */
 
-/* sv_ViewPos / sv_ViewRot (the stored camera view, read and copied as ints by the units that save it) */
-#define sv_ViewPosX              (*(int *)((char *)&sv_ViewPos + 0x0))  /* 0x75fb80 */
-#define sv_ViewPosY              (*(int *)((char *)&sv_ViewPos + 0x4))  /* 0x75fb84 */
-#define sv_ViewPosZ              (*(int *)((char *)&sv_ViewPos + 0x8))  /* 0x75fb88 */
-#define sv_ViewRotX              (*(int *)((char *)&sv_ViewRot + 0x0))  /* 0x75fb90 */
-#define sv_ViewRotY              (*(int *)((char *)&sv_ViewRot + 0x4))  /* 0x75fb94 */
-#define sv_ViewRotZ              (*(int *)((char *)&sv_ViewRot + 0x8))  /* 0x75fb98 */
-
 /* sv_Bubbles */
 #define sv_BubbleObjects         (*(int (*)[4286])((char *)&sv_Bubbles + 0x8))  /* 0x761fc8 */
 
