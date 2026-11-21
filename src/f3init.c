@@ -323,7 +323,7 @@ void gm_AgeCharacter(char *c, unsigned short age);    /* 0x4fc6f0, f3gm.c: ages 
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, lc.c: the angle of the object plot to out */
-void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
+int cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);  /* 0x4c5ae0, cm.c: message 0x4c, a building of kind k at pos */
 unsigned char *gm_NearestFreeBuilding(unsigned char *b, unsigned kind); /* 0x501f60, f3gm.c */
@@ -355,7 +355,7 @@ extern char ai_Unk7e3f40_[];
 void ai_CheckBuildSites(void);                     /* 0x58fb60 */
 void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
-void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
+int cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 struct G13MIS;
 struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, mission.h */
 void ai_ShowMissions(int owner);                /* 0x4b5310, mission.c */
@@ -1287,9 +1287,9 @@ int init_CreateStartCharacters(void)
             sv_PumpNet();
         c = ch->officeKind;
         if (c == 0x18 || c == 0x1a || c == 0x1b) {
-            j = ((int (*)(void *, int, int, int, int))cm_SendSetField)(ch->netId, 0x1cc, 4, 0x80, 0);
+            j = cm_SendSetField(ch->netId, 0x1cc, 4, 0x80, 0);
         } else if (c == 0x16 || c == 0x17 || c == 0x19) {
-            j = ((int (*)(void *, int, int, int, int))cm_SendSetField)(ch->netId, 0x1cc, 4, 0x40, 0);
+            j = cm_SendSetField(ch->netId, 0x1cc, 4, 0x40, 0);
         } else {
             j = -1;
         }
@@ -1340,8 +1340,8 @@ int init_CreateStartCharacters(void)
                 cm_AddFieldDelta(1, 1, 0xd, &msg4);
                 cm_SendFieldDeltas();
             }
-            ((int (*)(int, int, int, int))cm_SendRelations)(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
-            j = ((int (*)(int, int, int, int))cm_SendRelations)(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+            cm_SendRelations(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+            j = cm_SendRelations(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
             while (j != -1 && cm_GetSlotState(j) == 0)
                 sv_PumpNet();
         }
@@ -1755,7 +1755,7 @@ void init_OpenTown(void)
                 cl = INIT_BTYPE(b);
                 for (j = 0; j < 6; j++) {
                     if (cl[0x223 + j] != 0 && cl[0x223 + j] == (unsigned char)c[0x164]) {
-                        h = ((int (*)(void *, void *, void *))cm_SendOwnership)(((INIT_BLD *)b)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
+                        h = cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
                         init_OpenBuilding((INIT_BLD *)b);
@@ -1822,7 +1822,7 @@ void init_OpenTown(void)
         if (r == 0)
             break;
         cm_SendBoss(((INIT_CHAR *)c)->netId, ((INIT_BLD *)r)->id);
-        h = ((int (*)(void *, void *, void *))cm_SendOwnership)(((INIT_BLD *)r)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
+        h = cm_SendOwnership(((INIT_BLD *)r)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
         while (cm_GetSlotState(h) == 0)
             sv_PumpNet();
     }
@@ -1926,7 +1926,7 @@ void init_OpenTown(void)
             if (r == 0)
                 break;
             cm_SendBoss(((INIT_CHAR *)c)->netId, ((INIT_BLD *)r)->id);
-            h = ((int (*)(void *, void *, void *))cm_SendOwnership)(((INIT_BLD *)r)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
+            h = cm_SendOwnership(((INIT_BLD *)r)->id, ((INIT_CHAR *)c)->netId, ((INIT_CHAR *)c)->netId);
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
         }
@@ -2016,8 +2016,8 @@ void init_OpenTown(void)
             m = 0;
             for (j = i + 1; j < 0x300; j++) {
                 if (((INIT_CHAR *)ai_Chars[j])->kind == 6 || ((INIT_CHAR *)ai_Chars[j])->kind == 7 || ((INIT_CHAR *)ai_Chars[j])->kind == 5 || ((INIT_CHAR *)ai_Chars[j])->kind == 3 || ((INIT_CHAR *)ai_Chars[j])->kind == 4 || ((INIT_CHAR *)ai_Chars[j])->kind == 2) {
-                    ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
-                    h = ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
+                    cm_SendRelations(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
+                    h = cm_SendRelations(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
                     m += 2;
                     while (h != -1 && m % 10 == 0 && cm_GetSlotState(h) == 0)
                         sv_PumpNet();

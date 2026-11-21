@@ -3767,7 +3767,7 @@ void he_AllocSecretRoom(AIJOB *e)
     e->start = ai_Time;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
-    ((HESECRETROOM *)e)->walkSlot = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xd, ((HESECRETROOM *)e)->home, -1, 0x2d, 0, 0, "ASSASSIN");
+    ((HESECRETROOM *)e)->walkSlot = cm_SendSpawnCharacter(0xd, ((HESECRETROOM *)e)->home, -1, 0x2d, 0, 0, "ASSASSIN");
     e->exSlot = cm_SendExSetHE(0, (char *)e);
     return;
 taken:
@@ -4410,14 +4410,14 @@ void he_SetLifeByAge(AICHAR *c, int num)
         return;
     fnum = (float)(unsigned short)num;
     if (fnum <= c->f020) {
-        ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, c->f018 - c->f01c);
+        cm_SendFloatDelta(c->netId, 0x1c, c->f018 - c->f01c);
         return;
     }
     v = c->f018;
     f = c->f014;
     for (n = (int)(fnum - c->f020); n > 0; n--)
         v = v - f + (f / v);
-    ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, v - c->f01c);
+    cm_SendFloatDelta(c->netId, 0x1c, v - c->f01c);
 }
 /* 0x56fc50, the alloc of the event 0x88 (a work at the building +0xb0 of the player +8): paused -> nothing; with a running event 0x88 of the same player and building the text 0x4096 and state -1; else the due clock now + 1 hour and state 0 (0x4c4c60), or -1 when +0xb4 is -1, and the message 0x50cc50 (pid, -(+0xb8)) */
 
@@ -4879,7 +4879,7 @@ void he_PlunderTakePrice(int *a, AICHAR *c)
 {
     char text[0x400];
 
-    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a[0], c->netId, ai_OwnPlayer, a[3]);
+    cm_SendMoveGoodsUnchecked(a[0], c->netId, ai_OwnPlayer, a[3]);
     cm_SendSetField(c->netId, 0x1cc, 4, 1, 0);
     txt_Format(text, 0x40fe, c->id, a[3]);
     he_ShowNews(a[0], -1, text, 1, 0x5f4, 0);

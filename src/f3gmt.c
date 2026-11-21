@@ -2791,7 +2791,7 @@ char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x44
 void cm_BeginGroup(const char *s);                     /* 0x4c4540 */
 int cm_EndGroup(const char *s);                     /* 0x4c4580 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
-void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
+int cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 void cm_SendBoss(int a, int b);                     /* 0x4c5540 */
 int cm_SendExSetHE(int k, char *p);                     /* 0x4c4c60 */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, int fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
@@ -5334,14 +5334,14 @@ int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
 int cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
 #define ORD_F1C8_ANEW 0x800000  /* flags1c8 bit 23, set for a character that starts anew (gm_ForfeitEstate) */
 extern const unsigned int ai_BuildingTypeMasks[6];  /* 0x5eed70 (ai.h, not includable here): [2..3] the 64-bit mask of the house-owner building kinds */
-void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
+int cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
 float util_RandomSq(void);                  /* 0x42ec40 */
 
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 int gm_BuildingClass();                     /* 0x501d80 */
-void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
+int cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */

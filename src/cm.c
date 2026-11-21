@@ -1412,7 +1412,7 @@ int cm_SendSetField(int a, int b, int c, int d, int e)
 }
 /* 0x4c4ac0, sends message 0x1a: adds delta to the float field at the offset field of the character with the netId id */
 
-void cm_SendFloatDelta(int id, int field, float delta)
+int cm_SendFloatDelta(int id, int field, float delta)
 {
     G17MSG m;
 
@@ -1420,7 +1420,7 @@ void cm_SendFloatDelta(int id, int field, float delta)
     m.type = 0x1a;
     m.floatDelta.field = field;
     m.floatDelta.delta = delta;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4b00, sends message 0x1b: the relation of the character a to b changes by c (d: 0 / 1 / 2, the callers' kind of change), with the difficulty values; returns the send slot (cm_QueueSend) */
 
@@ -1797,7 +1797,7 @@ void cm_SendChrUseGates(int charId, int bldId, int objId)
 }
 /* 0x4c54a0, message 0x38: the building bldId gets the owner ownerId with the master masterId - handler 0x4caaa0 */
 
-void cm_SendOwnership(int bldId, int masterId, int ownerId)
+int cm_SendOwnership(int bldId, int masterId, int ownerId)
 {
     G17MSG m;
 
@@ -1805,7 +1805,7 @@ void cm_SendOwnership(int bldId, int masterId, int ownerId)
     m.owner.bldId = bldId;
     m.owner.masterId = masterId;
     m.owner.ownerId = ownerId;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c54e0, sends the message 0x3a with a building id (he_RunUpgrade, when the building event 0x1e ends; reasoned:
    the upgrade is done) */
@@ -1841,7 +1841,7 @@ void cm_SendBoss(int a, int b)
 }
 /* 0x4c5580, message 0x3c */
 
-void cm_SendHandOverCrimes(int a, int b, int c, int d)
+int cm_SendHandOverCrimes(int a, int b, int c, int d)
 {
     G17MSG m;
 
@@ -1850,7 +1850,7 @@ void cm_SendHandOverCrimes(int a, int b, int c, int d)
     m.handOver.culprit = b;
     m.handOver.state = c;
     m.handOver.hand = d;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c55d0, message 0x3d: hires a character of kind b for the building p (the applicant for title c / job d,
    gm_FindApplicant, else a new one) with a home (gm_FindHome) */
@@ -2301,13 +2301,13 @@ void cm_SendSpyReport(AIBLD *o, HESPYREPORT *p)
 }
 /* 0x4c60b0, message 0x60 (0x1f bytes of p) */
 
-void cm_SendGraveOrder(void *p)
+int cm_SendGraveOrder(void *p)
 {
     G17MSG m;
 
     m.type = 0x60;
     memcpy(m.data, p, 0x1f);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c60f0, message 0x61 (0x19 bytes of p), the slot handle cm_QueueSend returns */
 
@@ -2321,33 +2321,33 @@ int cm_SendGraveMove(void *p)
 }
 /* 0x4c6130, message 0x62 (0x19 bytes of p) */
 
-void cm_SendRaiseDead(void *p)
+int cm_SendRaiseDead(void *p)
 {
     G17MSG m;
 
     m.type = 0x62;
     memcpy(m.data, p, 0x19);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c6170, message 99 (0x24 bytes of p) */
 
-void cm_SendCreateAlchemist(void *p)
+int cm_SendCreateAlchemist(void *p)
 {
     G17MSG m;
 
     m.type = 99;
     memcpy(m.data, p, 0x24);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c61b0, message 100 (0x18 bytes of p) */
 
-void cm_SendCommand(void *p)
+int cm_SendCommand(void *p)
 {
     G17MSG m;
 
     m.type = 100;
     memcpy(m.data, p, 0x18);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c61f0, sends message 0x65: the master of party p becomes the character q (its netId; its handler 0x4cd130
    sets the party record's host); returns the message's send slot (cm_QueueSend) */

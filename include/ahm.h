@@ -134,7 +134,7 @@ void gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
 void gm_RefreshGoodsLists(unsigned p);                     /* 0x4ff190 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
 void gm_KillSpieler(int c, int mode);                     /* 0x503c60 */
-void cm_SendCommand(void *p);                     /* 0x4c61b0 */
+int cm_SendCommand(void *p);                     /* 0x4c61b0 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 extern signed char ai_Relations[768][768];  /* 0x7e5360 */
 extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
@@ -147,7 +147,7 @@ extern int ai_NextObjectId;                /* 0x61a654 */
 int ahm_SaveWalk(void *f);             /* 0x4ebfb0 */
 int ahm_LoadWalk(void *f);             /* 0x4ec140 */
 int ahm_SendCreateAlchemist(unsigned char *o, AHMSTEP *s);  /* 0x4ec490, posts the type 99 message that creates the alchemist's owner character from the step */
-void cm_SendCreateAlchemist(void *p);                     /* 0x4c6170 */
+int cm_SendCreateAlchemist(void *p);                     /* 0x4c6170 */
 
 int ahm_StepValue(char *p);             /* 0x4ec320 */
 int ahm_ObjectValue(unsigned char *p);    /* 0x4ec3d0 */

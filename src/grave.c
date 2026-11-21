@@ -669,7 +669,7 @@ int gv_OrderBury(int *g, char *o, int v, int b)
         m.size = v;
         m.years = 0;
         m.price = 0;
-        return ((int (*)(void *))cm_SendGraveOrder)(&m);
+        return cm_SendGraveOrder(&m);
     }
     return -1;
 }
@@ -757,7 +757,7 @@ int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price)
         m.entry = 0xff;
         m.years = years;
         m.price = price;
-        return ((int (*)(void *))cm_SendGraveOrder)(&m);
+        return cm_SendGraveOrder(&m);
     }
     return -1;
 }
@@ -826,7 +826,7 @@ int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x)
         m.type = 2;
         m.years = s;
         m.price = x;
-        return ((int (*)(void *))cm_SendGraveOrder)(&m);
+        return cm_SendGraveOrder(&m);
     }
     return -1;
 }
@@ -884,7 +884,7 @@ int gv_OrderSetGraveHolder(int *c, char *o, int size, int entry)
         m.entry = (unsigned char)entry;
         m.years = 0;
         m.price = 0;
-        return ((int (*)(void *))cm_SendGraveOrder)(&m);
+        return cm_SendGraveOrder(&m);
     }
     return -1;
 }
@@ -946,7 +946,7 @@ int gv_OrderOpenSize(int *c, char *o, int size)
     m.entry = 0;
     m.years = 0;
     m.price = 0;
-    return ((int (*)(void *))cm_SendGraveOrder)(&m);
+    return cm_SendGraveOrder(&m);
 }
 /* 0x4f0af0, graveyard order type 4 (GVORDER m, sent by gv_OrderOpenSize): opens the grave sizes 1 .. m->size (GVYARD.open)
    of the graveyard building m->bld, when that size's list exists and the yard's level (GVYARD.kind) reaches it. Returns 0,
@@ -1007,7 +1007,7 @@ int gv_OrderAdjustEntry(char *o, int v, int b, int x)
         m.size = v;
         m.years = 0;
         m.price = x;
-        return ((int (*)(void *))cm_SendGraveOrder)(&m);
+        return cm_SendGraveOrder(&m);
     }
     return -1;
 }
@@ -1056,7 +1056,7 @@ int gv_OrderNewDead(char *o, int x)
     m.chr = -1;
     m.bld = bld->id;
     m.price = x;
-    return ((int (*)(void *))cm_SendGraveOrder)(&m);
+    return cm_SendGraveOrder(&m);
 }
 /* 0x4f0dd0, graveyard order type 6 (p: +8 the object id, +0x13 the number): makes that many new dead (0x4ef9c0); 0 when some were made, else -4 */
 
@@ -1184,7 +1184,7 @@ int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
         m.grave = grave;
         m.kind = kind;
         gv_Accuse(0x1b, 1, gv_CharsT[owner].netId, -1, m.bld);
-        return ((int (*)(void *))cm_SendRaiseDead)(&m);
+        return cm_SendRaiseDead(&m);
     }
     return -1;
 }

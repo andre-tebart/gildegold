@@ -220,7 +220,7 @@ int cm_SendFieldDeltas(void);                                                   
 int cm_SendFieldValues(void);                                                          /* 0x4c49e0, returns the cm slot of the send */
 void ai_SendNeedBlock(void);                                                         /* 0x4c4a20 */
 int cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
-void cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
+int cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
 int cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */
 int cm_SendLongMessageText(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */
@@ -247,11 +247,11 @@ int cm_SendPlaceOnStage(int a, int b, int c);                                   
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
 void cm_SendChrAnim(int a, const char *s, int c);                        /* 0x4c5410 */
 void cm_SendChrUseGates(int a, int b, int c);                                          /* 0x4c5460 */
-void cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
+int cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
 void cm_SendUpgradeDone(int a);                                                        /* 0x4c54e0 */
 void cm_SendBuildingDestroyed(int a);                                                        /* 0x4c5510 */
 void cm_SendBoss(int a, int b);                                                 /* 0x4c5540 */
-void cm_SendHandOverCrimes(int a, int b, int c, int d);                                   /* 0x4c5580 */
+int cm_SendHandOverCrimes(int a, int b, int c, int d);                                   /* 0x4c5580 */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
 void cm_SendCharModel(int a, const char *s);                                         /* 0x4c5690 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                                     /* 0x4c56d0 */
@@ -285,11 +285,11 @@ void cm_SendMessage5b(int a, int b, int c);                                     
 int cm_SendTradeMessage(AMTTRADE *p);                                                   /* 0x4c5fe0 */
 void cm_SendAddSkill(int a, int b, int c);                                          /* 0x4c6020 */
 void cm_SendSpyReport(AIBLD *o, HESPYREPORT *p);                                     /* 0x4c6060 */
-void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
+int cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
 int cm_SendGraveMove(void *p);                                                       /* 0x4c60f0 */
-void cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */
-void cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */
-void cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
+int cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */
+int cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */
+int cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
 int cm_SendMasterChange(G28REC *p, struct AICHAR *q);                                    /* 0x4c61f0, returns the message's send slot */
 int cm_SendEffectLoad(int *p);                                                       /* 0x4c6230 */
 int cm_SendShots(void *p);                                                      /* 0x4c6260 */

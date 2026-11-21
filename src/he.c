@@ -3760,7 +3760,7 @@ void he_AllocOffer(int ev)
             }
             r = (int)he_NextEvent();
         }
-        o->offer = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(e->partner1, e->partner2, e->id, 1);
+        o->offer = cm_SendHandOverCrimes(e->partner1, e->partner2, e->id, 1);
         e->exSlot = cm_SendExSetHE(0, ev);
     }
 }

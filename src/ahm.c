@@ -770,7 +770,7 @@ int ahm_SendCreateAlchemist(unsigned char *o, AHMSTEP *s)
     m.x = s->x;
     m.y = s->y;
     m.value = g->rcp.b;
-    return ((int (*)(void *))cm_SendCreateAlchemist)(&m);
+    return cm_SendCreateAlchemist(&m);
 }
 
 #define AHM_ZERO6(m) memset(m, 0, 24)
@@ -892,7 +892,7 @@ int ahm_SendSetShare(char *c, int id, float v)
     m.tag = AHM_CMD_SET_SHARE;
     m.id = id;
     m.value.f = min(max(v, 0.0f), 1.0f);
-    return ((int (*)(void *))cm_SendCommand)(&m);
+    return cm_SendCommand(&m);
 }
 /* 0x4eca00, the 'SsCa' handler: sets the share m->id (0 .. 3) of the record rec (+8 .. +0xb) to the value m->value.f times 252 (the inverse of 0x4eab20); 0 for
    another number */
@@ -938,7 +938,7 @@ int ahm_SendAddPlace(char *c, int id)
     m.tag = AHM_CMD_ADD_PLACE;
     m.id = g->rcp.id;
     m.value.i = g->w[2];
-    return ((int (*)(void *))cm_SendCommand)(&m);
+    return cm_SendCommand(&m);
 }
 /* 0x4ecb30, puts the order p (+8 the id, +0x10 the value) into the first free place of the record rec (6 pairs at +0xc) of the object o (+0x5d the list); 0 when all are in use */
 
@@ -1011,7 +1011,7 @@ int ahm_SendSetPlaceValue(char *c, int id, float v)
     m.tag = AHM_CMD_SET_PLACE;
     m.id = id;
     m.value.f = min(max(v, 0.0f), 1.0f);
-    return ((int (*)(void *))cm_SendCommand)(&m);
+    return cm_SendCommand(&m);
 }
 /* 0x4ecd10, the 'cRSa' handler: sets the value of the place m->id in the record rec to m->value.f; 0 when there is none */
 
@@ -1041,7 +1041,7 @@ int ahm_SendAddValue(char *c, float v)
     m.tag = AHM_CMD_ADD_VALUE;
     m.charId = ((AHMCHAR *)c)->id;
     m.value.f = v;
-    return ((int (*)(void *))cm_SendCommand)(&m);
+    return cm_SendCommand(&m);
 }
 /* 0x4ecdb0, the 'SmSa' handler: adds m->value.f to the value at +4 of the record rec, clamped to 0 .. 1 (the windows.h min / max macros on the sum in a local; the 0.0f / 1.0f are the pooled literals ai_FloatZero / ai_FloatOne) */
 
@@ -1067,7 +1067,7 @@ int ahm_SendDelete(char *c)
     AHM_ZERO6(&m);
     m.tag = AHM_CMD_DELETE;
     m.charId = ((AHMCHAR *)c)->id;
-    return ((int (*)(void *))cm_SendCommand)(&m);
+    return cm_SendCommand(&m);
 }
 /* 0x4ece60, deletes the alchemist of the record rec (+0 the character id): clears its object pointers, removes the places from the list of the object o, zeroes the record; 0 when the character is gone */
 

@@ -6756,7 +6756,7 @@ void sv_NetworkSyncWait(unsigned fl)
     t0 = timeGetTime();
     memset(msg, 0, sizeof(msg));
     strcpy(msg, "sv_NetworkSync");
-    m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
+    m = cm_SendExSysMessage(0xe, msg);
     sv_FrameMask = fl;
     fl |= 0x300000;
     dlg = sv_OpenMessageBox(txt_NetworkSyncWait, 0);
@@ -6777,7 +6777,7 @@ void sv_BroadcastText(unsigned fl, char *t)
 
     memset(msg, 0, sizeof(msg));
     strcpy(msg, t);
-    m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
+    m = cm_SendExSysMessage(0xe, msg);
     fl |= 0x300000;
     while (cm_GetSlotState(m) == 0) {
         sv_SetStatusText(t);
@@ -6794,7 +6794,7 @@ void sv_SyncText(char *t)
 
     memset(msg, 0, sizeof(msg));
     strcpy(msg, t);
-    m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
+    m = cm_SendExSysMessage(0xe, msg);
     while (cm_GetSlotState(m) == 0) {
         sv_SetStatusText(t);
         sv_RunFrame(0, cm_DialogFrameFlags | 0x210000);

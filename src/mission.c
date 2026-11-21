@@ -1269,7 +1269,7 @@ void ai_MissionNextDialog(int id)
                 ai_MissionMode = -1;
                 msg2[0] = c->netId;
                 msg2[4] = 0;
-                h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg2);
+                h = cm_SendExSysMessage(0x0a, msg2);
                 while (!cm_GetSlotState(h))
                     sv_PumpNet();
                 sv_PopRequest = 1;
@@ -1278,7 +1278,7 @@ void ai_MissionNextDialog(int id)
                 msg1[0] = c->netId;
                 quit = 1;
                 msg1[4] = 1;
-                h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg1);
+                h = cm_SendExSysMessage(0x0a, msg1);
                 while (!cm_GetSlotState(h))
                     sv_PumpNet();
                 sv_PopRequest = 1;
@@ -1290,7 +1290,7 @@ void ai_MissionNextDialog(int id)
         nm = ai_NewRandomMission(c->netId, next, 1);
         msg1[0] = c->netId;
         msg1[4] = 0;
-        h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg1);
+        h = cm_SendExSysMessage(0x0a, msg1);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
         ai_MissionInfoDialog(nm->type, id);
@@ -1412,21 +1412,21 @@ void ai_MissionCompleteSingle(int id)
         ai_MissionMode = -1;
         msg[0] = c->netId;
         msg[4] = 0;
-        h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
+        h = cm_SendExSysMessage(0x0a, msg);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
     } else if (r == 0xff) {
         ai_MissionMode = -1;
         msg[0] = c->netId;
         msg[4] = 1;
-        h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
+        h = cm_SendExSysMessage(0x0a, msg);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
     } else {
         ai_NewMission(c->netId, r, 1);
         msg[0] = c->netId;
         msg[4] = 0;
-        h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
+        h = cm_SendExSysMessage(0x0a, msg);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
     }

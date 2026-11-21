@@ -2138,7 +2138,7 @@ void ai_UnlockRoomWindow(AIBLD *rec, AIOBJ *room)
                     cm_BeginFieldBlock((char *)room, room->objId);
                     cm_AddFieldDelta(4, 1, 0x1c, &zero);
                     cm_AddFieldDelta(4, 1, 0x20, &zero);
-                    k = ((int (*)(void))cm_SendFieldDeltas)();  /* cm.c defines it void; the original's callers use eax: the slot of the block */
+                    k = cm_SendFieldDeltas();  /* cm.c defines it void; the original's callers use eax: the slot of the block */
                     while (k != -1 && cm_GetSlotState(k) == 0)
                         sv_RunFrame(0, 0x20007);
                     sv_PopRequest = 1;
