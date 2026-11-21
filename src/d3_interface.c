@@ -522,7 +522,7 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
             }
             d3_SortPtr = d3_SortBuf;
             d3_SortCount = 0;
-            d3_SetFog(D3IF_SCENE(index).fog.start, D3IF_SCENE(index).fog.end, D3IF_SCENE(index).fog.col.col);
+            d3_SetFog(D3IF_SCENE(index).fog.start, D3IF_SCENE(index).fog.end, D3IF_SCENE(index).fog.col.c);
         }
     }
     if (!keep) {
@@ -1270,9 +1270,6 @@ void d3_SetWorldPosRot(D3OBJECT *obj, float *pos, D3MATRIX *rot)
 }
 
 void err_Message(char *msg);                                                                     /* 0x4222b0 */
-/* @original: d3_SetFogSet passes the fog colour as the struct (the original pushes it before the second fmul; the
-   dword of a D3COLORU pushes it after), d3_engine.c / the header take the dword */
-#define d3_SetFogS ((void (*)(float, float, D3COLOR))d3_SetFog)  /* 0x43a6f0 */
 
 /* 0x449960, makes obj a child of parent (0: top level) keeping its world position; light keys too */
 char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent)
@@ -1447,9 +1444,9 @@ char d3_SetFogSet(unsigned int a, unsigned int b, float t)
         col.r = (int)((d3if_Fog[b].col.c.r - d3if_Fog[a].col.c.r) * t + d3if_Fog[a].col.c.r);
         col.g = (int)((d3if_Fog[b].col.c.g - d3if_Fog[a].col.c.g) * t + d3if_Fog[a].col.c.g);
         col.b = (int)((d3if_Fog[b].col.c.b - d3if_Fog[a].col.c.b) * t + d3if_Fog[a].col.c.b);
-        d3_SetFogS(((d3if_Fog[b].start - d3if_Fog[a].start) * t + d3if_Fog[a].start) * d3o_FogScale,
-                  ((d3if_Fog[b].end - d3if_Fog[a].end) * t + d3if_Fog[a].end) * d3o_FogScale,
-                  col);
+        d3_SetFog(((d3if_Fog[b].start - d3if_Fog[a].start) * t + d3if_Fog[a].start) * d3o_FogScale,
+                 ((d3if_Fog[b].end - d3if_Fog[a].end) * t + d3if_Fog[a].end) * d3o_FogScale,
+                 col);
         d3o_FogSet = a;
         return 1;
     }

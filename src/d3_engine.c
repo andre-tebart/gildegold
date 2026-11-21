@@ -839,7 +839,7 @@ void d3_SetFogRange(float start, float end)
 
    */
 
-void d3_SetFog(float start, float end, unsigned long color)
+void d3_SetFog(float start, float end, D3COLOR color)
 {
     char on;
 
@@ -855,7 +855,7 @@ void d3_SetFog(float start, float end, unsigned long color)
         d3_FogOn = on;
         d3_FogStart1 = start;
         d3_FogEnd2 = end;
-        d3_fog_color.col = color;
+        d3_fog_color.c = color;
     }
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,

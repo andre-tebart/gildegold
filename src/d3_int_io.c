@@ -27,7 +27,6 @@
 /* err.h's other declarations shift the /O2 register allocation of the byte-matched d3_LoadScene (3 bytes at
    0x44c0df); the file only calls err_Message. Its own prototype keeps the call typed, where a local copy of
    the whole header does not compile byte-identically. */
-void d3_SetFog(unsigned long start, unsigned long end, unsigned long color);  /* 0x43a6f0, d3_engine.c; @original: the reader passes the raw dwords of the two floats (no int -> float conversion; the original pushes them unchanged) */
 /* 0x44abb0, reads an object with its children and following siblings ("rd_object" in the error message) */
 D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload)
 {
@@ -491,9 +490,9 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
     char c;
     float t;
     D3VECTOR4 v;
-    int col;
+    D3COLOR col;
     int fcol;
-    int end, start;
+    float end, start;
     char cam[0x100];
     void *in;
     D3OBJECT *o, *b;
@@ -526,9 +525,9 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                     if (version >= 0x3a6c00b7)
                         bio_rd_i(in, &x);
                     ((D3IFSCENE *)d3_DefaultScene)->mapSize = x;
-                    bio_rd_i(in, &col);
-                    bio_rd_i(in, &start);
-                    bio_rd_i(in, &end);
+                    bio_rd_i(in, (int *)&col);
+                    bio_rd_i(in, (int *)&start);
+                    bio_rd_i(in, (int *)&end);
                     d3_SetFog(start, end, col);
                 }
                 for (x = 0; x < 7; x++) {

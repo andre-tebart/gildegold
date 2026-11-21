@@ -67,7 +67,7 @@ extern int d3if_LastMegaCam;          /* 0xfba944 */
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj);                                      /* 0x43cb80, d3_engine.c */
 int d3io_FindStock(char *name);                                                           /* 0x44c5d0 */
 void d3if_CreateCameras(void);                                                                /* 0x448910 */
-void d3_SetFog(float start, float end, unsigned long color);                    /* 0x43a6f0, d3_engine.c (d3_SetFogSet passes the colour struct: its unit keeps that spelling) */
+void d3_SetFog(float start, float end, D3COLOR color);                    /* 0x43a6f0, d3_engine.c */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                                /* 0x45eeb0 */
 void d3sm_Destroy(struct D3SM *h);                                                          /* 0x45ef60 */
 struct TSTEXTURE; void tex_GetParams(struct TSTEXTURE *tex, unsigned char *opts, unsigned char *fmt);                                   /* 0x460aa0, ts_texture.c */

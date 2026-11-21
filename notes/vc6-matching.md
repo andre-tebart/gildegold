@@ -6019,6 +6019,12 @@ the bytes no portable form gives.
   declaration in a widely included header (cm.h) moves VC6's declaration-set tie-breaks in other units.
 - **A tail jump that leaves an argument in the caller's slot**: the argument is a parameter the function passes
   on (see "Other call-site shapes", d2_PlaceMainWindow); its callers then call the true two-parameter prototype.
+- **A float pushed as its raw dword (`mov ecx,[esp+x]; push ecx`, no fld / fstp)**: a `float` variable passed
+  to a float parameter: VC6 copies float variables to the stack with integer moves. Read the file's floats into
+  `float` locals (`bio_rd_i(in, (int *)&start)`, as `bio_rd_v3(in, (int *)&v)`), call the true float
+  prototype; never an `unsigned long` prototype for a float parameter (d3_LoadScene byte). A 4-byte struct
+  argument likewise: d3_SetFog takes `D3COLOR color` (d3_SetFogSet passes the struct, d3if_SelectScene the
+  union's `.c`, the definition stores `d3_fog_color.c = color`), no cast macro to another prototype.
 
 ## Open cases and rounds without result
 Unsolved hunks and what was tried on them. Read before repeating a round on the same function; none of these states a rule.
