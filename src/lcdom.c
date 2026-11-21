@@ -6089,24 +6089,23 @@ int ai_EvalFest(AIGRP *g, int send);   /* 0x494ac0, am.h's prototype (am.h is no
    writes the guests' netIds into the table (-1 for the empty seats), the second or a right click cancel. A
    running feast (or a planned one) shows its summary in "fest2": the time (0x1780), the guests (0x1781), the
    menu (0x1782), the musicians (0x1783, with a stage) and the cost (0x1784). The camera follows
-   @deep frame sweep s21: 202 -> 108 ins: none (the -1 sent by address with the feast message) a local of
-   the send block. Left: frame 0x3e8 vs 0x3e4 (one slot more: the original packs ok / cancel into one slot
-   and i / refresh), two of the original's write-once slots ([esp+0xbc], [esp+0x164]) without a partner,
-   code 70. Lead: ok / cancel as locals of the blocks that create and test them. prior: Reconstructed whole
-   against the original 0x5b5e80..0x5b693c (feast planning: the clock + 24 h at 20:00, the feast event 0x37
-   search by AIJOB.from, the stage query gm_Query kind 0x18, the menu window fest2 with the rows 0x1773+i
-   and the table field 0x2c, the musician rows 0x177a+i and field 0x2d or 5, the guest window fest with
-   0x1769 / 0x176a / ai_EvalFest / 0x176b / sv_ButtonRow 0x176c 0x176d, the invite amount menu with the ids
-   filled and option14 |= 2, the messages 0x37 and 0x36 with flags 9 / 1, the table's guest fields 0x1c +
-   4k with -1 for empty seats, the summary 0x1780..0x1784, one shared close tail): same instruction count
-   (739 / 739), every call, constant and reference equal. Left is frame and allocation: the original packs
-   two pairs of locals into one slot each (the menu index byte i and the guest window's refresh flag at
-   frame+0x10, the done flag and the -1 of the empty seats at frame+0x14), ours gives each its own slot
-   (frame 0x3ec vs 0x3e4), and keeps 0 in edi where the original keeps it in ebp at the start (the time
-   copy and the cfg / guests stores scheduled around it, asmdiff +0x0..+0x80) plus the store order of the
-   AIGRP fields at +0x348. Tried: done reused for the -1 (puts done in memory everywhere, worse),
-   block-scoped i / refresh (no slot sharing), memset vs single stores of guests (single stores give the
-   original's per-slot stores) */
+   @deep s22: 108 -> 58 ins, frame and slots now the original's. Kept: the menu part (both pick windows, i
+   and noMusik) in its own block inside if (ev == 0), so the address-taken byte i shares its slot with
+   refresh (frame 0x3e4); the guest window's g fill as cost, leader, n, g.n, musik, essen (permute 720: 86
+   -> 66); the invitation fill as type, to, arg[4], fromId, inviteWhen (permute 120); essen = 6 before the
+   memset (climb round 1: 64 -> 58). Left (regs 88, code 30): one swap from the entry to the first window:
+   the original keeps 0 in ebp and bld (then the -1 of d2_ClickedId) in edi, ours 0 in edi and bld / -1 in
+   ebp (c2trace: const 0 piece lines 6141-6360 prio 46 takes edi first, bld#2 prio 24 gets ebp); then
+   done's reload into edi at the d2_ClickedId store of the first pick loop (+0x5b6052) follows from it.
+   Tried, = control: the event search as while (ev && ev->from != bld->id) / for with && / while + if
+   break; hasStage as if/else or ?:; the three goto close as nested if (done != 0) with done = 1 in the
+   else (the same code: the goto is not a lever). Worse: close written out at each exit (349). climb --ops
+   move,swap 4 rounds: nothing. flip --want 'mov edi, _bld' flips on ~50 unrelated mutants (dup SetForm,
+   swap of PrintText / for): a tie in the region split, not a local lever. prior: frame sweep s21: 202 ->
+   108 ins: none (the -1 sent by address with the feast message) a local of the send block. Left: frame
+   0x3e8 vs 0x3e4 (one slot more: the original packs ok / cancel into one slot and i / refresh), two of the
+   original's write-once slots ([esp+0xbc], [esp+0x164]) without a partner, code 70. Lead: ok / cancel as
+   locals of the blocks that create and test them. */
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
 {
@@ -6135,8 +6134,8 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
     char cancelText[0x100];
 
     when = ai_Time;
-    memset(&cfg, 0, sizeof(cfg));
     essen = 6;
+    memset(&cfg, 0, sizeof(cfg));
     cfg.kind = 6;
     done = 0;
     guests[0] = 0;
@@ -6154,9 +6153,11 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
             break;
     hasStage = gm_Query((void *)bld->objList, 1, 0, 0x18) != 0;
     if (ev == 0) {
+        int refresh;
+
+        {
         unsigned char i;
         unsigned char noMusik;
-        int refresh;
 
         win = d2_OpenForm(0, 0, "locations\\wohnsitz\\fest2");
         d2_SetForm(win, 0);
@@ -6225,6 +6226,7 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
             cm_AddFieldDelta(1, 1, 0x2d, &noMusik);
             cm_SendFieldDeltas();
         }
+        }
         if (done == 0)
             goto close;
         d2_CloseView(win);
@@ -6245,10 +6247,10 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
                 io_PrintText("$C");
                 io_PrintText(0x1769, &when);
                 g.cost = 0;
+                g.leader = (struct AIC4 *)ai_Chars[ai_PlayerId];
                 n = 0;
                 g.n = 0;
                 g.musik = musik;
-                g.leader = (struct AIC4 *)ai_Chars[ai_PlayerId];
                 g.essen = essen;
                 for (k = 0; k < 4; k++) {
                     ch = guests[k];
@@ -6317,8 +6319,8 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
                             cm_AddFieldDelta(4, 1, 0x1c + n * 4, &ch->netId);
                             cm_SendFieldDeltas();
                             msg.type = 0x36;
-                            msg.arg[4] = 0;
                             msg.to = ch->netId;
+                            msg.arg[4] = 0;
                             msg.fromId = bld->id;
                             msg.inviteWhen = when;
                             if (ch->kind == 6 || ch->kind == 7)
