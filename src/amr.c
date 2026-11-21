@@ -1892,7 +1892,7 @@ int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *
         goto fallback;
     x = ai_JudgeCatholic ? ai_JudgeCatholic->netId : -1;
     y = ai_JudgeProtestant ? ai_JudgeProtestant->netId : -1;
-    for (job = AI_53E400_3(1, 0, 0x2c); job; job = (AIJOBX *)he_NextEvent())
+    for (job = (AIJOBX *)he_FindEvent(1, 0, 0x2c); job; job = (AIJOBX *)he_NextEvent())
         if (job->partner == p->netId)
             break;
     if (!job || job->guests[0] == x || job->guests[0] == y)

@@ -228,7 +228,6 @@ int ord_DispatchOrder(int id, char *c, int *m);                                 
 int gm_CharCurrency(char *c, char p);                                    /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                                            /* 0x50a640 */
 /* ai.h declares he_FindEvent with five arguments; 0x496b10 calls it with three */
-#define AI_53E400_3(a, b, k) ((AIJOBX *(*)(int, int, int, ...))he_FindEvent)(a, b, k)
 
 /* 0x497660..0x49a0a0 (round 22, hv4): more action callbacks */
 #pragma pack(push, 1)
