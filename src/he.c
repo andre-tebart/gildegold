@@ -82,8 +82,8 @@
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with: util_RandomInt
    (he_RunInnSim).
-   Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
-   (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
+   Open: data: he_RunHandlers (0x758600) is declared over several objects (the gfx infos 0x7588a0, the ap events
+   0x758ca0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x6f263c he_MessageFilterMask, 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, 0x6fa0e0 he_OptionsPath,
    owner he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
@@ -166,7 +166,6 @@ struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT
 
 #define U_I(a) (*(int *)(a))
 typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
-#define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
@@ -1243,7 +1242,7 @@ int he_InitEvents(void)
         return 1;
     if (he_RegisterEventTypeA2() != 0)
         return 1;
-    memset((void *)((unsigned)&he_QuickList + 0x6a0), 0, 0x2900 * 4);
+    memset(gm_CarryRecs, 0, sizeof(gm_CarryRecs));
     memset((void *)((unsigned)&he_RunHandlers + 0x6a0), 0, 0x1400 * 4);
     memset((void *)((unsigned)&he_RunHandlers + 0x2a0), 0, 0x100 * 4);
     return 0;
@@ -1734,7 +1733,6 @@ void he_FreeEvent(int *r)
         he_EventTop = t < 0 ? 0 : t;
     }
 }
-#define he_Cursor (*(AIJOB **)((char *)&he_QuickList + 0xaaa0))  /* 0x7585e0, the record he_NextEvent stands on, 0: the search ended */
 
 /* 0x53e300, the next event record after he_Cursor that passes he_FindEvent's filter (he_FindKind, he_FindId, he_FindChr,
    he_FindFrom; a record whose first filters matched stays matched through the free records after it), up to the last

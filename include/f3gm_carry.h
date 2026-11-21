@@ -1,5 +1,5 @@
-/* f3gm.c's carried-goods records (0x100 of 0xa4 bytes at 0x74e1e0, inside ls.c's he_QuickList) for the units that
-   use them (f3gm.c, he.c): types and the view only. */
+/* f3gm.c's carried-goods records (0x100 of 0xa4 bytes at 0x74e1e0) for the units that
+   use them (f3gm.c, he.c, main.c defines them). */
 #ifndef F3GM_CARRY_H
 #define F3GM_CARRY_H
 #pragma pack(push, 1)
@@ -25,5 +25,5 @@ typedef struct GMCARRYREC {
 } GMCARRYREC;
 #pragma pack(pop)
 typedef char gm_AssertGMCARRYREC[sizeof(GMCARRYREC) == 0xa4 ? 1 : -1];
-#define gm_CarryRecs (*(GMCARRYREC (*)[0x100])((char *)&he_QuickList + 0x6a0))  /* 0x74e1e0, the 0x100 carried-goods records inside ls.c's he_QuickList */
+extern GMCARRYREC gm_CarryRecs[0x100];  /* 0x74e1e0, the 0x100 carried-goods records */
 #endif

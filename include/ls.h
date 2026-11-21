@@ -101,7 +101,7 @@ extern int he_EventTop;                                      /* 0x6f261c, the hi
 extern int he_QuickTop;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 #define he_Jobs (*(struct AIJOB (*)[0x400])&he_Events)  /* 0x6fab40, he_Events as the 0x400 event records (AIJOB, ai_types.h) */
-extern char * he_QuickList[10921];                          /* 0x74db40 */
+extern char * he_QuickList[0x100];                          /* 0x74db40 */
 extern int he_EventCount;                                    /* 0x7585e4 */
 #ifndef DATA_VIEWS_H
 #endif

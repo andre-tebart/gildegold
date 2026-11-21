@@ -47,6 +47,7 @@
 #include "evtc.h"
 #include "sndc.h"
 #include "net.h"
+#include "f3gm_carry.h"               /* GMCARRYREC, gm_CarryRecs */
 #include "ls.h"                      /* ls_SavePath (LSSAVE, its NETHDR), the save game functions */
 #include "udp.h"                     /* udp_FindServers, UDPSERVER */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -193,7 +194,7 @@ extern int sv_PopRequest;
 
 extern int ai_NextCharNumber;
 extern unsigned char he_Events[339968];
-extern char * he_QuickList[10921];
+extern char * he_QuickList[0x100];
 extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 extern GAPDATA full_data_6024e4[];
 extern int sv_FrameMask;
@@ -5261,7 +5262,10 @@ HEHINT he_Hints[128];  /* 0x6fa260, he.h: the tutorial hint table (he_OpenHelpEv
 int he_BarView;  /* 0x6faa60, he.h */
 HEEVSLOT he_EventSlots[16];  /* 0x6faa80, he.h: the event bar's 16 slots */
 unsigned char he_Events[339968];  /* 0x6fab40, the */
-char * he_QuickList[10921];  /* 0x74db40, pointers to the */
+char * he_QuickList[0x100];  /* 0x74db40, the event records shown in the event bar (he_QuickTop the last used) */
+void (*he_AllocHandlers[0xa8])(struct AIJOB *ev);  /* 0x74df40, he.h: the event alloc handlers by type (he_SetEventHandlers) */
+GMCARRYREC gm_CarryRecs[0x100];  /* 0x74e1e0, f3gm_carry.h: the carried-goods records */
+struct AIJOB *he_Cursor;  /* 0x7585e0, he.h: the record he_NextEvent stands on, 0: the search ended */
 int he_EventCount;  /* 0x7585e4 */
 void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
 /* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */

@@ -81,7 +81,7 @@ int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
 extern unsigned char he_Events[339968];
-extern char * he_QuickList[10921];
+extern char * he_QuickList[0x100];
 extern int he_EventCount;
 extern void (*he_RunHandlers[5544])(unsigned char *);
 
