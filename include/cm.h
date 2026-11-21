@@ -671,7 +671,7 @@ int gm_CreateCharModel();  /* 0x4fbb80 */
 void cm_CollectSceneChars();  /* 0x4d0a30 */
 char cm_CreateDummyFlag(char *o);  /* 0x4d0a80 */
 extern int cm_FlagObjectCount;  /* 0x6f0d58 */
-extern char *cm_FlagObjects[];  /* 0x935980 */
+extern struct D3OBJECT *cm_FlagObjects[32];  /* 0x935980, the conquest flag objects of the fight scene */
 
 void cm_PlaceFlagObjects();  /* 0x4d0ca0 */
 int cm_FreeNetIdSlot(int *a);  /* 0x4d0cd0 */

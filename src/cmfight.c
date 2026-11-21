@@ -148,7 +148,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
-#define cm_FlagObjectsT (*(D3OBJECT *(*)[32])&cm_FlagObjects)  /* 0x935980, cm_FlagObjects (cm.h: char *[]) as the D3OBJECTs it holds */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
@@ -180,7 +179,7 @@ char * cm_PointList[32];  /* 0x930380 */
 CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
 G18POP cm_DamagePops[16];  /* 0x9304c0 */
 char cm_Fighters[21376];  /* 0x930600 */
-char * cm_FlagObjects[32];  /* 0x935980 */
+struct D3OBJECT *cm_FlagObjects[32];  /* 0x935980 */
 char cm_Grenades[512];  /* 0x935a00 */
 int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 float cm_FightCellScale;  /* 0x935d00 */
@@ -1800,13 +1799,13 @@ char cm_CreateDummyFlag(char *o)
         rot[2] = 0;
         d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)pos);
         r = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ub_FLUCHTFLAGGE");
-        cm_FlagObjectsT[cm_FlagObjectCount] = r;
+        cm_FlagObjects[cm_FlagObjectCount] = r;
         strcpy(r->name, "sp_ESCAPE");
-        cm_FlagObjectsT[cm_FlagObjectCount]->kind = 4;
-        cm_FlagObjectsT[cm_FlagObjectCount]->mask = 1;
-        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags = (cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
-        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags |= 0x40;
-        d3t_PlayAnim(cm_FlagObjectsT[cm_FlagObjectCount], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
+        cm_FlagObjects[cm_FlagObjectCount]->kind = 4;
+        cm_FlagObjects[cm_FlagObjectCount]->mask = 1;
+        cm_FlagObjects[cm_FlagObjectCount]->stateFlags = (cm_FlagObjects[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
+        cm_FlagObjects[cm_FlagObjectCount]->stateFlags |= 0x40;
+        d3t_PlayAnim(cm_FlagObjects[cm_FlagObjectCount], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
         cm_FlagObjectCount++;
         return 1;
     }
@@ -1816,13 +1815,13 @@ char cm_CreateDummyFlag(char *o)
         rot[2] = 0;
         d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)pos);
         r = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ub_CONQUER");
-        cm_FlagObjectsT[cm_FlagObjectCount] = r;
+        cm_FlagObjects[cm_FlagObjectCount] = r;
         d3if_SelectTextureSet(r, (D3SURF *)r->info, 1, 1);
-        sprintf(cm_FlagObjectsT[cm_FlagObjectCount]->name, "sp_CONQUER_%i", cm_FlagObjectCount);
-        cm_FlagObjectsT[cm_FlagObjectCount]->owner = 0;
-        cm_FlagObjectsT[cm_FlagObjectCount]->kind = 4;
-        cm_FlagObjectsT[cm_FlagObjectCount]->mask = 1;
-        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags = (cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
+        sprintf(cm_FlagObjects[cm_FlagObjectCount]->name, "sp_CONQUER_%i", cm_FlagObjectCount);
+        cm_FlagObjects[cm_FlagObjectCount]->owner = 0;
+        cm_FlagObjects[cm_FlagObjectCount]->kind = 4;
+        cm_FlagObjects[cm_FlagObjectCount]->mask = 1;
+        cm_FlagObjects[cm_FlagObjectCount]->stateFlags = (cm_FlagObjects[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
         cm_FlagObjectCount++;
     }
     return 1;
@@ -2198,7 +2197,7 @@ void cm_EndFightScene(CMFIGHTREC *rec)
         sb_UnloadSampleBank(cm_DefenderPainVoices);
     }
     for (i = 0; i < cm_FlagObjectCount; i++)
-        d3if_Delete((struct D3OBJECT *)cm_FlagObjects[i]);
+        d3if_Delete(cm_FlagObjects[i]);
     if (cm_BootsObject != 0) {
         d3io_ReleaseObject(cm_BootsObject);
         cm_BootsObject = 0;
@@ -2827,9 +2826,9 @@ float *cm_OrderChancesFor(int side)
     }
     cnt = 0;
     for (i = 0; i < cm_FlagObjectCount; i++) {
-        if (strstr(cm_FlagObjects[i], "sp_CONQUER") != 0) {
-            d3_PointToWorld((D3OBJECT *)cm_FlagObjects[i], &((D3OBJECT *)cm_FlagObjects[i])->pos, (D3VECTOR *)&v);
-            o = ((D3OBJECT *)cm_FlagObjects[i])->owner;
+        if (strstr(cm_FlagObjects[i]->name, "sp_CONQUER") != 0) {
+            d3_PointToWorld(cm_FlagObjects[i], &cm_FlagObjects[i]->pos, (D3VECTOR *)&v);
+            o = cm_FlagObjects[i]->owner;
             if (o != 0 && (int)((AICHAR *)o)->bld == cm_FightAttacker)
                 cnt++;
         }
@@ -3300,10 +3299,10 @@ AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
     else if (nDef <= 0)
         winner = (AICHAR *)cm_FightDefender;
     for (i = 0; i < cm_FlagObjectCount; i++) {
-        if (strstr(cm_FlagObjects[i], "sp_CONQUER") != 0) {
-            d3_PointToWorld((D3OBJECT *)cm_FlagObjects[i], &((D3OBJECT *)cm_FlagObjects[i])->pos, (D3VECTOR *)&v);
+        if (strstr(cm_FlagObjects[i]->name, "sp_CONQUER") != 0) {
+            d3_PointToWorld(cm_FlagObjects[i], &cm_FlagObjects[i]->pos, (D3VECTOR *)&v);
             flags++;
-            c = ((D3OBJECT *)cm_FlagObjects[i])->owner;
+            c = cm_FlagObjects[i]->owner;
             if (c != 0 && (int)c->bld == cm_FightAttacker)
                 owned++;
         }
@@ -4575,7 +4574,7 @@ void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
                 rot.z = 0;
                 d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
                 r = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ub_FLUCHTFLAGGE");
-                cm_FlagObjects[cm_FlagObjectCount] = (char *)d3_CreateObject(0, (D3VECTOR *)&pos, &rot, &ch_EmptyName);
+                cm_FlagObjects[cm_FlagObjectCount] = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, &ch_EmptyName);
                 d3t_PlayAnim(r, "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
                 side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
                 if (side != 0 && side->ref54 != 0 && (side->kind == 5 || side->kind == 6 || side->kind == 7))
