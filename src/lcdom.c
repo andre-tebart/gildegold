@@ -8698,29 +8698,23 @@ int ai_OpenTrainingRow(int n, int pic, LCTRAINROW *row, int win)
    event 0x6c (the class 4 needs the room 0x5d, the class 0x10 the room 0x5e); each row shows its count. A row
    clicked with characters selected sends them (sv_MoveToGroup, cm_SendLongMessage) up to three thieves in all
    (text 0x1a4a past it, 0x1a49 when none went); clicked without, it selects the row's characters
-   @deep size queue s20: the frame's extra slot (ours 0x93c, the original 0x938) is a strength-reduced
+   @deep s22: 132 -> 10 ins, frame equal. Kept: goto sent replaced by break (= control, plain); the row
+   branch as if (row == 2) { 0x6c } else { thieves }: with row == 0 || row == 1 (also != / ! / swapped arm
+   spellings, = control) VC6 strength-reduces rows[row].pic into a pointer kept in a frame slot (the extra
+   slot), with row == 2 or a switch (case 0: case 1: / case 2:) it indexes as the original. Left: the
+   original tests test edi,edi / je T / cmp edi,1 / je T (two tests, no case 2 compare) and still indexes
+   rows[row] (no SR); ours cmp edi,2 / jne (4 ins), plus the order of the two zero stores of row / n2 at
+   the top around lea eax,[eax+eax*2] (6 ins, order). flip on row == 0 || row == 1 only hits that
+   condition's tokens; = control: thiefClass spellings, count = n2 + n3, !row || row == 1, constants on the
+   left; worse: row < 2 / row <= 1 (144), switch default (180), count inside each arm (254). (prior kept)
+   prior: size queue s20: the frame's extra slot (ours 0x93c, the original 0x938) is a strength-reduced
    pointer temp of the row click loop (c2frame: tmp@8845 = &rows[row], stored at [esp+0x18] and reloaded
    per pass); the original indexes rows[row].pic from row each pass (lea edx,[edi+edi*2]; mov
    eax,[esp+edx*4+0x24]). = control: count = n2 + n3 / count = n3; count += n2 / count = 0; count += ..;
    separate en0 / en1 enable flags instead of row / n2 reuse (136, slots +4); the click search as a break
    loop + if (row < 3) (a meaning change, not kept). climb.py round 1: nothing (every mutant changes the
    frame). The M8s at +0x3e6 / +0x4e9 are the ai_Time struct copy scheduled in another order (all four
-   parts are read on both sides). prior: Reconstructed whole from 0x5bba00..0x5bc0eb (523 vs 517
-   instructions): the form, the three ai_OpenTrainingRow rows, the DIEB / SOLDAT background, the
-   room-enable queries 0x35 / 0x34 / 0x5d / 0x5e, the alpha fade (min(elapsed/750, 0.4), test ah,5 / jnp
-   matched), the right click, the 0x16 / 0x6c event counts and captions, the send loops (thief message 0x16
-   with memset, 0x6c without), the selection branch, the closing calls; every callee, constant and string
-   reads equal. Left: (1) the click loop over rows: ours strength-reduces rows[row].pic into a pointer kept
-   in a slot (0x5bbd52 '- lea edx,[esp+0x28]; mov [esp+0x18],edx; mov eax,[esp+0x18]; mov eax,[eax]' | '+
-   lea edx,[edi+edi*2]; mov eax,[esp+edx*4+0x24]'; 0x5bbf94 '- mov ecx,[esp+0x18]; add ecx,0xc') which
-   costs the extra slot (frame 0x93c vs 0x938, all frame/slot hunks); tried the if-block form and the
-   operand order: no change. (2) the msg.time struct copy scheduling in both send loops (ours loads ai_Time
-   / +4 / +0xc in another order: 0x5bbde8 '- mov eax,[ai_Time]' | '+ mov eax,[ai_TimeHourW]'); tried 8
-   statement orders of type/to/fromId/time/flags/arg0: none better. Allocation and scheduling only.
-   (references: M8 at +0x3e6: ours refers to ai_Time (0x770ae0), the original's field to 0x770ae4
-   (ai_TimeHourW) (and 1 more), explained: the two M8 lines are the 14-byte AITIME copy msg.time = ai_Time
-   read in another order (crosswise loads of the same struct's words into the same msg words); every
-   store's target and source match) */
+   parts are read on both sides). */
 
 void ai_TrainingWindow(AIBLD *bld)
 {
@@ -8827,33 +8821,7 @@ void ai_TrainingWindow(AIBLD *bld)
                 if (rows[row].pic == -1 || d2_PointerObj != rows[row].pic)
                     continue;
                 count = n3 + n2;
-                if (row == 0 || row == 1) {
-                    for (i = 0; i < 0x300; i++) {
-                        if (lc_CharRecs[i].selected == 0)
-                            continue;
-                        memset(&msg, 0, sizeof(msg));
-                        if (lc_CharRecs[i].job != 0 && lc_CharRecs[i].job->kind == 0x16)
-                            count--;
-                        if (count >= 3) {
-                            count = 4;
-                            goto sent;
-                        }
-                        msg.type = 0x16;
-                        msg.flags = 1;
-                        msg.to = ai_CharInts[ai_PlayerId][0];
-                        msg.fromId = bld->id;
-                        msg.time = ai_Time;
-                        if (sv_PanelShown != 0)
-                            msg.arg[2] = ((AIOBJ *)sv_PanelShown)->objId;
-                        else
-                            msg.arg[2] = -1;
-                        msg.arg[1] = lc_CharRecs[i].netId;
-                        msg.thiefClass = (row != 0) + 2;
-                        sv_MoveToGroup((unsigned char *)bld, 0, lc_CharRecs[i].id, 0);
-                        cm_SendLongMessage((char *)&msg);
-                        count++;
-                    }
-                } else {
+                if (row == 2) {
                     for (i = 0; i < 0x300; i++) {
                         if (count >= 3)
                             break;
@@ -8873,9 +8841,34 @@ void ai_TrainingWindow(AIBLD *bld)
                         cm_SendLongMessage((char *)&msg);
                         count++;
                     }
+                } else {
+                    for (i = 0; i < 0x300; i++) {
+                        if (lc_CharRecs[i].selected == 0)
+                            continue;
+                        memset(&msg, 0, sizeof(msg));
+                        if (lc_CharRecs[i].job != 0 && lc_CharRecs[i].job->kind == 0x16)
+                            count--;
+                        if (count >= 3) {
+                            count = 4;
+                            break;
+                        }
+                        msg.type = 0x16;
+                        msg.flags = 1;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.time = ai_Time;
+                        if (sv_PanelShown != 0)
+                            msg.arg[2] = ((AIOBJ *)sv_PanelShown)->objId;
+                        else
+                            msg.arg[2] = -1;
+                        msg.arg[1] = lc_CharRecs[i].netId;
+                        msg.thiefClass = (row != 0) + 2;
+                        sv_MoveToGroup((unsigned char *)bld, 0, lc_CharRecs[i].id, 0);
+                        cm_SendLongMessage((char *)&msg);
+                        count++;
+                    }
                 }
                 if (count != 0) {
-sent:
                     snd_PlayFavourComment();
                     sv_ClearSelection();
                     if (count > 3) {
