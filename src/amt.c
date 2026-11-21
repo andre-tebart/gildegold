@@ -33,7 +33,6 @@ extern int gm_PlayerRecords[688];
 #include "err.h"
 #include "d3_pose.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ai.h: char[768][0x21c]) as the AICHAR records they are */
 #define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #pragma pack(push, 1)
 typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
@@ -1481,9 +1480,9 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
         for (j = 0; j < 768; j++) {
             if (k >= recs[i].cnt || k >= 4)
                 break;
-            if (ai_CharsT[j].appliedOffice == recs[i].kind) {
-                cand[k] = (char *)&ai_CharsT[j];
-                ids[k] = ai_CharsT[j].netId;
+            if (ai_Chars[j].appliedOffice == recs[i].kind) {
+                cand[k] = (char *)&ai_Chars[j];
+                ids[k] = ai_Chars[j].netId;
                 k++;
             }
         }
@@ -1594,9 +1593,9 @@ int amt_CheckOfficeColumns(void)
             } else if (list[j].state == 3 && list[j].cnt > 0) {
                 k = 0;
                 do {
-                    if (ai_CharsT[k].appliedOffice == (unsigned char)list[j].kind) {
+                    if (ai_Chars[k].appliedOffice == (unsigned char)list[j].kind) {
                         fl[i] |= 1;
-                        if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].heldRounds == 0) {
+                        if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && ai_Chars[k].heldRounds == 0) {
                             fl[i] |= 2;
                             break;
                         }
@@ -1650,9 +1649,9 @@ int amt_IsColumnDecided(int col)
             }
         } else if (list[j].state == 3 && list[j].cnt > 0) {
             for (k = 0; k < 768; k++) {
-                if (ai_CharsT[k].appliedOffice == (unsigned char)list[j].kind) {
+                if (ai_Chars[k].appliedOffice == (unsigned char)list[j].kind) {
                     f |= 1;
-                    if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].heldRounds == 0) {
+                    if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && ai_Chars[k].heldRounds == 0) {
                         f |= 2;
                         break;
                     }
@@ -1767,10 +1766,10 @@ void amt_SendOfficeNews(unsigned short *p, int v)
         txt_Format(buf, 0x1c19, *p, 0x1c1b, (((char *)p)[9] != 0 ? 0x27b : 0x253) + v);
         i = 0;
         do {
-            if (ai_CharsT[i].kind == 6)
-                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
-            else if (ai_CharsT[i].kind == 7)
-                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
+            if (ai_Chars[i].kind == 6)
+                he_ShowNews(ai_Chars[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
+            else if (ai_Chars[i].kind == 7)
+                he_ShowNews(ai_Chars[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
             i++;
         } while (i < 768);
     }
@@ -1788,10 +1787,10 @@ void amt_SendOfficeLost(unsigned short *p, int v)
         txt_Format(buf, 0x1c21, *p, (((char *)p)[9] != 0 ? 0x27b : 0x253) + v);
         i = 0;
         do {
-            if (ai_CharsT[i].kind == 6)
-                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
-            else if (ai_CharsT[i].kind == 7)
-                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
+            if (ai_Chars[i].kind == 6)
+                he_ShowNews(ai_Chars[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
+            else if (ai_Chars[i].kind == 7)
+                he_ShowNews(ai_Chars[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
             i++;
         } while (i < 768);
     }
@@ -1840,7 +1839,7 @@ void amt_ElectDeputies(void)
         id = ((AMTBLDVIEW *)it)->owner;
         if (id != 0xffff && id != *ai_PlayerChar && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
             total++;
-            ch = ai_Chars[id];
+            ch = (char *)&ai_Chars[id];
             k = ((AMTCHARVIEW *)ch)->rank;
             if (k >= 1 && k <= 6) {
                 for (i = 0; i < 16; i++) {
@@ -1860,7 +1859,7 @@ void amt_ElectDeputies(void)
         id = ((AMTBLDVIEW *)it)->owner;
         if (id != 0xffff && id != *ai_PlayerChar && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
             total++;
-            ch = ai_Chars[id];
+            ch = (char *)&ai_Chars[id];
             k = ((AMTCHARVIEW *)ch)->rank;
             if (k >= 0x28 && k <= 0x2d) {
                 for (i = 0; i < 16; i++) {
@@ -1976,7 +1975,7 @@ void amt_ElectKind22(void)
         id = ((AMTBLDVIEW *)it)->owner;
         if (id != 0xffff && (((AMTBLDVIEW *)it)->flags5a & 1) == 0) {
             total++;
-            ch = ai_Chars[id];
+            ch = (char *)&ai_Chars[id];
             k = ((AMTCHARVIEW *)ch)->rank;
             if (k >= 0xd && k <= 0x12) {
                 for (i = 0; i < 16; i++) {
@@ -2076,7 +2075,7 @@ void amt_CalcZuenfte(unsigned int kind)
         id = it->owner;
         if (id != 0xffff && (it->flags5a & 1) == 0) {
             total++;
-            ch = &ai_CharsT[id];
+            ch = &ai_Chars[id];
             k = ch->jobId;
             if (k >= lo && k <= hi) {
                 for (i = 0; i < 16; i++) {
@@ -2460,8 +2459,8 @@ int amt_ExecuteShareMessage(short *c, int *m)
                 i = 0;
                 cnt = 0;
                 do {
-                    if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == (AIBLD *)o && o->owner != i) {
-                        cm_SendRelations(ai_CharInts[o->owner][0], ai_CharsT[i].netId, -loss, 1);
+                    if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == (AIBLD *)o && o->owner != i) {
+                        cm_SendRelations(ai_CharInts[o->owner][0], ai_Chars[i].netId, -loss, 1);
                         cnt++;
                     }
                     i++;
@@ -2469,13 +2468,13 @@ int amt_ExecuteShareMessage(short *c, int *m)
                 if (cnt != 0) {
                     loss = (int)((float)m[2] / cnt) + 0x20;
                     for (i = 0; i < 768; i++) {
-                        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == (AIBLD *)o && o->owner != i)
-                            cm_SendMoveGoodsUnchecked(ai_CharsT[i].netId, -1, ai_OwnPlayer, loss);
+                        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == (AIBLD *)o && o->owner != i)
+                            cm_SendMoveGoodsUnchecked(ai_Chars[i].netId, -1, ai_OwnPlayer, loss);
                     }
                 }
                 gm_SendMoneyDelta(AMT_NETID(c), -5);
                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x8000000, 0);
-                if (ai_Chars[o->owner][2] == 7 || ai_Chars[o->owner][2] == 6) {
+                if (ai_Chars[o->owner].kind == 7 || ai_Chars[o->owner].kind == 6) {
                     txt_Format(msg, 0x1663, o);
                     he_MessageBoxQuickjump(ai_CharInts[o->owner][0], -1, msg, 0, 0x5fb, o->id, -1, 0, ch_EmptyName);
                 }

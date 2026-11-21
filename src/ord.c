@@ -31,7 +31,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
 /* ai_RatingBase as the int out[6] of the statistics record: the original moves the float's bits with a dword mov
@@ -443,7 +442,7 @@ int ord_DivorceOrder(char *c, int *m)
     if (ch->b00d < 5)
         return 1;
     for (i = 0; i < 0x300; i++) {
-        if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].officeKind != 0x12 || ai_CharsT[i].officeKind <= 0x15))
+        if (ai_Chars[i].id != 0xffff && (ai_Chars[i].officeKind != 0x12 || ai_Chars[i].officeKind <= 0x15))
             break;
     }
     if (ch->relatives[0] == -1)

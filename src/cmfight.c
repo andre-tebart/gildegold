@@ -146,7 +146,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
 #define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
@@ -322,7 +321,7 @@ char cm_FightWeaponLoss(char *ch)
             cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &v);
             cm_SendFieldDeltas();
             if (c->bld != 0 && c->bld->owner != 0xffff) {
-                owner = &ai_CharsT[c->bld->owner];
+                owner = &ai_Chars[c->bld->owner];
                 if (owner->kind == 6 || owner->kind == 7) {
                     w = (AIWEAPON *)cm_CharWeapon((char *)c);
                     if (w->id != 0) {
@@ -511,7 +510,7 @@ int ai_LedSelectBits(int idx, char *c)
 {
     int r = 0;
 
-    if ((AICHAR *)((AICHAR *)c)->bld == (AICHAR *)ai_Chars[idx])
+    if ((AICHAR *)((AICHAR *)c)->bld == (AICHAR *)&ai_Chars[idx])
         r = 0x800;
     if (gm_AllowAll != 0)
         r = 0x800;
@@ -2063,7 +2062,7 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     cm_PlaceFlagObjects();
     cm_FightAttacker = (int)gm_FindChar(rec->attackerId);
     cm_FightDefender = (int)gm_FindChar(rec->defenderId);
-    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner && (rec->flags & 1)) {
+    if (ai_Chars[ai_PlayerId].netId == cm_FightOwner && (rec->flags & 1)) {
         cm_BeginSendGroup();
         for (i = 0; i < 3; i++) {
             if (rec->carts[i] != -1)
@@ -2209,7 +2208,7 @@ void cm_EndFightScene(CMFIGHTREC *rec)
     }
     for (i = 0; i < 32; i++) {
         if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0) {
-            if (rec->owner == ai_CharsT[ai_PlayerId].netId || net_Conn.s == INVALID_SOCKET) {
+            if (rec->owner == ai_Chars[ai_PlayerId].netId || net_Conn.s == INVALID_SOCKET) {
                 k = (AICHAR *)gm_FindChar(cm_FightersT[i].netId);
                 if (k->kind != 0xb)
                     gm_AddHealth(k->id, cm_FightersT[i].v024 - k->v024);
@@ -3755,7 +3754,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
         if (obj == 0)
             obj = (AIOBJ *)gm_Query(b->objList, 2, 6, 0, 0x2a);
     }
-    if (cm_FightOwner == ai_CharsT[ai_PlayerId].netId) {
+    if (cm_FightOwner == ai_Chars[ai_PlayerId].netId) {
         for (i = 0; i < 16; i++) {
             id = a->defenders[i];
             if (id != -1 && (c = (AICHAR *)gm_FindChar(id)) != 0)
@@ -3794,7 +3793,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     d2_SetForm(win, 2);
     io_PrintText(0x7d);
     d2_SetForm(win, 1);
-    if (ai_CharsT[ai_PlayerId].netId == side->netId) {
+    if (ai_Chars[ai_PlayerId].netId == side->netId) {
         if (side == cm_FightDefenderC) {
             if (a->flags & 1) {
                 io_PrintText(0x1189, cm_FightDefenderC->id, cm_FightAttackerC->id);
@@ -3881,7 +3880,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 if (side == cm_FightAttackerC)
                     q->fightSide = cm_FightAttackerC->id;
                 if (q->fightSide == cm_FightAttackerC->id) {
-                    if (obj != 0 && cm_FightOwner == ai_CharsT[ai_PlayerId].netId) {
+                    if (obj != 0 && cm_FightOwner == ai_Chars[ai_PlayerId].netId) {
                         gm_ObjectBuildingOwner((unsigned short *)q);
                         cm_SendExSellObject(obj->objId, q->ownerId, q->id, q->count, ai_OwnPlayer, 0);
                     }
@@ -3937,7 +3936,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                         cnt = 1;
                     sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
                     strcat(tc, tmp);
-                    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                    if (ai_Chars[ai_PlayerId].netId == cm_FightOwner)
                         cm_SendExSellObject(obj->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
                     v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
                 }
@@ -3957,14 +3956,14 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             memset(tc + 1, 0, 0x3ff);
             txt_Format(tc, 0x11a6, cm_FightAttackerC->id, ca);
             cm_MessageBox(tc, 0);
-            if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+            if (ai_Chars[ai_PlayerId].netId == cm_FightOwner)
                 gm_ChangeBuildingState((unsigned char *)ca, 0x14 - cm_Random(0x14));
         } else if (n == 0) {
             /* the town guards are called: every guard (title groups 10 .. 12) turns against the attacker */
             txt_Format(ba, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
             cm_MessageBox(ba, 0);
             for (i = 0; i < 0x300; i++) {
-                ch = &ai_CharsT[i];
+                ch = &ai_Chars[i];
                 if (ch->id != 0xffff && ch->health != 0 &&
                     ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
                     cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
@@ -4046,7 +4045,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                         n = 1;
                     sprintf(tmp, "%i %s$A", n, (char *)txt_ObjectNames[q->id][0]);
                     strcat(tc, tmp);
-                    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                    if (ai_Chars[ai_PlayerId].netId == cm_FightOwner)
                         cm_SendExSellObject(obj->objId, p->objId, q->id, n, ai_OwnPlayer, 0);
                     v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * n + v);
                 }
@@ -4066,13 +4065,13 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             memset(tc + 1, 0, 0x3ff);
             txt_Format(tc, 0x11a6, cm_FightAttackerC->id, ca);
             cm_MessageBox(tc, 0);
-            if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+            if (ai_Chars[ai_PlayerId].netId == cm_FightOwner)
                 gm_ChangeBuildingState((unsigned char *)ca, 0x14 - cm_Random(0x14));
         } else if (k == 1) {
             txt_Format(bb, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
             cm_MessageBox(bb, 0);
             for (i = 0; i < 0x300; i++) {
-                ch = &ai_CharsT[i];
+                ch = &ai_Chars[i];
                 if (ch->id != 0xffff && ch->health != 0 &&
                     ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
                     cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);

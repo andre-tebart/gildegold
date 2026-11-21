@@ -82,7 +82,6 @@ extern int snd_AmbientSaved;            /* 0x6f0b78, 1 while the ambient flag is
 extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn */
 extern char snd_MusicLog[];             /* 0x6f0860, a debug text */
 extern char ch_EmptyName[];             /* 0x631090, "" */
-extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters (ahm.c); f3snd.c reads them flat (ai_CharsC) */
 extern int snd_VoiceBankOrders;         /* 0x6f0cbc, voice bank: orders (snd_LoadBuildingVoices) */
 extern int snd_VoiceBankClick;          /* 0x6f0cc0, voice bank: click comments */
 extern int snd_VoiceBankNoise;          /* 0x6f0cc4, voice bank: click noises */

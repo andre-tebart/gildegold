@@ -124,13 +124,11 @@ extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 
 
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
@@ -153,7 +151,6 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62a634[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -169,7 +166,6 @@ extern int d2_LastWindow;
 
 extern GAPDATA full_data_602568[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -180,7 +176,6 @@ extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern int d2_PointerObj;
@@ -201,7 +196,6 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a450[];
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -212,7 +206,6 @@ extern int d2_LastWindow;
 
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -223,13 +216,11 @@ extern int d2_LastWindow;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 
 extern const int sv_PhaseMinutes[24];
 
 
-extern char ai_Chars[768][0x21c];
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -249,7 +240,6 @@ extern int ai_ClickedObject;
 
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int gm_AllowAll;
 extern int d2_ClickedId;
@@ -262,7 +252,6 @@ extern int ai_ClickedObject;
 
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
 extern int di_Absolute;
@@ -284,7 +273,6 @@ extern unsigned char kb_Last;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 
 
 #define U_I(a) (*(int *)(a))
@@ -307,7 +295,6 @@ struct SBSAMPLE;
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 extern TUTSTATE *const ai_Tutorial;
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -1117,7 +1104,7 @@ void ai_RentGraveDetail(int *w)
     d2_Wins[w[2]].scrollY = saved;
     d2_SetForm(w[0], 5);
     io_PrintText("$C");
-    txt_Format(buf, "%1N3", ai_CharsT[ai_PlayerId].id);
+    txt_Format(buf, "%1N3", ai_Chars[ai_PlayerId].id);
     io_PrintText("$7<$R%s$0<$4>$L%s$A$0>", 0x4101, buf);
     txt_Format(buf, "AD %i", e->until + 0x578);
     io_PrintText("$7<$R%s$0<$4>$L%s$A$0>", 0x4102, buf);
@@ -1313,8 +1300,8 @@ int ai_GraveMoveConfirm(AIBLD *rec, int from, unsigned char entry, int to)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == yes) {
-                if (cost == 0 || sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
-                    h = gv_OrderMoveGrave((int *)ai_Chars[ai_PlayerId], to, (char *)rec, from, entry, cost);
+                if (cost == 0 || sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
+                    h = gv_OrderMoveGrave((int *)&ai_Chars[ai_PlayerId], to, (char *)rec, from, entry, cost);
                     while (h != -1 && cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);
                     sv_FrameMask = 0x677c7;
@@ -1452,7 +1439,7 @@ int ai_GraveRentConfirm(AIBLD *rec, int size)
     if (rec->owner == ai_PlayerId)
         cost = 0;
     else
-        cost = gv_LeasePrice((unsigned short *)ai_Chars[ai_PlayerId], 0xff, size, 1, &share);
+        cost = gv_LeasePrice((unsigned short *)&ai_Chars[ai_PlayerId], 0xff, size, 1, &share);
     win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -1473,8 +1460,8 @@ int ai_GraveRentConfirm(AIBLD *rec, int size)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == yes) {
-                if (cost == 0 || sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
-                    h = gv_OrderReserveGrave((int *)ai_Chars[ai_PlayerId], (char *)rec, size, 10, cost);
+                if (cost == 0 || sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
+                    h = gv_OrderReserveGrave((int *)&ai_Chars[ai_PlayerId], (char *)rec, size, 10, cost);
                     while (h != -1 && cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);
                     sv_FrameMask = 0x677c7;
@@ -1595,8 +1582,8 @@ int ai_GraveCare(AIBLD *rec, GVPICK *pick)
             if (d2_PointerObj == yes) {
                 c = 0;
                 for (i = 0; i < 0x300; i++) {
-                    if (ai_CharsT[i].selected) {
-                        c = &ai_CharsT[i];
+                    if (ai_Chars[i].selected) {
+                        c = &ai_Chars[i];
                         break;
                     }
                 }
@@ -1606,7 +1593,7 @@ int ai_GraveCare(AIBLD *rec, GVPICK *pick)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x8d;
                     msg.flags = 1;
-                    msg.to = ai_CharsT[rec->owner].netId;
+                    msg.to = ai_Chars[rec->owner].netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.graveWork.size = pick->size;
@@ -1845,14 +1832,14 @@ void ai_GypsyHelperWindow(AIBLD *rec)
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x8c;
                 msg.flags = 1;
-                msg.to = ai_CharsT[rec->owner].netId;
+                msg.to = ai_Chars[rec->owner].netId;
                 msg.fromId = rec->id;
                 msg.time = ai_Time;
                 msg.itemId = kinds[sel];
                 k = 0;
                 for (j = 0; j < 0x300 && k < 4; j++) {
-                    if (ai_CharsT[j].selected)
-                        msg.ids[k++] = ai_CharsT[j].netId;
+                    if (ai_Chars[j].selected)
+                        msg.ids[k++] = ai_Chars[j].netId;
                 }
                 for (j = k; j < 4; j += 2)
                     msg.ids[j] = -1;
@@ -1951,11 +1938,11 @@ void ai_GraveFogWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnOrder) {
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], cost) == 1) {
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], cost) == 1) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x90;
                     msg.flags = 2;
-                    msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[ai_PlayerId])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[1] = d2_GetObjValue(factor1);
@@ -2010,7 +1997,7 @@ int ai_SeanceWindow(char *unused, GVDETAILWIN *w, GVSEANCE *out)
     cost[2] = 8;
     out->graveId = w->items[w->selected].grave->id;
     out->grave = *w->items[w->selected].grave;
-    if (ai_CharsT[ai_PlayerId].flags1cc & 8) {
+    if (ai_Chars[ai_PlayerId].flags1cc & 8) {
         sv_MessageBoxGreen(txt_Ptrs[0x40cc], txt_Ptrs[0x40cd], 0);
         return 0;
     }
@@ -2035,11 +2022,11 @@ int ai_SeanceWindow(char *unused, GVDETAILWIN *w, GVSEANCE *out)
                 sv_PopRequest = 1;
             } else {
                 if (d2_PointerObj == btn1)
-                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 4);
+                    kind = sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 4);
                 else if (d2_PointerObj == btn2)
-                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 6) * 2;
+                    kind = sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 6) * 2;
                 else if (d2_PointerObj == btn3)
-                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 8) * 3;
+                    kind = sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 8) * 3;
                 else
                     continue;
                 if (kind != 0) {
@@ -2088,9 +2075,9 @@ int ai_SeanceRitual(char *ch, GVSEANCE *ev)
     script = (int)evt_Load("LOCATIONS\\KRYPTA\\SEANCE_KRYPTA.esc");
     if (script != 0) {
         GVGRAVE *g = &ev->grave;
-        name1 = (char *)gm_NameRecord(ai_CharsT[ai_PlayerId].sex, ai_CharsT[ai_PlayerId].jobId);
+        name1 = (char *)gm_NameRecord(ai_Chars[ai_PlayerId].sex, ai_Chars[ai_PlayerId].jobId);
         if (name1 == 0)
-            gm_NameRecord(ai_CharsT[ai_PlayerId].sex, 0);   /* @original drops the result: name1 stays 0 */
+            gm_NameRecord(ai_Chars[ai_PlayerId].sex, 0);   /* @original drops the result: name1 stays 0 */
         name2 = (char *)gm_NameRecord(g->sex, g->nameId);
         if (name2 == 0)
             name2 = (char *)gm_NameRecord(g->sex, 0);
@@ -2185,7 +2172,7 @@ void ai_SeanceGhost(AIBLD *rec, GVSEANCE *ev)
 
     snd_VoiceVariant(ev->grave.id, ev->grave.sex);
     script = ai_SeanceRitual((char *)rec, ev);
-    accuser = (AICHAR *)gv_FindAccused(ai_Chars[ai_PlayerId], 4, ids, &cnt);
+    accuser = (AICHAR *)gv_FindAccused((char *)&ai_Chars[ai_PlayerId], 4, ids, &cnt);
     mode = accuser == 0;
     f = gv_SeanceChance((char *)rec);
     if (util_RandomF() + f - 0.1f < 1.0f)
@@ -2200,14 +2187,14 @@ void ai_SeanceGhost(AIBLD *rec, GVSEANCE *ev)
     voice = snd_VoiceVariant(ev->grave.id, ev->grave.sex);
     if (mode == 0) {
         for (i = 0; i < cnt; i++)
-            cm_SendProofExecuted(ids[i], ai_CharsT[ai_PlayerId].netId);
-        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 1);
+            cm_SendProofExecuted(ids[i], ai_Chars[ai_PlayerId].netId);
+        he_SetLifeByAge(&ai_Chars[ai_PlayerId], 1);
         io_PrintText(0x40ef, 0x40cc, accuser->id);
         snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8), 0xfa);
     } else if (mode == 1) {
         r = util_Random(0x200);
         n = (r + 0x200) << 5;
-        cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
+        cm_SendMoveGoods(ai_Chars[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
         io_PrintText(0x40f0, 0x40cc, n);
         snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8), 0xfa);
     } else {
@@ -2248,16 +2235,16 @@ void ai_SeanceSacrifice(AIBLD *rec, GVSEANCE *ev)
         mode = 2;
     } else {
         amount = min(max((int)(gm_GetWorth(ai_PlayerId) * 0.25f), 0x27100), 0xc3500);
-        cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, amount);
+        cm_SendMoveGoods(ai_Chars[ai_PlayerId].netId, -1, ai_OwnPlayer, amount);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x8e;
-        msg.to = ai_CharsT[ai_PlayerId].netId;
+        msg.to = ai_Chars[ai_PlayerId].netId;
         msg.fromId = rec->id;
         msg.time = ai_Time;
         msg.flags = 1;
         msg.arg[0] = amount;
         cm_SendLongMessage((char *)&msg);
-        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 3);
+        he_SetLifeByAge(&ai_Chars[ai_PlayerId], 3);
     }
     win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
@@ -2325,7 +2312,7 @@ void ai_SeanceGift(AIBLD *rec, GVSEANCE *ev)
     gifts[12].item = 0x2c0;
     gifts[13].item = 0x2be;
     gifts[14].item = 0x2b9;
-    ai_FindWantedItems((struct G5CH *)ai_Chars[ai_PlayerId], 0xf, gifts, st);
+    ai_FindWantedItems((struct G5CH *)&ai_Chars[ai_PlayerId], 0xf, gifts, st);
     if ((st[0] == 6 && st[2] == 0) || st[1] == 0xf) {
         mode = 1;
     } else {
@@ -2346,14 +2333,14 @@ void ai_SeanceGift(AIBLD *rec, GVSEANCE *ev)
     d2_ClickedId = -1;
     d2_SetForm(win, 1);
     if (mode == 0) {
-        cm_SendExSellObject(ai_CharsT[ai_PlayerId].netId, -1, item, 1, ai_OwnPlayer, 0);
-        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 2);
+        cm_SendExSellObject(ai_Chars[ai_PlayerId].netId, -1, item, 1, ai_OwnPlayer, 0);
+        he_SetLifeByAge(&ai_Chars[ai_PlayerId], 2);
         io_PrintText(0x40f2, 0x40cc, item * 2 + 0x9a8);
         snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8));
     } else if (mode == 1) {
         r = util_Random(0x400);
         n = (r + 1000) << 5;
-        cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
+        cm_SendMoveGoods(ai_Chars[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
         io_PrintText(0x40f3, 0x40cc, n);
         snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8));
     } else {
@@ -2418,7 +2405,7 @@ void ai_GraveSeance(AIBLD *rec)
     char line[0x100];
     GVENTRY *e;
 
-    e = (GVENTRY *)gv_FindEntry(ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
+    e = (GVENTRY *)gv_FindEntry((char *)&ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
     if (e != 0) {
         w.entry = e;
         w.size = e->size;
@@ -2431,9 +2418,9 @@ void ai_GraveSeance(AIBLD *rec)
         e = (GVENTRY *)ai_SeancePick((char *)rec, &w, &out);
         d2_CloseView(w.win);
         if (e != 0) {
-            cm_SendSetField(((AICHAR *)ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, SEANCE_HELD, 0);
+            cm_SendSetField(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, SEANCE_HELD, 0);
             if (out.cost != 0)
-                gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -out.cost);
+                gm_SendMoneyDelta(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, -out.cost);
             switch (out.kind) {
             case 1:
                 ai_SeanceGhost(rec, &out);
@@ -2610,12 +2597,12 @@ void ai_GraveHauntContact(AIBLD *rec)
             if (d2_PointerObj == btnPay) {
                 poor = 0;
                 n = d2_GetObjValue(slider);
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], n) == 0)
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], n) == 0)
                     poor = 1;
                 f = 0;
                 for (i = 0; i < 0x300; i++) {
-                    if (ai_CharsT[i].selected) {
-                        f = &ai_CharsT[i];
+                    if (ai_Chars[i].selected) {
+                        f = &ai_Chars[i];
                         break;
                     }
                 }
@@ -2626,7 +2613,7 @@ void ai_GraveHauntContact(AIBLD *rec)
                     msg.type = 0x88;
                     msg.flags = 2;
                     msg.arg[3] = n;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[1] = p->netId;
@@ -2642,7 +2629,7 @@ void ai_GraveHauntContact(AIBLD *rec)
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
-                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                         msg.arg[0] = pick;
                     }
                     id = cm_SendLongMessage((char *)&msg);
@@ -2718,11 +2705,11 @@ void ai_GraveAgeContact(AIBLD *rec)
             if (d2_PointerObj == btnPay) {
                 poor = 0;
                 f = 0;
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], 4) == 0)
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 4) == 0)
                     poor = 1;
                 for (i = 0; i < 0x300; i++) {
-                    if (ai_CharsT[i].selected) {
-                        f = &ai_CharsT[i];
+                    if (ai_Chars[i].selected) {
+                        f = &ai_Chars[i];
                         break;
                     }
                 }
@@ -2734,7 +2721,7 @@ void ai_GraveAgeContact(AIBLD *rec)
                         msg.type = 0x89;
                         msg.flags = 1;
                         msg.arg[3] = 4;
-                        msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                        msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                         msg.fromId = rec->id;
                         msg.time = ai_Time;
                         msg.arg[2] = f->netId;
@@ -2750,7 +2737,7 @@ void ai_GraveAgeContact(AIBLD *rec)
                             mask.LowPart = 0x7b4c4a0;
                             mask.HighPart = 0;
                             pick = -1;
-                            ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                            ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                             msg.arg[0] = pick;
                         }
                         id = cm_SendLongMessage((char *)&msg);
@@ -2795,7 +2782,7 @@ void ai_GraveRentContact(AIBLD *rec)
     GVDETAILWIN w;
     char line[0x100];
 
-    e = (GVENTRY *)gv_FindEntry(ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
+    e = (GVENTRY *)gv_FindEntry((char *)&ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
     if (e != 0) {
         w.entry = e;
         w.size = e->size;
@@ -2806,7 +2793,7 @@ void ai_GraveRentContact(AIBLD *rec)
         ai_GraveDetailButtons((char *)rec, (int *)&w);
         d2_CloseView(w.win);
         sv_CameraFollow();
-    } else if (gv_FindReservedEntry(ai_Chars[ai_PlayerId], &bld, (int *)&e) == 0) {
+    } else if (gv_FindReservedEntry((char *)&ai_Chars[ai_PlayerId], &bld, (int *)&e) == 0) {
         ai_RentGraveSelect((char *)rec);
         sv_CameraFollow();
     } else {
@@ -2871,8 +2858,8 @@ void ai_GraveInsuranceContact(AIBLD *rec)
             if (d2_PointerObj == btnTake) {
                 f = 0;
                 for (i = 0; i < 0x300; i++) {
-                    if (ai_CharsT[i].selected) {
-                        f = &ai_CharsT[i];
+                    if (ai_Chars[i].selected) {
+                        f = &ai_Chars[i];
                         break;
                     }
                 }
@@ -2882,7 +2869,7 @@ void ai_GraveInsuranceContact(AIBLD *rec)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x8a;
                     msg.flags = 1;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[0] = f->netId;
@@ -2974,7 +2961,7 @@ int ai_UpgradeWorkerSend(AIBLD *rec, AICHAR *ch, int sel)
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x8f;
         msg.flags = 1;
-        msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
+        msg.to = ((AICHAR *)&ai_Chars[ai_PlayerId])->netId;
         msg.fromId = rec->id;
         msg.time = ai_Time;
         if (obj != 0)
@@ -3045,8 +3032,8 @@ void ai_UpgradeWorkerWindow(AIBLD *rec)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         for (i = 0; i < 0x300; i++) {
-            if (ai_CharsT[i].selected) {
-                f = &ai_CharsT[i];
+            if (ai_Chars[i].selected) {
+                f = &ai_Chars[i];
                 break;
             }
         }

@@ -27,7 +27,6 @@
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
-#define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
     unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
@@ -167,7 +166,7 @@ int gv_OnDecisionValue(GVDECMSG *p)
     if (gv_GetTableRecord(p->rec, (int *)&rec) == 0)
         return 0;
     gv_Decisions[p->rec].cur = p->value;
-    if (gv_CharsT[ai_PlayerId].netId != p->id) {
+    if (ai_Chars[ai_PlayerId].netId != p->id) {
         c = gm_FindChar(p->id);
         if (c != 0) {
             gv_TableRecordText(buf, p->rec);
@@ -739,8 +738,8 @@ int gv_RetireCrime(int id, int force)
     ord_SubGridAmount(gv_CrimesT[k].place, gv_CrimesT[k].law);
     for (i = 0; i < 0x800; i++) {
         if (id == ai_Evidence[i][1]) {
-            if (ai_PlayerId != 0xffff && ai_Evidence[i][0] == gv_CharsT[ai_PlayerId].netId && culprit != 0 && force == 0) {
-                ai_ShowEvidenceVoidNews((unsigned short *)&gv_CharsT[ai_PlayerId], (unsigned short *)culprit);
+            if (ai_PlayerId != 0xffff && ai_Evidence[i][0] == ai_Chars[ai_PlayerId].netId && culprit != 0 && force == 0) {
+                ai_ShowEvidenceVoidNews((unsigned short *)&ai_Chars[ai_PlayerId], (unsigned short *)culprit);
                         }
             ai_Evidence[i][0] = -1;
             ai_Evidence[i][1] = -1;
@@ -1322,12 +1321,12 @@ void gv_PassSentence(AICHAR *c, int a, AICHAR *judge, AICHAR *assessor1, AICHAR 
         party.members[2] = ai_JudgeProtestant->netId;
         i = 3;
         for (k = 0; i < 0x10 && k < 768; k++) {
-            if (c->netId != gv_CharsT[k].netId
-                && (gv_CharsT[k].kind == 6 || gv_CharsT[k].kind == 7 || gv_CharsT[k].kind == 5))
-                party.members[i++] = gv_CharsT[k].netId;
+            if (c->netId != ai_Chars[k].netId
+                && (ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7 || ai_Chars[k].kind == 5))
+                party.members[i++] = ai_Chars[k].netId;
         }
         party.used = (unsigned char)i;
-        party.host = gv_CharsT[ai_PlayerId].netId;
+        party.host = ai_Chars[ai_PlayerId].netId;
         party.thing = -1;
         party.time = ai_Time;
         gm_AddTime((struct AITIME *)&party.time, 0x18, 0, 0);
@@ -1381,7 +1380,7 @@ void gv_CheckRankUp(unsigned i)
     char text[0x200];
     AIMSG m;
 
-    c = &gv_CharsT[(unsigned short)i];
+    c = &ai_Chars[(unsigned short)i];
     if (c->id == 0xffff || c->kind >= 10 || c->health == 0 || c->kind == 0)
         return;
     worth = gm_GetWorth(i);
@@ -1427,10 +1426,10 @@ void gv_CheckRankUp(unsigned i)
         for (k = 0; k < 768; k++) {
             if (n >= ai_NumPlayers)
                 return;
-            if ((gv_CharsT[k].kind == 6 || gv_CharsT[k].kind == 7) && &gv_CharsT[k] != c) {
+            if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && &ai_Chars[k] != c) {
                 AI_ZERO(&m, sizeof(m));
                 m.type = 0x69;
-                m.to = gv_CharsT[k].netId;
+                m.to = ai_Chars[k].netId;
                 m.fromId = -1;
                 m.flags = 9;
                 m.time = ai_Time;

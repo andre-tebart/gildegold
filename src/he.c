@@ -599,7 +599,6 @@ int he_RegisterEventTypeA2();
 #include "mission.h"
 #include "rmsg.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it (the headers declare it unsigned short): @original he_RunInnSim reads the full int result (util_Random(4) + 3, no 16-bit mask); every other caller of this unit reads 16 bits */
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -1216,7 +1215,7 @@ void he_AllocNone(unsigned char *ev)
     AIJOB *e = (AIJOB *)ev;
     char buf[256];
 
-    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, ai_CharsT[e->chr].name);
+    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, ai_Chars[e->chr].name);
 }
 /* 0x53d470, the run handler of an event of an unknown type (debug text only) */
 
@@ -1225,7 +1224,7 @@ void he_RunNone(unsigned char *ev)
     AIJOB *e = (AIJOB *)ev;
     char buf[256];
 
-    sprintf(buf, "he_RunNone(): Invalid HE-Type : %i, von Spieler %s", *ev, ai_CharsT[e->chr].name);
+    sprintf(buf, "he_RunNone(): Invalid HE-Type : %i, von Spieler %s", *ev, ai_Chars[e->chr].name);
 }
 /* 0x53d4b0, the init of the event module: registers the alloc / run handlers of the types 0 and 1, runs the init of the other event modules (0x553060 .. 0x573260; non 0 = failed) and clears the tables */
 
@@ -2125,9 +2124,9 @@ void he_RecheckEventPerson(unsigned char *r)
 
     if (us == 0xffff)
         return;
-    if (ai_CharsT[us].netId != ev->netId || ai_CharsT[us].kind == 0xf)
+    if (ai_Chars[us].netId != ev->netId || ai_Chars[us].kind == 0xf)
         goto reset;
-    if (ai_CharsT[us].health > 0)
+    if (ai_Chars[us].health > 0)
         return;
     switch ((unsigned char)ev->kind) {
     case 0x16: case 0x18: case 0x19: case 0x1a: case 0x2d: case 0x2e: case 0x2f: case 0x35:
@@ -2469,16 +2468,16 @@ void he_TopUpCharMoney(void)
         level = (ai_Difficulty * 5 + 0x14) * 0x640;
         n = 0;
         for (i = 0; i < 768; i++) {
-            if (ai_CharsT[i].kind == 5) {
-                have = gm_GetGoodsValue((char *)&ai_CharsT[i]);
+            if (ai_Chars[i].kind == 5) {
+                have = gm_GetGoodsValue((char *)&ai_Chars[i]);
                 if (have < level) {
-                    slot = cm_SendMoveGoods(ai_CharsT[i].netId, -1, ai_OwnPlayer, level - have);
+                    slot = cm_SendMoveGoods(ai_Chars[i].netId, -1, ai_OwnPlayer, level - have);
                     n++;
                 }
-            } else if (ai_CharsT[i].kind == 4 || (ai_CharsT[i].kind == 2 && ai_Time.year % 4 == (int)(ai_CharsT[i].netId & 3))) {
-                have = gm_GetGoodsValue((char *)&ai_CharsT[i]);
+            } else if (ai_Chars[i].kind == 4 || (ai_Chars[i].kind == 2 && ai_Time.year % 4 == (int)(ai_Chars[i].netId & 3))) {
+                have = gm_GetGoodsValue((char *)&ai_Chars[i]);
                 if (have < level) {
-                    slot = cm_SendMoveGoods(ai_CharsT[i].netId, -1, ai_OwnPlayer, level - have);
+                    slot = cm_SendMoveGoods(ai_Chars[i].netId, -1, ai_OwnPlayer, level - have);
                     n++;
                 }
             }
@@ -2590,7 +2589,7 @@ void he_SpawnFounders(void)
                 if (b->owner == 0xffff || b->owner == *ai_PlayerChar)
                     own[bt->kind]++;
                 else if (bt->kind == 7) {
-                    if (ai_CharsT[b->owner].b00c == 0)
+                    if (ai_Chars[b->owner].b00c == 0)
                         n7a++;
                     else
                         n7b++;
@@ -3039,15 +3038,15 @@ void he_InnReport(void)
         if (owner != 0xffff && (b->flags5a & 1) == 0) {
             none = 0;
             noneW = 0;
-            if ((ai_CharsT[owner].kind == 6 || ai_CharsT[owner].kind == 7) && b->inn.guests > 0) {
+            if ((ai_Chars[owner].kind == 6 || ai_Chars[owner].kind == 7) && b->inn.guests > 0) {
                 served = b->inn.served;
                 guests = b->inn.guests;
                 if ((double)served / guests < 0.5) {
                     txt_Format(buf1, 0x18a1, b, guests, b->inn.takings);
-                    he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, -1, buf1, 0, 0x5fc, b->id, -1, 0, "_NACHRICHTEN_HS_82");
+                    he_MessageBoxQuickjump(ai_Chars[b->owner].netId, -1, buf1, 0, 0x5fc, b->id, -1, 0, "_NACHRICHTEN_HS_82");
                 } else {
                     txt_Format(buf2, 0x18a2, b, guests, b->inn.takings);
-                    he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, -1, buf2, 0, 0x5fc, b->id, -1, 0, ch_EmptyName);
+                    he_MessageBoxQuickjump(ai_Chars[b->owner].netId, -1, buf2, 0, 0x5fc, b->id, -1, 0, ch_EmptyName);
                 }
             }
             cm_BeginFieldBlock((char *)b, b->id);
@@ -3080,7 +3079,7 @@ void he_PostEvent3a(void)
     m.type = 0x3a;
     m.fromId = -1;
     m.flags = 1;
-    m.to = ai_CharsT[ai_PlayerId].netId;
+    m.to = ai_Chars[ai_PlayerId].netId;
     cm_SendLongMessage((char *)&m);
 }
 /* 0x541060, posts the message 0x3b (now, from -1, flag 1) to the player's character, after freeing a running event 0x3b */
@@ -3096,7 +3095,7 @@ void he_PostEvent3b(void)
     m.type = 0x3b;
     m.fromId = -1;
     m.flags = 1;
-    m.to = ai_CharsT[ai_PlayerId].netId;
+    m.to = ai_Chars[ai_PlayerId].netId;
     m.time = ai_Time;
     cm_SendLongMessage((char *)&m);
 }
@@ -3131,7 +3130,7 @@ void he_PostEventA6(void)
     m.type = 0xa6;
     m.fromId = -1;
     m.flags = 1;
-    m.to = ai_CharsT[ai_PlayerId].netId;
+    m.to = ai_Chars[ai_PlayerId].netId;
     m.time = ai_Time;
     cm_SendLongMessage((char *)&m);
 }
@@ -3376,7 +3375,7 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
     int i, j, k, amt;
 
     n = 0;
-    boss = &ai_CharsT[inn->owner];
+    boss = &ai_Chars[inn->owner];
     seat = table->seats;
     for (i = 4; i != 0; i--, seat++) {
         pm = (AICHAR *)gm_FindChar(*seat);
@@ -3465,7 +3464,7 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
         if (n == 4) {
             txt_Format(big, 0x1899, inn);
             for (i = 0; i < 768; i++) {
-                c = &ai_CharsT[i];
+                c = &ai_Chars[i];
                 if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId) {
                     for (k = 0; k < 4; k++) {
                         if (c->netId == mem[k]->netId)
@@ -3480,7 +3479,7 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
     case 'new ':
         txt_Format(big, 0x1898, inn);
         for (i = 0; i < 768; i++) {
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId)
                 he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
         }
@@ -3531,7 +3530,7 @@ void he_RunStammtisch(int r)
         cm_SendExSetHE(-1, r);
         return;
     }
-    if (bld->owner != 0xffff && (boss = &ai_CharsT[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
+    if (bld->owner != 0xffff && (boss = &ai_Chars[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
         && boss->kind != 0xf) {
         if (m->state == 1) {
             he_StammtischCommand('new ', bld, table, -1);
@@ -3644,7 +3643,7 @@ void he_RunTavern(int r)
     t = (HETAVERNOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
     switch (e->stage) {
     case 0:
-        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+        if (ai_Chars[bld->owner].kind == 6 || ai_Chars[bld->owner].kind == 7) {
             if (t != 0 && t->hired != 0) {
                 gm_AddTime(&e->end, 1, 0, 0);
                 e->exSlot = cm_SendExSetHE(1, r);
@@ -3655,7 +3654,7 @@ void he_RunTavern(int r)
             }
         } else {
             if (t != 0) {
-                if (ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
+                if (ai_ChooseObjectTarget(&ai_Chars[bld->owner], t) != 0) {
                     gm_AddTime(&e->end, 1, 0, 0);
                     e->exSlot = cm_SendExSetHE(1, r);
                 } else {
@@ -3687,7 +3686,7 @@ void he_RunTavern(int r)
             helper = (AICHAR *)gm_FindChar(t->helperId);
             if (helper != 0) {
                 out[2] = (int)helper;
-                ai_ShowTavernHelperNews((char *)&ai_CharsT[bld->owner], (char *)helper, (int)bld);
+                ai_ShowTavernHelperNews((char *)&ai_Chars[bld->owner], (char *)helper, (int)bld);
             }
             cm_BeginFieldBlock((char *)t, t->objId);
             cm_AddFieldDelta(1, 1, 0x22, &no);
@@ -3696,11 +3695,11 @@ void he_RunTavern(int r)
             cm_AddFieldDelta(4, 1, 0x1e, &noId);
             cm_SendFieldDeltas();
             if (gm_HandOutMoney(bld, out) != 0) {
-                if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+                if (ai_Chars[bld->owner].kind == 6 || ai_Chars[bld->owner].kind == 7) {
                     txt_Format(buf, 0x19a7, out[0], out[1]);
-                    he_ShowNews(ai_CharsT[bld->owner].netId, -1, buf, 0, 0x5ff, ch_EmptyName);
+                    he_ShowNews(ai_Chars[bld->owner].netId, -1, buf, 0, 0x5ff, ch_EmptyName);
                 }
-                cm_SendMoveGoods(ai_CharsT[bld->owner].netId, -1, ai_OwnPlayer, out[1]);
+                cm_SendMoveGoods(ai_Chars[bld->owner].netId, -1, ai_OwnPlayer, out[1]);
                 cm_BeginFieldBlock((char *)bld, bld->id);
                 cm_AddFieldDelta(4, 1, 0x69, &out[1]);
                 cm_SendFieldDeltas();
@@ -3844,7 +3843,7 @@ void he_RunWeddingOffer(int r)
         m.kind = 2;
         m.flags = 0xa2;
         m.thing = -1;
-        m.host = ai_CharsT[ai_PlayerId].netId;
+        m.host = ai_Chars[ai_PlayerId].netId;
         m.time = ai_Time;
         gm_AddTime(&m.time, 0, 0x2d, 0);
         cm_SendNewParty(&m);
@@ -4090,7 +4089,7 @@ void he_RunFeast(int ev)
 
         MEM_ZERO(&g, 4);
         n = 0;
-        g.leader = (struct AIC4 *)&ai_CharsT[e->chr];
+        g.leader = (struct AIC4 *)&ai_Chars[e->chr];
         if (table != 0) {
             g.essen = table->festEssen;
             g.musik = table->festMusik;
@@ -4170,7 +4169,7 @@ void he_RunFeastExam(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        master = &ai_CharsT[bld->owner];
+        master = &ai_Chars[bld->owner];
         if (master == 0) {
             if (e->slot != 0)
                 he_ReleaseSlot(ev);
@@ -4185,7 +4184,7 @@ void he_RunFeastExam(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        master = &ai_CharsT[feast->chr];
+        master = &ai_Chars[feast->chr];
         if (master == 0) {
             if (e->slot != 0)
                 he_ReleaseSlot(ev);
@@ -4196,7 +4195,7 @@ void he_RunFeastExam(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    cand = &ai_CharsT[e->chr];
+    cand = &ai_Chars[e->chr];
     if (cand->kind != 6 && cand->kind != 7)
         e->stage = 2;
     switch (e->stage) {
@@ -4338,7 +4337,7 @@ void he_AllocTribute(int ev)
         if (n > 4) {
             e->end = ai_Time;
             e->exSlot = cm_SendExSetHE(-1, ev);
-            ai_ShowTributeDelayedNews((int)&ai_CharsT[e->chr]);
+            ai_ShowTributeDelayedNews((int)&ai_Chars[e->chr]);
             return;
         }
     }
@@ -4347,16 +4346,16 @@ void he_AllocTribute(int ev)
     e->tributeEnd = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
     gm_AddTime(&e->tributeEnd, 0x18, 0, 0);
-    gm_SendMoneyDelta(ai_CharsT[e->chr].netId, -1);
-    gv_Accuse(3, 1, ai_CharsT[e->chr].netId, e->idbc, ai_CharsT[e->chr].bld2 != 0 ? ai_CharsT[e->chr].bld2->id : -1);
+    gm_SendMoneyDelta(ai_Chars[e->chr].netId, -1);
+    gv_Accuse(3, 1, ai_Chars[e->chr].netId, e->idbc, ai_Chars[e->chr].bld2 != 0 ? ai_Chars[e->chr].bld2->id : -1);
     e->tributeNext = util_Random(0x300);
     e->tributeStride = ai_CharWalkSteps[util_Random(0x10)];
-    e->tributeSkill = gm_GetSkill((char *)&ai_CharsT[e->chr], 4);
+    e->tributeSkill = gm_GetSkill((char *)&ai_Chars[e->chr], 4);
     e->tributeLeft = 0x300;
     if (ai_InventoryHas(coll, 0x15c) != 0) {
         e->end = ai_Time;
         e->exSlot = cm_SendExSetHE(-1, ev);
-        ai_ShowTributeClaimNews((int)coll, (int)&ai_CharsT[e->chr]);
+        ai_ShowTributeClaimNews((int)coll, (int)&ai_Chars[e->chr]);
         return;
     }
     ai_ShowTributeCollectNews((int)coll);
@@ -4400,11 +4399,11 @@ void he_RunTribute(int ev)
     left = e->tributeLeft;
     next = e->tributeNext;
     for (i = 0; left != 0 && i < 0x10; i++, left = --e->tributeLeft, next = (e->tributeStride + next) % 0x300) {
-        if (ai_CharsT[next].id != 0xffff && ai_CharsT[next].netId != e->idbc && ai_CharsT[next].kind < 10
-            && ai_CharsT[next].health > 0) {
-            f = -gm_Mix2(e->tributeSkill, gm_GetSkill((char *)&ai_CharsT[next], 4));
+        if (ai_Chars[next].id != 0xffff && ai_Chars[next].netId != e->idbc && ai_Chars[next].kind < 10
+            && ai_Chars[next].health > 0) {
+            f = -gm_Mix2(e->tributeSkill, gm_GetSkill((char *)&ai_Chars[next], 4));
             delta = (int)(f * 10.0f + 1.0f) * mul;
-            cm_SendRelations(e->idbc, ai_CharsT[next].netId, delta, 1);
+            cm_SendRelations(e->idbc, ai_Chars[next].netId, delta, 1);
         }
     }
     e->tributeNext = next;
@@ -4704,7 +4703,7 @@ void he_RunCourtship(int ev)
                 MEM_ZERO(&party, sizeof(party));
                 party.members[0] = a->netId;
                 party.members[1] = b->netId;
-                party.host = ai_CharsT[ai_PlayerId].netId;
+                party.host = ai_Chars[ai_PlayerId].netId;
                 party.kind = 6;
                 party.flags = 0xb2;
                 party.thing = -1;
@@ -5135,8 +5134,8 @@ void he_RunRaid(int ev)
         if ((e->opts & 2) == 0)
             return;
         b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
-        c = &ai_CharsT[b->owner];
-        raider = &ai_CharsT[e->chr];
+        c = &ai_Chars[b->owner];
+        raider = &ai_Chars[e->chr];
         defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
         home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
         o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
@@ -5163,8 +5162,8 @@ void he_RunRaid(int ev)
             }
             n = 0;
             for (i = 0; i < 768 && n < 16 && n < 6; i++) {
-                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
-                    party.raid.defenders[n] = ai_CharsT[i].netId;
+                if (ai_Chars[i].health != 0 && ai_Chars[i].bld == b) {
+                    party.raid.defenders[n] = ai_Chars[i].netId;
                     n++;
                 }
             }
@@ -5192,7 +5191,7 @@ void he_RunRaid(int ev)
             role = cm_FightRole(gm_BuildQuery(1, 1, e->raidStart)) + 0x1125;
             txt_Format(text, 0x114b, role, b->owner, b, role);
             he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
-            if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+            if (ai_Chars[b->owner].kind == 6 || ai_Chars[b->owner].kind == 7) {
                 txt_Format(text, 0x1c56, b);
                 he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
             }
@@ -5201,12 +5200,12 @@ void he_RunRaid(int ev)
         }
         home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
         b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
-        loot = cm_LootStock(b, home, &ai_CharsT[e->chr], &ai_CharsT[b->owner]);
-        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+        loot = cm_LootStock(b, home, &ai_Chars[e->chr], &ai_Chars[b->owner]);
+        if (ai_Chars[b->owner].kind == 6 || ai_Chars[b->owner].kind == 7) {
             txt_Format(text, 0x1c54, b, loot);
             he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
         }
-        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+        if (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) {
             txt_Format(text, 0x1c55, b->owner, b, loot);
             he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
         }
@@ -5910,7 +5909,7 @@ void he_RunCharPayouts(int ev)
     kinds.s.hi = 0;
     bld = 0;
     for (i = 0; i < 0x300; i++) {
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->id != 0xffff && c->health >= 2 && (c->kind == 6 || c->kind == 7 || c->kind == 5)) {
             if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.q, 0, 100.0f, &at) != 0)
                 gm_FindById(&bld, 0, 0, at);
@@ -6083,7 +6082,7 @@ void he_RunPayment(int ev)
         return;
     }
     r = util_Random(0x100);
-    if (r < ai_CharsT[e->chr].skills[0] * 0.5 + 64.0) {
+    if (r < ai_Chars[e->chr].skills[0] * 0.5 + 64.0) {
         txt_Format(text, 0x10b5, p->amount * 2);
         he_ShowNews(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ff, (char *)0);
         cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, p->amount * 2);
@@ -6162,7 +6161,7 @@ void he_RunStoreSale(int ev)
             }
         }
     }
-    if (ai_CharsT[e->chr].kind == 6 && total != 0) {
+    if (ai_Chars[e->chr].kind == 6 && total != 0) {
         txt_Format(text, 0x10b7, b, total);
         he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
     }
@@ -6205,7 +6204,7 @@ void he_RunBuildingDecay(int ev)
     b = sel[util_Random(n)];
     if (b != 0)
         gm_ChangeBuildingState((unsigned char *)b, -50);
-    if (ai_CharsT[e->chr].kind == 6) {
+    if (ai_Chars[e->chr].kind == 6) {
         txt_Format(text, 0x10b8, b);
         he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
     }
@@ -6333,7 +6332,7 @@ void he_RunOffspring(int ev)
     int i, n;
     float f, odds;
 
-    c = &ai_CharsT[e->chr];
+    c = &ai_Chars[e->chr];
     partner = (AICHAR *)gm_FindChar(c->relatives[0]);
     if (partner == 0 || partner->health == 0 || c->health == 0 || e->stage == -2) {
         he_FreeEvent((int *)ev);
@@ -6443,7 +6442,7 @@ void he_RunTrialEvent(int ev)
     e->exSlot = -1;
     switch (e->stage) {
     case 0:
-        c = &ai_CharsT[e->chr];
+        c = &ai_Chars[e->chr];
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
@@ -6457,7 +6456,7 @@ void he_RunTrialEvent(int ev)
         he_AddApEvent(teacher->id, text, 0, -t->cost);
         return;
     case 1:
-        c = &ai_CharsT[e->chr];
+        c = &ai_Chars[e->chr];
         gm_JobSlots(gm_TitleGroup(t->job), &skillA, &skillB);
         cm_BeginFieldBlock((char *)c, c->netId);
         raise = (unsigned char)(util_Random(0x10) + 0x10);
@@ -6529,7 +6528,7 @@ void he_RunTrialSteps(int ev)
     e->exSlot = -1;
     switch (e->stage) {
     case 0:
-        c = &ai_CharsT[e->chr];
+        c = &ai_Chars[e->chr];
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
@@ -6545,7 +6544,7 @@ void he_RunTrialSteps(int ev)
         he_AddApEvent(teacher->id, text, 0, -t->cost);
         return;
     case 1:
-        c = &ai_CharsT[e->chr];
+        c = &ai_Chars[e->chr];
         teacher = (AICHAR *)gm_FindChar(t->teacher);
         if (teacher == 0) {
             e->end = ai_Time;
@@ -6573,7 +6572,7 @@ void he_StartTraining(int ev)
     HETRAINING *t = (HETRAINING *)ev;
     AIJOB *found;
 
-    if ((float)ai_CharsT[e->chr].skills[t->skill] >= 252.0f) {
+    if ((float)ai_Chars[e->chr].skills[t->skill] >= 252.0f) {
         he_FreeEvent((int *)ev);
         return;
     }
@@ -6587,7 +6586,7 @@ void he_StartTraining(int ev)
             found = (AIJOB *)he_NextEvent();
         } while (found != 0);
     }
-    t->range = (unsigned char)((int)(ai_CharsT[e->chr].skills[t->skill] * (1.0f / 42.0f) + 1.0f) + 2) * 2;
+    t->range = (unsigned char)((int)(ai_Chars[e->chr].skills[t->skill] * (1.0f / 42.0f) + 1.0f) + 2) * 2;
     t->base = 0x15;
     e->stage = 0;
     e->end = ai_Time;
@@ -6619,7 +6618,7 @@ void he_RunTraining(int ev)
         return;
     case 0:
         rise = t->base - util_Random(t->range);
-        c = &ai_CharsT[e->chr];
+        c = &ai_Chars[e->chr];
         skill = t->skill;
         cur = c->skills[skill];
         if ((float)(cur + rise) > 252.0f)
@@ -6684,8 +6683,8 @@ void he_BeginPlague(int ev)
             msg.flags = 9;
             msg.time = ai_Time;
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
-                    msg.to = ai_CharsT[i].netId;
+                if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) {
+                    msg.to = ai_Chars[i].netId;
                     cm_SendLongMessage((char *)&msg);
                 }
             }
@@ -6854,18 +6853,18 @@ void he_RunPlague(int ev)
             any = 0;
             other = 0;
             otherValue = 1000.0f;
-            owner = &ai_CharsT[o->owner];
+            owner = &ai_Chars[o->owner];
             memset(ids, -1, sizeof(ids));
             cnt = 0;
             for (k = 0; k < 768; k++) {
                 if (cnt >= 16)
                     break;
-                if (ai_CharsT[k].kind == 0 && ai_CharsT[k].bld == o) {
+                if (ai_Chars[k].kind == 0 && ai_Chars[k].bld == o) {
                     value[cnt] = 1000.0f;
                     ids[cnt] = k;
                     cnt++;
-                } else if (ai_CharsT[k].kind == 1 && ai_CharsT[k].bld == o)
-                    other = &ai_CharsT[k];
+                } else if (ai_Chars[k].kind == 1 && ai_Chars[k].bld == o)
+                    other = &ai_Chars[k];
             }
             if (cnt != 0) {
                 a = util_RandomF2();
@@ -6877,7 +6876,7 @@ void he_RunPlague(int ev)
                 m = (int)a;
                 for (i = 0; i < m; i++) {
                     any = 1;
-                    value[i] = gm_CatchPlague(&ai_CharsT[ids[i]]);
+                    value[i] = gm_CatchPlague(&ai_Chars[ids[i]]);
                 }
                 if (other != 0 && util_Random(8) == 0) {
                     otherValue = gm_CatchPlague(other);
@@ -6889,7 +6888,7 @@ void he_RunPlague(int ev)
                     ai_PlagueMessage((struct G8CHARREC *)owner, o);
                 for (i = 0; i < m; i++) {
                     if (value[i] < 1000.0f)
-                        he_CharIllness(e, &ai_CharsT[ids[i]], owner, o, 1, value[i]);
+                        he_CharIllness(e, &ai_Chars[ids[i]], owner, o, 1, value[i]);
                 }
                 if (otherValue < 1000.0f)
                     he_CharIllness(e, other, owner, o, 1, otherValue);
@@ -6999,7 +6998,7 @@ void he_RunGang(int ev)
     leader = (AICHAR *)gm_FindChar(g->leader);
     s = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     if (s != 0 && s->owner != 0xffff)
-        leader = &ai_CharsT[s->owner];
+        leader = &ai_Chars[s->owner];
     if (e->stage == -2 || leader == 0) {
         e->stage = 1;
     } else {
@@ -7044,9 +7043,9 @@ void he_RunGang(int ev)
                 do {
                     r = util_Random(0x300);
                     tries--;
-                    if (ai_CharsT[r].id != 0xffff && ai_CharsT[r].health > 0 && ai_CharsT[r].kind < 10 && ai_CharsT[r].title != 2
-                        && ai_CharsT[r].title != 1 && ai_CharsT[r].netId != leader->netId) {
-                        victim = &ai_CharsT[r];
+                    if (ai_Chars[r].id != 0xffff && ai_Chars[r].health > 0 && ai_Chars[r].kind < 10 && ai_Chars[r].title != 2
+                        && ai_Chars[r].title != 1 && ai_Chars[r].netId != leader->netId) {
+                        victim = &ai_Chars[r];
                         if (gm_GetGoodsValue(victim) < v)
                             victim = 0;
                     }
@@ -7203,7 +7202,7 @@ void he_RunProtectionAsk(int ev)
             p->end = now;
             cm_SendExSetHE(3, p);
             cm_SendSetField(b->id, 0x5a, 2, 0x100, 0);
-            cm_SendMoveGoodsUnchecked(ai_CharsT[p->chr].netId, ai_CharsT[b->owner].netId, 0, q->amount);
+            cm_SendMoveGoodsUnchecked(ai_Chars[p->chr].netId, ai_Chars[b->owner].netId, 0, q->amount);
             if (q->home != -1) {
                 home = (AIBLD *)gm_BuildQuery(1, 1, q->home);
                 home->roundSums[0] += q->amount;
@@ -7251,7 +7250,7 @@ void he_StartProtection(int ev)
    Stage 4 shows the news 0x1a90 to both when paid and sends the collector home
    @deep s49: draft 148 -> shape 8. Fixed: the 0x63 question's wait is gm_AddTime(&e->end, 3, 0, 0) (3
    hours; the original pushes 0, 0, 3). Levers: the owner as an int index local read at each use (owner =
-   b->owner; ai_CharsT[owner].kind / .netId) instead of an AICHAR pointer: the original's byte-offset CSE
+   b->owner; ai_Chars[owner].kind / .netId) instead of an AICHAR pointer: the original's byte-offset CSE
    (lea edx,[eax+eax*8]; shl edx,2) kept across the memset (148 -> 28); the fill order fromId, to, type,
    flags, arg[0], time (719 orders: shape 8). Left: the original loads b->id (mov ecx,[ebp+1]) before the
    netId (mov eax,[edx+ai_CharInts]); ours the other way, so the to / fromId stores swap ecx / eax. No
@@ -7324,10 +7323,10 @@ void he_RunProtection(int ev)
         }
         q->amount = (int)((float)gm_EquipmentValue((unsigned char *)b, 100) * 0.065f);
         owner = b->owner;
-        if (ai_CharsT[owner].kind == 6 || ai_CharsT[owner].kind == 7) {
+        if (ai_Chars[owner].kind == 6 || ai_Chars[owner].kind == 7) {
             memset(&msg, 0, sizeof(msg));
             msg.fromId = b->id;
-            msg.to = ai_CharsT[owner].netId;
+            msg.to = ai_Chars[owner].netId;
             msg.type = 0x63;
             msg.flags = 9;
             msg.arg[0] = e->id;
@@ -7345,7 +7344,7 @@ void he_RunProtection(int ev)
         e->stage = 3;
         if ((b->flags5aw & 0x100) != 0)
             q->answer = 2;
-        else if (ai_CharsT[b->owner].sel != 0xb && !(ai_CharsT[b->owner].mood[11][2] * 0.001f > util_RandomF()))
+        else if (ai_Chars[b->owner].sel != 0xb && !(ai_Chars[b->owner].mood[11][2] * 0.001f > util_RandomF()))
             q->answer = util_Random(2);
         else
             q->answer = 1;
@@ -7354,7 +7353,7 @@ void he_RunProtection(int ev)
     case 3:
         if (q->answer == 1) {
             cm_SendSetField(b->id, 0x5a, 2, 0x100, 0);
-            cm_SendMoveGoodsUnchecked(ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, 0, q->amount);
+            cm_SendMoveGoodsUnchecked(ai_Chars[e->chr].netId, ai_Chars[b->owner].netId, 0, q->amount);
             if (q->home != -1) {
                 home = (AIBLD *)gm_BuildQuery(1, 1, q->home);
                 home->roundSums[0] += q->amount;
@@ -7365,7 +7364,7 @@ void he_RunProtection(int ev)
             e->stage = 4;
             e->exSlot = cm_SendExSetHE(4, ev);
             txt_Format(text, 0x1a8d, b->owner, b, q->amount);
-            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
+            he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
             return;
         }
         if (q->answer == 0) {
@@ -7374,7 +7373,7 @@ void he_RunProtection(int ev)
             e->stage = 4;
             e->exSlot = cm_SendExSetHE(4, ev);
             txt_Format(text, 0x1a8e, b->owner, b);
-            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
+            he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
             return;
         }
         e->end = ai_Time;
@@ -7382,13 +7381,13 @@ void he_RunProtection(int ev)
         e->stage = 4;
         e->exSlot = cm_SendExSetHE(4, ev);
         txt_Format(text, 0x1a8f, b->owner, b);
-        he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
+        he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
         return;
     case 4:
         if (q->answer == 1) {
             txt_Format(text, 0x1a90, b);
-            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, (char *)0);
-            he_ShowNews(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, 0, 0x5f3, (char *)0);
+            he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, 0x5f3, (char *)0);
+            he_ShowNews(ai_Chars[b->owner].netId, ai_Chars[b->owner].netId, text, 0, 0x5f3, (char *)0);
         }
         sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
         cm_SendChrStop(c->netId);
@@ -7466,21 +7465,21 @@ void he_RunAudit(int ev)
         }
         if (!(shortfall > 0.2) && found == 0) {
             txt_Format(text, 0x1a76, b->owner, b);
-            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, found, 0x5f0, "_NACHRICHTEN_HS_88");
+            he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, found, 0x5f0, "_NACHRICHTEN_HS_88");
             txt_Format(text, 0x1a78, e->chr, b);
-            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, found, 0x5f0, b->id, -1, found, "_NACHRICHTEN_HS_86");
+            he_MessageBoxQuickjump(ai_Chars[b->owner].netId, ai_Chars[b->owner].netId, text, found, 0x5f0, b->id, -1, found, "_NACHRICHTEN_HS_86");
             e->stage = 2;
             return;
         }
         fine = (int)(gm_EquipmentValue((unsigned char *)b, 100) * shortfall * 0.07f);
-        cm_SendMoveGoodsUnchecked(ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, 0, fine);
-        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+        cm_SendMoveGoodsUnchecked(ai_Chars[e->chr].netId, ai_Chars[b->owner].netId, 0, fine);
+        if (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) {
             txt_Format(text, 0x1a75, fine, b->owner, b);
-            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f0, "_NACHRICHTEN_HS_87");
+            he_ShowNews(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, 0x5f0, "_NACHRICHTEN_HS_87");
         }
-        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+        if (ai_Chars[b->owner].kind == 6 || ai_Chars[b->owner].kind == 7) {
             txt_Format(text, 0x1a77, e->chr, b, fine);
-            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_86");
+            he_MessageBoxQuickjump(ai_Chars[b->owner].netId, ai_Chars[b->owner].netId, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_86");
         }
         e->stage = 2;
         return;
@@ -7764,14 +7763,14 @@ void he_RunAccidentSim(int ev)
         return;
     cur = s->cursor;
     for (n = 12; n != 0; n--) {
-        if (he_IsAtWork((int)&ai_CharsT[cur]) != 0 && ai_CharsT[cur].bld->owner != 0xffff) {
+        if (he_IsAtWork((int)&ai_Chars[cur]) != 0 && ai_Chars[cur].bld->owner != 0xffff) {
             roll = util_RandomF() * 100.0f;
-            skill = gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld, 2, 1);
+            skill = gm_BuildingSkill((unsigned char *)ai_Chars[cur].bld, 2, 1);
             if (25.0f - 20.0f * (skill * 0.0125f) > roll) {
                 lim = MIN(MAX(2.0f - skill * 0.0125f, 0.0f), 2.0f);
                 health = gm_AddHealth(cur, -50 - util_Random((int)(lim * 255.0f + 1.0f)));
-                b = ai_CharsT[cur].bld;
-                he_CharAccident(e, &ai_CharsT[cur], &ai_CharsT[b->owner], b, health, 0);
+                b = ai_Chars[cur].bld;
+                he_CharAccident(e, &ai_Chars[cur], &ai_Chars[b->owner], b, health, 0);
             }
         }
         cur = (s->step + cur) % 0x300;
@@ -7840,8 +7839,8 @@ void he_RunAuctionEvent(int ev)
         }
         txt_Format(text, 0x11be, b, a->price);
         for (k = 0; k < 0x300; k++) {
-            if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].health > 0)
-                he_ShowNews(ai_CharsT[k].netId, ai_CharsT[k].netId, text, 0, 0x601, (char *)0);
+            if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && ai_Chars[k].health > 0)
+                he_ShowNews(ai_Chars[k].netId, ai_Chars[k].netId, text, 0, 0x601, (char *)0);
         }
         e->end.year++;
         e->end.hour = 0xd;
@@ -7854,13 +7853,13 @@ void he_RunAuctionEvent(int ev)
         memset(&party, 0, sizeof(party));
         n = 0;
         for (k = 0; k < 0x300 && n < 8; k++) {
-            if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].health > 0 && ai_CharsT[k].heldRounds == 0
-                && gm_GetGoodsValue(&ai_CharsT[k]) >= a->price)
-                party.members[n++] = ai_CharsT[k].netId;
+            if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && ai_Chars[k].health > 0 && ai_Chars[k].heldRounds == 0
+                && gm_GetGoodsValue(&ai_Chars[k]) >= a->price)
+                party.members[n++] = ai_Chars[k].netId;
         }
         for (k = 0; k < 0x300; k++) {
-            if (ai_CharsT[k].health > 0 && ai_CharsT[k].heldRounds == 0 && (ai_CharsT[k].kind == 5 || ai_CharsT[k].kind == 3 || ai_CharsT[k].kind == 4)) {
-                v = gm_GetGoodsValue(&ai_CharsT[k]);
+            if (ai_Chars[k].health > 0 && ai_Chars[k].heldRounds == 0 && (ai_Chars[k].kind == 5 || ai_Chars[k].kind == 3 || ai_Chars[k].kind == 4)) {
+                v = gm_GetGoodsValue(&ai_Chars[k]);
                 if (v < a->price)
                     continue;
                 found = 0;
@@ -7879,7 +7878,7 @@ void he_RunAuctionEvent(int ev)
                     }
                 }
                 if (found) {
-                    best[i] = ai_CharsT[k].netId;
+                    best[i] = ai_Chars[k].netId;
                     val[i] = v;
                 }
             }
@@ -7937,7 +7936,7 @@ void he_RunTitleCeremony(int ev)
     AICHAR *own, *c;
     int text;
 
-    own = &ai_CharsT[e->chr];
+    own = &ai_Chars[e->chr];
     if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
     if (gm_CompareTime(&e->end, &ai_Time) == 1)
@@ -8121,13 +8120,13 @@ int he_FindGuestInn(int rec, HEINN *tab, int *out)
     cm_AddFieldValues(2, 1, (char *)(r).inn - cm_FieldObject + 0x69, &guests);                  \
     cm_SendFieldDeltas();                                                                       \
 }
-/* he_RunInnSim's sale of a drink to the guest ai_CharsT[i] (cm_SendExSellObject: one of the good): 0.65 of the
+/* he_RunInnSim's sale of a drink to the guest ai_Chars[i] (cm_SendExSellObject: one of the good): 0.65 of the
    price from the guest, the price to the inn's owner, the takings (+0x65) and the guests (+0x6b) of the inn, then the guest count */
 #define HE_INN_SALE(r, drink, good, price) {                                                    \
     cm_BeginGroup("SIM_WIRTSHAUS");                                                             \
     cm_SendExSellObject(-1, (r).drink->ownerId, good, 1, ai_OwnPlayer, 0);                     \
-    cm_SendMoveGoodsUnchecked(-1, ai_CharsT[i].netId, ai_OwnPlayer, (int)((float)price * 0.65f)); \
-    cm_SendMoveGoodsUnchecked(ai_CharsT[(r).inn->owner].netId, -1, ai_OwnPlayer, price);        \
+    cm_SendMoveGoodsUnchecked(-1, ai_Chars[i].netId, ai_OwnPlayer, (int)((float)price * 0.65f)); \
+    cm_SendMoveGoodsUnchecked(ai_Chars[(r).inn->owner].netId, -1, ai_OwnPlayer, price);        \
     cm_BeginFieldBlock((char *)(r).inn, (r).inn->id);                                           \
     cm_AddFieldValues(4, 1, (char *)(r).inn - cm_FieldObject + 0x65, &price);                   \
     cm_AddFieldValues(2, 1, (char *)(r).inn - cm_FieldObject + 0x6b, &guests);                  \
@@ -8175,12 +8174,12 @@ void he_RunInnSim(int ev)
     first = s->cursor;
     end = first + 0x180;
     for (i = first; i < end; i++) {
-        if (he_FindGuestInn((int)&ai_CharsT[i], inns, &idx) == 0)
+        if (he_FindGuestInn((int)&ai_Chars[i], inns, &idx) == 0)
             continue;
         price1 = (int)(gm_GoodsPrice(0x179, ai_OwnPlayer) * 1.5);
         price2 = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) * 1.5);
         guests = util_RandomInt(4) + 3;
-        wealth = gm_GetGoodsValue(&ai_CharsT[i]);
+        wealth = gm_GetGoodsValue(&ai_Chars[i]);
         lim = price1 > price2 ? price1 : price2;
         if ((float)wealth > (float)lim * 0.65f && inns[idx].drink1 != 0 && inns[idx].drink2 != 0) {
             if (util_Random(2) != 0) {
@@ -8236,7 +8235,7 @@ void he_RunSkillUp(int ev)
     HESKILLUP *s = (HESKILLUP *)ev;
     AICHAR *own;
 
-    own = &ai_CharsT[e->chr];
+    own = &ai_Chars[e->chr];
     if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
     if (gm_CompareTime(&e->end, &ai_Time) == 1)
@@ -8351,8 +8350,8 @@ void he_RunBard(int ev)
             return;
         txt_Format(text, 0x1e29);
         for (i = 0; i < 768; i++) {
-            if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7))
-                he_ShowNews(ai_CharsT[i].netId, e->id, text, 0, 0x601, ch_EmptyName);
+            if (ai_Chars[i].id != 0xffff && (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7))
+                he_ShowNews(ai_Chars[i].netId, e->id, text, 0, 0x601, ch_EmptyName);
         }
         gm_AddTime(&e->end, 0, 5, 0);
         e->exSlot = cm_SendExSetHE(2, ev);
@@ -8378,7 +8377,7 @@ void he_RunBard(int ev)
                 d3if_SelectScene(scene, 1);
             }
             e->stage = 2;
-            if (e->gfx != 0 && (ai_CharsT[ai_PlayerId].flags1c8 & 0x20000) != 0) {
+            if (e->gfx != 0 && (ai_Chars[ai_PlayerId].flags1c8 & 0x20000) != 0) {
                 he_FreeGfxInfo((int *)e->gfx);
                 e->gfx = 0;
             }
@@ -8392,8 +8391,8 @@ void he_RunBard(int ev)
     case 3:
         if ((e->opts & 2) != 0) {
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].flags1c8 & 0x20000) != 0)
-                    cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0, 0x20000);
+                if (ai_Chars[i].id != 0xffff && (ai_Chars[i].flags1c8 & 0x20000) != 0)
+                    cm_SendSetField(ai_Chars[i].netId, 0x1c8, 4, 0, 0x20000);
             }
         }
         e->end = ai_Time;
@@ -8558,7 +8557,7 @@ void he_RunPopulation(int ev)
             i = util_Random(0x300);
             n = 0x300;
             do {
-                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0 && ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == 0) {
+                if (ai_Chars[i].id != 0xffff && ai_Chars[i].health != 0 && ai_Chars[i].kind == 0 && ai_Chars[i].bld == 0) {
                     gm_AddHealth(i, -2000);
                     p->count++;
                     break;
@@ -8583,8 +8582,8 @@ void he_RunPopulation(int ev)
         i = util_Random(0x300);
         n = 0x300;
         do {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0
-                && ((ai_CharsT[i].kind == 0 && ai_CharsT[i].bld2 == 0) || (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld2 == 0))) {
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].health != 0
+                && ((ai_Chars[i].kind == 0 && ai_Chars[i].bld2 == 0) || (ai_Chars[i].kind == 1 && ai_Chars[i].bld2 == 0))) {
                 found = 1;
                 break;
             }
@@ -8604,7 +8603,7 @@ void he_RunPopulation(int ev)
                 j = (j + 1) % 0x100;
             }
             if (found != 0)
-                cm_SendBoss(ai_CharsT[i].netId, b->id);
+                cm_SendBoss(ai_Chars[i].netId, b->id);
         }
         gm_AddTime(&e->end, 0, 0xa, 0);
         if (e->end.hour >= 0x16) {
@@ -8808,27 +8807,27 @@ void he_RunDiseaseSim(int ev)
         return;
     cur = s->cursor;
     for (n = 12; n != 0; n--) {
-        c = &ai_CharsT[cur];
+        c = &ai_Chars[cur];
         if (he_IsSimCandidate((int)c) != 0) {
             roll = util_RandomF() * 100.0f;
             risk = 0.0f;
             immunity = 0.0f;
-            if (ai_CharsT[cur].bld2 != 0) {
-                if (ai_BTypes[ai_CharsT[cur].bld2->type].kind == 2)
-                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.0125f);
+            if (ai_Chars[cur].bld2 != 0) {
+                if (ai_BTypes[ai_Chars[cur].bld2->type].kind == 2)
+                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_Chars[cur].bld2, 8, 1) * 0.0125f);
                 else
-                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.02f);
+                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_Chars[cur].bld2, 8, 1) * 0.02f);
             } else
                 risk = (float)(25.0 - util_RandomF() * 20.0f * 0.5);
             if (ai_InventoryHas(c, 0x2b3) != 0)
                 risk *= 0.75f;
             if (roll < risk - immunity && gm_CatchDisease(c, &kind, &health) != 0) {
-                b = ai_CharsT[cur].bld;
-                if (b != 0 && b->owner != 0xffff && &ai_CharsT[b->owner] != 0)
-                    he_CharIllness(e, c, &ai_CharsT[b->owner], b, kind, health);
-                else if (gm_CharacterHealth(c) > health && (ai_CharsT[cur].kind == 6 || ai_CharsT[cur].kind == 7)) {
+                b = ai_Chars[cur].bld;
+                if (b != 0 && b->owner != 0xffff && &ai_Chars[b->owner] != 0)
+                    he_CharIllness(e, c, &ai_Chars[b->owner], b, kind, health);
+                else if (gm_CharacterHealth(c) > health && (ai_Chars[cur].kind == 6 || ai_Chars[cur].kind == 7)) {
                     txt_Format(text, 0x163c, kind + 0x1632);
-                    he_ShowNews(ai_CharsT[cur].netId, -1, text, 0, 0x5f7, ch_EmptyName);
+                    he_ShowNews(ai_Chars[cur].netId, -1, text, 0, 0x5f7, ch_EmptyName);
                 }
             }
         }
@@ -9005,7 +9004,7 @@ void he_RunDarkCorner(int ev)
             return;
         }
         d->steps--;
-        skill = gm_GetSkill((char *)&ai_CharsT[bld->owner], 2);
+        skill = gm_GetSkill((char *)&ai_Chars[bld->owner], 2);
         if (d->loot < 1)
             d->loot++;
         else
@@ -9051,7 +9050,7 @@ void he_RunDarkCorner(int ev)
             n = 0x200;
             i = 0;
             while (n != 0 && i < d->loot) {
-                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
+                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_Chars[bld->owner].netId
                     && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
                     loot[i++] = ai_CrimesT[idx].id;
                 n--;
@@ -9059,7 +9058,7 @@ void he_RunDarkCorner(int ev)
             }
             d->loot = i;
             for (k = 0; k < i; k++)
-                cm_SendProofExecuted(loot[k], ai_CharsT[bld->owner].netId);
+                cm_SendProofExecuted(loot[k], ai_Chars[bld->owner].netId);
             jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c);
             if (jt != 0) {
                 cm_BeginFieldBlock((char *)jt, jt->objId);
@@ -9070,10 +9069,10 @@ void he_RunDarkCorner(int ev)
         }
         if (d->loot != 0) {
             txt_Format(text, 0x18a9);
-            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+            he_MessageBoxQuickjump(ai_Chars[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         } else {
             txt_Format(text, 0x18aa);
-            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+            he_MessageBoxQuickjump(ai_Chars[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         }
         e->exSlot = cm_SendExSetHE(-1, ev);
         break;
@@ -9085,7 +9084,7 @@ void he_RunDarkCorner(int ev)
         }
         d->loot = 0;
         for (k = 3; k != 0; k--) {
-            float s = gm_GetSkill((char *)&ai_CharsT[bld->owner], 2);
+            float s = gm_GetSkill((char *)&ai_Chars[bld->owner], 2);
             d->loot += util_RandomF() * 0.66f < s ? 1 : 0;
         }
         if (d->loot != 0) {
@@ -9099,7 +9098,7 @@ void he_RunDarkCorner(int ev)
             n = 0x200;
             i = 0;
             while (n != 0 && i < d->loot) {
-                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
+                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_Chars[bld->owner].netId
                     && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
                     loot[i++] = ai_CrimesT[idx].id;
                 n--;
@@ -9107,7 +9106,7 @@ void he_RunDarkCorner(int ev)
             }
             d->loot = i;
             for (k = 0; k < i; k++)
-                cm_SendProofExecuted(loot[k], ai_CharsT[bld->owner].netId);
+                cm_SendProofExecuted(loot[k], ai_Chars[bld->owner].netId);
             jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c);
             if (jt != 0) {
                 cm_BeginFieldBlock((char *)jt, jt->objId);
@@ -9118,10 +9117,10 @@ void he_RunDarkCorner(int ev)
         }
         if (d->loot != 0) {
             txt_Format(text, 0x18a9);
-            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+            he_MessageBoxQuickjump(ai_Chars[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         } else {
             txt_Format(text, 0x18aa);
-            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+            he_MessageBoxQuickjump(ai_Chars[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
         }
         e->end = ai_Time;
         e->exSlot = cm_SendExSetHE(-1, ev);
@@ -9287,9 +9286,9 @@ void he_RunSendHomeEvent(int ev)
         return;
     }
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].health > 0 && ai_CharsT[i].model != 0 && ai_CharsT[i].bld == bld && ai_CharsT[i].bld2 != 0
-            && util_RandomF() > 0.5 && ai_CharsT[i].model->bldId == e->bldId) {
-            c = &ai_CharsT[i];
+        if (ai_Chars[i].health > 0 && ai_Chars[i].model != 0 && ai_Chars[i].bld == bld && ai_Chars[i].bld2 != 0
+            && util_RandomF() > 0.5 && ai_Chars[i].model->bldId == e->bldId) {
+            c = &ai_Chars[i];
             home = (AIOBJ *)gm_HomeObject((unsigned char *)c->bld2);
             cm_SendCharClear(c->netId, 0, 0);
             cm_SendCharHalt(c->netId);
@@ -9792,7 +9791,7 @@ void he_RunRanking(int ev)
             line.one = 1;
             line.kind = 2;
             line.size = 0xb9;
-            c = &ai_CharsT[recs[i].id];
+            c = &ai_Chars[recs[i].id];
             line.netId = c->netId;
             line.worth = gm_ConvertMoney(recs[i].worth, ai_OwnPlayer);
             line.points = recs[i].points;
@@ -9928,15 +9927,15 @@ int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
         kinds[0] = HE_WALK_PARTNERS2;
         kinds[1] = HE_WALK_PARTNERS1;
     }
-    if (ai_FindPartnersRandomWalk((struct AIPER *)&ai_CharsT[ai_PlayerId], 1, &kinds[0], 0.0f, 100.0f, &id) == 0
-        && ai_FindPartnersRandomWalk((struct AIPER *)&ai_CharsT[ai_PlayerId], 1, &kinds[1], 0.0f, 100.0f, &id) == 0)
+    if (ai_FindPartnersRandomWalk((struct AIPER *)&ai_Chars[ai_PlayerId], 1, &kinds[0], 0.0f, 100.0f, &id) == 0
+        && ai_FindPartnersRandomWalk((struct AIPER *)&ai_Chars[ai_PlayerId], 1, &kinds[1], 0.0f, 100.0f, &id) == 0)
         return -1;
-    ch = &ai_CharsT[id];
+    ch = &ai_Chars[id];
     mask.s.lo = 0xa7f4c3a0;
     mask.s.hi = 1;                      /* HE_WALK_BUILDINGS, set as two dwords */
     if (ch->bld2 != 0)
         tgt = ch->bld2->id;
-    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, mask.q, 0, 100.0f, &tgt) == 0)
+    else if (ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.q, 0, 100.0f, &tgt) == 0)
         return -1;
     if (util_RandomF() > n * 0.1f) {
         int bld;
@@ -10214,8 +10213,8 @@ void he_RunSixGroupEvent(AIJOB *ev)
         else
             txt_Format(text, 0x10be, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20);
         for (i = 0; i < 768; i++) {
-            if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7)
-                he_ShowNews(ai_CharsT[i].netId, -1, text, 0x20, 0x600, ch_EmptyName);
+            if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7)
+                he_ShowNews(ai_Chars[i].netId, -1, text, 0x20, 0x600, ch_EmptyName);
         }
         ev->stage = 0;
         gm_AddTime(&ev->end, 1, 0, 0);
@@ -10236,7 +10235,7 @@ void he_RunSixGroupEvent(AIJOB *ev)
             if (p->kind != 3) {
                 hit = 0;
                 for (i = 0; i < 768; i++) {
-                    c = &ai_CharsT[i];
+                    c = &ai_Chars[i];
                     if (c->bld != 0 && c->netId != p->netId && c->bld->owner == p->id) {
                         hit++;
                         cm_SendRelations(p->netId, c->netId, -util_Random(kind.level * 3) - kind.level * 3, 1);
@@ -10373,7 +10372,7 @@ void he_RunExamOffer(int ev)
         gm_AddTime(&e->end, 8, 0, 0);
     } else if (e->stage == 1) {
         if (((HEEXAMOFFER *)e)->accepted != 0) {
-            c = &ai_CharsT[e->chr];
+            c = &ai_Chars[e->chr];
             if (gm_GetSkill((char *)c, 3) > 0.1f)
                 skill = gm_GetSkill((char *)c, 3);
             else
@@ -10451,8 +10450,8 @@ void he_RunConversion(int ev)
     while (left != 0) {
         if (cnt >= n)
             break;
-        if (ai_CharsT[ring].id != 0xffff && ai_CharsT[ring].kind <= 4 && ai_CharsT[ring].b00c == cv->from) {
-            c = &ai_CharsT[ring];
+        if (ai_Chars[ring].id != 0xffff && ai_Chars[ring].kind <= 4 && ai_Chars[ring].b00c == cv->from) {
+            c = &ai_Chars[ring];
             cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldDelta(1, 1, 0xc, &to);
             cm_SendFieldDeltas();
@@ -10701,7 +10700,7 @@ void he_RunOfficeAward(int ev)
     AICHAR *own, *c;
     int addrNews, officeNews;
 
-    own = &ai_CharsT[e->chr];
+    own = &ai_Chars[e->chr];
     if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
     if (gm_CompareTime(&e->end, &ai_Time) == 1)
@@ -11246,11 +11245,11 @@ void he_RunSale(int ev)
         }
         ty = p->type;
         if (ty == 0x1f9)
-            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 1);
+            gv_OrderOpenSize(&ai_Chars[b->owner], b, 1);
         else if (ty == 0x1fd)
-            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 2);
+            gv_OrderOpenSize(&ai_Chars[b->owner], b, 2);
         else if (ty == 0x201)
-            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 3);
+            gv_OrderOpenSize(&ai_Chars[b->owner], b, 3);
         else if (ty == 0x12d) {
             AIMSG msg;
 
@@ -11262,7 +11261,7 @@ void he_RunSale(int ev)
             msg.flags = 2;
             cm_SendLongMessage((char *)&msg);
         }
-        if (ai_CharsT[b->owner].kind == 6) {
+        if (ai_Chars[b->owner].kind == 6) {
             char text[0x400];
             char jump[0x80];
             char name[0x80];
@@ -11281,7 +11280,7 @@ void he_RunSale(int ev)
                 strupr(name);
                 sprintf(jump, "ob_%s", name);
                 txt_Format(text, 0x1c2b, b, s->good * 2 + 0x9a8);
-                he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, s->obj, jump, "_NACHRICHTEN_HS_53");
+                he_MessageBoxQuickjump(ai_Chars[b->owner].netId, e->from, text, 0, tid, b->id, s->obj, jump, "_NACHRICHTEN_HS_53");
             } else {
                 tid = 0x606;
                 if (ai_BTypes[b->type].kind != 6) {
@@ -11291,7 +11290,7 @@ void he_RunSale(int ev)
                         tid = 0x60b;
                 }
                 txt_Format(text, 0x1c2d, b, s->good * 2 + 0x9a8);
-                he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, -1, 0, "_NACHRICHTEN_HS_54");
+                he_MessageBoxQuickjump(ai_Chars[b->owner].netId, e->from, text, 0, tid, b->id, -1, 0, "_NACHRICHTEN_HS_54");
             }
             p->flags13 |= 0xa0;
         }
@@ -11345,11 +11344,11 @@ void he_RunCustomers(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0)
             break;
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         cost = (int)gm_JobCost(owner, b->type, -1, 1);
-        if (cost > gm_GetGoodsValue(&ai_CharsT[b->owner])) {
+        if (cost > gm_GetGoodsValue(&ai_Chars[b->owner])) {
             txt_Format(text, 0x1a40, b);
-            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, 0x5f2, b->id, c->target, 0, 0);
+            he_MessageBoxQuickjump(ai_Chars[b->owner].netId, e->from, text, 0, 0x5f2, b->id, c->target, 0, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -11370,7 +11369,7 @@ void he_RunCustomers(int ev)
             return;
         p = (AICHAR *)cm_GetSlotValue(c->slot);
         if (p == 0) {
-            he_ShowNews(ai_CharsT[e->chr].netId, -1, "$2AEinwohnerlimit erreicht!", 0, 0x5f2, 0);
+            he_ShowNews(ai_Chars[e->chr].netId, -1, "$2AEinwohnerlimit erreicht!", 0, 0x5f2, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -11395,19 +11394,19 @@ void he_RunCustomers(int ev)
         p = (AICHAR *)gm_FindChar(c->person);
         for (i = 0; i < 12; i++) {
             if (p != 0 && c->count[i] > 0) {
-                owner = &ai_CharsT[b->owner];
+                owner = &ai_Chars[b->owner];
                 cost = (int)gm_JobCost(owner, b->type, -1, 1);
                 c->count[i]--;
-                if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+                if (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) {
                     m = (AICHAR *)gm_FindCharacterByMaster(b);
                     txt_Format(text, 0x1bab, cost, p->id, b);
                     if (m != 0 && (m->flags1b4 & 1) != 0)
-                        he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, b->id, text, 0, 0x60c, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
+                        he_MessageBoxQuickjump(ai_Chars[e->chr].netId, b->id, text, 0, 0x60c, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
                     else
-                        he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, b->id, text, 0, 0x5f2, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
+                        he_MessageBoxQuickjump(ai_Chars[e->chr].netId, b->id, text, 0, 0x5f2, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
                 }
-                cm_SendMoveGoodsUnchecked(p->netId, ai_CharsT[e->chr].netId, ai_OwnPlayer, cost);
-                f = (HEFINVIEW *)gm_PlayerRecord(&ai_CharsT[e->chr]);
+                cm_SendMoveGoodsUnchecked(p->netId, ai_Chars[e->chr].netId, ai_OwnPlayer, cost);
+                f = (HEFINVIEW *)gm_PlayerRecord(&ai_Chars[e->chr]);
                 if (f != 0)
                     f->customerTakings += cost;
                 break;
@@ -11472,12 +11471,12 @@ void he_RunHire(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0)
             break;
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         cost = (int)gm_JobCost(owner, b->type, h->job, -1);
         bt = &ai_BTypes[b->type];
-        if (cost > gm_GetGoodsValue(&ai_CharsT[b->owner])) {
+        if (cost > gm_GetGoodsValue(&ai_Chars[b->owner])) {
             txt_Format(text, 0x1a41, b);
-            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, 0x5f2, b->id, h->target, 0, 0);
+            he_MessageBoxQuickjump(ai_Chars[b->owner].netId, e->from, text, 0, 0x5f2, b->id, h->target, 0, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -11496,7 +11495,7 @@ void he_RunHire(int ev)
             return;
         p = (AICHAR *)cm_GetSlotValue(h->slot);
         if (p == 0) {
-            he_ShowNews(ai_CharsT[e->chr].netId, -1, "Einwohnerlimit erreicht!", 0, 0x5f8, 0);
+            he_ShowNews(ai_Chars[e->chr].netId, -1, "Einwohnerlimit erreicht!", 0, 0x5f8, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -11511,14 +11510,14 @@ void he_RunHire(int ev)
         n->title = 0;
         for (i = 0; i < 1; i++) {
             if (h->count[i] > 0) {
-                owner = &ai_CharsT[b->owner];
+                owner = &ai_Chars[b->owner];
                 cost = (int)gm_JobCost(owner, b->type, h->job, -1);
                 h->count[i]--;
-                if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+                if (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) {
                     txt_Format(text, 0x1bb1, cost, p->id, b);
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, b->id, text, 0, 0x5f2, b->id, h->target, 0, "_NACHRICHTEN_HS_03");
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, b->id, text, 0, 0x5f2, b->id, h->target, 0, "_NACHRICHTEN_HS_03");
                 }
-                cm_SendMoveGoodsUnchecked(p->netId, ai_CharsT[e->chr].netId, ai_OwnPlayer, cost);
+                cm_SendMoveGoodsUnchecked(p->netId, ai_Chars[e->chr].netId, ai_OwnPlayer, cost);
                 break;
             }
         }
@@ -11677,7 +11676,7 @@ void he_AllocTransport(int ev)
                 o->escort = (char)t->escorts;
                 pay = gm_LevelPayout(goods[0x2c], o->escort);
                 if ((e->opts & 2) != 0)
-                    cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, pay);
+                    cm_SendMoveGoodsUnchecked(-1, ai_Chars[e->chr].netId, ai_OwnPlayer, pay);
             } else
                 o->escort = 0;
         }
@@ -11805,7 +11804,7 @@ void he_TransportFromHome(int ev)
                 else
                     txt_Format(text, 0x1c44, to);
             }
-            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7)
+            if ((ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7)
                 && (sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow
                     || (ai_PlayerBuilding != (char *)to
                         && (gm_IsType10((unsigned char *)to) == 0 || sv_PanelShown == 0
@@ -11813,9 +11812,9 @@ void he_TransportFromHome(int ev)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0) {
                 o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)to);
                 if (o != 0)
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
                 else
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
             }
             e->exSlot = cm_SendExSetHE(3, ev);
         }
@@ -11870,12 +11869,12 @@ void he_TransportToHome(int ev)
             txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
         } else if (from->type == 0x47) {
             txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot], to->owner, to);
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
         } else {
             bt = &ai_BTypes[to->type];
             icon = 0x609;
@@ -11899,9 +11898,9 @@ void he_TransportToHome(int ev)
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0) {
                 if (quick[0] != 0)
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, quick);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, quick);
                 else
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, 0);
             }
         }
         e->exSlot = cm_SendExSetHE(3, ev);
@@ -12026,9 +12025,9 @@ void he_TransportStadtStadt(int ev)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0) {
                 o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)to);
                 if (o != 0)
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
                 else
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
             }
             t->at = t->goal;
             e->exSlot = cm_SendExSetHE(3, ev);
@@ -12096,12 +12095,12 @@ void he_TransportHomeHome(int ev)
             txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
         } else if (from->type == 0x47) {
             txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot], to->owner, to);
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
         } else {
             bt = &ai_BTypes[to->type];
             if (to->type == 0x1e)
@@ -12121,9 +12120,9 @@ void he_TransportHomeHome(int ev)
             if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0) {
                 if (quick[0] != 0)
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, quick);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, quick);
                 else
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, 0);
             }
         }
         e->exSlot = cm_SendExSetHE(3, ev);
@@ -12226,7 +12225,7 @@ void he_RunTransport(int ev)
                 gm_FindById(0, &o, 0, t->cart);
                 if (util_Random(0x1e) > o->fill) {
                     txt_Format(text, 0x1c46, o->id * 2 + 0x9a8);
-                    he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, 0);
+                    he_ShowNews(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, 0);
                     cm_SendFreeObject(o->objId);
                     e->exSlot = cm_SendExSetHE(-1, ev);
                     return;
@@ -12244,9 +12243,9 @@ void he_RunTransport(int ev)
             else if (d3t_Rain != 0 && *d3t_Rain > 200)
                 chance -= 10.0f;
             if (util_Random(0x69) > o->fill * (float)(chance * 0.01)) {
-                if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
+                if ((ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
                     txt_Format(text, 0x1c45);
-                    he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x608, 0);
+                    he_ShowNews(ai_Chars[e->chr].netId, -1, text, 0, 0x608, 0);
                 }
                 gm_ChangeObjektZustand(o->objId, -10);
                 t->weatherStage = 2;
@@ -12401,9 +12400,9 @@ void he_RunCartRepair(int ev)
             txt_Format(text, 0x1c49, o->id * 2 + 0x9a8);
             q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)gm_FindBuildingById(e->from));
             if (q != 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, e->from, q->objId, 0, "_NACHRICHTEN_HS_55");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, e->from, q->objId, 0, "_NACHRICHTEN_HS_55");
             else
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, e->from, -1, 0, "_NACHRICHTEN_HS_55");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, e->from, -1, 0, "_NACHRICHTEN_HS_55");
         }
         cm_SendSetField(o->objId, 0x13, 1, 0, 0x20);
         v = (char)r->target;
@@ -12430,7 +12429,7 @@ void he_AllocMessageBox(AIJOB *ev)
 
     ev->stage = 0;
     m->voice = 0;
-    if (ai_CharsT[ev->chr].kind != 6)
+    if (ai_Chars[ev->chr].kind != 6)
         he_FreeEvent((int *)ev);
 }
 
@@ -12545,9 +12544,9 @@ void he_RunMessageBox(int ev)
                     return;
                 }
                 if ((ai_GameFlags & 8) != 0)
-                    cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
+                    cm_RemovePartyMember(m->party, ai_Chars[ai_PlayerId].netId);
                 else if ((ai_GameFlags & 4) != 0)
-                    cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+                    cm_SendLeaveParty(m->party, ai_Chars[ai_PlayerId].netId);
                 e->stage = -1;
             }
         } else if (gm_CompareTime(&ai_Time, &e->end) > 0) {
@@ -12569,9 +12568,9 @@ void he_RunMessageBox(int ev)
                             if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
                                 p->done = 1;
                         } else if ((ai_GameFlags & 8) != 0)
-                            cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
+                            cm_RemovePartyMember(m->party, ai_Chars[ai_PlayerId].netId);
                         else if ((ai_GameFlags & 4) != 0)
-                            cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+                            cm_SendLeaveParty(m->party, ai_Chars[ai_PlayerId].netId);
                     }
                     if ((m->flags & 0x10) != 0 && m->voice != 0) {
                         sb_Stop((struct SBSAMPLE *)m->voice, 0);
@@ -12698,9 +12697,9 @@ void he_RunSlotOrder(int ev)
             q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
             txt_Format(text, 0x1bba, b);
             if (q != 0)
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
             else
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -12766,9 +12765,9 @@ void he_RunStoreExtension(int ev)
                 q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
                 txt_Format(text, 0x1bbb, b);
                 if (q != 0)
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
                 else
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
                 he_FreeEvent((int *)ev);
                 return;
             } else {
@@ -12965,13 +12964,13 @@ void he_RunHerbGathering(int ev)
                     txt_Format(text, 0x1802, 0x17fd, b);
                     txt_Format(line, 0x1803, got, h->good * 2 + 0x9a8);
                     strcat(text, line);
-                    if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0))
-                        he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, h->room, 0, 0);
+                    if ((ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0))
+                        he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, b->id, h->room, 0, 0);
                     break;
                 }
                 txt_Format(text, 0x1804, 0x17fd, b);
-                if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0))
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, h->room, 0, 0);
+                if ((ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0))
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, b->id, h->room, 0, 0);
                 break;
             }
             case -2:
@@ -13070,13 +13069,13 @@ void he_RunAnimalHunt(int ev)
             txt_Format(text, 0x1809, 0x1805, b);
             txt_Format(line, 0x180a, amount, h->good * 2 + 0x9a8);
             strcat(text, line);
-            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0)) {
+            if ((ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0)) {
                 if (q != 0) {
-                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
                     e->stage = -1;
                     return;
                 }
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, q->objId, 0, 0);
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, 0x5ec, b->id, q->objId, 0, 0);
             }
         }
         e->stage = -1;
@@ -13198,7 +13197,7 @@ void he_RunStudy(int ev)
                 q = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
             if (q != 0) {
                 txt_Format(text, 0x1bc8, c->id, b);
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, e->from, text, 0, 0x5f2, b->id, q->objId, ch_EmptyName, "_NACHRICHTEN_HS_81");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, e->from, text, 0, 0x5f2, b->id, q->objId, ch_EmptyName, "_NACHRICHTEN_HS_81");
             }
         }
         sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
@@ -13298,12 +13297,12 @@ void he_RunSabotage(int ev)
             return;
         c = (AICHAR *)cm_GetSlotValue(x->slot);
         if (c != 0) {
-            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_Chars[e->chr]);
             if (fin != 0)
                 fin->spyPaid += x->fee;
             x->saboteur = c->netId;
             sv_MoveToGroup(0, 0, c->id, (char *)ev);
-            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, x->fee);
+            cm_SendMoveGoodsUnchecked(-1, ai_Chars[e->chr].netId, ai_OwnPlayer, x->fee);
             e->stage++;
             x->slot = -1;
             return;
@@ -13349,7 +13348,7 @@ void he_RunSabotage(int ev)
         d.ev = e;
         d.found = 0;
         if (he_DetectAttack((int)&d) != 0) {
-            x->slot = gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, x->target);
+            x->slot = gv_Accuse(0x18, 1, ai_Chars[e->chr].netId, ai_Chars[b->owner].netId, x->target);
             x->watch = d.found->id;
             e->stage = 7;
             e->end = ai_Time;
@@ -13412,8 +13411,8 @@ void he_RunSabotage(int ev)
             e->stage = -1;
             return;
         }
-        owner = &ai_CharsT[b->owner];
-        me = &ai_CharsT[e->chr];
+        owner = &ai_Chars[b->owner];
+        me = &ai_Chars[e->chr];
         chance = gm_Mix((int)me, (int)owner, 2);
         ok = 0;
         if (util_RandomF() + chance >= 1.0f && ai_InventoryHas(owner, 0x2c0) == 0) {
@@ -13426,18 +13425,18 @@ void he_RunSabotage(int ev)
                     he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_18");
                 } else
                     cm_SendRelations(me->netId, owner->netId, -0x19, 1);
-                gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
+                gv_Accuse(0x18, 1, ai_Chars[e->chr].netId, ai_Chars[b->owner].netId, b->id);
             }
             for (i = 0; i < 768; i++) {
-                if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != owner->netId && ai_CharsT[i].netId != me->netId) {
+                if ((ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) && ai_Chars[i].netId != owner->netId && ai_Chars[i].netId != me->netId) {
                     txt_Format(text, 0x1737, owner->id, b);
-                    he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+                    he_MessageBoxQuickjump(ai_Chars[i].netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
                 }
             }
         }
         if (!ok) {
-            owner = &ai_CharsT[b->owner];
-            me = &ai_CharsT[e->chr];
+            owner = &ai_Chars[b->owner];
+            me = &ai_Chars[e->chr];
             if (ai_InventoryHas(owner, 0x2c0) != 0) {
                 gm_SendMoneyDelta(me->netId, -1);
                 if (me->kind == 6 || me->kind == 7) {
@@ -13456,7 +13455,7 @@ void he_RunSabotage(int ev)
             if (b->owner != 0xffff) {
                 txt_Format(text, 0x1739, b);
                 he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
-                gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
+                gv_Accuse(0x18, 1, ai_Chars[e->chr].netId, ai_Chars[b->owner].netId, b->id);
                 e->stage = -1;
                 break;
             }
@@ -13505,7 +13504,7 @@ void he_RunSabotage(int ev)
                     msg.flags = 2;
                     msg.extraFlag = 0;
                     bt = &ai_BTypes[b->type];
-                    msg.to = ai_CharsT[e->chr].netId;
+                    msg.to = ai_Chars[e->chr].netId;
                     msg.time = ai_Time;
                     msg.arg[0] = b->id;
                     msg.arg[1] = util_Random(0x10) - bt->cap247 * 3 + 0x14;
@@ -13603,7 +13602,7 @@ void he_AllocSpying(int ev)
     }
     gm_FindById(&tgt, 0, 0, s->target);
     if (tgt == 0) {
-        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, 0, 100.0f, &s->target);
+        ai_PickActionBuilding((struct AIPER *)&ai_Chars[e->chr], 6, gypsyFilter, 0, 100.0f, &s->target);
         gm_FindById(&tgt, 0, 0, s->target);
         if (tgt == 0) {
             e->exSlot = cm_SendExSetHE(-1, ev);
@@ -13612,7 +13611,7 @@ void he_AllocSpying(int ev)
     }
     memset(ord, 0, sizeof(ord));
     ord[0] = 1;
-    me = &ai_CharsT[e->chr];
+    me = &ai_Chars[e->chr];
     e->end = ai_Time;
     s->until = ai_Time;
     if (ord_DispatchOrder(0x26, (char *)me, ord) == 2)
@@ -13674,11 +13673,11 @@ void he_RunSpying(int ev)
             return;
         c = (AICHAR *)cm_GetSlotValue(s->spy);
         if (c != 0) {
-            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_Chars[e->chr]);
             if (fin != 0)
                 fin->spyPaid += s->fee;
             s->spy = c->netId;
-            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, s->fee);
+            cm_SendMoveGoodsUnchecked(-1, ai_Chars[e->chr].netId, ai_OwnPlayer, s->fee);
             sv_MoveToGroup(0, 0, c->id, (char *)ev);
             e->end = ai_Time;
             e->exSlot = cm_SendExSetHE(1, ev);
@@ -13774,7 +13773,7 @@ void he_RunSpying(int ev)
         c = (AICHAR *)gm_FindChar(s->victim);
         if (c != 0) {
             txt_Format(text, 0x1734, c->id);
-            he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5fa, 0);
+            he_ShowNews(ai_Chars[e->chr].netId, -1, text, 0, 0x5fa, 0);
         }
         e->exSlot = cm_SendExSetHE(-1, ev);
         return;
@@ -13816,7 +13815,7 @@ void he_AllocBrawl(AIJOB *e)
     else
         home = (AIBLD *)gm_BuildQuery(1, 4, victim->id);
     if (home == 0) {
-        if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilter, (int)home, 100.0f, &at) != 0)
+        if (ai_PickActionBuilding((struct AIPER *)&ai_Chars[e->chr], 6, gypsyFilter, (int)home, 100.0f, &at) != 0)
             home = (AIBLD *)gm_BuildQuery(1, 1, at);
     }
     br->meet = home->id;
@@ -13853,11 +13852,11 @@ void he_RunBrawl(AIJOB *e)
             return;
         c = (AICHAR *)cm_GetSlotValue(br->slot);
         if (c != 0) {
-            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_Chars[e->chr]);
             if (fin != 0)
                 fin->spyPaid += br->fee;
             br->thug = c->netId;
-            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, br->fee);
+            cm_SendMoveGoodsUnchecked(-1, ai_Chars[e->chr].netId, ai_OwnPlayer, br->fee);
             sv_MoveToGroup(0, 0, c->id, (char *)e);
             e->stage++;
             br->slot = -1;
@@ -13902,7 +13901,7 @@ void he_RunBrawl(AIJOB *e)
             d.ev = e;
             d.found = 0;
             if (he_DetectAttack((int)&d) != 0) {
-                br->slot = gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, victim->netId, b->id);
+                br->slot = gv_Accuse(0x15, 1, ai_Chars[e->chr].netId, victim->netId, b->id);
                 br->watch = d.found->id;
                 e->stage = 8;
                 e->end = ai_Time;
@@ -13957,7 +13956,7 @@ void he_RunBrawl(AIJOB *e)
     case 4:
         if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        me = &ai_CharsT[e->chr];
+        me = &ai_Chars[e->chr];
         victim = (AICHAR *)gm_FindChar(br->victim);
         if (victim == 0) {
             e->stage = -1;
@@ -14008,7 +14007,7 @@ void he_RunBrawl(AIJOB *e)
                 he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
             }
         }
-        gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, br->victim, br->place);
+        gv_Accuse(0x15, 1, ai_Chars[e->chr].netId, br->victim, br->place);
         if (victim->kind == 6 || victim->kind == 7) {
             e->stage++;
             return;
@@ -14067,12 +14066,12 @@ void he_AllocTheft(AIJOB *e)
     cm_SendSetField(b->id, 0x5a, 2, 2, 0);
     t->rounds = 0;
     if (b->masterId != 0xffff) {
-        master = &ai_CharsT[b->masterId];
+        master = &ai_Chars[b->masterId];
         if (master != 0 && (e->opts & 2) != 0 && b->type != 0x27) {
             for (i = 0; i < 768; i++) {
-                if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != master->netId) {
+                if ((ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) && ai_Chars[i].netId != master->netId) {
                     txt_Format(text, 0x17f4, master->id, b, t->loot);
-                    he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x5ec, b->id, -1, ch_EmptyName, "_NACHRICHTEN_HS_43");
+                    he_MessageBoxQuickjump(ai_Chars[i].netId, -1, text, 0, 0x5ec, b->id, -1, ch_EmptyName, "_NACHRICHTEN_HS_43");
                 }
             }
         }
@@ -14118,7 +14117,7 @@ void he_RunTheft(AIJOB *e)
             }
             if ((e->opts & 2) != 0
                 && (b->type != 0x27
-                    || (b->owner != 0xffff && (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7)))) {
+                    || (b->owner != 0xffff && (ai_Chars[b->owner].kind == 6 || ai_Chars[b->owner].kind == 7)))) {
                 value = (float)gm_EquipmentValue((unsigned char *)b, b->level) + 256.0f;
                 chance = (float)t->loot / value;
                 r = util_Random(100);
@@ -14127,7 +14126,7 @@ void he_RunTheft(AIJOB *e)
                     msg.type = 0x6e;
                     msg.fromId = -1;
                     msg.flags = 1;
-                    msg.to = ai_CharsT[e->chr].netId;
+                    msg.to = ai_Chars[e->chr].netId;
                     msg.time = ai_Time;
                     msg.arg[2] = t->bld;
                     msg.arg[4] = t->loot;
@@ -14178,7 +14177,7 @@ void he_AllocRepair(AIJOB *e)
     e->start = ai_Time;
     gm_AddTime(&e->end, 0, 10, 0);
     r->until = e->end;
-    c = &ai_CharsT[e->chr];
+    c = &ai_Chars[e->chr];
     if (c->b00d >= 9)
         f = 0.4f;
     else if (c->b00d == 8)
@@ -14224,8 +14223,8 @@ void he_RunRepair(AIJOB *e)
         if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0)
             news = 0x60b;
         txt_Format(text, 0x17cb, 0x48e + b->type * 14);
-        if (e->chr != 0xffff && (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7))
-            he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_68");
+        if (e->chr != 0xffff && (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7))
+            he_MessageBoxQuickjump(ai_Chars[e->chr].netId, -1, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_68");
         e->stage = -1;
         return;
     case -2:
@@ -14294,16 +14293,16 @@ void he_RunUpgrade(AIJOB *e)
             m = (AICHAR *)gm_FindCharacterByMaster((int)b);
             if (m != 0 && (m->flags1b4 & 1) != 0)
                 news = 0x60b;
-            me = &ai_CharsT[e->chr];
+            me = &ai_Chars[e->chr];
             if (me->kind == 6) {
                 txt_Format(text, 0x17e7, b);
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_51");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_51");
             }
             if (me->kind == 5 || me->kind == 6) {
                 for (i = 0; i < 768; i++) {
-                    if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && i != me->id) {
+                    if ((ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) && i != me->id) {
                         txt_Format(text, 0x1c32, e->chr, e->chr, 0x49c + b->type * 14);
-                        he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x607, b->id, -1, 0, "_NACHRICHTEN_HS_52");
+                        he_MessageBoxQuickjump(ai_Chars[i].netId, -1, text, 0, 0x607, b->id, -1, 0, "_NACHRICHTEN_HS_52");
                     }
                 }
             }
@@ -14386,7 +14385,7 @@ void he_RunEvent1f(int ev)
                     if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0)
                         news = 0x60b;
                 }
-                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, news, b->id, o->objId, 0, "_NACHRICHTEN_HS_53");
+                he_MessageBoxQuickjump(ai_Chars[e->chr].netId, ai_Chars[e->chr].netId, text, 0, news, b->id, o->objId, 0, "_NACHRICHTEN_HS_53");
             }
             if (gm_IsHomeType((unsigned char *)b)) {
                 q = (AIOBJ *)gm_Query((void *)b->objList, 1, 4, 2);
@@ -14442,7 +14441,7 @@ void he_RunDemolish(int ev)
         if (b == 0)
             return;
         for (i = 0; i < 768; i++) {
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if (c->bld == b) {
                 if (c->model != 0)
                     cm_SendCharHalt(c->netId);
@@ -14462,7 +14461,7 @@ void he_RunDemolish(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
         if (b != 0 && ai_BTypes[b->type].kind != 0xf) {
             for (i = 0; i < 768; i++) {
-                c = &ai_CharsT[i];
+                c = &ai_Chars[i];
                 if ((c->kind == 6 || c->kind == 7) && c->id != b->owner) {
                     txt_Format(text, 0x1c52, b->owner, b);
                     he_ShowNews(c->netId, -1, text, 0, 0x5ed, "_NACHRICHTEN_HS_67");
@@ -14524,7 +14523,7 @@ void he_RunBuyBuilding(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        if (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7) {
+        if (ai_Chars[b->masterId].kind == 6 || ai_Chars[b->masterId].kind == 7) {
             he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_NULL", 0x5ec);
             d2_SetForm(e->slot->win, 0);
             io_PrintText(0x17e8, buyer->id, b, p->price);
@@ -14539,23 +14538,23 @@ void he_RunBuyBuilding(int ev)
         bt = &ai_BTypes[b->type];
         value = gm_EquipmentValue((unsigned char *)b, b->level);
         if (bt->kind == 2) {
-            home = ai_CharsT[b->masterId].bld2;
+            home = ai_Chars[b->masterId].bld2;
             if (home != 0) {
                 if (home == b)
                     factor = 5.0f;
-                else if (ai_CharsT[b->masterId].bld2 != 0 && ai_CharsT[b->masterId].bld2->type < b->type)
+                else if (ai_Chars[b->masterId].bld2 != 0 && ai_Chars[b->masterId].bld2->type < b->type)
                     factor = 1.2f;
             }
         } else {
             n = 0;
             /* @original bt is taken again here (the original's dead lea of the type record after the kind read) */
             bt = &ai_BTypes[b->type];
-            if (gm_BuildQuery(2, 4, ai_CharsT[b->masterId].id, 5, (unsigned char)bt->kind) != 0) {
+            if (gm_BuildQuery(2, 4, ai_Chars[b->masterId].id, 5, (unsigned char)bt->kind) != 0) {
                 do
                     n++;
                 while (gm_BuildNext() != 0);
             }
-            if (n <= 1 && (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7 || ai_CharsT[b->masterId].kind == 5))
+            if (n <= 1 && (ai_Chars[b->masterId].kind == 6 || ai_Chars[b->masterId].kind == 7 || ai_Chars[b->masterId].kind == 5))
                 factor = 8.0f;
             else
                 factor = 1.6f;
@@ -14565,7 +14564,7 @@ void he_RunBuyBuilding(int ev)
             txt_Format(text, 0x17e9, b->owner, b);
             he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
             cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
-            cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
+            cm_SendMoveGoodsUnchecked(ai_Chars[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
             if (b->owner == b->masterId)
                 cm_SendOwnership(b->id, buyer->netId, buyer->netId);
             else
@@ -14589,7 +14588,7 @@ void he_RunBuyBuilding(int ev)
             txt_Format(text, 0x17e9, b->owner, b);
             he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
             cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
-            cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
+            cm_SendMoveGoodsUnchecked(ai_Chars[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
             if (b->owner == b->masterId)
                 cm_SendOwnership(b->id, buyer->netId, buyer->netId);
             else
@@ -14643,7 +14642,7 @@ void he_AllocKredit(int ev)
     b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
     if (b == 0 || (e->opts & 2) == 0)
         return;
-    owner = &ai_CharsT[b->owner];
+    owner = &ai_Chars[b->owner];
     partner = (AICHAR *)gm_FindChar(l->partner);
     if (owner->kind == 6 || owner->kind == 7) {
         cash = 0;
@@ -14686,7 +14685,7 @@ void he_RunKredit(int ev)
             b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
             if (b != 0) {
                 partner = (AICHAR *)gm_FindChar(l->partner);
-                owner = &ai_CharsT[b->owner];
+                owner = &ai_Chars[b->owner];
                 if (partner == 0) {
                     txt_Format(text, 0x18e7, l->amount);
                     he_ShowNews(owner->netId, -1, text, 0, 0x5ff, 0);
@@ -14717,7 +14716,7 @@ void he_RunKredit(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
         if (b == 0)
             break;
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         partner = (AICHAR *)gm_FindChar(l->partner);
         if ((e->opts & 2) == 0)
             break;
@@ -14742,7 +14741,7 @@ void he_RunKredit(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
         if (b != 0) {
             partner = (AICHAR *)gm_FindChar(l->partner);
-            owner = &ai_CharsT[b->owner];
+            owner = &ai_Chars[b->owner];
             if (partner == 0) {
                 txt_Format(text2, 0x18e7, l->amount);
                 he_ShowNews(owner->netId, -1, text2, 0, 0x5ff, 0);
@@ -14936,7 +14935,7 @@ void he_RunMasterExamPassed(int ev)
         if (c->kind == 6 || c->kind == 7 || c->kind == 5) {
             txt_Format(text, 0x1c1f, c->id, x->job + sexText, x->newJob + sexText);
             for (i = 0; i < 768; i++) {
-                o = &ai_CharsT[i];
+                o = &ai_Chars[i];
                 if ((o->kind == 6 || o->kind == 7) && o->netId != c->netId)
                     he_ShowNews(o->netId, -1, text, 0, 0x5fe, 0);
             }
@@ -15567,10 +15566,10 @@ void he_RunEvent38(int ev)
         }
         d = x->amount / gm_PlayerFactor(1000, ai_OwnPlayer) * 20;
         for (i = 0; i < 768; i++) {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == b)
-                cm_SendRelations(ai_CharInts[e->chr][0], ai_CharsT[i].netId, d, 0);
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == b)
+                cm_SendRelations(ai_CharInts[e->chr][0], ai_Chars[i].netId, d, 0);
         }
-        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+        if (ai_Chars[e->chr].kind == 6 || ai_Chars[e->chr].kind == 7) {
             txt_Format(text, 0x19ab, b);
             he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
         }
@@ -15858,11 +15857,11 @@ void he_RunRoutine(AIJOB *ev)
         for (i = 0; i < 768 && count < 1; i++) {
             int bld, contact;
 
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0 && (c->flags1c8 & 0x1000) == 0
                 && he_FigureContact(c, &bld, &contact) != 0 && bld != c->model->bldId) {
                 if (gm_IsHomeType(c->bld) == 0 && c->bld->object != 0) {
-                    if (ai_CharsT[c->bld->owner].kind != 6 && ai_CharsT[c->bld->owner].kind != 7 && ch_Count(0, 0) < 0x20) {
+                    if (ai_Chars[c->bld->owner].kind != 6 && ai_Chars[c->bld->owner].kind != 7 && ch_Count(0, 0) < 0x20) {
                         b = (AIBLD *)gm_FindBuildingById(c->model->bldId);
                         dist = 0.0f;
                         if (b != 0 && b->object != 0) {
@@ -15897,13 +15896,13 @@ void he_RunRoutine(AIJOB *ev)
             for (i = 0; i < 768; i++) {
                 int bld, contact;
 
-                if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].model != 0
-                    && (ai_CharsT[i].flags1c8 & 0x1000) == 0 && he_FigureContact(&ai_CharsT[i], &contact, &bld) != 0
-                    && contact != ai_CharsT[i].model->bldId) {
-                    cm_SendCharHalt(ai_CharsT[i].netId);
-                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, contact, bld, "dummy_EINGANG");
-                    cm_RequestChrMove(ai_CharsT[i].netId, contact, bld, ch_EmptyName);
-                    ai_CharsT[i].flags1c8 |= 0x1000;
+                if ((ai_Chars[i].title != 0 || ai_Chars[i].jobId != 0) && ai_Chars[i].bld != 0 && ai_Chars[i].model != 0
+                    && (ai_Chars[i].flags1c8 & 0x1000) == 0 && he_FigureContact(&ai_Chars[i], &contact, &bld) != 0
+                    && contact != ai_Chars[i].model->bldId) {
+                    cm_SendCharHalt(ai_Chars[i].netId);
+                    cm_RequestChrMoveToUniverse(ai_Chars[i].netId, contact, bld, "dummy_EINGANG");
+                    cm_RequestChrMove(ai_Chars[i].netId, contact, bld, ch_EmptyName);
+                    ai_Chars[i].flags1c8 |= 0x1000;
                 }
             }
             ev->end = ai_Time;
@@ -15928,14 +15927,14 @@ void he_RunRoutine(AIJOB *ev)
         for (i = 0; i < 768; i++) {
             int place, obj;
 
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
                 bt = &ai_BTypes[c->bld->type];
                 if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
                     && he_FindFigurePlace(c, &place, &obj, 0) != 0
                     && (place != c->model->bldId || obj != c->model->scriptGroup)
                     && (c->flags1c8 & 0x800) == 0
-                    && (ai_CharsT[c->bld->owner].kind == 6 || ai_CharsT[c->bld->owner].kind == 7)) {
+                    && (ai_Chars[c->bld->owner].kind == 6 || ai_Chars[c->bld->owner].kind == 7)) {
                     cm_SendCharHalt(c->netId);
                     if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
                         if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
@@ -15955,7 +15954,7 @@ void he_RunRoutine(AIJOB *ev)
         for (i = 0; i < 768 && count < 1; i++) {
             int place, obj;
 
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
                 bt = &ai_BTypes[c->bld->type];
                 if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
@@ -15986,26 +15985,26 @@ void he_RunRoutine(AIJOB *ev)
             for (i = 0; i < 768; i++) {
                 int bld, contact;
 
-                if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].bld2 != 0 && ai_CharsT[i].model != 0) {
-                    bt = &ai_BTypes[ai_CharsT[i].bld->type];
+                if ((ai_Chars[i].title != 0 || ai_Chars[i].jobId != 0) && ai_Chars[i].bld != 0 && ai_Chars[i].bld2 != 0 && ai_Chars[i].model != 0) {
+                    bt = &ai_BTypes[ai_Chars[i].bld->type];
                     if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
-                        && he_FindFigurePlace(&ai_CharsT[i], &bld, &contact, 0) != 0
-                        && (bld != ai_CharsT[i].model->bldId || contact != ai_CharsT[i].model->scriptGroup)
-                        && (ai_CharsT[i].flags1c8 & 0x800) == 0) {
-                        cm_SendCharHalt(ai_CharsT[i].netId);
-                        if (n != 0 && gm_GetGoodsValue((char *)&ai_CharsT[i]) > 0xc80 && (short)util_Random(2) != 0) {
-                            if (he_PickNearBuilding(&ai_CharsT[i], n, inns, &bld, &contact) != 0) {
-                                cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
-                                cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                        && he_FindFigurePlace(&ai_Chars[i], &bld, &contact, 0) != 0
+                        && (bld != ai_Chars[i].model->bldId || contact != ai_Chars[i].model->scriptGroup)
+                        && (ai_Chars[i].flags1c8 & 0x800) == 0) {
+                        cm_SendCharHalt(ai_Chars[i].netId);
+                        if (n != 0 && gm_GetGoodsValue((char *)&ai_Chars[i]) > 0xc80 && (short)util_Random(2) != 0) {
+                            if (he_PickNearBuilding(&ai_Chars[i], n, inns, &bld, &contact) != 0) {
+                                cm_RequestChrMoveToUniverse(ai_Chars[i].netId, bld, contact, "dummy_EINGANG");
+                                cm_RequestChrMove(ai_Chars[i].netId, bld, contact, ch_EmptyName);
                             }
                         } else if (contact != -1) {
-                            cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
-                            cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                            cm_RequestChrMoveToUniverse(ai_Chars[i].netId, bld, contact, "dummy_EINGANG");
+                            cm_RequestChrMove(ai_Chars[i].netId, bld, contact, ch_EmptyName);
                         } else {
-                            cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, -1, "dummy_TUER");
+                            cm_RequestChrMoveToUniverse(ai_Chars[i].netId, bld, -1, "dummy_TUER");
                         }
-                        ai_CharsT[i].flags1c8 |= 0x800;
-                        cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0x800, 0x1000);
+                        ai_Chars[i].flags1c8 |= 0x800;
+                        cm_SendSetField(ai_Chars[i].netId, 0x1c8, 4, 0x800, 0x1000);
                     }
                 }
             }
@@ -16459,10 +16458,10 @@ void he_RunKidnap(AIJOB *ev)
             }
             if (victim->kind == 6 || victim->kind == 5) {
                 for (k = 0; k < 768; k++) {
-                    if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].netId != victim->netId
-                        && ai_CharsT[k].netId != master->netId) {
+                    if ((ai_Chars[k].kind == 6 || ai_Chars[k].kind == 7) && ai_Chars[k].netId != victim->netId
+                        && ai_Chars[k].netId != master->netId) {
                         txt_Format(text, 0x19c0, victim->id);
-                        he_ShowNews(ai_CharsT[k].netId, -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_73");
+                        he_ShowNews(ai_Chars[k].netId, -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_73");
                     }
                 }
             }
@@ -16570,7 +16569,7 @@ void he_RunRansom(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         if (b->hostage == -1)
             b->hostage = victim->netId;
         if (victim->heldRounds <= 0) {
@@ -16817,25 +16816,7 @@ void he_AllocBurglary(AIJOB *ev)
    and 0x2af / 0x2b0, by half a chance, n * 0.1 of its amount (at least 1, n the gang's size) is sold into the store and
    counted at its price; the loot list goes to the master (0x19e6, "_NACHRICHTEN_HS_74") and the owner is told 0x19e8
    ("_NACHRICHTEN_HS_27"); a failed one tells the master 0x19e7 ("_NACHRICHTEN_HS_75") and the owner 0x19e9. The spy
-   report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it
-   @deep s48: fixed the watch range (5000.0f, the original's 0x459c4000; ours had 2500.0f). Stage 2's code
-   (the original loads d.found into edi before gv_Accuse and keeps it across the call) needs d escaped
-   beyond he_DetectAttack: with the callee unknown (dcp try: an extern he_DetectAttackX prototype) or a
-   store of d into a static in he_DetectAttack (unitprobe), stage 2 matches; then d must be a block local
-   of case 2's if (b != 0) block (else d and vals stop sharing a slot: frame 0x740): 104 -> 90 ins, left
-   slots 134 / order 6 only. bprobe he 0x561a20: a unit boundary there changes he_RunBurglary and
-   he_RunRobbery only (the twin has the same stage 2 hunk); dcp unit split he 0x561a20 --dry-run moves 36
-   functions (0x561a20 .. he_RegisterEventTypes02), no data. Not split yet: the callers above (he_RunBrawl
-   ..) read d.found after the call and need no knowledge, so the boundary is not proven by them; check the
-   .rdata literal runs for a TU break near 0x561a20 (dcp-layout) before splitting. Left with the unknown
-   callee: the slot table: ours (c2frame --names) amt-group 0x10, know/ok/stall 0x14, owner 0x18, money
-   0x1c, report/reward/room 0x20, b 0x24, master 0x28; the original has know at 0x10, the report group at
-   0x1c, master at 0x2c, the amt group at 0x20: the amt group (weight 19 with six float temps) ranks lower
-   in the original. prior: size queue s20 (twin of he_RunRobbery): 348 -> 108 ins, frame 0x740 -> 0x738
-   (the original's): the reward / spy report union (one word for both) was the stand-in for VC6's slot
-   packing; plain locals do it: reward a local of case 4's if (b != 0) block (escaped by &reward, so only a
-   block local shares a slot), report = 0 at function scope, vals a local of the loot block (R alone: 106
-   ins, frame 0x740). Left: slots 134, code 22, order 10. */
+   report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it */
 void he_RunBurglary(AIJOB *ev)
 {
     HEBURGLARY *x = (HEBURGLARY *)ev;
@@ -16894,7 +16875,7 @@ void he_RunBurglary(AIJOB *ev)
         if (b != 0) {
             HEDETECT d;
 
-            owner = &ai_CharsT[b->owner];
+            owner = &ai_Chars[b->owner];
             d.bld = b;
             d.range = 5000.0f;
             d.ev = ev;
@@ -16922,7 +16903,7 @@ void he_RunBurglary(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        guard = &ai_CharsT[((AIJOB *)w)->chr];
+        guard = &ai_Chars[((AIJOB *)w)->chr];
         cr = (CRIME *)cm_GetSlotValue(x->slot);
         if (guard != 0 && cr != 0)
             cm_SendProofExecuted(cr->id, guard->netId);
@@ -16943,7 +16924,7 @@ void he_RunBurglary(AIJOB *ev)
                 g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
                 if (g != 0)
                     master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
-                guard = &ai_CharsT[((AIJOB *)w)->chr];
+                guard = &ai_Chars[((AIJOB *)w)->chr];
                 if (guard != 0 && master != 0) {
                     reward = gm_PlayerFactor(util_Random(200) + 0x226, ai_OwnPlayer);
                     txt_Format(text, 0x19ea, b, reward, guard->id);
@@ -16985,7 +16966,7 @@ void he_RunBurglary(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         if (owner == 0) {
             ev->stage = -1;
             return;
@@ -17013,7 +16994,7 @@ void he_RunBurglary(AIJOB *ev)
                 know = 0.0f;
             if (0.001f > know)
                 know = 0.001f;
-            owner = &ai_CharsT[b->owner];
+            owner = &ai_Chars[b->owner];
             skill = gm_BuildingSkill(b, 7, 1);
             sk = skill * 0.01f;
             ok = util_RandomF() < (know = (float)(know - sk * 0.35));
@@ -17262,7 +17243,7 @@ void he_RunBuildingSpying(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
         worth = gm_GetWorth(owner->id);
         if (worth >= 1600000)
@@ -17626,8 +17607,8 @@ void he_RunAttack(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        owner = &ai_CharsT[b->owner];
-        me = &ai_CharsT[ev->chr];
+        owner = &ai_Chars[b->owner];
+        me = &ai_Chars[ev->chr];
         defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
         home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
         o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
@@ -17654,8 +17635,8 @@ void he_RunAttack(AIJOB *ev)
             }
             n = 0;
             for (i = 0; i < 768 && n < 6; i++) {
-                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
-                    party.raid.defenders[n] = ai_CharsT[i].netId;
+                if (ai_Chars[i].health != 0 && ai_Chars[i].bld == b) {
+                    party.raid.defenders[n] = ai_Chars[i].netId;
                     n++;
                 }
             }
@@ -17680,7 +17661,7 @@ void he_RunAttack(AIJOB *ev)
             } else {
                 home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
                 b = (AIBLD *)gm_BuildQuery(1, 1, ev->raidTarget);
-                loot = cm_LootStock(b, home, &ai_CharsT[ev->chr], &ai_CharsT[b->owner]);
+                loot = cm_LootStock(b, home, &ai_Chars[ev->chr], &ai_Chars[b->owner]);
                 if (home != 0)
                     home->roundSums[0] += loot;
                 txt_Format(text, 0x1c54, b, loot);
@@ -17700,7 +17681,7 @@ void he_RunAttack(AIJOB *ev)
         role = cm_FightRole(home) + 0x1125;
         txt_Format(text, 0x114b, role, b->owner, b, role);
         he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
-        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+        if (ai_Chars[b->owner].kind == 6 || ai_Chars[b->owner].kind == 7) {
             txt_Format(text, 0x1c56, b);
             he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
         }
@@ -18007,7 +17988,7 @@ void he_RunBurn(AIJOB *ev)
                         snd_QueueVoice(-8, 0, "Brand_Betroffen", 0, 100);
                         if (x->news != 0) {
                             txt_Format(text, 0x42d6, b);
-                            he_MessageBoxQuickjump(ai_CharsT[ai_PlayerId].netId, -1, text, 0, 0x5ed, b->id, -1, 0,
+                            he_MessageBoxQuickjump(ai_Chars[ai_PlayerId].netId, -1, text, 0, 0x5ed, b->id, -1, 0,
                                                    ch_EmptyName);
                         }
                     }
@@ -18047,9 +18028,9 @@ void he_RunBurn(AIJOB *ev)
             n = (AIBLD *)gm_NearestBuilding((unsigned char *)b, 3);
             if (n != 0) {
                 for (i = 0; i < 768; i++) {
-                    if (ai_CharsT[i].health != 0 && ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == b->id
-                        && (ai_CharsT[i].jobKind == 0 || ai_CharsT[i].jobKind == 4) && k < 16) {
-                        c = &ai_CharsT[i];
+                    if (ai_Chars[i].health != 0 && ai_Chars[i].model != 0 && ai_Chars[i].model->bldId == b->id
+                        && (ai_Chars[i].jobKind == 0 || ai_Chars[i].jobKind == 4) && k < 16) {
+                        c = &ai_Chars[i];
                         x->helpers[k] = c->netId;
                         cm_SendCharClear(x->helpers[k], 0, 0);
                         cm_SendChrStop(x->helpers[k]);
@@ -18370,12 +18351,12 @@ void he_RunNewWorker(AIJOB *ev)
         o = (AIBLD *)gm_FindBuildingById(w->bld);
         if (r != 0 && o != 0) {
             if (o->masterId != 0xffff)
-                cm_SendOwnership(o->id, ai_CharsT[o->masterId].netId, r->netId);
+                cm_SendOwnership(o->id, ai_Chars[o->masterId].netId, r->netId);
             else
                 cm_SendOwnership(o->id, r->netId, r->netId);
             cm_SendMoveGoods(r->netId, -1, ai_OwnPlayer, gm_PlayerFactor(0xbb8, ai_OwnPlayer));
             if (w->share != 0) {
-                own = &ai_CharsT[o->masterId];
+                own = &ai_Chars[o->masterId];
                 if (own != 0) {
                     if (own->kind == 6 || own->kind == 7) {
                         txt_Format(text, 0x17e6, o, r->id, w->share);
@@ -18555,9 +18536,9 @@ void he_RunKillPlayer(AIJOB *ev)
             evt_Stop(evt_FindById(p->scene->scriptId));
         sv_MoveToGroup(0, 0, p->id, 0);
         if ((ev->opts & 2) != 0 && (q = p->bld) != 0
-            && (ai_CharsT[q->owner].kind == 6 || ai_CharsT[q->owner].kind == 7)) {
+            && (ai_Chars[q->owner].kind == 6 || ai_Chars[q->owner].kind == 7)) {
             txt_Format(text, 0x42f4, p->id, q);
-            he_MessageBoxQuickjump(ai_CharsT[p->bld->owner].netId, p->bld->id, text, 0, 0x60a, p->bld->id, -1,
+            he_MessageBoxQuickjump(ai_Chars[p->bld->owner].netId, p->bld->id, text, 0, 0x60a, p->bld->id, -1,
                                    ch_EmptyName, ch_EmptyName);
         }
         p->bld = 0;
@@ -18849,7 +18830,7 @@ void he_RunRobbery(AIJOB *ev)
         if (b != 0) {
             HEDETECT d;
 
-            owner = &ai_CharsT[b->owner];
+            owner = &ai_Chars[b->owner];
             d.bld = b;
             d.range = 2500.0f;
             d.ev = ev;
@@ -18907,7 +18888,7 @@ void he_RunRobbery(AIJOB *ev)
             int reward;
 
             master = (AICHAR *)gm_FindChar(ai_CharInts[ev->chr][0]);
-            guard = &ai_CharsT[((AIJOB *)w)->chr];
+            guard = &ai_Chars[((AIJOB *)w)->chr];
             if (guard != 0 && master != 0) {
                 reward = gm_PlayerFactor(util_Random(200) + 0x226, ai_OwnPlayer);
                 txt_Format(text, 0x19ea, b, reward, guard->id);
@@ -18945,7 +18926,7 @@ void he_RunRobbery(AIJOB *ev)
             ev->stage = -2;
             return;
         }
-        owner = &ai_CharsT[b->owner];
+        owner = &ai_Chars[b->owner];
         g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
         if (g != 0) {
             room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
@@ -19068,7 +19049,7 @@ void he_RunTitleDue(AIJOB *ev)
 
     switch (ev->stage) {
     case 0:
-        if ((ai_CharsT[ev->chr].flags1c8 & 0x80000000) != 0) {
+        if ((ai_Chars[ev->chr].flags1c8 & 0x80000000) != 0) {
             ev->end = ai_Time;
             gm_AddTime(&ev->end, 4, 0, 0);
             return;
@@ -19079,9 +19060,9 @@ void he_RunTitleDue(AIJOB *ev)
             m.fromId = -1;
             m.flags = 9;
             m.arg[2] = 2;
-            m.arg[0] = m.to = ai_CharsT[ev->chr].netId;
+            m.arg[0] = m.to = ai_Chars[ev->chr].netId;
             cm_SendLongMessage((char *)&m);
-            ai_CharsT[ev->chr].flags1c8 |= 0x80000000;
+            ai_Chars[ev->chr].flags1c8 |= 0x80000000;
             ev->end = ai_Time;
             gm_AddTime(&ev->end, 4, 0, 0);
         } else {
@@ -19189,7 +19170,7 @@ void he_RunHint(AIJOB *ev)
             return;
         v = he_Hints[h->entry].text;
         if (v != 0 && v != -1 && ai_GamePanel.byte[1] != 0)
-            he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, d2_Strings[v], 0x40, 0x5f9, 0);
+            he_ShowNews(ai_Chars[ai_PlayerId].netId, -1, d2_Strings[v], 0x40, 0x5f9, 0);
         h->entry++;
         if (he_Hints[h->entry].text == 0) {
             ev->stage = 1;
@@ -19231,7 +19212,7 @@ void he_RunTip(AIJOB *ev)
         if (st != 0)
             return;
         if (ai_GamePanel.byte[3] != 0) {
-            he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, txt_TipTexts[he_TipOrder[t->entry]], 0, 0x5f9, 0);
+            he_ShowNews(ai_Chars[ai_PlayerId].netId, -1, txt_TipTexts[he_TipOrder[t->entry]], 0, 0x5f9, 0);
             t->entry++;
             if (t->entry > 0x1a)
                 ev->stage = 1;
@@ -19275,7 +19256,7 @@ void he_RunTutorialBuildingTour(AIJOB *ev)
     case 0:
         if (ai_GameState == 0)
             return;
-        ai_CharsT[ev->chr].kind = 5;
+        ai_Chars[ev->chr].kind = 5;
         ev->stage++;
         return;
     case 1:
@@ -19305,7 +19286,7 @@ void he_RunTutorialBuildingTour(AIJOB *ev)
         ev->end.min = util_Random(0x3c);
         return;
     case 2:
-        ai_CharsT[ev->chr].kind = 6;
+        ai_Chars[ev->chr].kind = 6;
         /* fall through */
     case -2:
     case -1:

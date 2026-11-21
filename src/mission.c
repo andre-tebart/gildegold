@@ -28,7 +28,6 @@
 #include "sblib.h"
 #include "sv.h"
 #include "gv.h"
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 /* 0x4b39f0, clears the running missions */
 int ai_ClearMissions(void)
 {
@@ -638,9 +637,9 @@ int ai_CondCharShare(AICHAR *c, G13TYPE *t)
     n = 0;
     same = 0;
     for (i = 0; i < 0x300; i++) {
-        if (ai_CharsT[i].kind < 10) {
+        if (ai_Chars[i].kind < 10) {
             n++;
-            if (G13_B(&ai_CharsT[i], 0x0c) == G13_B(c, 0x0c))
+            if (G13_B(&ai_Chars[i], 0x0c) == G13_B(c, 0x0c))
                 same++;
         }
     }
@@ -816,7 +815,7 @@ int ai_CondPlayerHoldsNoBuilding(AICHAR *c, G13TYPE *t)
     AIBLD *b;
 
     for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = gm_BuildNext()) {
-        if (b->owner != 0xffff && ai_CharsT[b->owner].kind == 5)
+        if (b->owner != 0xffff && ai_Chars[b->owner].kind == 5)
             return 0;
     }
     return 1;
@@ -977,7 +976,7 @@ void ai_PlayerShare(int k, G13STAT *s)
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         w = b->owner;
-        if (w != 0xffff && (ai_CharsT[w].kind == 6 || ai_CharsT[w].kind == 7))
+        if (w != 0xffff && (ai_Chars[w].kind == 6 || ai_Chars[w].kind == 7))
             same++;
     }
     s->same = same;
@@ -1157,7 +1156,7 @@ void ai_MissionCompleteDialog(int id)
     G13MIS *nm;
     int again, quit, o1, o2, o3, view, h;
 
-    c = &ai_CharsT[ai_PlayerId];
+    c = &ai_Chars[ai_PlayerId];
     again = 0;
     quit = 0;
     nm = 0;
@@ -1236,7 +1235,7 @@ void ai_MissionNextDialog(int id)
     again = 0;
     quit = 0;
     t = 0;
-    c = &ai_CharsT[ai_PlayerId];
+    c = &ai_Chars[ai_PlayerId];
     for (i = 0; i < 0x80; i++) {
         if (ai_Missions[i].type != 0 && ai_Missions[i].owner == c->netId) {
             t = ai_GetMissionType(ai_Missions[i].type);
@@ -1316,7 +1315,7 @@ void ai_MissionResultDialog(int id)
     int r, view;
 
     r = 0;
-    c = &ai_CharsT[ai_PlayerId];
+    c = &ai_Chars[ai_PlayerId];
     t = ai_GetMissionType(ai_Missions[0].type);
     view = d2_OpenForm(0, 0, "special\\mission");
     d2_CentreViewWindows(view);
@@ -1392,7 +1391,7 @@ void ai_MissionCompleteSingle(int id)
 
     t = 0;
     next = -1;
-    c = &ai_CharsT[ai_PlayerId];
+    c = &ai_Chars[ai_PlayerId];
     for (i = 0; i < 0x80; i++) {
         if (ai_Missions[i].type != 0 && ai_Missions[i].owner == c->netId) {
             t = ai_GetMissionType(ai_Missions[i].type);
@@ -1436,7 +1435,7 @@ void ai_MissionCompleteSingle(int id)
 void ai_MissionCompleteSequence(int id)
 {
     if (net_Conn.s != -1) {
-        if (ai_CharsT[ai_PlayerId].netId == ai_MissionPartner)
+        if (ai_Chars[ai_PlayerId].netId == ai_MissionPartner)
             ai_MissionCompleteByMode(id);
         else
             ai_MissionResultByMode(id);

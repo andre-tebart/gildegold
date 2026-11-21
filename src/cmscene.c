@@ -146,7 +146,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
 #define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
@@ -386,7 +385,7 @@ void cm_RunCouncilSession(G28REC *a)
         }
         sv_SyncText(&ch_EmptyName);
         if (amt_IsColumnDecided(kind) == 0) {
-            if (a->host == ai_CharsT[ai_PlayerId].netId)
+            if (a->host == ai_Chars[ai_PlayerId].netId)
                 amt_ElectOffices(kind, n, offices);
             continue;
         }
@@ -555,7 +554,7 @@ void cm_RunCouncilSession(G28REC *a)
                 io_PrintText("$C");
                 io_PrintText(0x12d6, tally[0], tally[1], holder->id);
                 cm_RunSceneTicks(0xfa0);
-                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                if (a->host == ai_Chars[ai_PlayerId].netId) {
                     for (i = 0; i < nh; i++) {
                         s = &cm_CutInfosT[i];
                         if (s->playerId == holder->netId)
@@ -578,7 +577,7 @@ void cm_RunCouncilSession(G28REC *a)
                 io_PrintText("$C");
                 io_PrintText(0x12d7, tally[0], tally[1], holder->id, holder->id);
                 cm_RunSceneTicks(0xfa0);
-                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                if (a->host == ai_Chars[ai_PlayerId].netId) {
                     for (i = 0; i < nh; i++) {
                         s = &cm_CutInfosT[i];
                         if (s->playerId == holder->netId)
@@ -655,7 +654,7 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetForm(viewLeft, 0);
             napp = 0;
             for (i = 0; i < 768 && napp < offices[j].cnt && napp < 4; i++) {
-                c = &ai_CharsT[i];
+                c = &ai_Chars[i];
                 if (c->appliedOffice == offices[j].kind) {
                     applicants[napp] = c;
                     d2_SetForm(viewLeft, napp + 1);
@@ -712,7 +711,7 @@ void cm_RunCouncilSession(G28REC *a)
                 io_PrintText("$C");
                 io_PrintText(0x12e0, applicants[0]->id, offices[j].kind + 0x253);
                 cm_RunSceneTicks(0xfa0);
-                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                if (a->host == ai_Chars[ai_PlayerId].netId) {
                     slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[0], 0, 1, 0xff);
                     while (cm_GetSlotState(slot) == 0)
                         sv_PumpNet();
@@ -728,7 +727,7 @@ void cm_RunCouncilSession(G28REC *a)
                 d2_Objs[applicantRows[r].ctl].highlighted = 1;
                 io_PrintText(0x12e2, applicants[r]->id);
                 cm_RunSceneTicks(0xfa0);
-                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                if (a->host == ai_Chars[ai_PlayerId].netId) {
                     slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[r], 0, 1, 0xff);
                     while (cm_GetSlotState(slot) == 0)
                         sv_PumpNet();
@@ -783,7 +782,7 @@ void cm_RunCouncilSession(G28REC *a)
                         io_PrintText("$C");
                         io_PrintText(0x12e5, offices[j].kind + 0x253, applicants[win]->id);
                         cm_RunSceneTicks(0xfa0);
-                        if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                        if (a->host == ai_Chars[ai_PlayerId].netId) {
                             slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[win], 0, 1, 0xff);
                             while (cm_GetSlotState(slot) == 0)
                                 sv_PumpNet();
@@ -805,7 +804,7 @@ void cm_RunCouncilSession(G28REC *a)
                     d2_Objs[applicantRows[win].ctl].highlighted = 1;
                     io_PrintText(0x12e4, applicants[win]->id);
                     cm_RunSceneTicks(0xfa0);
-                    if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                    if (a->host == ai_Chars[ai_PlayerId].netId) {
                         slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[win], 0, 1, 0xff);
                         while (cm_GetSlotState(slot) == 0)
                             sv_PumpNet();
@@ -828,7 +827,7 @@ void cm_RunCouncilSession(G28REC *a)
         }
         d2_CloseView(view);
     }
-    if (a->host == ai_CharsT[ai_PlayerId].netId)
+    if (a->host == ai_Chars[ai_PlayerId].netId)
         amt_UpdateOffices();
     cm_UnloadVoiceBank(bankDepose);
     cm_UnloadVoiceBank(bankElect);
@@ -1402,7 +1401,7 @@ void cm_RunTrial(G28REC *m)
     cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"0");
     cm_SetViewEnabled(cm_TextBox, 0);
     cm_RunSceneParty((char *)m, (int)&plan);
-    if (m->host == ai_CharsT[ai_PlayerId].netId)
+    if (m->host == ai_Chars[ai_PlayerId].netId)
         gv_RetireCrimeIds(c1->netId, nlist, list);
     cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"1");
     for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[1]; i++)
@@ -1480,7 +1479,7 @@ void cm_RunTrial(G28REC *m)
             int texts[7] = {0x14ed, 0x14f2, 0x14f7, 0x14fc, 0x1501, 0x1506, 0x150b};
             char path[0x100];
 
-            if (m->host == ai_CharsT[ai_PlayerId].netId) {
+            if (m->host == ai_Chars[ai_PlayerId].netId) {
                 fee = plan.rating30 / 3;
                 cm_SendMoveGoodsUnchecked(c2->netId, c0->netId, ai_OwnPlayer, fee);
                 cm_SendMoveGoodsUnchecked(c3->netId, c0->netId, ai_OwnPlayer, fee);
@@ -1724,10 +1723,10 @@ void cm_RunTrial(G28REC *m)
         }
         cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_7_STRAFEN", sentence, 100);
         cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", (c1->sex == 1) & 1, 200);
-        if (m->host == ai_CharsT[ai_PlayerId].netId)
+        if (m->host == ai_Chars[ai_PlayerId].netId)
             gv_PassSentence(c1, sentence, c2, c3, c4);
         io_PrintText(0x1531);
-        if (m->host == ai_CharsT[ai_PlayerId].netId) {
+        if (m->host == ai_Chars[ai_PlayerId].netId) {
             fee = plan.rating2c / 3;
             cm_SendMoveGoodsUnchecked(c2->netId, c1->netId, ai_OwnPlayer, fee);
             cm_SendMoveGoodsUnchecked(c3->netId, c1->netId, ai_OwnPlayer, fee);
@@ -1750,14 +1749,14 @@ void cm_RunTrial(G28REC *m)
         io_PrintText("$C");
         io_PrintText(0x1557, plan.rating2c, c0->id);
         cm_WaitTicks(4);
-        if (m->host == ai_CharsT[ai_PlayerId].netId) {
+        if (m->host == ai_Chars[ai_PlayerId].netId) {
             fee = plan.rating2c / 3;
             cm_SendMoveGoodsUnchecked(c2->netId, c0->netId, ai_OwnPlayer, fee);
             cm_SendMoveGoodsUnchecked(c3->netId, c0->netId, ai_OwnPlayer, fee);
             cm_SendMoveGoodsUnchecked(c4->netId, c0->netId, ai_OwnPlayer, fee);
         }
     }
-    if (m->host == ai_CharsT[ai_PlayerId].netId) {
+    if (m->host == ai_Chars[ai_PlayerId].netId) {
         if (plan.tortured != 0 && plan.penalty < 0.0f)
             gm_AddHealth(c1->id, (int)plan.penalty);
         if (ai_InventoryHas(c1, 0x22e) != 0) {
@@ -2284,11 +2283,11 @@ void cm_DuelOutcome(G28REC *m)
         return;
     if (amt_FindOffice((char *)w, &kind, &office) == 0)
         return;
-    if (m->host != ai_CharsT[ai_PlayerId].netId)
+    if (m->host != ai_Chars[ai_PlayerId].netId)
         return;
     amt_SendOfficeMessage(office.idx, 0, 0, 4, 0xff);
     for (i = 0; i < 768; i++) {
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->kind == 6 || c->kind == 7) {
             if (w->sex != 0)
                 txt = 0x10c9;
@@ -2525,10 +2524,10 @@ void cm_RunDuel(G28REC *m)
         if (w->officeKind != 0) {
             io_PrintText(w->sex + 0x1123, w->id);
             snd_PlayVoice(-8, 0, "_DUELL_INTRO_D2", w->sex + 1);
-            if (amt_FindOffice((char *)w, &kind, &office) != 0 && m->host == ai_CharsT[ai_PlayerId].netId) {
+            if (amt_FindOffice((char *)w, &kind, &office) != 0 && m->host == ai_Chars[ai_PlayerId].netId) {
                 amt_SendOfficeMessage(office.idx, 0, 0, 4, 0xff);
                 for (i = 0; i < 768; i++) {
-                    AICHAR *c = &ai_CharsT[i];
+                    AICHAR *c = &ai_Chars[i];
 
                     if (c->kind == 6 || c->kind == 7) {
                         int txt;
@@ -2548,7 +2547,7 @@ void cm_RunDuel(G28REC *m)
         snd_PlayVoice(-8, 0, "_DUELL_INTRO_D2", 0);
     }
     cm_WaitTicks(5);
-    if (ai_CharsT[ai_PlayerId].netId == m->host) {
+    if (ai_Chars[ai_PlayerId].netId == m->host) {
         cm_SendRelations(ca.netId, cb.netId, 0xf, 1);
         cm_SendRelations(cb.netId, ca.netId, 0xf, 1);
     }
@@ -2587,13 +2586,13 @@ int cm_DuelAftermath(G28REC *m)
         if (gm_HealthRatio((short *)a) <= 0.0f) {
             if (b->kind != 6 && b->kind != 7)
                 return 0;
-            he_ShowNews(ai_CharsT[b->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
+            he_ShowNews(ai_Chars[b->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
             return 0;
         }
         if (gm_HealthRatio((short *)b) <= 0.0f) {
             if (a->kind != 6 && a->kind != 7)
                 return 0;
-            he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
+            he_ShowNews(ai_Chars[a->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
             return 0;
         }
         if (a->kind == 6 || a->kind == 7) {
@@ -2619,9 +2618,9 @@ int cm_DuelAftermath(G28REC *m)
         return flag;
     }
     if (b->kind == 6 || b->kind == 7)
-        he_ShowNews(ai_CharsT[b->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
+        he_ShowNews(ai_Chars[b->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
     if (a->kind == 6 || a->kind == 7)
-        he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
+        he_ShowNews(ai_Chars[a->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
     return 0;
 }
 /* 0x4dfcb0, the player's choice of the duel round as a dialog ("cutscenes\\duell", text 0x10de with cm_CutChar's
@@ -2873,9 +2872,9 @@ int cm_CheckWedding(G28REC *m)
             if (a->kind == 6 || a->kind == 7 || a->kind == 5) {
                 txt_Format(buf, 0x11c4, a->id, b->id);
                 for (i = 0; i < 768; i++) {
-                    if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != a->netId &&
-                        ai_CharsT[i].netId != b->netId)
-                        he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, "_PA_WERBUNG_EVENT_NACHRICHT_HOCHZEIT_M1_00");
+                    if ((ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) && ai_Chars[i].netId != a->netId &&
+                        ai_Chars[i].netId != b->netId)
+                        he_ShowNews(ai_Chars[i].netId, -1, buf, 0, 0x5fe, "_PA_WERBUNG_EVENT_NACHRICHT_HOCHZEIT_M1_00");
                 }
             }
             if (a->kind == 6 || a->kind == 7)
@@ -3558,8 +3557,8 @@ void cm_RunAuction(G28REC *m)
         if (m->host == G20_ME) {
             holder = 0;
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].officeKind == 0xb) {
-                    holder = &ai_CharsT[i];
+                if (ai_Chars[i].officeKind == 0xb) {
+                    holder = &ai_Chars[i];
                     break;
                 }
             }
@@ -4374,7 +4373,7 @@ void cm_RunSceneParty(char *m, int ctx)
     saved = cut_GetRandSeed();
     cm_ResetCutInfos(m);
     if (ai_GameFlags & 4) {
-        if (party->host == ai_CharsT[ai_PlayerId].netId && cm_SkipEvents == 0) {
+        if (party->host == ai_Chars[ai_PlayerId].netId && cm_SkipEvents == 0) {
             memset(&msg, 0, sizeof(msg));
             msg.party = party->id;
             sprintf(msg.text, "cut_type:%i", party->kind);
@@ -4408,9 +4407,9 @@ void cm_RunSceneParty(char *m, int ctx)
             io_PrintText("$A");
         }
     } else if (ai_GameFlags & 4) {
-        cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
+        cm_CutChar = (char *)&ai_Chars[ai_PlayerId];
         if (cm_Kinds[party->kind].allAtOnce == 1) {
-            if (party->host == ai_CharsT[ai_PlayerId].netId) {
+            if (party->host == ai_Chars[ai_PlayerId].netId) {
                 /* the owner answers for the computer members */
                 for (i = 0; i < party->used; i++) {
                     CMCUTINFO r;
@@ -4434,7 +4433,7 @@ void cm_RunSceneParty(char *m, int ctx)
                 }
             }
             /* each player answers for his own character */
-            cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
+            cm_CutChar = (char *)&ai_Chars[ai_PlayerId];
             for (i = 0; i < party->used; i++) {
                 if (party->members[i] == ((AICHAR *)cm_CutChar)->netId) {
                     CMCUTINFO r;
@@ -4462,7 +4461,7 @@ void cm_RunSceneParty(char *m, int ctx)
             me = -1;
             prev = -1;
             for (i = 0; i < party->used; i++) {
-                if (party->members[i] == ai_CharsT[ai_PlayerId].netId) {
+                if (party->members[i] == ai_Chars[ai_PlayerId].netId) {
                     me = i;
                     break;
                 }
@@ -4492,7 +4491,7 @@ void cm_RunSceneParty(char *m, int ctx)
                     sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
                 }
                 /* the owner answers for the first computer member whose turn it is */
-                if (party->host == ai_CharsT[ai_PlayerId].netId) {
+                if (party->host == ai_Chars[ai_PlayerId].netId) {
                     for (i = 0; i < party->used; i++) {
                         c = (AICHAR *)gm_FindChar(party->members[i]);
                         if (c == 0 || c->kind == 6 || c->kind == 7)
@@ -4615,7 +4614,7 @@ void cm_ExecCutscene(char *m)
         if (ai_GameFlags & 8) {
             if (ours != 0)
                 cm_SkipEvents = 1;
-        } else if ((ai_GameFlags & 4) && cm_IsPartyMember(ai_CharsT[ai_PlayerId].netId, m) == 0)
+        } else if ((ai_GameFlags & 4) && cm_IsPartyMember(ai_Chars[ai_PlayerId].netId, m) == 0)
             cm_SkipEvents = 1;
     }
     if (cm_SkipEvents == 0) {
@@ -4730,7 +4729,7 @@ void cm_ExecCutscene(char *m)
         }
     }
     cm_ResetCutInfos(m);
-    if (party->host == ai_CharsT[ai_PlayerId].netId) {
+    if (party->host == ai_Chars[ai_PlayerId].netId) {
         for (i = 0; i < 16; i++) {
             cm_CutInfosT[i].ready = 0;
             cm_CutInfosT[i].fresh = 0;
@@ -4920,8 +4919,8 @@ int cm_UpdateParties(void)
         soon = p->time;
         gm_AddTime(&soon, 0, -60, 0);
         if (p->host == -1 && ((cm_NetFlags & 8) || (ai_GameFlags & 8)))
-            p->host = ai_CharsT[ai_PlayerId].netId;
-        if (ai_CharsT[ai_PlayerId].netId == p->host && p->state == 0 && gm_CompareTime(&ai_Time, &soon) > 0) {
+            p->host = ai_Chars[ai_PlayerId].netId;
+        if (ai_Chars[ai_PlayerId].netId == p->host && p->state == 0 && gm_CompareTime(&ai_Time, &soon) > 0) {
             k = cm_CutsceneReady((char *)p);
             if (k == -1) {
                 gm_AddTime(&p->time, 0, 5, 0);
@@ -4943,10 +4942,10 @@ int cm_UpdateParties(void)
         if (cm_Kinds[p->kind].check == 0 && gm_CompareTime(&ai_Time, &p->time) > 0)
             p->done = 1;
         if (gm_CompareTime(&ai_Time, &p->time) > 0 && p->done == 0) {
-            if (cm_IsPartyMember(ai_CharsT[ai_PlayerId].netId, (char *)p) != 0 && (p->flags & 0x80)) {
-                if (ai_CharsT[ai_PlayerId].partyId == p->id)
+            if (cm_IsPartyMember(ai_Chars[ai_PlayerId].netId, (char *)p) != 0 && (p->flags & 0x80)) {
+                if (ai_Chars[ai_PlayerId].partyId == p->id)
                     p->done = 1;
-            } else if (p->host == ai_CharsT[ai_PlayerId].netId && (p->flags & 2))
+            } else if (p->host == ai_Chars[ai_PlayerId].netId && (p->flags & 2))
                 p->done = 1;
             else
                 cm_ClearParty(p->id);
@@ -4986,20 +4985,20 @@ char ai_RunPendingParties(int pl)
     int save;
 
     ret = 0;
-    save = ai_CharsT[pl].partyId;
+    save = ai_Chars[pl].partyId;
     p = (G28REC *)cm_FirstPendingParty();
     while (p != 0) {
-        if (cm_IsPartyMember(ai_CharsT[pl].netId, (char *)p) != 0) {
-            ai_CharsT[pl].partyId = p->id;
+        if (cm_IsPartyMember(ai_Chars[pl].netId, (char *)p) != 0) {
+            ai_Chars[pl].partyId = p->id;
             cm_ExecCutscene((char *)p);
-            ai_CharsT[pl].partyId = -1;
+            ai_Chars[pl].partyId = -1;
             ret = 1;
         }
         cm_ClearParty(p->id);
         p = (G28REC *)cm_FirstPendingParty();
     }
-    cm_BeginFieldBlock((char *)&ai_CharsT[pl], ai_CharsT[pl].netId);
-    cm_AddFieldValue(4, 1, (unsigned short)((int)&ai_CharsT[pl].partyId - (int)cm_FieldObject), &save);
+    cm_BeginFieldBlock((char *)&ai_Chars[pl], ai_Chars[pl].netId);
+    cm_AddFieldValue(4, 1, (unsigned short)((int)&ai_Chars[pl].partyId - (int)cm_FieldObject), &save);
     cm_SendFieldValues();
     return ret;
 }

@@ -596,7 +596,7 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
     bld = (SVOBJREC *)o;
     if (sv_PanelFlag != 0)
         return;
-    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId][0x1b1] == 0 || (bt = &ai_BTypes[bld->kind])->kind == 6 || (bt->kind == 4 && bld->ownerId == ((SVCHARREC *)ai_Chars[ai_PlayerId])->netId)))
+    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId].heldRounds == 0 || (bt = &ai_BTypes[bld->kind])->kind == 6 || (bt->kind == 4 && bld->ownerId == ((SVCHARREC *)&ai_Chars[ai_PlayerId])->netId)))
         return;
     if (ai_PlayerBuilding != 0)
         cur = (unsigned char *)ai_PlayerBuilding;
@@ -782,12 +782,12 @@ int sv_PanelImage(void)
     img = 0x534;
     if (ai_GamePanel.byte[0] == 0) {
         i = 0;
-        for (p = &ai_Chars[0][2]; (int)p < (int)&ai_Chars[768][2]; p += 0x21c) {
+        for (p = (char *)&ai_Chars[0] + 2; (int)p < (int)(char *)&ai_Chars[768] + 2; p += 0x21c) {
             if (*p == 6 || *p == 7)
                 break;
             i++;
         }
-        k = gm_TitleGroup((unsigned char)ai_Chars[i][0x164]);
+        k = gm_TitleGroup((unsigned char)ai_Chars[i].jobId);
         if (k == 1 || k == 2 || k == 10)
             img = 0x534;
         else if (k == 3 || k == 4)
@@ -952,7 +952,6 @@ void sv_DestroyScreen(void)
 
 extern struct AIGOOD *ai_Goods;              /* 0x91aaf0 */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 /* 0x479150, with d2.h's prototype (the 9 pushes of 0x522b38 agree: push 1, d2_ScreenSurf, 0x5b, d2_ScreenW - 0x6e, view, h, w, 0, 0) */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
@@ -1200,7 +1199,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         }
                         if (dm_L.lclick != 0 && obj != 0 && obj->id != *sv_PanelShown
                             && ai_ScriptQuery(0x19, (int)ai_PlayerBuilding, 0, obj->id) == 1
-                            && !(ai_CharsT[ai_PlayerId].heldRounds > 0)) {
+                            && !(ai_Chars[ai_PlayerId].heldRounds > 0)) {
                             if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_PlayerBuilding, &obj->id, 0) & 0x4000)
                                 ai_SwitchRoom(-1, obj->id);
                         } else if (obj != 0)
@@ -1226,7 +1225,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         }
                         if (dm_L.lclick != 0 && obj != 0
                             && (sv_PanelShown == 0 || (obj->id != *sv_PanelShown && ai_ScriptQuery(0x19, (int)ai_FallbackBuilding, 0, obj->id) == 1))
-                            && !(ai_CharsT[ai_PlayerId].heldRounds > 0)) {
+                            && !(ai_Chars[ai_PlayerId].heldRounds > 0)) {
                             if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, &obj->id, 0) & 0x4000)
                                 sv_SelectPanelObject((unsigned char *)ai_FallbackBuilding, obj->objId, ch_EmptyName);
                         } else if (obj != 0)
@@ -1288,7 +1287,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     int h, n, who;
     D2WIN *win;
 
-    if (ai_CharsT[ai_PlayerId].kind != 6)
+    if (ai_Chars[ai_PlayerId].kind != 6)
         return;
     /* 0x522f42: the grabbed view shape back onto the screen at the view rectangle. The skeleton called
        d2_ShpBlit(0, 0, 0), so the shape was whatever the stack held (a click on "Weiter" then crashed in
@@ -1307,7 +1306,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
         if (sv_PanelBuildingIcon != -1) { d2_RemoveObj(sv_PanelBuildingIcon); sv_PanelBuildingIcon = -1; }
         if (sv_PanelCompass != -1) { d2_RemoveObj(sv_PanelCompass); sv_PanelCompass = -1; }
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_Chars[ai_PlayerId].ref54, sv_BarWindow);
         d2_Objs[sv_ButtonFamilyTree].style = 0x43;
         d2_Objs[sv_ButtonFamilyTree].interactive = 1;
         sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, sv_BarWindow);
@@ -1397,7 +1396,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             strcpy(buf, name);
             d2_SetObjText(sv_ButtonPrivileges, buf);
         }
-        sprintf(buf, "%i", ai_CharsT[ai_PlayerId].money);
+        sprintf(buf, "%i", ai_Chars[ai_PlayerId].money);
         d2_DrawText(d2_Wins[sv_BarWindow].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
         if (sv_ButtonCompare != -1)
             d2_MoveObj(d2_Wins[sv_BarWindow].x + (short)d2_TextDrawnW + 0x23d, 0x18, sv_ButtonCompare);
@@ -1432,7 +1431,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 who = ((AIBLD *)ai_FallbackBuilding)->playerSlot;
             else
                 who = ai_OwnPlayer;
-            n = gm_SumSlotAmounts((void *)ai_CharsT[ai_PlayerId].inventory, who) + sv_PendingMoney;
+            n = gm_SumSlotAmounts((void *)ai_Chars[ai_PlayerId].inventory, who) + sv_PendingMoney;
         } else {
             n = gm_SumListMoney(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
             who = ai_OwnPlayer;
@@ -1447,10 +1446,10 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 d2_SetObjText(sv_PanelMoneyText, txt_Ptrs[0x1f00]);
         }
     }
-    if (sv_ButtonFamilyTree != -1 && d2_Objs[sv_ButtonFamilyTree].pic != ai_CharsT[ai_PlayerId].ref54) {
+    if (sv_ButtonFamilyTree != -1 && d2_Objs[sv_ButtonFamilyTree].pic != ai_Chars[ai_PlayerId].ref54) {
         d2_RemoveObj(sv_ButtonFamilyTree);
         sv_ButtonFamilyTree = -1;
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_Chars[ai_PlayerId].ref54, sv_BarWindow);
         d2_Objs[sv_ButtonFamilyTree].style = 3;
         d2_Objs[sv_ButtonFamilyTree].interactive = 1;
     }
@@ -1512,7 +1511,7 @@ void sv_AddGroupMember(int c, char *g)
     AICHAR *ch;
     int i;
 
-    ch = &ai_CharsT[c];
+    ch = &ai_Chars[c];
     for (i = 0; i < 8; i++)
         if (((SVGROUP *)g)->member[i] == ch->netId)
             break;
@@ -1531,7 +1530,7 @@ void sv_RemoveGroupMember(int c, char *g)
     AICHAR *ch;
     int i;
 
-    ch = &ai_CharsT[c];
+    ch = &ai_Chars[c];
     for (i = 0; i < 8; i++)
         if (((SVGROUP *)g)->member[i] == ch->netId) {
             ((SVGROUP *)g)->member[i] = -1;
@@ -1639,7 +1638,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
     newkind = 0;
     if (c >= 0x300)
         return;
-    ch = (SVCHARREC *)ai_Chars[c];
+    ch = (SVCHARREC *)&ai_Chars[c];
     old = ch->group;
     if ((char *)old == g)
         return;
@@ -1666,7 +1665,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         }
     }
     if (old != 0) {
-        sv_RemoveGroupMember(((SVCHARREC *)ai_Chars[c])->id, (char *)old);
+        sv_RemoveGroupMember(((SVCHARREC *)&ai_Chars[c])->id, (char *)old);
         switch (old->kind) {
         case 3:
         case 4:
@@ -1864,7 +1863,7 @@ void sv_UpdateMemberList(unsigned char *g)
     d2_ClearPointerItems();
     for (n = 0; n < 0x20; n++) {
         r = &sv_MemberRows[n];
-        if (r->chr != 0xffff && (((SVCHARREC *)ai_Chars[r->chr])->model == 0 || ((SVCHARREC *)ai_Chars[r->chr])->health == 0)) {
+        if (r->chr != 0xffff && (((SVCHARREC *)&ai_Chars[r->chr])->model == 0 || ((SVCHARREC *)&ai_Chars[r->chr])->health == 0)) {
             if (r->icon[0] != -1) {
                 d2_RemoveObj(r->icon[0]);
                 r->icon[0] = -1;
@@ -1886,14 +1885,14 @@ void sv_UpdateMemberList(unsigned char *g)
         }
     }
     for (i = 0; i < 0x300; i++) {
-        if (((SVCHARREC *)ai_Chars[i])->bld != g || ((SVCHARREC *)ai_Chars[i])->model == 0 || ((SVCHARREC *)ai_Chars[i])->health == 0)
+        if (((SVCHARREC *)&ai_Chars[i])->bld != g || ((SVCHARREC *)&ai_Chars[i])->model == 0 || ((SVCHARREC *)&ai_Chars[i])->health == 0)
             continue;
         if (sv_PlayerBarKind == 0) {
-            if (!((((SVCHARREC *)ai_Chars[i])->title == bt[0x22f] || ((SVCHARREC *)ai_Chars[i])->title == bt[0x230]) && ((SVCHARREC *)ai_Chars[i])->jobId == 0))
+            if (!((((SVCHARREC *)&ai_Chars[i])->title == bt[0x22f] || ((SVCHARREC *)&ai_Chars[i])->title == bt[0x230]) && ((SVCHARREC *)&ai_Chars[i])->jobId == 0))
                 continue;
         } else if (sv_PlayerBarKind == 1) {
-            n = gm_TitleJobGroup((unsigned char)((SVCHARREC *)ai_Chars[i])->title);
-            if (((SVCHARREC *)ai_Chars[i])->jobId != 0)
+            n = gm_TitleJobGroup((unsigned char)((SVCHARREC *)&ai_Chars[i])->title);
+            if (((SVCHARREC *)&ai_Chars[i])->jobId != 0)
                 continue;
             if (n != 10 && n != 0xb && n != 0xc)
                 continue;
@@ -1912,12 +1911,12 @@ void sv_UpdateMemberList(unsigned char *g)
         d2_SetForm(sv_PlayerBarForm, 1);
         y = n * 0x4e;
         sv_MemberRows[n].frame = d2_WinOpenPic(6, y, 0x5dc, d2_LastWindow);
-        sv_MemberRows[n].check = d2_WinOpenPic(8, y + 0x11, ((SVCHARREC *)ai_Chars[i])->picture, d2_LastWindow);
+        sv_MemberRows[n].check = d2_WinOpenPic(8, y + 0x11, ((SVCHARREC *)&ai_Chars[i])->picture, d2_LastWindow);
         sv_MemberRows[n].text = d2_CreateWinText(0, y + 4, ch_EmptyName, d2_LastWindow);
         sv_D2Objs[sv_MemberRows[n].text].centred = 1;
         sv_D2Objs[sv_MemberRows[n].text].w = 0x5f;
         sv_D2Objs[sv_MemberRows[n].check].checkable = 1;
-        sv_D2Objs[sv_MemberRows[n].check].user = ai_Chars[i];
+        sv_D2Objs[sv_MemberRows[n].check].user = &ai_Chars[i];
         if (sv_MemberRows[n].window != -1) {
             d2_RemoveWindow(sv_MemberRows[n].window);
             sv_MemberRows[n].window = -1;
@@ -1928,11 +1927,11 @@ void sv_UpdateMemberList(unsigned char *g)
             d2_SetForm(sv_PlayerBarForm, 1);
             sv_MemberRows[n].window = d2_CreateChildWindow(6, y + 0x3f, 0x50, 0xf, 0, d2_LastWindow);
             d2_WinOpenPic(4, 1, 0x5df, d2_LastWindow);
-            sv_DrawBalanceBar(0x10, 4, ai_Chars[sv_MemberRows[n].chr], 2, 0x4f1);
+            sv_DrawBalanceBar(0x10, 4, (char *)&ai_Chars[sv_MemberRows[n].chr], 2, 0x4f1);
             d2_WinOpenPic(0x28, 1, 0x5e0, d2_LastWindow);
-            sv_DrawBalanceBar(0x34, 4, ai_Chars[sv_MemberRows[n].chr], 3, 0x4f1);
+            sv_DrawBalanceBar(0x34, 4, (char *)&ai_Chars[sv_MemberRows[n].chr], 3, 0x4f1);
         }
-        if (((SVCHARREC *)ai_Chars[i])->selected != 0)
+        if (((SVCHARREC *)&ai_Chars[i])->selected != 0)
             d2_SetObjValue(sv_MemberRows[n].check, 1);
         else
             d2_SetObjValue(sv_MemberRows[n].check, 0);
@@ -1941,13 +1940,13 @@ void sv_UpdateMemberList(unsigned char *g)
         r = &sv_MemberRows[n];
         if (d2_ClickedId != -1 && r->chr != 0xffff && d2_PointerObj == r->check) {
             if (sv_D2Objs[r->check].checked != 0) {
-                ((SVCHARREC *)ai_Chars[r->chr])->selected = 1;
-                snd_PlayWorkerClick((struct G16CHARCLICK *)ai_Chars[r->chr]);
+                ((SVCHARREC *)&ai_Chars[r->chr])->selected = 1;
+                snd_PlayWorkerClick((struct G16CHARCLICK *)&ai_Chars[r->chr]);
             } else
-                ((SVCHARREC *)ai_Chars[r->chr])->selected = 0;
+                ((SVCHARREC *)&ai_Chars[r->chr])->selected = 0;
         }
-        if (r->chr != 0xffff && ((SVCHARREC *)ai_Chars[r->chr])->model->group == ((AIBLD *)g)->id
-            && (((SVCHARREC *)ai_Chars[r->chr])->flags & 0x800) == 0 && ((SVCHARREC *)ai_Chars[r->chr])->groupKind != 0x14)
+        if (r->chr != 0xffff && ((SVCHARREC *)&ai_Chars[r->chr])->model->group == ((AIBLD *)g)->id
+            && (((SVCHARREC *)&ai_Chars[r->chr])->flags & 0x800) == 0 && ((SVCHARREC *)&ai_Chars[r->chr])->groupKind != 0x14)
             d2_SetObjEnabled(r->check, 1);
         else
             d2_SetObjEnabled(r->check, 0);
@@ -1955,7 +1954,7 @@ void sv_UpdateMemberList(unsigned char *g)
     for (n = 0; n < 0x20; n++) {
         if (sv_MemberRows[n].chr == 0xffff)
             continue;
-        if (((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
+        if (((SVCHARREC *)&ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
             d2_AddPointerItem(sv_D2Objs[sv_MemberRows[n].check].pic, 1);
             d2_SetObjValue(sv_MemberRows[n].check, 1);
         } else
@@ -1971,11 +1970,11 @@ void sv_UpdateMemberList(unsigned char *g)
         }
         d2_SetForm(sv_PlayerBarForm, 1);
         if (sv_MemberRows[n].text != -1) {
-            sprintf(text, "%s %i%%", ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->name, (int)(gm_HealthRatio(ai_Chars[sv_MemberRows[n].chr]) * 100.0));
+            sprintf(text, "%s %i%%", ((SVCHARREC *)&ai_Chars[sv_MemberRows[n].chr])->name, (int)(gm_HealthRatio((char *)&ai_Chars[sv_MemberRows[n].chr]) * 100.0));
             d2_SetObjText(sv_MemberRows[n].text, text);
             sv_D2Objs[sv_MemberRows[n].text].w = 0x5f;
         }
-        cnt = sv_CharStateIcons(ai_Chars[sv_MemberRows[n].chr], im);
+        cnt = sv_CharStateIcons((char *)&ai_Chars[sv_MemberRows[n].chr], im);
         if (cnt == 0)
             continue;
         if (cnt > 1)
@@ -2014,7 +2013,7 @@ void sv_UpdateMemberList(unsigned char *g)
     }
     for (n = 0; n < 0x20; n++) {
         if (sv_MemberRows[n].chr != 0xffff) {
-            i = ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0;
+            i = ((SVCHARREC *)&ai_Chars[sv_MemberRows[n].chr])->selected != 0;
             sv_MemberRows[n].selected = i;
             sv_D2Objs[sv_MemberRows[n].check].checked = i;
             sv_D2Objs[sv_MemberRows[n].check].highlighted = i;
@@ -2114,8 +2113,8 @@ void sv_OpenPlayerBar(int a, char k)
         ((D2OBJ *)d2_Objs)[f].interactive = 1;
         ((D2OBJ *)d2_Objs)[f].style = 3;
         for (i = 0; i < 768; i++)
-            if (((SVCHARREC *)ai_Chars[i])->selected != 0 && ((SVCHARREC *)ai_Chars[i])->jobId != 0)
-                ((SVCHARREC *)ai_Chars[i])->selected = 0;
+            if (((SVCHARREC *)&ai_Chars[i])->selected != 0 && ((SVCHARREC *)&ai_Chars[i])->jobId != 0)
+                ((SVCHARREC *)&ai_Chars[i])->selected = 0;
     }
 }
 /* 0x525440, closes the player bar (d2_CloseView, sv_PlayerBarForm), shows the info panel (sv_PanelForm) again and
@@ -2938,7 +2937,7 @@ go:
             if (d3_VecEqual(&((D3OBJECT *)cam)->pos, (D3VECTOR *)&zpos, 0.1f) == 0 || d3_VecEqual(&d3_Camera->rotation, &zrot, 0.001f) == 0) {
                 d3_SetObjectPos(d3_Camera, (D3VECTOR *)&zpos);
                 d3_SetObjectRot(d3_Camera, &zrot);
-                rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
                     rec->camAngle = sv_CameraAngleFactor;
                     SV_CAMREC(rec);
@@ -2952,7 +2951,7 @@ go:
                 z = z > 1.0 ? 1.0 : z;
                 z = z < 0.0 ? 0.0 : z;
                 sv_PlaceCamera(z);
-                rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
                     rec->camAngle = sv_CameraAngleFactor;
                     SV_CAMREC(rec);
@@ -3001,7 +3000,7 @@ go:
                         dst[2] = min(dst[2], lo);
                     }
                     d3_SetObjectPos(d3_Camera, (struct D3VECTOR *)dst);
-                    rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                    rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
                     if (rec != 0)
                         SV_CAMREC(rec);
                 }
@@ -3035,7 +3034,7 @@ int sv_UpdateCamera(void)
             if (sv_CameraEaseOn != 0 && kb_Down[0xf] == 0)
                 sv_EaseCameraHeight();
             if (sv_CameraScrolled != 0 && sv_FrameDepth == sv_FrameBase && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0
-                && (rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId])) != 0) {
+                && (rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId])) != 0) {
                 SV_CAMREC(rec);
                 rec->camAngle = sv_CameraAngleFactor;
             }
@@ -3123,7 +3122,7 @@ void sv_FlyCameraToObject(int b)
     sv_ViewPos[0] = pos[0];
     sv_ViewPos[1] = pos[1];
     sv_ViewPos[2] = pos[2];
-    rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+    rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
     if (rec != 0) {
         rec->camPos[0] = pos[0];
         rec->camPos[1] = pos[1];
@@ -3201,7 +3200,7 @@ void sv_CameraToObject(int b)
     sv_ViewPos[1] = pos[1];
     d3_SetObjectPos(d3_Camera, pos);
     d3_SetObjectRot(d3_Camera, dir);
-    rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+    rec = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
     if (rec != 0) {
         rec->camPos[0] = pos[0];
         rec->camPos[1] = pos[1];
@@ -3296,7 +3295,7 @@ char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
         d3_MatFromAngles((D3VECTOR4 *)&rot, &m);
         d3_SetWorldPosRot(o, &pos, &m);
         if (b->owner != 0xffff) {
-            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_Chars[b->owner].ref54 + 'f'), 1);
             o->kind = 4;
         }
         d3t_PlayAnim(o, "sonstiges\\sp_WIMPEL.baf", 1);
@@ -3313,7 +3312,7 @@ char sv_ColourBannerCB(D3OBJECT *o, AIBLD *b)
 {
     if (stricmp(o->name, "sp_WIMPEL") == 0) {
         if (b->owner != 0xffff)
-            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_Chars[b->owner].ref54 + 'f'), 1);
     }
     return 1;
 }
@@ -3330,7 +3329,7 @@ void sv_CreateBanners(char *b)
     bld = (AIBLD *)b;
     m = (D3OBJECT *)bld->object;
     if (m != 0 && bld->owner != 0xffff) {
-        c = ai_CharsT[bld->owner].kind;
+        c = ai_Chars[bld->owner].kind;
         if (c == 6 || c == 7 || c == 5) {
             if ((m->state & 1) == 0) {
                 save = m->next;
@@ -3357,7 +3356,7 @@ void sv_ColourBanners(int c)
     int set;
 
     scene = d3_CurrentScene;
-    ch = &ai_CharsT[c];
+    ch = &ai_Chars[c];
     d3if_SelectScene(0, 1);
     for (b = (AIBLD *)gm_BuildQuery(1, 4, c); b != 0; b = (AIBLD *)gm_BuildNext()) {
         if (b->object != 0)
@@ -3392,9 +3391,9 @@ void sv_UpdateChimneySmoke(AIBLD *b)
     season = gm_ClockSeason(&ai_Time);
     if (ai_BTypes[b->type].kind != 7 && b->object != 0) {
         for (i = 0; i < 0x300; i++) {
-            if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10
-                && ai_CharsT[i].bld == b && ai_CharsT[i].jobKind == 4) {
-                job = ai_CharsT[i].job;
+            if (ai_Chars[i].health > 0 && ai_Chars[i].id != 0xffff && ai_Chars[i].kind != 10
+                && ai_Chars[i].bld == b && ai_Chars[i].jobKind == 4) {
+                job = ai_Chars[i].job;
                 if (job == 0 || job->argc8 == 0) {
                     if (b->smokeEffect != -1)
                         return;
@@ -3490,7 +3489,7 @@ void sv_RefreshBanners(void)
     o = (AIBLD *)gm_BuildQuery(1, 6);
     while (o != 0) {
         if (o->owner != 0xffff)
-            c = &ai_CharsT[o->owner];
+            c = &ai_Chars[o->owner];
         if (c != 0 && (char *)c != ai_PlayerCharC && ((t = c->kind) == 6 || t == 7 || t == 5) && (o->flags5a & 1) == 0) {
             sv_RemoveBanners((char *)o);
             sv_CreateBanners((char *)o);
@@ -3544,7 +3543,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
     sv_PanelBldPic = d2_WinOpenPic((d2_Wins[d2_LastWindow].w - 0x30) >> 1, 0x48, b->type + 0x427, d2_LastWindow);
     ((D2OBJ *)d2_Objs)[sv_PanelBldPic].interactive = 1;
     if (b->owner != 0xffff && b->owner != *ai_PlayerChar)
-        ((D2OBJ *)d2_Objs)[sv_PanelBldPic].user = ai_Chars[b->owner];
+        ((D2OBJ *)d2_Objs)[sv_PanelBldPic].user = &ai_Chars[b->owner];
     if (b->type == 0x47 || b->type == 0x1d || b->type == 0x57)
         sv_PanelHealthBar = -1;
     else {
@@ -4519,13 +4518,13 @@ void sv_HandleObjects(void)
                 perms = gm_PermissionBits(ai_PlayerId, 0, 0, ai_PickedChar);
                 sv_ClearSelection();
                 if ((perms & 0x800) != 0 && (((AICHAR *)ai_PickedChar)->title != 0x1c || (((AICHAR *)ai_PickedChar)->flags1b4 & 1) == 0)) {
-                    ai_CharsT[((AICHAR *)ai_PickedChar)->id].selected = 1;
+                    ai_Chars[((AICHAR *)ai_PickedChar)->id].selected = 1;
                     sv_SelectedChar = ai_PickedChar;
-                    sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
+                    sv_PanelCartChar = (int)ai_Chars[((AICHAR *)ai_PickedChar)->id].model;
                     ai_SelectedCount = 1;
                     snd_PlayWorkerClick((struct G16CHARCLICK *)ai_PickedChar);
                 }
-                sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
+                sv_PanelCartChar = (int)ai_Chars[((AICHAR *)ai_PickedChar)->id].model;
             }
             if (ai_SelectedCount == 0 && sv_OtherSelected == 0 && sv_HoverBuilding != 0 && sv_SelectedItem == 0)
                 sv_SelectedModel = (int)ai_PickedObject;
@@ -4557,7 +4556,7 @@ void sv_CollectGroupCharacters(char *b)
         for (i = 0; i < 768; i++) {
             if (n >= 31)
                 return;
-            c = &ai_CharsT[i];
+            c = &ai_Chars[i];
             if (c->model != 0 && c->model->bldId == ((AIBLD *)b)->id) {
                 ai_SceneChars[n++] = (int)c;
                 if (n > 8)
@@ -4569,8 +4568,8 @@ void sv_CollectGroupCharacters(char *b)
         for (i = 0; i < 768; i++) {
             if (n >= 31)
                 return;
-            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == -1)
-                ai_SceneChars[n++] = (int)&ai_CharsT[i];
+            if (ai_Chars[i].model != 0 && ai_Chars[i].model->bldId == -1)
+                ai_SceneChars[n++] = (int)&ai_Chars[i];
         }
     }
 }
@@ -4852,7 +4851,7 @@ void sv_SendSelectedToBuilding(void)
     for (i = 0; i < 768; i++) {
         if (done)
             break;
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->selected == 0)
             continue;
         if (kind == 0) {
@@ -4864,7 +4863,7 @@ void sv_SendSelectedToBuilding(void)
                         msg.type = 'C';
                         msg.flags = 2;
                         owner = c->bld;
-                        msg.to = ai_CharsT[ai_PlayerId].netId;
+                        msg.to = ai_Chars[ai_PlayerId].netId;
                         msg.arg[0] = cur->id;
                         msg.arg[1] = owner->id;
                         *out++ = c->netId;
@@ -4949,12 +4948,12 @@ void sv_SendSelectedToBuilding(void)
    (the c2trace priorities of map vs the -1 constant). prior: match-deep 54: draft 305 -> 159 ins (frame
    now 0x94 as the original). Kept: cell as an initialized block local of the per-character send (int cell
    = 0 next to off[]: 305 -> 212, the original zeroes ebx per character and shares it with the constant 0),
-   the send's character fields read through ai_CharsT[j] except health / model / (int)c in the test
-   (subsets m505 of 9 uses: 212 -> 170; a second 1023-subset run over c / ai_CharsT[j] / (int)c found
+   the send's character fields read through ai_Chars[j] except health / model / (int)c in the test
+   (subsets m505 of 9 uses: 212 -> 170; a second 1023-subset run over c / ai_Chars[j] / (int)c found
    nothing better), the contact's 0xfd case as the else arm (170 -> 159). No lever (= control): (AICHAR
    *)ai_Chars[j] row cast, c / sc and b / gb split for the contact loop, b = 0 inside the if (219, worse),
    declaration initializers for cx / cy, cx = cy = -1, if (c->selected) spelling; worse: pointer loop for
-   (c = ai_CharsT; ..) 229, the t chain as one if / else-if t = .. plus one building chain 198 / 218,
+   (c = ai_Chars; ..) 229, the t chain as one if / else-if t = .. plus one building chain 198 / 218,
    SetGrey arms swapped 161. Left (tiebreak insensitive, 32 samples): the constants -1 / 1 in ebp / edi
    where the original has edi / ebp (every off[] store, the d2_HitWindow compares, the rematerialization
    after each send), the first loop's strength-reduced pointer biased to +0x184 (model; the original's base
@@ -4989,8 +4988,8 @@ void sv_HandleSelectionMouse(void)
             && map != 0 && b != 0 && dm_L.lup != 0 && d2_HitWindow == -1) {
             i = 0;
             for (j = 0; j < 768; j++) {
-                c = &ai_CharsT[j];
-                if (ai_CharsT[j].selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
+                c = &ai_Chars[j];
+                if (ai_Chars[j].selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
                     && c->model != 0) {
                     int off[9][2] = { {0, 0}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1} };
                     int cell = 0;
@@ -5008,11 +5007,11 @@ void sv_HandleSelectionMouse(void)
                                 break;
                             }
                         } while (ix < 0 || ix >= size || iy < 0 || iy >= size || cell == 0 || cell == 0xd);
-                        if (ai_CharsT[j].bld != 0)
-                            sv_MoveToGroup((unsigned char *)ai_CharsT[j].bld, 0, ai_CharsT[j].id, 0);
-                        if (ai_CharsT[j].model->scriptId != -1 && (t = (int)evt_FindById(ai_CharsT[j].model->scriptId)) != 0)
+                        if (ai_Chars[j].bld != 0)
+                            sv_MoveToGroup((unsigned char *)ai_Chars[j].bld, 0, ai_Chars[j].id, 0);
+                        if (ai_Chars[j].model->scriptId != -1 && (t = (int)evt_FindById(ai_Chars[j].model->scriptId)) != 0)
                             evt_Stop((EVTSCRIPT *)t);
-                        cm_SendChrWalkTo(ai_CharsT[j].netId, ix, iy, d3_CurrentScene);
+                        cm_SendChrWalkTo(ai_Chars[j].netId, ix, iy, d3_CurrentScene);
                     }
                 }
             }
@@ -5065,7 +5064,7 @@ void sv_HandleSelectionMouse(void)
     ai_SelectedCount = 0;
     d2_ClearPointerItems();
     for (j = 0; j < 768; j++) {
-        c = &ai_CharsT[j];
+        c = &ai_Chars[j];
         if (c->model != 0) {
             if (c->selected != sv_SelectionBytes[j] && ((CHARACTER *)c->model)->flags.fading == 0) {
                 if (c->selected != 0)
@@ -5099,7 +5098,7 @@ void sv_MarkMasterCarts(void)
     for (cart = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); cart != 0; cart = (AIOBJ *)gm_QueryNext()) {
         cart->flags20 = 0;
         /* the original walks the records and ends at the bld field (a signed compare on that address) */
-        for (ch = ai_CharsT; (int)&ch->bld < (int)&ai_CharsT[768].bld; ch++) {
+        for (ch = ai_Chars; (int)&ch->bld < (int)&ai_Chars[768].bld; ch++) {
             if (ch->id != 0xffff && ch->kind == 1 && ch->bld != 0 &&
                 ch->bld->id == cart->bldId && (ch->flags1b4 & 1) != 0)
                 cart->flags20 |= 1;
@@ -5806,10 +5805,10 @@ void sv_HandleRightClick(unsigned fl)
             if (sv_PanelShown != 0) {
                 rb = 0;
                 if (ai_PlayerBuilding != 0) {
-                    if (ai_ScriptQuery(0x1a, (int)ai_PlayerBuilding, 0, *sv_PanelShown) == 1 && !(ai_CharsT[ai_PlayerId].heldRounds > 0))
+                    if (ai_ScriptQuery(0x1a, (int)ai_PlayerBuilding, 0, *sv_PanelShown) == 1 && !(ai_Chars[ai_PlayerId].heldRounds > 0))
                         rb = ai_PlayerBuilding;
                 } else if (ai_FallbackBuilding != 0) {
-                    if (ai_ScriptQuery(0x1c, (int)ai_FallbackBuilding, 0, 0) == 1 && !(ai_CharsT[ai_PlayerId].heldRounds > 0))
+                    if (ai_ScriptQuery(0x1c, (int)ai_FallbackBuilding, 0, 0) == 1 && !(ai_Chars[ai_PlayerId].heldRounds > 0))
                         rb = ai_FallbackBuilding;
                 }
                 if (rb != 0 && *sv_PanelShown == 0xf2)
@@ -6831,11 +6830,11 @@ void sv_ChatConsole(void)
     d2_SetForm(f, 3);
     i = 0;
     for (k = 0; k < 768; k++) {
-        if (ai_CharsT[k].kind == 7) {
-            w = d2_WinOpenPic(i * 0x30 + 100, 4, ai_CharsT[k].ref54, d2_LastWindow);
+        if (ai_Chars[k].kind == 7) {
+            w = d2_WinOpenPic(i * 0x30 + 100, 4, ai_Chars[k].ref54, d2_LastWindow);
             ids[i] = w;
             ((D2OBJ *)d2_Objs)[w].checkable = 1;
-            ((D2OBJ *)d2_Objs)[w].user = &ai_CharsT[k];
+            ((D2OBJ *)d2_Objs)[w].user = &ai_Chars[k];
             d2_SetObjValue(w, sv_ChatRecipients[i]);
             i++;
         }
@@ -6857,7 +6856,7 @@ void sv_ChatConsole(void)
                 if (ids[i] != -1 && d2_GetObjValue(ids[i]) != 0)
                     msg.to[i] = ((AICHAR *)((D2OBJ *)d2_Objs)[ids[i]].user)->netId;
             }
-            sprintf(msg.text, "$%iFF ", ai_CharsT[ai_PlayerId].ref54 - 0x59a);
+            sprintf(msg.text, "$%iFF ", ai_Chars[ai_PlayerId].ref54 - 0x59a);
             strcat(msg.text, (char *)d2_GetObjValue(ed));
             strcat(msg.text, "$A");
             d2_SetObjValue(ed, ch_EmptyName);
@@ -7110,8 +7109,8 @@ int sv_RunFrame(int cb, unsigned mask)
         if (sv_Frames[sv_FrameDepth].cb != cb)
             di_ClearButtons();
         if (ai_PlayerId != 0xffff) {
-            if ((ai_CharsT[ai_PlayerId].kind == 6 || ai_CharsT[ai_PlayerId].kind == 7) && ai_CharsT[ai_PlayerId].health == 0 && sv_FrameDepth > sv_FrameBase
-                && (party = (G28REC *)cm_PartyById(ai_CharsT[ai_PlayerId].partyId)) != 0 && party->kind == 8 && (mask & 0x10000) == 0) {
+            if ((ai_Chars[ai_PlayerId].kind == 6 || ai_Chars[ai_PlayerId].kind == 7) && ai_Chars[ai_PlayerId].health == 0 && sv_FrameDepth > sv_FrameBase
+                && (party = (G28REC *)cm_PartyById(ai_Chars[ai_PlayerId].partyId)) != 0 && party->kind == 8 && (mask & 0x10000) == 0) {
                 sv_PopRequest = sv_FrameDepth - sv_FrameBase;
                 sv_SetStatusText(txt_Ptrs[0x89]);
             }
@@ -7325,7 +7324,7 @@ l2:
     if (sv_PanelPic != -1 && (mask & 0x2000) != 0 && (mask & 0x100000) == 0 && sv_FrameDepth == sv_FrameBase) {
         if (ai_GameState != 0)
             ai_SlotKeys();
-        if (ai_PlayerId == 0xffff || ai_CharsT[ai_PlayerId].health <= 0) {
+        if (ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId].health <= 0) {
             if (d2_ClickedId != -1
                 && (d2_PointerObj == sv_ButtonPrivileges || d2_PointerObj == sv_ButtonCompare || d2_PointerObj == sv_ButtonInventory || d2_PointerObj == sv_ButtonPlayerStats || d2_PointerObj == sv_ButtonCityStats
                     || d2_PointerObj == sv_ButtonFamilyTree))
@@ -7344,7 +7343,7 @@ l2:
             else if (d2_PointerObj == sv_ButtonMessages)
                 ai_MessageFilterScreen();
             else if (d2_PointerObj == sv_ButtonFamilyTree)
-                ai_FamilyTreeWindow(ai_CharsT[ai_PlayerId].netId, 0x11, 0, 0x657c7);
+                ai_FamilyTreeWindow(ai_Chars[ai_PlayerId].netId, 0x11, 0, 0x657c7);
         }
     }
     sv_TickFrames++;

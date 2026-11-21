@@ -150,7 +150,6 @@ extern int ai_EspionageAmountCB();
 extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern GAPDATA full_data_602568[];
 extern struct D2WIN *d2_LastWindowPtr;
@@ -182,11 +181,9 @@ extern char ai_PlayerSlots[4][0x2f4];
 
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -196,7 +193,6 @@ extern struct D2PIC *d2_Pics;
 
 extern int d2_LastWindow;
 extern struct D2PIC *d2_Pics;
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
@@ -239,7 +235,6 @@ extern int d2_CutsceneActive;
 extern struct SBBANK *snd_RoomBank;
 extern struct AIBTYPE *ai_BTypes;
 #include "menu_types.h"
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
@@ -249,7 +244,6 @@ extern int d2_LastWindow;
 
 
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_ClickedId;
@@ -260,7 +254,6 @@ extern struct D2PIC *d2_Pics;
 
 
 extern int gm_PlayerRecords[688];
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -273,13 +266,11 @@ extern int d2_LastWindow;
 
 
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -287,21 +278,16 @@ extern struct D2OBJ *d2_Objs;
 
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
 
 
 
-extern char ai_Chars[768][0x21c];
-
-extern char ai_Chars[768][0x21c];
 
 
-extern char ai_Chars[768][0x21c];
 
-extern char ai_Chars[768][0x21c];
+
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -310,10 +296,8 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
-extern char ai_Chars[768][0x21c];
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
@@ -325,18 +309,15 @@ extern GAPDATA full_data_602568[];
 
 
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 extern struct AIBTYPE *ai_BTypes;
@@ -359,7 +340,6 @@ extern int d2_ClickedId;
 
 
 
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 
@@ -367,7 +347,6 @@ extern char * cm_FieldObject;
 extern int d2_ClickedId;
 
 
-extern char ai_Chars[768][0x21c];
 extern char * cm_FieldObject;
 extern GAPDATA full_data_627978[];
 
@@ -408,7 +387,6 @@ extern int d2_ClickedId;
 
 
 
-extern char ai_Chars[768][0x21c];
 extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -434,7 +412,6 @@ extern char ch_EmptyName[1];
 
 extern char ch_EmptyName[1];
 extern int ai_DomizilCount;
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
@@ -461,14 +438,12 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 
 extern GAPDATA full_data_60ea68[];
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -513,7 +488,6 @@ extern struct D2OBJ *d2_Objs;
 
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern char ai_Chars[768][0x21c];
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_60d224[];
@@ -543,7 +517,6 @@ extern char * cm_FieldObject;
 
 
 extern struct AIBTYPE *ai_BTypes;
-extern char ai_Chars[768][0x21c];
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
 extern G17MSG cm_SendRing[];
@@ -566,7 +539,6 @@ extern unsigned char ai_OwnPlayer;
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_624204[];
 extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
@@ -589,7 +561,6 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
@@ -2562,7 +2533,7 @@ unsigned int ai_FillCandidacyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *r
         return 0;
     nApplicants = amt_GetOfficeApplicants(me->appliedOffice, 6, applicants);
     nRivals = 0;
-    for (c = (AICHARREC *)ai_Chars; (int)c < (int)ai_Chars[768]; c++) {  /* a signed compare (jl) in the original */
+    for (c = (AICHARREC *)ai_Chars; (int)c < (int)&ai_Chars[768]; c++) {  /* a signed compare (jl) in the original */
         if (nRivals >= 3)
             break;
         if (c->id != 0xffff && c->id != me->id && c->appliedOffice == me->appliedOffice)
@@ -2625,7 +2596,7 @@ unsigned int ai_FillOfficeTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows
     for (k = 0; k < nOffices; k++) {
         if (n >= max)
             break;
-        for (c = (AICHARREC *)ai_Chars; (int)c < (int)ai_Chars[768]; c++) {
+        for (c = (AICHARREC *)ai_Chars; (int)c < (int)&ai_Chars[768]; c++) {
             if (offices[k] == c->appliedOffice) {
                 rows[n].rec = c;
                 rows[n].x34 = offices[k];
@@ -4833,7 +4804,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
             if (parents[0].id != 0xffff) {
                 d2_WinOpenPic(half - w - 0x58, 12, ((AICHARREC *)ai_Chars)[parents[0].id].picture, d2_LastWindow);
                 d2_Objs[parents[0].ctrl].style = 3;
-                d2_Objs[parents[0].ctrl].user = ai_Chars[parents[0].id];
+                d2_Objs[parents[0].ctrl].user = &ai_Chars[parents[0].id];
             } else {
                 d2_WinOpenPic(half - w - 0x58, 12, 0x4fb, d2_LastWindow);
                 parents[0].ctrl = -1;
@@ -4844,7 +4815,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
             if (parents[1].id != 0xffff) {
                 d2_WinOpenPic(half + 0x5c, 12, ((AICHARREC *)ai_Chars)[parents[1].id].picture, d2_LastWindow);
                 d2_Objs[parents[1].ctrl].style = 3;
-                d2_Objs[parents[1].ctrl].user = ai_Chars[parents[1].id];
+                d2_Objs[parents[1].ctrl].user = &ai_Chars[parents[1].id];
             } else {
                 d2_WinOpenPic(half + 0x5c, 12, 0x4fb, d2_LastWindow);
                 parents[1].ctrl = -1;
@@ -4858,7 +4829,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                 if (row[2].id != 0xffff) {
                     d2_WinOpenPic(half - w - 0xe, 0x98, ((AICHARREC *)ai_Chars)[row[2].id].picture, d2_LastWindow);
                     d2_Objs[row[2].ctrl].style = 3;
-                    d2_Objs[row[2].ctrl].user = ai_Chars[row[2].id];
+                    d2_Objs[row[2].ctrl].user = &ai_Chars[row[2].id];
                 } else {
                     d2_WinOpenPic(half - w - 0xe, 0x98, 0x4fb, d2_LastWindow);
                     row[2].ctrl = -1;
@@ -4869,7 +4840,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                 if (row[3].id != 0xffff) {
                     d2_WinOpenPic(half + 0x12, 0x98, ((AICHARREC *)ai_Chars)[row[3].id].picture, d2_LastWindow);
                     d2_Objs[row[3].ctrl].style = 3;
-                    d2_Objs[row[3].ctrl].user = ai_Chars[row[3].id];
+                    d2_Objs[row[3].ctrl].user = &ai_Chars[row[3].id];
                 } else {
                     d2_WinOpenPic(half + 0x12, 0x98, 0x4fb, d2_LastWindow);
                     row[3].ctrl = -1;
@@ -4881,7 +4852,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                 if (row[2].id != 0xffff) {
                     d2_WinOpenPic(half - w / 2 + 2, 0x98, ((AICHARREC *)ai_Chars)[row[2].id].picture, d2_LastWindow);
                     d2_Objs[row[2].ctrl].style = 3;
-                    d2_Objs[row[2].ctrl].user = ai_Chars[row[2].id];
+                    d2_Objs[row[2].ctrl].user = &ai_Chars[row[2].id];
                 } else {
                     d2_WinOpenPic(half - w / 2 + 2, 0x98, 0x4fb, d2_LastWindow);
                     row[2].ctrl = -1;
@@ -4901,7 +4872,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                     row[i].y = 0x96;
                     d2_WinOpenPic(t + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
                     d2_Objs[row[i].ctrl].style = 3;
-                    d2_Objs[row[i].ctrl].user = ai_Chars[row[i].id];
+                    d2_Objs[row[i].ctrl].user = &ai_Chars[row[i].id];
                 }
                 siblingX[0] = width / 5 - w - 0x10;
                 siblingX[1] = width * 4 / 5 + 0x10;
@@ -4913,7 +4884,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                     row[i].y = 0x96;
                     d2_WinOpenPic(siblingX[i - 4] + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
                     d2_Objs[row[i].ctrl].style = 3;
-                    d2_Objs[row[i].ctrl].user = ai_Chars[row[i].id];
+                    d2_Objs[row[i].ctrl].user = &ai_Chars[row[i].id];
                 }
             }
 
@@ -4953,7 +4924,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                         children[i].y = 0x122;
                         d2_WinOpenPic(t + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
                         d2_Objs[children[i].ctrl].style = 3;
-                        d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
+                        d2_Objs[children[i].ctrl].user = &ai_Chars[children[i].id];
                     }
                 } else {
                     evenX[0] = half - w - 0x14;
@@ -4969,7 +4940,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
                         children[i].y = 0x122;
                         d2_WinOpenPic(t + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
                         d2_Objs[children[i].ctrl].style = 3;
-                        d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
+                        d2_Objs[children[i].ctrl].user = &ai_Chars[children[i].id];
                     }
                 }
             }
@@ -5086,25 +5057,7 @@ void ai_ShowMissions(int owner);
    the character and the panel closes); else for the player's own child the gift button (unless the player's
    powerFlags has 0x20) and with it the profession choice for a jobless child (no event 0x5e and f020 at most the
    age + 4) or the university for one with a profession that has not studied (powerFlags 0x10000), and for the
-   player's own character the missions button when it has missions. The right button closes it.
-   @deep s48: proven byte under a declaration set (5 unused typedefs at the unit's start;
-   ledger/tiebreak.tsv): the text is done, the unit's declaration set is the open part. Levers:
-   professionBtn / universityBtn as scalars with a block-local int btns[2] per sv_ButtonRow arm; row = 0
-   before d2_SetForm(win, 3); the skill loop's row++; y += 0x18; before the txt_Format and each header /
-   ailment line's row++ after the .centred store; the job / title text base as a local set by if / else (if
-   (chr->sex) base = 0x18f; else base = 0x130;) - a variable with two definitions is no forward-substituted
-   ternary, so VC6 adds into the jobId register (add eax,ecx) as the original; ~70 ternary spellings never
-   did. prior: Reconstructed in full against the original (all 999 instructions read: the dates, profession
-   / title, offices, worth, partner / betrothal event 0x41 walk, faith, children, the skill bars and the
-   nine ailment rows, the button ladder of page 4 and the click dispatch); all calls, literals and
-   references agree, no M8/M9. Remaining: the original does not strength-reduce or constant-fold the row
-   counter of page 3 - in the skill loop it keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea
-   ecx,[eax*8+1]) and computes the header / ailment rows at run time (lea ecx,[eax*8+0xa]; inc esi), where
-   ours carries row*0x18+1 as a stepped counter and folds the later rows to constants (mov esi,7 / push
-   0x9a / push 0xb2): tried ++row in the call, (row+1)*0x18+1 with a trailing row++, both keep the
-   reduction (8 instructions fewer: ours 991 vs 999); the original keeps universityBtn[0] in ebp (cmp
-   eax,ebp) where ours reloads [esp+0x24]; the rest is order / regs / slots; proof stops at the escaped
-   frame layout (gift / professionBtn / universityBtn slots). */
+   player's own character the missions button when it has missions. The right button closes it. */
 void ai_CharInfoPanel(AICHARREC *chr, int other)
 {
     int win;
@@ -5360,7 +5313,7 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     d2_PointerObj = -1;
     do {
         if (giftBtn != -1) {
-            if (gm_GetGoodsValue(ai_Chars[ai_PlayerId]) <= 0)
+            if (gm_GetGoodsValue((char *)&ai_Chars[ai_PlayerId]) <= 0)
                 d2_SetObjEnabled(giftBtn, 0);
             else
                 d2_SetObjEnabled(giftBtn, 1);
@@ -5376,13 +5329,13 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
                     sv_PopRequest = 2;
                 }
             } else if (d2_PointerObj == giftBtn) {
-                if (ai_GiftWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                if (ai_GiftWindow((char *)&ai_Chars[ai_PlayerId], chr) != 0)
                     d2_SetObjEnabled(giftBtn, 0);
             } else if (d2_PointerObj == professionBtn) {
-                if (ai_ChooseProfessionWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                if (ai_ChooseProfessionWindow((char *)&ai_Chars[ai_PlayerId], chr) != 0)
                     d2_SetObjEnabled(professionBtn, 0);
             } else if (d2_PointerObj == universityBtn) {
-                if (ai_UniversityWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                if (ai_UniversityWindow((char *)&ai_Chars[ai_PlayerId], chr) != 0)
                     d2_SetObjEnabled(universityBtn, 0);
             } else if (d2_PointerObj == missionBtn) {
                 ai_ShowMissions(chr->netId);
@@ -6281,7 +6234,7 @@ void ai_PlayerComparePanel(void)
         obj = d2_WinOpenPic(0x28, LC_COMPARE_X(count, i), ((AICHARREC *)ai_Chars)[rank->id].ref54, d2_LastWindow);
         d2_Objs[obj].interactive = 1;
         d2_Objs[obj].style = 3;
-        d2_Objs[obj].user = ai_Chars[rank->id];
+        d2_Objs[obj].user = &ai_Chars[rank->id];
         txt_Format(buf, (int)"%1N3", rank->id);
         ai_CentredText(buf, 0x36, LC_COMPARE_X(count, i) + 0x22, 300, 0x56);
         colour = min(max(((AICHARREC *)ai_Chars)[rank->id].ref54 - 0x59a, 0), 7);
@@ -6372,7 +6325,7 @@ void ai_PrivilegesPanel(void)
             else
                 msg.kind = 2;
             for (i = 0; i < 0x3a; i++) {
-                v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                v = ord_DispatchOrder(i, (char *)&ai_Chars[ai_PlayerId], (int *)&msg);
                 if (v != answers[i])
                     changed = 1;
                 answers[i] = v;
@@ -6407,7 +6360,7 @@ void ai_PrivilegesPanel(void)
                 msg.kind = (page != 2) + 1;
                 for (i = 0; i < 0x3a; i++) {
                     ids[i] = -1;
-                    v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                    v = ord_DispatchOrder(i, (char *)&ai_Chars[ai_PlayerId], (int *)&msg);
                     answers[i] = v;
                     if (v == page) {
                         if (rows != 0)
@@ -6445,7 +6398,7 @@ void ai_PrivilegesPanel(void)
                     if (d2_PointerObj == ids[i]) {
                         d2_SetViewEnabled(win, 0);
                         msg.kind = (page != 2) + 3;
-                        v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                        v = ord_DispatchOrder(i, (char *)&ai_Chars[ai_PlayerId], (int *)&msg);
                         if (v & 0x80) {
                             changed = 1;
                             answers[i] = v & 10;
@@ -7401,8 +7354,8 @@ int ai_BewitchWindow(AICHARREC *ch)
         if (d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
                 amount = d2_GetObjValue(slider);
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], amount) != 0) {
-                    gain = ai_RelationGain(ai_Chars[ai_PlayerId], ch, amount);
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], amount) != 0) {
+                    gain = ai_RelationGain((char *)&ai_Chars[ai_PlayerId], ch, amount);
                     cm_SendMoneyDelta(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -amount);
                     cm_SendRelations(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ch->netId, gain, 1);
                     txt_Format(text, 0x1db5, ch->id, ch->id);
@@ -9455,7 +9408,7 @@ int ai_UniversityWindow(AICHARREC *parent, AICHARREC *child)
     int i;
     int ret;
 
-    ai_RollStudyOffers(ai_Chars[ai_PlayerId], offers);
+    ai_RollStudyOffers((char *)&ai_Chars[ai_PlayerId], offers);
     win = d2_OpenForm(0, 0, "special\\uni");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -10527,7 +10480,7 @@ int ai_UseGoodTributeClaim(AICHARREC *ch)
     ev = (AIJOB *)he_FindEvent(1, 0, 0x35);
     while (ev != 0) {
         if ((int)ch->netId == ev->idbc) {
-            ai_ShowTributeClaimNews((int)ch, (int)ai_Chars[ev->chr]);
+            ai_ShowTributeClaimNews((int)ch, (int)&ai_Chars[ev->chr]);
             ev->end = ai_Time;
             cm_SendExSetHE(-1, (char *)ev);
         }

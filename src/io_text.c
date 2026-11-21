@@ -106,7 +106,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
         return 0;
     }
     if (id != 0xfffe) {
-        rec = (unsigned char *)ai_Chars[id];
+        rec = (unsigned char *)&ai_Chars[id];
     } else {
         memset(tmp, 0, 0x21c);
         rec = (unsigned char *)tmp;
@@ -283,7 +283,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
         return 0;
     }
     if (id != 0xfffe) {
-        rec = (unsigned char *)ai_Chars[id];
+        rec = (unsigned char *)&ai_Chars[id];
     } else {
         memset(tmp, 0, 0x21c);
         rec = (unsigned char *)tmp;

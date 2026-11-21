@@ -21,10 +21,10 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include "main.h"
 #include "mem.h"
 #include "tr.h"
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (defined below as char[768][0x21c]) as the AICHAR records they are */
 
 
 extern char ch_EmptyName[];  /* 0x631090, the shared empty string "" (ch.c) */
+extern AICHAR ai_Chars[768];   /* 0x770b80, the characters (f3gmt.c) */
 
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: the function masks its argument to 16 bits (0x42ec00: test si,si; and esi,0xffff) and the shuffler passes the count through mov cx,WORD PTR ds:0x6f0e28 (0x4eadd8), so this TU's callers were compiled against the 16-bit parameter and result; every calling unit declares it so) */
 
@@ -794,23 +794,23 @@ int ahm_CreateAlchemist(AHMCREATEMSG *m)
     if (ai_BTypes[o->type].kind != 0x1e)
         return 0xffff;
     for (n = 0; n < 0x300; n++)
-        if (ai_CharsT[n].id == 0xffff)
+        if (ai_Chars[n].id == 0xffff)
             break;
     if (n == 0x300) {
         for (n = 0; n < 0x300; n++)
-            if (ai_CharsT[n].kind == 0x0f)
+            if (ai_Chars[n].kind == 0x0f)
                 break;
         if (n == 0x300)
             return 0xffff;
     }
-    if (ai_CharsT[n].kind == 0x0f)
+    if (ai_Chars[n].kind == 0x0f)
         ai_CharCount--;
-    c = &ai_CharsT[n];
+    c = &ai_Chars[n];
     memset(c, 0, sizeof(AICHAR));
-    ai_CharsT[n].netId = -1;
-    ai_CharsT[n].id = 0xffff;
+    ai_Chars[n].netId = -1;
+    ai_Chars[n].id = 0xffff;
     for (i = 0; i < 8; i++)
-        ai_CharsT[n].relatives[i] = -1;
+        ai_Chars[n].relatives[i] = -1;
     c->bld2 = o;
     c->bld = o;
     ai_CharCount++;
@@ -1166,7 +1166,7 @@ int ahm_ReadRecord(void *f, unsigned char *o)
     return 1;
 }
 
-extern char ai_Chars[768][0x21c];
+extern AICHAR ai_Chars[768];
 extern struct AIBTYPE *ai_BTypes;
 extern signed char ai_Relations[768][768];
 extern signed char ai_RelationMemory[768][768];
@@ -1184,7 +1184,7 @@ int ai_PlayerPrototypeCount = 0;  /* 0x6f0e28 */
 AHMGRID * ai_PlayerPrototypes = 0;  /* 0x6f0e2c */
 int ai_RecipePrototypeCount = 0;  /* 0x6f0e30 */
 AHMGRID * ai_RecipePrototypes = 0;  /* 0x6f0e34 */
-extern char ai_Chars[768][0x21c];
+extern AICHAR ai_Chars[768];
 extern struct AIBTYPE *ai_BTypes;
 extern signed char ai_Relations[768][768];
 extern signed char ai_RelationMemory[768][768];

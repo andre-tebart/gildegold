@@ -150,13 +150,11 @@ extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 
 
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
@@ -179,7 +177,6 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62a634[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -195,7 +192,6 @@ extern int d2_LastWindow;
 
 extern GAPDATA full_data_602568[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -206,7 +202,6 @@ extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern int d2_PointerObj;
@@ -227,7 +222,6 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a450[];
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -238,7 +232,6 @@ extern int d2_LastWindow;
 
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -249,13 +242,11 @@ extern int d2_LastWindow;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 
 extern const int sv_PhaseMinutes[24];
 
 
-extern char ai_Chars[768][0x21c];
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -275,7 +266,6 @@ extern int ai_ClickedObject;
 
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int gm_AllowAll;
 extern int d2_ClickedId;
@@ -288,7 +278,6 @@ extern int ai_ClickedObject;
 
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
 extern int di_Absolute;
@@ -310,7 +299,6 @@ extern unsigned char kb_Last;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 
 
 #define U_I(a) (*(int *)(a))
@@ -334,7 +322,6 @@ struct SBSAMPLE;
 TUTSTATE *const ai_Tutorial = &ai_TutorialState;  /* 0x5eec60, the pointer to the tutorial state record */
 const int ai_TutorialConst5 = 5;  /* 0x5eec64, the tutorial object's second named constant (after ai_Tutorial, before its literal 400.0f); no reader in the surviving code (name from the value: its meaning is open) */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -1366,8 +1353,8 @@ void ai_HookChapter3Step2(int end)
     if (end)
         return;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].bld && ai_CharsT[i].bld->owner == ai_PlayerId) {
-            chr = &ai_CharsT[i];
+        if (ai_Chars[i].bld && ai_Chars[i].bld->owner == ai_PlayerId) {
+            chr = &ai_Chars[i];
             if (!chr)
                 return;
             if (!he_FigureContact(chr, &x, &y))
@@ -1590,7 +1577,7 @@ void ai_HookChapter5Step4(int end)
 {
     AICHAR *chr;
 
-    chr = &ai_CharsT[ai_PlayerId];
+    chr = &ai_Chars[ai_PlayerId];
     if (end)
         return;
     cm_SendSetField(chr->netId, 0x1c8, 4, 0x4000, 0);
@@ -1613,8 +1600,8 @@ void ai_HookChapter5Step5(int end)
     if (end != 1)
         return;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 5) {
-            chr = &ai_CharsT[i];
+        if (ai_Chars[i].kind == 5) {
+            chr = &ai_Chars[i];
             if (amt_GetOfficeCandidates((char *)chr, 1, &cand) > 0)
                 amt_ApplyForOffice((char *)chr, cand.kind);
             return;
@@ -1637,11 +1624,11 @@ void ai_HookChapter5Step6(int end)
     memset(&party, 0, sizeof party);
     n = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 6) {
-            party.host = ai_CharsT[i].netId;
-            party.members[n++] = ai_CharsT[i].netId;
-        } else if (ai_CharsT[i].kind == 7)
-            party.members[n++] = ai_CharsT[i].netId;
+        if (ai_Chars[i].kind == 6) {
+            party.host = ai_Chars[i].netId;
+            party.members[n++] = ai_Chars[i].netId;
+        } else if (ai_Chars[i].kind == 7)
+            party.members[n++] = ai_Chars[i].netId;
     }
     party.used = n;
     party.kind = 1;
@@ -4264,7 +4251,7 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
     int slot;
 
     owner = ahm_OwnerChar(obj);
-    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], value, ai_OwnPlayer)) {
+    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], value, ai_OwnPlayer)) {
         if (owner) {
             sv_MessageBox((int)txt_Ptrs[0x4048], 0x100);
         } else {
@@ -4480,7 +4467,7 @@ int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x96;
     msg.flags = 1;
-    msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+    msg.to = ai_Chars[((AIBLD *)obj)->owner].netId;
     msg.fromId = ((AIBLD *)obj)->id;
     msg.time = ai_Time;
     msg.arg[1] = rec->slots[slot].id;
@@ -4503,7 +4490,7 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x95;
     msg.flags = 1;
-    msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+    msg.to = ai_Chars[((AIBLD *)obj)->owner].netId;
     msg.fromId = ((AIBLD *)obj)->id;
     msg.time = ai_Time;
     msg.arg[0] = rec->id;
@@ -4783,7 +4770,7 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x97;
                 msg.flags = 1;
-                msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+                msg.to = ai_Chars[((AIBLD *)obj)->owner].netId;
                 msg.fromId = ((AIBLD *)obj)->id;
                 msg.time = ai_Time;
                 msg.arg[0] = rec->id;
@@ -4857,7 +4844,7 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
                 v = gm_PlayerFactor(d2_GetObjValue(field), ai_OwnPlayer);
-                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
+                if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
                     ahm_SendAddValue(owner, (float)v / (float)points * share * 0.75f);
                     done = 1;
                     sv_PopRequest = 1;

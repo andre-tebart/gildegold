@@ -221,7 +221,7 @@ typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegeta
 
 
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters: AICHAR records, defined by ahm.c as char[768][0x21c]; the units that read their fields use their ai_CharsT view */
+extern AICHAR ai_Chars[768];             /* 0x770b80, the characters */
 extern AIBTYPE *ai_BTypes;               /* 0x7e3f30, the building types */
 extern AIBLD *ai_Blds;                  /* 0x889f74, the buildings: AIBLD records */
 extern AIGOOD *ai_Goods;                /* 0x91aaf0, the goods: AIGOOD records, 0x41 bytes each */

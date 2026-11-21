@@ -39,7 +39,6 @@
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
-#define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
     unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
@@ -199,7 +198,7 @@ int gv_EffectNotifyOwner(GVEFFARG *a)
             b = (AIBLD *)gm_BuildQuery(1, 1, a->recs[i].bldId);
             m = 0;
             if (b != 0 && b->owner != 0xffff) {
-                ch = &gv_CharsT[b->owner];
+                ch = &ai_Chars[b->owner];
                 if (a->recs[i].mode == 1) {
                     m = 2;
                     if (!(a->recs[i].value > 25.0f))
@@ -765,7 +764,7 @@ void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
                 if (hit->owner == 0xffff)
                     msg.to = gv_PlayerAiChar->netId;
                 else
-                    msg.to = gv_CharsT[hit->owner].netId;
+                    msg.to = ai_Chars[hit->owner].netId;
                 msg.fromId = hit->id;
                 msg.time = ai_Time;
                 msg.flags = 2;

@@ -169,7 +169,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
     unsigned long time;             /* d3_Time when it was laid */
 } CMBOMB;
 #define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
@@ -2472,7 +2471,7 @@ int cm_CheckSellObject(G17MSG *m)
             return 1;
         if (bb != 0) {
             if (bb->owner != 0xffff)
-                r = (ORDCHAR *)ai_Chars[bb->owner];
+                r = (ORDCHAR *)&ai_Chars[bb->owner];
             else
                 r = 0;
         } else if (o != 0) {
@@ -2668,7 +2667,7 @@ int cm_CheckTableRequest(G17MSG *m)
     } else if (m->table.op == 'cler' && (b = (AIBLD *)gm_BuildQuery(1, 1, m->table.bldId)) != 0) {
         k = b->owner;
         if (k != 0xffff) {
-            c = &ai_CharsT[k];
+            c = &ai_Chars[k];
             if (c != 0 && c != (AICHAR *)ai_PlayerChar && c->health != 0 && c->kind != 0xf)
                 return 1;
         }
@@ -2760,7 +2759,7 @@ int cm_ExCreateBuilding(G17MSG *m, G17STAT *s)
         id = cm_ResolveId((int)m, m->build.owner);
         m->build.owner = id;
         for (k = 0; k < 0x300; k++)
-            if (ai_CharsT[k].id != 0xffff && ai_CharsT[k].netId == id)
+            if (ai_Chars[k].id != 0xffff && ai_Chars[k].netId == id)
                 break;
         if (k >= 0x300)
             return 1;
@@ -2803,11 +2802,11 @@ int cm_ExCreateCharacter(G17MSG *m, G17STAT *s)
     k = gm_CreateCharacter(m->chr.type, m->chr.parent1, m->chr.parent2, m->chr.age, b, m->chr.job, m->chr.title, m->chr.a8);
     if (k == 0xffff)
         return 1;
-    cm_LastCharId = ai_CharsT[k].netId;
+    cm_LastCharId = ai_Chars[k].netId;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)&ai_CharsT[k];
+        s->value = (int)&ai_Chars[k];
     }
     return 0;
 }
@@ -2835,21 +2834,21 @@ int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s)
     k = gm_CreateCharacter(type, m->named.parent1, m->named.parent2, m->named.age, 0, m->named.job, 0, m->named.a8);
     if (k == 0xffff)
         return 1;
-    cm_LastCharId = ai_CharsT[k].netId;
-    strncpy(ai_CharsT[k].first, m->named.first, 0x10);
-    c = &ai_CharsT[k];
+    cm_LastCharId = ai_Chars[k].netId;
+    strncpy(ai_Chars[k].first, m->named.first, 0x10);
+    c = &ai_Chars[k];
     t = (AIFIN *)gm_PlayerRecord((char *)c);
     if (t != 0) {
-        t->w00 = ai_CharsT[k].w050;
+        t->w00 = ai_Chars[k].w050;
         strncpy(t->family, m->named.family, 0x10);
-        strncpy(ai_CharsT[k].family, m->named.family, 0x10);
-        r = gm_FindChar(ai_CharsT[k].relatives[1]);
+        strncpy(ai_Chars[k].family, m->named.family, 0x10);
+        r = gm_FindChar(ai_Chars[k].relatives[1]);
         if (r != 0)
             strncpy(((AICHAR *)r)->family, m->named.family, 0x10);
         t->camAngle = -1.0f;
     }
-    ai_CharsT[k].ref54 = m->named.ref54;
-    ai_CharsT[k].b00c = m->named.b00c;
+    ai_Chars[k].ref54 = m->named.ref54;
+    ai_Chars[k].b00c = m->named.b00c;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
@@ -2876,7 +2875,7 @@ int cm_ExTakeOverCharacter(G17MSG *m, G17STAT *s)
             if (gv_FindHeldEntry(c, (unsigned char **)&y, (int *)&x) != 0)     /* y the graveyard building, x the entry (gv.h GVENTRY, its size first) */
                 gv_OrderBury((int *)c, (char *)y, *x, (unsigned char)gv_EntryIndex((char *)y->yard, x));
             s->kind = 1;
-            s->value = (int)ai_Chars[k];
+            s->value = (int)&ai_Chars[k];
         } else {
             s->kind = 0;
             s->value = 0;
@@ -3014,7 +3013,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
         if (x1 != 0) {
             p = &x1->objList;
             if (x1->owner != 0xffff)
-                r1 = &ai_CharsT[x1->owner];
+                r1 = &ai_Chars[x1->owner];
             else
                 r1 = 0;
         } else if (y != 0) {
@@ -3051,7 +3050,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
         if (x2 != 0) {
             q = &x2->objList;
             if (x2->owner != 0xffff)
-                r2 = &ai_CharsT[x2->owner];
+                r2 = &ai_Chars[x2->owner];
             else
                 r2 = 0;
         } else if (y != 0) {
@@ -3615,7 +3614,7 @@ int cm_ExRelations(G17MSG *m, G17STAT *s)
         for (i = 0; i < 0x300; i++) {
             for (j = 0; j < 0x300; j++) {
                 v = ai_Relations[i][j];
-                if (i != j && ai_CharsT[i].id != 0xffff && ai_CharsT[j].id != 0xffff) {
+                if (i != j && ai_Chars[i].id != 0xffff && ai_Chars[j].id != 0xffff) {
                     if (v > hi)
                         v += dn;
                     else if (v < lo)
@@ -3627,20 +3626,20 @@ int cm_ExRelations(G17MSG *m, G17STAT *s)
         }
     } else {
         for (ci = 0; ci < 0x300; ci++)
-            if (ai_CharsT[ci].netId == to)
+            if (ai_Chars[ci].netId == to)
                 break;
-        if (ci >= 0x300 || ai_CharsT[ci].id == 0xffff)
+        if (ci >= 0x300 || ai_Chars[ci].id == 0xffff)
             return 1;
         if (kind == 3) {
-            v = ai_CharsT[ci].partner;
+            v = ai_Chars[ci].partner;
             for (j = 0; j < 0x300; j++)
-                if (ai_CharsT[j].netId != v)
+                if (ai_Chars[j].netId != v)
                     ai_RelationMemory[j][ci] = (signed char)(int)(ai_RelationMemory[j][ci] * m->rel.scale);
         } else {
             for (cj = 0; cj < 0x300; cj++)
-                if (ai_CharsT[cj].netId == from)
+                if (ai_Chars[cj].netId == from)
                     break;
-            if (cj >= 0x300 || ai_CharsT[cj].id == 0xffff)
+            if (cj >= 0x300 || ai_Chars[cj].id == 0xffff)
                 return 1;
             if (kind == 2) {
                 v = ai_Relations[cj][ci];
@@ -3767,7 +3766,7 @@ int cm_ExTime(G17MSG *m, G17STAT *s)
         memset(&ai_Watch, 0, 0xb00);
         if (cm_RunCharacters) {
             ai_TradeMsgCount = 0;
-            for (c = (AICHAR *)ai_Chars; (int)c < (int)ai_Chars[0x300]; c++) {
+            for (c = (AICHAR *)ai_Chars; (int)c < (int)&ai_Chars[0x300]; c++) {
                 if (c->id != 0xffff)
                     ai_RunMasterEvaluation(c);
             }
@@ -3878,7 +3877,7 @@ int cm_ExSysMessage(G17MSG *m, G17STAT *s)
                 if (msg.sys.arg[4] == 1)
                     ai_GameOver = 1;
                 if (ai_MissionMode == 5)
-                    ai_SetFirstMission(ai_CharsT[ai_PlayerId].netId, msg.sys.arg[8]);
+                    ai_SetFirstMission(ai_Chars[ai_PlayerId].netId, msg.sys.arg[8]);
             } else
                 ret = 2;
             break;
@@ -3910,7 +3909,7 @@ int cm_ExSysMessage(G17MSG *m, G17STAT *s)
             break;
         case 17:
             if (ai_PlayerId != 0xffff) {
-                if (ai_CharsT[ai_PlayerId].partyId != msg.sys.arg[0] || msg.sys.arg[0] == -1)
+                if (ai_Chars[ai_PlayerId].partyId != msg.sys.arg[0] || msg.sys.arg[0] == -1)
                     cm_NoticeCount++;
             }
             break;
@@ -4020,12 +4019,12 @@ int cm_ExAddStraftat(G17MSG *m, G17STAT *s)
         }
         for (j = (AIJOB *)he_FindEvent(1, 0, 0x18); j != 0; j = (AIJOB *)he_NextEvent()) {
             if (j->id4 == ((CRIME *)ai_Crimes)[slot].culprit) {
-                if (gv_AddEvidence(rec->id, ai_CharsT[j->chr].netId) == 0)
+                if (gv_AddEvidence(rec->id, ai_Chars[j->chr].netId) == 0)
                     break;
                 if (s != 0) {
                     c = (AICHAR *)gm_FindChar(j->id4);
                     if (c != 0)
-                        ai_NotifyPlayerOfChar((unsigned short *)c, (unsigned short *)&ai_CharsT[j->chr]);
+                        ai_NotifyPlayerOfChar((unsigned short *)c, (unsigned short *)&ai_Chars[j->chr]);
                 }
             }
         }
@@ -5005,7 +5004,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
     strupr(name + 2);
     for (i = 0; i < 4; i++) {
         if (t->kind == 0x21) {
-            if (ai_CharsT[b->owner].sex == 1)
+            if (ai_Chars[b->owner].sex == 1)
                 sprintf(path, "%sgebaeude/*%s_A.ogr", ai_DataPath, name);
             else
                 sprintf(path, "%sgebaeude/*%s_B.ogr", ai_DataPath, name);
@@ -5107,7 +5106,7 @@ int cm_ExBuildingDestroyed(G17MSG *m, G17STAT *s)
             gm_FreeObject((int)o);
     }
     /* the bld of every character record (the end is the field of the record after the table) */
-    for (bld = &ai_CharsT[0].bld; (int)bld < (int)&ai_CharsT[0x300].bld;
+    for (bld = &ai_Chars[0].bld; (int)bld < (int)&ai_Chars[0x300].bld;
          bld = (AIBLD **)((char *)bld + sizeof(AICHAR))) {
         if (*bld == b)
             *bld = 0;
@@ -5502,20 +5501,20 @@ int cm_ExSpawnCharacter(G17MSG *m, G17STAT *s)
     if (id == 0xffff)
         return 1;
     if (m->spawn.objId != -1 && (t = (AIOBJ *)gm_FindObjectInst(m->spawn.objId)) != 0)
-        gm_PlaceOnStage(ai_CharsT[id].netId, b->id, t->objId, 0, 0);
+        gm_PlaceOnStage(ai_Chars[id].netId, b->id, t->objId, 0, 0);
     else
-        gm_PlaceOnStage(ai_CharsT[id].netId, b->id, -1, 0, 0);
-    ai_CharsT[id].bld = 0;
-    ai_CharsT[id].kind = 0xd;
+        gm_PlaceOnStage(ai_Chars[id].netId, b->id, -1, 0, 0);
+    ai_Chars[id].bld = 0;
+    ai_Chars[id].kind = 0xd;
     if (m->spawn.item != 0) {
-        gm_CreateObject(ai_CharsT[id].netId, m->spawn.item, 1);
-        cm_UpdateHandObject((char *)&ai_CharsT[id]);
+        gm_CreateObject(ai_Chars[id].netId, m->spawn.item, 1);
+        cm_UpdateHandObject((char *)&ai_Chars[id]);
     }
-    cm_LastCharId = ai_CharsT[id].netId;
+    cm_LastCharId = ai_Chars[id].netId;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)&ai_CharsT[id];
+        s->value = (int)&ai_Chars[id];
     }
     return 0;
 }
@@ -5558,7 +5557,7 @@ int cm_ExChat(G17MSG *m, G17STAT *s)
             cm_ChatLog[0] = 0;
     }
     for (i = 0; i < 8; i++) {
-        if (m->chat.to[i] == ai_CharsT[ai_PlayerId].netId) {
+        if (m->chat.to[i] == ai_Chars[ai_PlayerId].netId) {
             found = 1;
             break;
         }
@@ -5755,7 +5754,7 @@ int cm_ExCutEntry(G17MSG *m, G17STAT *s)
     char *c;
     int i;
 
-    if (m->cutEntry.fightId != ai_CharsT[ai_PlayerId].partyId)
+    if (m->cutEntry.fightId != ai_Chars[ai_PlayerId].partyId)
         return 1;
     for (i = 0; i < 16; i++) {
         if (cm_CutInfosT[i].playerId == m->cutEntry.playerId) {
@@ -5788,7 +5787,7 @@ int cm_ExCutEntryUpdate(G17MSG *m, G17STAT *s)
     CMCUTENTRY *r;
     int i;
 
-    if (m->cutEntry.fightId != ai_CharsT[ai_PlayerId].partyId)
+    if (m->cutEntry.fightId != ai_Chars[ai_PlayerId].partyId)
         return 1;
     for (i = 0; i < 16; i++) {
         if (cm_CutInfosT[i].playerId == m->cutEntry.playerId) {
@@ -5877,7 +5876,7 @@ int cm_ExDarkCorner(G17MSG *m, G17STAT *s)
             return 1;
         q->recs[i] = -1;
         if (ai_PlayerId == b->owner)
-            ai_ShowPurchaseNews(c, ai_Chars[ai_PlayerId], (int)b, m->script.price);
+            ai_ShowPurchaseNews(c, (char *)&ai_Chars[ai_PlayerId], (int)b, m->script.price);
     }
     if (s != 0)
         s->state = 1;
@@ -5950,7 +5949,7 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
         if (b == 0)
             return 1;
         if (b->owner != 0xffff) {
-            ch = &ai_CharsT[b->owner];
+            ch = &ai_Chars[b->owner];
             if (ch != 0 && (char *)ch != ai_PlayerCharC && ch->health != 0 && ch->kind != 0xf)
                 return 1;
         }
@@ -6387,7 +6386,7 @@ int cm_ExRaiseDead(G17MSG *m, G17STAT *s)
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)ai_Chars[id];
+        s->value = (int)&ai_Chars[id];
     }
     return 0;
 }
@@ -6416,7 +6415,7 @@ int cm_ExCreateAlchemist(G17MSG *m, G17STAT *s)
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)ai_Chars[id];
+        s->value = (int)&ai_Chars[id];
     }
     return 0;
 }

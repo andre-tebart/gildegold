@@ -135,7 +135,6 @@ void gm_RefreshGoodsLists(unsigned p);                     /* 0x4ff190 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
 void gm_KillSpieler(int c, int mode);                     /* 0x503c60 */
 int cm_SendCommand(void *p);                     /* 0x4c61b0 */
-extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 extern signed char ai_Relations[768][768];  /* 0x7e5360 */
 extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 extern int ai_CharCount;                /* 0x6f1bc0, the number of characters */

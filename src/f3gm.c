@@ -119,7 +119,7 @@ typedef char gm_AssertGMCARRY[sizeof(GMCARRY) == 0x21d ? 1 : -1];
 
 int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 
-#define CH(i) (ai_Chars[(unsigned short)(i)])
+#define CH(i) ((char *)&ai_Chars[(unsigned short)(i)])
 #define REC_RATE(rec) ((rec)[6])
 
 #include "io_text.h"
@@ -1696,9 +1696,9 @@ void gm_DailyCharacters(void)
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
-        if (ai_Chars[i][2] == 0x12) {     /* c->kind, read through the record */
+        if (ai_Chars[i].kind == 0x12) {     /* c->kind, read through the record */
             v = 8;
-            cm_BeginFieldBlock(ai_Chars[i], c->netId);
+            cm_BeginFieldBlock((char *)&ai_Chars[i], c->netId);
             cm_AddFieldDelta(1, 1, 2, &v);
             cm_SendFieldDeltas();
             gm_NetMsgCount++;

@@ -117,13 +117,11 @@ extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 
 
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
@@ -146,7 +144,6 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62a634[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -162,7 +159,6 @@ extern int d2_LastWindow;
 
 extern GAPDATA full_data_602568[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -173,7 +169,6 @@ extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern int d2_PointerObj;
@@ -194,7 +189,6 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a450[];
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -205,7 +199,6 @@ extern int d2_LastWindow;
 
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -216,13 +209,11 @@ extern int d2_LastWindow;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 
 extern const int sv_PhaseMinutes[24];
 
 
-extern char ai_Chars[768][0x21c];
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -242,7 +233,6 @@ extern int ai_ClickedObject;
 
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int gm_AllowAll;
 extern int d2_ClickedId;
@@ -255,7 +245,6 @@ extern int ai_ClickedObject;
 
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
 extern int di_Absolute;
@@ -277,7 +266,6 @@ extern unsigned char kb_Last;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 
 
 #define U_I(a) (*(int *)(a))
@@ -300,7 +288,6 @@ struct SBSAMPLE;
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 extern TUTSTATE *const ai_Tutorial;
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -633,7 +620,7 @@ void ai_HandleItemDrag(void)
     if (d2_RightHeldObj != -1 && d2_RightHeldObj != ai_DragObj) {
         user = d2_Objs[d2_PointerObj].user;
         if (user != 0) {
-            if ((char *)user >= ai_Chars[0] && (char *)user < ai_Chars[768]) {  /* ai_Chars[768]: one past the table */
+            if ((char *)user >= (char *)&ai_Chars[0] && (char *)user < (char *)&ai_Chars[768]) {  /* ai_Chars[768]: one past the table */
                 ch = (AICHAR *)user;
                 if (ch->id == 0xffff)
                     ch = 0;
@@ -729,7 +716,7 @@ int ai_OpenBuildingTooltip(int idx)
     if (bt->kind != 0xa) {
         d2_SetForm(0, 3);
         io_PrintText(0x2a, roman[bt->cap247]);
-        io_PrintText(0x28, gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], idx));
+        io_PrintText(0x28, gm_BuildingKindCost((int)&ai_Chars[ai_PlayerId], idx));
         io_PrintText(0x29, bt->v243);
     }
     return view;
@@ -761,7 +748,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    before cross-jumping (a value per arm through a local, the list written by a helper), or the 0x225 chain
    as a macro shared with the 0x1c1 test at the end. prior: 273 -> 53 ins: d2_WinOpenPicStyled called with
    a short y (its true short x, short y prototype; the row y is recomputed per call, loop counters in
-   memory: -101), the staff loop as an index loop over ai_CharsT (countdown edx 0x300: -117),
+   memory: -101), the staff loop as an index loop over ai_Chars (countdown edx 0x300: -117),
    (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair). Left: only the type 0x17/0x25 chain layout
    (all 49 code ins, 0x58869f..0x588843): the original puts each arm inline after an inverted last compare,
    A/B/1c1 with their own n store and the n = 1 arms cross-jumped into one tail; ours places A, B, 1c1
@@ -821,13 +808,13 @@ int ai_OpenItemTooltip(int idx)
         gm_BuildingSkill((unsigned char *)bld, 1, 1);
         master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
         for (i = 0; i < 0x300; i++) {
-            if ((char *)ai_CharsT[i].bld == bld && &ai_CharsT[i] != master)
-                list[n++] = ai_CharsT[i].netId;
+            if ((char *)ai_Chars[i].bld == bld && &ai_Chars[i] != master)
+                list[n++] = ai_Chars[i].netId;
         }
         factor = gm_StaffFactor((unsigned char *)bld, n, list);
         c = (AICHAR *)gm_FindCharacterByMaster((int)bld);
         if (c == 0)
-            c = (AICHAR *)ai_Chars[((AIBLD *)bld)->owner];
+            c = (AICHAR *)&ai_Chars[((AIBLD *)bld)->owner];
         io_PrintText(0x22, (int)(item->workTime / ((float)(c->sk81 * (1.0 / 1008)) + factor)), item->workTime);
     }
     d2_SetForm(0, 4);
@@ -1627,7 +1614,7 @@ void ai_BookmarksPreset(void)
     int n;
 
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 6)
+        if (ai_Chars[i].kind == 6)
             break;
     }
     n = 1;
@@ -1635,7 +1622,7 @@ void ai_BookmarksPreset(void)
     b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
     if (b != 0)
         ai_BookmarkSetBuilding(n++, b);
-    b = ai_CharsT[i].bld2;
+    b = ai_Chars[i].bld2;
     if (b != 0)
         ai_BookmarkSetBuilding(n, b);
     n = 3;

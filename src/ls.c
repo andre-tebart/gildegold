@@ -19,7 +19,6 @@ struct D3TERRAIN;
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.c: int[4]) as the AITIME it holds */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
@@ -244,24 +243,24 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     if (vfs_fwrite(&ai_Time, 0xe, 1, f) <= 0)
         return 0;
     if (ai_PlayerId != 0xffff) {
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x30, 0x10, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0x30, 0x10, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x40, 0x10, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0x40, 0x10, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0xc, 1, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0xc, 1, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x54, 4, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0x54, 4, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x164, 1, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0x164, 1, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x166, 1, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0x166, 1, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0xd, 1, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 0xd, 1, 1, f) <= 0)
             return 0;
         worth = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
         if (vfs_fwrite(&worth, 4, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 9, 1, 1, f) <= 0)
+        if (vfs_fwrite((char *)&ai_Chars[ai_PlayerId] + 9, 1, 1, f) <= 0)
             return 0;
     } else {
         if (vfs_fwrite(noText, 0x10, 1, f) <= 0)
@@ -561,7 +560,7 @@ int ls_WriteCharacters(int f)
     LS_W(&ai_PlayerId, 2)
     cnt = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff)
+        if (ai_Chars[i].id != 0xffff)
             cnt++;
     }
     LS_W(&cnt, 4)
@@ -586,7 +585,7 @@ int ls_WriteCharacters(int f)
         }
     }
     for (i = 0; i < 768; i++) {
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->id != 0xffff) {
             LS_W(&c->id, 2)
             LS_W(&c->partyId, 4)
@@ -768,12 +767,12 @@ int ls_WriteSceneRecords(int f)
     char flag;
 
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].scene != 0)
+        if (ai_Chars[i].scene != 0)
             cnt++;
     }
     LS_W(&cnt, 4)
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].scene != 0 && ls_WriteSceneCharacter(ai_CharsT[i].scene, ai_CharsT[i].netId, f) == 0)
+        if (ai_Chars[i].scene != 0 && ls_WriteSceneCharacter(ai_Chars[i].scene, ai_Chars[i].netId, f) == 0)
             return 0;
     }
     cnt = 0;
@@ -1655,7 +1654,7 @@ int ls_ReadCharacters(int f)
     }
     for (i = 0; i < cnt; i++) {
         LS_R(&id, 2)
-        c = &ai_CharsT[id];
+        c = &ai_Chars[id];
         c->id = id;
         if (ls_Version >= 0x1003e) {
             LS_R(&c->partyId, 4)
@@ -1897,7 +1896,7 @@ int ls_ReadSceneRecords(int f)
             ch_SetSitAnim(ch, ch->sitAnim);
         }
         own = ch->owner;
-        if (own != 0 && (char *)own >= ai_Chars[0] && (char *)own < ai_Chars[768]) {
+        if (own != 0 && (char *)own >= (char *)&ai_Chars[0] && (char *)own < (char *)&ai_Chars[768]) {
             c = own;
             d3_SetObjectRot(ch->obj, &ch->rot);
             sprintf(ch->obj->name, "sp_%i", c->netId);
@@ -2428,7 +2427,7 @@ int ls_FixupAfterLoad(void)
             ai_KindBChars[i] = (char *)gm_FindChar((int)ai_KindBChars[i]);
     }
     for (i = 0; i < 768; i++) {
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->id != 0xffff) {
             if ((int)c->bld == -1)
                 c->bld = 0;
@@ -2637,8 +2636,8 @@ int ls_ReceiveGame(void)
     if (ls_ReadCharacters(h) == 0)
         LS_LOADFAIL
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind == 6)
-            ai_CharsT[i].kind = 5;
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].kind == 6)
+            ai_Chars[i].kind = 5;
     }
     if (ls_ReadPlayerSlots(h) == 0)
         LS_LOADFAIL

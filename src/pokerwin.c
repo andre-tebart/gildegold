@@ -53,7 +53,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
-#define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxResolution;
@@ -485,7 +484,7 @@ int ai_PokerGame(void)
     int d;
 
     lastPhase = -1;
-    rec = (PLAYERRECVIEW *)gm_PlayerRecord(ai_CharsC + ai_PlayerId * 0x21c);
+    rec = (PLAYERRECVIEW *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
     if (rec == 0)
         return 0;
     worth = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
@@ -494,7 +493,7 @@ int ai_PokerGame(void)
         kb_Down[0x1e] = 0;
         if (ai_OpenPokerWindow() == 0)
             return 0;
-        if (ai_PokerStart((struct AIPER *)(ai_CharsC + ai_PlayerId * 0x21c), (struct G10GAME *)&ai_PokerState) == 0) {
+        if (ai_PokerStart((struct AIPER *)((char *)&ai_Chars[ai_PlayerId]), (struct G10GAME *)&ai_PokerState) == 0) {
             ai_ClosePokerWindow();
             return 0;
         }
@@ -792,7 +791,7 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
         pic = ai_PokerState.seat[seat].model;
         d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[seat].win);
     } else {
-        pic = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->pic;
+        pic = ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->pic;
         d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[0].win);
     }
     for (i = 0; i < n; i++, x += 0x20) {

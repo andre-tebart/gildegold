@@ -23,7 +23,6 @@
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
-#define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
     unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
@@ -690,7 +689,7 @@ int gv_BuryCharacter(int *p)
     char ch;
 
     gm_FindById((int *)&bld, 0, 0, p[2]);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -775,7 +774,7 @@ int gv_ReserveGrave(GVORDER *m)
     int i;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -798,10 +797,10 @@ int gv_ReserveGrave(GVORDER *m)
             e->grave[i].id = -1;
         if (m->price > 0) {
             gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-            gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+            gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
                          (int)(m->price * gv_SaleShares[m->size]));
-            owner = &gv_CharsT[bld->owner];
-            if (c != owner && gv_CharsT[bld->owner].kind == 6)
+            owner = &ai_Chars[bld->owner];
+            if (c != owner && ai_Chars[bld->owner].kind == 6)
                 ai_NotifySale((int)owner, (unsigned short *)c, (int)bld, m->size, m->price,
                               (int)(m->price * gv_SaleShares[m->size]));
         }
@@ -842,7 +841,7 @@ int gv_ExtendGrave(GVORDER *m)
     GVENTRY *e;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -860,7 +859,7 @@ int gv_ExtendGrave(GVORDER *m)
     e->until += m->years;
     if (m->price > 0) {
         gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-        gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+        gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
                      (int)(m->price * gv_SaleShares[m->size]));
     }
     return 0;
@@ -904,7 +903,7 @@ int gv_SetGraveHolder(GVORDER *m)
     id = -1;
     key = 0xffff;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -958,7 +957,7 @@ int gv_OpenSize(GVORDER *m)
     GVYARD *g;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1022,7 +1021,7 @@ int gv_AdjustEntry(GVORDER *m)
     int v;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1066,7 +1065,7 @@ int gv_AddNewDead(unsigned char *p)
     int n;
 
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || ai_Chars[bld->owner] == ai_PlayerCharC)
+    if (bld == 0 || bld->owner == 0xffff || (char *)&ai_Chars[bld->owner] == ai_PlayerCharC)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1114,7 +1113,7 @@ int gv_MoveGrave(GVMOVE *m)
     if (c == 0)
         return -6;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return -1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
@@ -1160,7 +1159,7 @@ moved:
         ai_NextObjectId = m->objId;
     if (m->price > 0) {
         gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
-        gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+        gm_AddObjekt(ai_Chars[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
                      (int)(m->price * gv_SaleShares[m->to]));
     }
     return 0;
@@ -1182,7 +1181,7 @@ int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
         m.entry = (unsigned char)entry;
         m.grave = grave;
         m.kind = kind;
-        gv_Accuse(0x1b, 1, gv_CharsT[owner].netId, -1, m.bld);
+        gv_Accuse(0x1b, 1, ai_Chars[owner].netId, -1, m.bld);
         return cm_SendRaiseDead(&m);
     }
     return -1;
@@ -1208,7 +1207,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
     if (m->kind != 0x1b && m->kind != 0x1c)
         return (unsigned)-6;
     gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+    if (bld == 0 || bld->owner == 0xffff || &ai_Chars[bld->owner] == gv_PlayerAiChar)
         return (unsigned)-1;
     if (ai_BTypes[bld->type].kind != 0x1d)
         return (unsigned)-2;
@@ -1230,23 +1229,23 @@ unsigned gv_RaiseDead(GVRAISE *m)
         } while (i < gv_EntryCounts[size]);
         if (q->id == m->grave) {
             for (slot = 0; slot < 0x300; slot++)
-                if (gv_CharsT[slot].id == 0xffff)
+                if (ai_Chars[slot].id == 0xffff)
                     break;
             if (slot == 0x300) {
                 for (slot = 0; slot < 0x300; slot++)
-                    if (gv_CharsT[slot].kind == 0x0f)
+                    if (ai_Chars[slot].kind == 0x0f)
                         break;
                 if (slot == 0x300)
                     return 0xffff;
             }
-            if (gv_CharsT[slot].kind == 0x0f)
+            if (ai_Chars[slot].kind == 0x0f)
                 ai_CharCount--;
-            c = &gv_CharsT[slot];
+            c = &ai_Chars[slot];
             memset(c, 0, sizeof(AICHAR));
-            gv_CharsT[slot].netId = -1;
-            gv_CharsT[slot].id = 0xffff;
+            ai_Chars[slot].netId = -1;
+            ai_Chars[slot].id = 0xffff;
             for (i = 0; i < 8; i++)
-                gv_CharsT[slot].relatives[i] = -1;
+                ai_Chars[slot].relatives[i] = -1;
             ai_CharCount++;
             c->netId = ai_NextObjectId;
             c->id = (unsigned short)slot;
@@ -1563,7 +1562,7 @@ int gv_RoomForRaised(unsigned char *o, int *n)
         return -1;
     places = t->k232 + t->k231;
     cnt = 0;
-    for (c = gv_CharsT; (int)&c->bld < (int)&gv_CharsT[768].bld; c++) {
+    for (c = ai_Chars; (int)&c->bld < (int)&ai_Chars[768].bld; c++) {
         if (c->id != 0xffff && c->kind == 0x14 && c->bld == bld)
             cnt++;
     }
@@ -1603,7 +1602,7 @@ void gv_GraveyardTurn(char *o)
     sum = 0;
     h = -1;
     if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
-        pl = &gv_CharsT[bld->owner];
+        pl = &ai_Chars[bld->owner];
     e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
     while (e != 0) {
         if (rounds >= 0x40 && h != -1) {

@@ -112,7 +112,7 @@ typedef char gm_AssertGMCARRY[sizeof(GMCARRY) == 0x21d ? 1 : -1];
 
 int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 
-#define CH(i) (ai_Chars[(unsigned short)(i)])
+#define CH(i) ((char *)&ai_Chars[(unsigned short)(i)])
 #define REC_RATE(rec) ((rec)[6])
 
 #include "io_text.h"
@@ -2858,7 +2858,7 @@ void gm_ShowSlotObjects(int unused, int scene, int c)
     unsigned char *s;
 
     if (sv_PanelShown == scene) {
-        s = (unsigned char *)ai_Chars[c] + 0x80;
+        s = (unsigned char *)&ai_Chars[c] + 0x80;
         for (k = 0, i = 0; k < 0x1e; k += 6, s++, i++) {
             v = (int)((float)(*s / 42.0f) - 0.5f) + 0x17f + k;
             if (*s == 0)
@@ -3244,7 +3244,7 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
         btype = (unsigned char *)ai_BTypes + bld->type * 0x24d;
         job = gm_TitleJob(p, gm_BuildingJob(*btype));
         if (*btype == 0x1d)
-            return ai_PermissionBits1d(ai_Chars[p], (char *)bld, (char *)obj);
+            return ai_PermissionBits1d((char *)&ai_Chars[p], (char *)bld, (char *)obj);
         switch (*btype) {
         case 0x21:
             if (bld->masterId == p)
@@ -3912,9 +3912,9 @@ int gm_TitleJob(int i, int p)
 {
     unsigned char *rec;     /* the job record: a job byte per group from +0x74 */
 
-    if (gm_TitleGroup((unsigned char)ai_Chars[i][0x164]) == p)
-        return (unsigned char)ai_Chars[i][0x164];
-    rec = (unsigned char *)gm_PlayerRecord(ai_Chars[i]);
+    if (gm_TitleGroup((unsigned char)ai_Chars[i].jobId) == p)
+        return (unsigned char)ai_Chars[i].jobId;
+    rec = (unsigned char *)gm_PlayerRecord((char *)&ai_Chars[i]);
     if (rec == 0)
         return 0;
     return rec[0x74 + p];
@@ -3939,17 +3939,17 @@ float gm_TitlePeriodServed(int n, int *out)
         return 0.0f;
     group = gm_TitleGroup(ORD_CHARS[n].jobId);
     if (group == 0xb)
-        f = gm_GetSkill(ai_Chars[n], 2);
+        f = gm_GetSkill((char *)&ai_Chars[n], 2);
     else if (group == 0xc)
-        f = gm_GetSkill(ai_Chars[n], 3);
+        f = gm_GetSkill((char *)&ai_Chars[n], 3);
     else if (group == 0xa)
-        f = gm_GetSkill(ai_Chars[n], 3);
+        f = gm_GetSkill((char *)&ai_Chars[n], 3);
     else if (group == 8)
-        f = gm_GetSkill(ai_Chars[n], 0);
+        f = gm_GetSkill((char *)&ai_Chars[n], 0);
     else if (group == 9)
-        f = gm_GetSkill(ai_Chars[n], 4);
+        f = gm_GetSkill((char *)&ai_Chars[n], 4);
     else
-        f = gm_GetSkill(ai_Chars[n], 1);
+        f = gm_GetSkill((char *)&ai_Chars[n], 1);
     f = f > 0.25f ? f : 0.25f;
     hours = (int)((k * 16.0f + 72.0f) / (f + 1.0f));
     memset(&period, 0, sizeof(period));
@@ -3986,7 +3986,7 @@ void gm_SetJob(int i, unsigned n)
 
     if (n != ORD_CHARS[i].jobId)
         ORD_CHARS[i].jobDays = 0;
-    rec = (unsigned char *)gm_PlayerRecord(ai_Chars[i]);
+    rec = (unsigned char *)gm_PlayerRecord((char *)&ai_Chars[i]);
     if (rec != 0 && (ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7 || ORD_CHARS[i].kind == 5)) {
         rec[0x74 + gm_TitleGroup(ORD_CHARS[i].jobId)] = ORD_CHARS[i].jobId;
         k = gm_TitleGroup(n);
@@ -4992,7 +4992,7 @@ short *gm_FindChar(int id)
 
     for (i = 0; i < 768; i++)
         if (ORD_CHARS[i].id != 0xffff && ORD_CHARS[i].netId == id)
-            return (short *)ai_Chars[i];
+            return (short *)&ai_Chars[i];
     return 0;
 }
 /* 0x505e30, the age (its w00a word) of the character with the number id as a float */
@@ -6414,7 +6414,7 @@ int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
         out[i] = 0;
     kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
     if (id == bld->owner) {
-        own = ai_Chars[id];
+        own = (char *)&ai_Chars[id];
         if (*kind == 0x1e) {
             if (ahm_OwnerChar(b) != 0) {
                 out[6] = ahm_ObjectValue(b);
@@ -7011,7 +7011,7 @@ int gm_CharMoney(int c)
     int s;
     ORDOBJ *o;
 
-    p = (ORDCHAR *)gm_FindChar(ORD_CHAR(ai_Chars[c])->netId);
+    p = (ORDCHAR *)gm_FindChar(ORD_CHAR((char *)&ai_Chars[c])->netId);
     if (p == 0)
         return -1;
     s = 0;
@@ -7051,7 +7051,7 @@ unsigned short *gm_ObjectOwnerChar(unsigned short *o)
     gm_FindById((int *)&b, 0, (int *)&o, ((ORDOBJ *)o)->holderId);
     if (o == 0) {
         if (b != 0 && b->masterId != 0xffff)
-            return (unsigned short *)ai_Chars[b->masterId];
+            return (unsigned short *)&ai_Chars[b->masterId];
         o = 0;
     }
     return o;
@@ -7065,7 +7065,7 @@ unsigned short *gm_ObjectBuildingOwner(unsigned short *o)
     gm_FindById((int *)&b, 0, (int *)&o, ((ORDOBJ *)o)->holderId);
     if (o == 0) {
         if (b != 0 && b->owner != 0xffff)
-            return (unsigned short *)ai_Chars[b->owner];
+            return (unsigned short *)&ai_Chars[b->owner];
         o = 0;
     }
     return o;
@@ -7303,7 +7303,7 @@ char *gm_FindCharacterByMaster(int m)
     for (i = 0; i < 0x300; i++) {
         if (ORD_CHARS[i].jobId != 0 && (int)ORD_CHARS[i].bld == m
             && (ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7 || ORD_CHARS[i].kind == 1 || ORD_CHARS[i].kind == 2)) {
-            found = ai_Chars[i];
+            found = (char *)&ai_Chars[i];
             break;
         }
     }
@@ -8253,29 +8253,29 @@ float gm_Liking(unsigned a, unsigned b, int c)
                 break;
         }
     }
-    sum += amt_Rating(ai_Chars[a], ai_Chars[b], best, c);
+    sum += amt_Rating((char *)&ai_Chars[a], (char *)&ai_Chars[b], best, c);
     if (ORD_CHARS[b].job != 0) {
         amt_GetKind(ORD_CHARS[b].job, &kind);
         if (kind.level > 0 && kind.level < 4) {
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x155) * 10.0f;
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x15d) * 10.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x155) * 10.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x15d) * 10.0f;
         } else if (kind.level > 3 && kind.level < 8) {
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x157) * 10.0f;
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x15f) * 8.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x157) * 10.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x15f) * 8.0f;
         } else if (kind.level > 7 && kind.level < 10) {
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x159) * 7.0f;
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x165) * 7.0f;
-            sum += (float)ai_InventoryHas(ai_Chars[a], 0x166) * 15.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x159) * 7.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x165) * 7.0f;
+            sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x166) * 15.0f;
         }
     }
-    if (ai_InventoryHas(ai_Chars[a], 0x2b6) != 0) {
+    if (ai_InventoryHas((char *)&ai_Chars[a], 0x2b6) != 0) {
         if (ORD_CHARS[b].job != 0)
             sum += 5.0f;
         if ((ORD_CHARS[b].flags1cc & 0x3e00) != 0)
             sum += 5.0f;
     }
     if (ORD_CHARS[b].bld != 0 && ORD_CHARS[b].bld->owner == a)
-        sum += (float)ai_InventoryHas(ai_Chars[a], 0x16b) * 7.0f;
+        sum += (float)ai_InventoryHas((char *)&ai_Chars[a], 0x16b) * 7.0f;
     flags = ORD_CHARS[a].v02c;
     n = flags >> 14 & 7;
     if (n != 0 && ORD_CHARS[a].textVariant != ORD_CHARS[b].textVariant)
@@ -8324,13 +8324,13 @@ void gm_ChangeRelationToJobs(unsigned short a, int b)
     char *job;
 
     i = 0;
-    job = &ai_Chars[0][0x166];
+    job = (char *)&ai_Chars[0] + 0x166;
     do {
         if (*job != 0)
             cm_SendRelations(a, i, b, 1);
         job += 0x21c;
         i++;
-    } while ((int)job < (int)&ai_Chars[0][0x166] + 0x300 * 0x21c);
+    } while ((int)job < (int)(char *)&ai_Chars[0] + 0x166 + 0x300 * 0x21c);
 }
 /* 0x50ca50, changes the state byte of the object id (fill at +0x12, how full a cart is) by d, not below 0, and
    sends the field delta (its debug text names it gm_ChangeObjektZustand) */
@@ -8639,7 +8639,7 @@ int gm_QueryChildStack[20488];  /* 0x8753e0, the child stack of gm_QueryNext (th
 unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_TreeRanks;  /* 0x889f70 */
 AITIME ai_Time;  /* 0x770ae0, the game clock */
-char ai_Chars[768][0x21c];  /* 0x770b80, the characters */
+AICHAR ai_Chars[768];  /* 0x770b80, the characters */
 AIBTYPE *ai_BTypes;  /* 0x7e3f30 */
 signed char ai_Relations[768][768];  /* 0x7e5360 */
 int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */

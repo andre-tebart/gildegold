@@ -120,7 +120,6 @@ struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);                                   /* 0x4fd820 */
 char * gm_FindGoods(int p, unsigned id);                                            /* 0x4ffc40, ai.h: int * */
 extern int *cm_CurrentFight;               /* 0x6f0d90 */
-extern char ai_Chars[][0x21c];      /* 0x770b80, the characters (ai.h AICHAR) */
 int gm_SumSlotAmounts(void *list, unsigned char i);                                     /* 0x508660 */
 int gm_FreeCapacity(short *l, int item, int max);                                    /* 0x50ab80 */
 unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                                                     /* 0x50a050 */

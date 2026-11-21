@@ -32,6 +32,8 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 #include "ai_bld.h"                  /* AIBTYPE (ai_BTypes) */
+#include "ai_char.h"                 /* AICHAR (ai_Chars) */
+extern AICHAR ai_Chars[768];           /* 0x770b80, the characters (ai.h is not included here) */
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
@@ -262,7 +264,7 @@ typedef struct INIT_TORCHLIST {
 #define INIT_SLOT_CURRENCY_END ((unsigned)&init_SlotCurrency + 0x8dc)  /* one past the currency words of the player slots 1 .. 3: the original's `cmp esi, 0x7e4b64` (0x510cf0) = init_SlotCurrency (0x7e4288) + 3 * 0x2f4, not &gm_Offers + 0x44 (that equals it only while gm_Offers follows the slot table at 0x7e4b20) */
 #define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
 #define INIT_CHARACTER_COUNT 0x300      /* ch.h's CH_MAX: the slots of the character list ch_List (0x1468ae0) */
-#define INIT_START_CHARACTERS_END ((int)ai_Chars[16]) /* one past the 16th character record, compared signed (init_StartNewGame) */
+#define INIT_START_CHARACTERS_END ((int)&ai_Chars[16]) /* one past the 16th character record, compared signed (init_StartNewGame) */
 #define INIT_CHARACTERS_END ((unsigned)ai_Chars + 0x300 * 0x21c)  /* one past the character table ai_Chars (0x770b80 + 0x300 * 0x21c = 0x7d5f80; the original's gm_PlayerRecords follows it there, not in our link) */
 #define INIT_LAST_CHARACTER ((unsigned)&ai_Unk770d8c + 0x64fd8)  /* the last character record of ai_Chars (INIT_CHARACTERS_END - 0x21c; the greeting loop walks up to its +2) */
 #define INIT_BTYPE(b) ((unsigned char *)ai_BTypes + ((INIT_BLD *)(b))->type * 0x24d)  /* the ai_BTypes record (0x24d bytes) of the building b's type; the original reads ai_BTypes anew at each use but where it keeps the record (cl) */
@@ -961,7 +963,7 @@ void init_StartNewGame(int unused)
     int w1, w2;
 
     rand();                     /* the first random value of the game is dropped */
-    c = (INIT_CHAR *)ai_Chars[0];
+    c = (INIT_CHAR *)&ai_Chars[0];
     do {
         if (c->id != 0xffff && c->kind < 5) {
             money = gm_PlayerFactor(util_Random(0x122) + 10, ai_OwnPlayer);
@@ -1218,7 +1220,7 @@ int init_CreateStartCharacters(int unused)
     for (i = 0; i < 30; i++)
         t[i] += util_Random(3);
     n = 0;
-    p = (INIT_CHAR *)ai_Chars[0];
+    p = (INIT_CHAR *)&ai_Chars[0];
     do {
         if (n >= 30)
             break;
@@ -1648,7 +1650,7 @@ void init_OpenBuilding(INIT_BLD *b)
     if (k == 9) {
         cm_SendExSellObject(b->id, -1, 0x136, 1, ai_OwnPlayer, 0);
         v = gm_PlayerFactor(500, ai_OwnPlayer);
-        ch = (INIT_CHAR *)ai_Chars[b->owner];
+        ch = (INIT_CHAR *)&ai_Chars[b->owner];
         cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, v);
     } else if (k != 4 && k != 0x10 && k != 0x13) {
         cm_SendExSellObject(b->id, -1, 0x134, 1, ai_OwnPlayer, 0);
@@ -1659,7 +1661,7 @@ void init_OpenBuilding(INIT_BLD *b)
             if (k == 0x1d) {
                 h = gv_SendGrave((unsigned char *)b);
             } else {
-                if (ai_Chars[b->owner][2] != 6 && ai_Chars[b->owner][2] != 7)
+                if (ai_Chars[b->owner].kind != 6 && ai_Chars[b->owner].kind != 7)
                     cm_SendMessage3d((char *)b, 0, p[0x230], 0);
                 h = cm_SendMessage3d((char *)b, 0, p[0x230], 0);
             }
@@ -1944,7 +1946,7 @@ void init_OpenTown(void)
         b = (char *)ai_Blds + k;
         cl = INIT_BTYPE(b);
         o = ((INIT_BLD *)b)->owner;
-        if (o != 0xffff && (cls[*cl] == 2 || cls[*cl] == 1) && (ai_Chars[o][2] == 5 || ai_Chars[o][2] == 4)) {
+        if (o != 0xffff && (cls[*cl] == 2 || cls[*cl] == 1) && (ai_Chars[o].kind == 5 || ai_Chars[o].kind == 4)) {
             if (init_AiTown != 0) {
                 if (*cl != 9 && *cl != 5) {
                     if (*cl == 4 || *cl == 0x10 || *cl == 0x13) {
@@ -2013,13 +2015,13 @@ void init_OpenTown(void)
     he_PostEvent7a();
     he_PostEvent2b();
     for (i = 0; i < 0x2ff; i++) {
-        c = ai_Chars[i];
+        c = (char *)&ai_Chars[i];
         if (((INIT_CHAR *)c)->kind == 6 || ((INIT_CHAR *)c)->kind == 7 || ((INIT_CHAR *)c)->kind == 5 || ((INIT_CHAR *)c)->kind == 3 || ((INIT_CHAR *)c)->kind == 4 || ((INIT_CHAR *)c)->kind == 2) {
             m = 0;
             for (j = i + 1; j < 0x300; j++) {
-                if (((INIT_CHAR *)ai_Chars[j])->kind == 6 || ((INIT_CHAR *)ai_Chars[j])->kind == 7 || ((INIT_CHAR *)ai_Chars[j])->kind == 5 || ((INIT_CHAR *)ai_Chars[j])->kind == 3 || ((INIT_CHAR *)ai_Chars[j])->kind == 4 || ((INIT_CHAR *)ai_Chars[j])->kind == 2) {
-                    cm_SendRelations(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, util_Random(0x40) - 0x20, 0);
-                    h = cm_SendRelations(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, util_Random(0x40) - 0x20, 0);
+                if (((INIT_CHAR *)&ai_Chars[j])->kind == 6 || ((INIT_CHAR *)&ai_Chars[j])->kind == 7 || ((INIT_CHAR *)&ai_Chars[j])->kind == 5 || ((INIT_CHAR *)&ai_Chars[j])->kind == 3 || ((INIT_CHAR *)&ai_Chars[j])->kind == 4 || ((INIT_CHAR *)&ai_Chars[j])->kind == 2) {
+                    cm_SendRelations(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)&ai_Chars[j])->netId, util_Random(0x40) - 0x20, 0);
+                    h = cm_SendRelations(((INIT_CHAR *)&ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, util_Random(0x40) - 0x20, 0);
                     m += 2;
                     while (h != -1 && m % 10 == 0 && cm_GetSlotState(h) == 0)
                         sv_PumpNet();
@@ -2446,7 +2448,7 @@ int init_SetupNewGame(int n)
     init_StartNewGame(0);   /* the original call pushes one argument (0x511422), which the callee does not read */
     if (main_StartHouseCheat != 0) {
         i = 0;
-        p = ai_Chars[0] + 2;
+        p = (char *)&ai_Chars[0] + 2;
         do {
             if (*p == 6) {
                 main_GiveStartBuildings(i);
@@ -2469,7 +2471,7 @@ int init_SetupNewGame(int n)
             D3_ZERO(tab, sizeof(tab));
             tab[0] = 0x12;
         } else {
-            p = ai_Chars[0] + 2;
+            p = (char *)&ai_Chars[0] + 2;
             do {
                 if (*p == 6 || *p == 7) {
                     i = 0;
@@ -2719,11 +2721,11 @@ void init_LocalData(void)
     for (i = 1; i < 0x300; i++) {
         if (n == 0)
             break;
-        if (ai_Chars[i][2] == 0xc) {
-            if (((INIT_CHAR *)ai_Chars[i])->faith == 0)
-                ai_JudgeCatholic = (struct AICHAR *)ai_Chars[i];
-            else if (((INIT_CHAR *)ai_Chars[i])->faith == 1)
-                ai_JudgeProtestant = (struct AICHAR *)ai_Chars[i];
+        if (ai_Chars[i].kind == 0xc) {
+            if (((INIT_CHAR *)&ai_Chars[i])->faith == 0)
+                ai_JudgeCatholic = (struct AICHAR *)&ai_Chars[i];
+            else if (((INIT_CHAR *)&ai_Chars[i])->faith == 1)
+                ai_JudgeProtestant = (struct AICHAR *)&ai_Chars[i];
             else
                 continue;
             n--;
@@ -2731,8 +2733,8 @@ void init_LocalData(void)
     }
     n = 0;
     for (i = 0; i < 0x300; i++)
-        if (ai_Chars[i][2] == 0xb)
-            ai_KindBChars[n++] = ai_Chars[i];
+        if (ai_Chars[i].kind == 0xb)
+            ai_KindBChars[n++] = (char *)&ai_Chars[i];
     if (ai_JudgeCatholic == 0)
         err_Message("init_LocalData(): gm_RichterKatholisch==NULL");
     if (ai_JudgeProtestant == 0)
@@ -2779,7 +2781,7 @@ void init_GiveFirstPlayerBuildings(void)
     INIT_BLD *b;
     char k;
 
-    c = (INIT_CHAR *)ai_Chars[0];
+    c = (INIT_CHAR *)&ai_Chars[0];
     for (i = 0; i < 0x300; i++) {
         if (c->kind == 6)
             break;
@@ -3501,7 +3503,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
             }
         }
         for (k = 0; k < INIT_CHARACTER_COUNT; k++) {
-            c = (INIT_CHAR *)ai_Chars[k];
+            c = (INIT_CHAR *)&ai_Chars[k];
             if (c->model != 0 && d3t_SceneIndex(c->model->scene) == uni) {
                 t = c->model;
                 if ((t->group == bd->id || t->scriptGroup == ((INIT_OBJ *)o)->objId) && i < limit) {
@@ -3693,7 +3695,7 @@ void init_AfterTownLoad(void)
 
     phase = gm_ClockSeason(&ai_Time);
     if (d3_CurrentScene == 0) {
-        cam = (INIT_CAMREC *)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
+        cam = (INIT_CAMREC *)gm_PlayerRecord((char *)&ai_Chars[(unsigned short)ai_PlayerId]);
         if (cam == 0 || cam->angle == -1.0f) {
             sv_PlaceCamera(0.33f);
         } else {

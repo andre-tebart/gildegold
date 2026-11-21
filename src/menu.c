@@ -63,7 +63,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
-#define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxResolution;
@@ -1211,8 +1210,7 @@ extern unsigned char ai_NumPlayers;     /* 0x62489c, the player count (ai.c / cm
 extern unsigned short ai_PlayerId;      /* 0x6f25b8, the local player (cm.h / am.h / gv.h) */
 /* ai_SaveWaitText: view of txt_Ptrs (build/mk_txt_views.py) */
 
-/* ai.h's AICHAR (0x21c bytes, ai_CharsC[0x300] at 0x770b80): the fields this unit reads. f3snd.h declares
-   ai_CharsC as char[], so ai.h cannot be included here; type debt. */
+/* ai.h's AICHAR (0x21c bytes, ai_Chars[0x300] at 0x770b80): the fields this unit reads. */
 typedef struct AICHARVIEW {
     unsigned short id;                  /* +0x000, 0xffff when free */
     unsigned char kind;                 /* +0x002, 6 / 7 = a player */
@@ -1231,7 +1229,7 @@ typedef struct AICHARVIEW {
     char pad210[0xc];
 } AICHARVIEW;
 
-/* the same records from their kind byte (ai_CharsC + 2), the base ai_HasQuicksavePlayer walks */
+/* the same records from their kind byte (ai_Chars + 2 bytes), the base ai_HasQuicksavePlayer walks */
 #pragma pack(push, 1)
 typedef struct AICHARKINDVIEW {
     unsigned char kind;                 /* +0x000 (record +2), 6 / 7 = a player */
@@ -1509,7 +1507,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
     ai_NumPlayers = 0;
     for (i = 0; i < 768; i++) {
-        c = &((AICHARVIEW *)ai_CharsC)[i];
+        c = &((AICHARVIEW *)ai_Chars)[i];
         if (c->id != 0xffff && (c->kind == 6 || c->kind == 7))
             ai_NumPlayers++;
     }
@@ -1529,7 +1527,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
         vfs_fclose(h);
     }
     memset(rec, 0, sizeof(rec));
-    rec[0] = ((AICHARVIEW *)ai_CharsC)[ai_PlayerId].netId;
+    rec[0] = ((AICHARVIEW *)ai_Chars)[ai_PlayerId].netId;
     rec[1] = hash;
     cm_SendExSysMessage(0x10, rec);
     if (ai_NumPlayers > 0) {
@@ -2380,9 +2378,9 @@ void ai_TailorChatWindow(int request)
     int i;
 
     req = (AIREQ *)request;
-    rec = (AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c);
+    rec = (AICHARVIEW *)&ai_Chars[ai_PlayerId];
     wnd = d2_OpenForm(0, 0, "locations\\schneider\\plausch");
-    found = gv_FindAccused((char *)(ai_CharsC + ai_PlayerId * 0x21c), 4, ids, &count);
+    found = gv_FindAccused((char *)&ai_Chars[ai_PlayerId], 4, ids, &count);
     if (ai_PlayerBuildingB != 0)
         limit = gm_BuildingSkill((struct AIBLD *)ai_PlayerBuildingB, 0x24, 1);
     else
@@ -2407,12 +2405,12 @@ void ai_TailorChatWindow(int request)
         if (d2_ClickedId != -1 && d2_PointerObj == obj) {
             if (found != 0) {
                 for (i = 0; i < count; i++)
-                    cm_SendProofExecuted(ids[i], ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId);
-                cm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1);
+                    cm_SendProofExecuted(ids[i], ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId);
+                cm_SendMoneyDelta(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, -1);
                 cm_SendMoneyDelta(req->handle, -1);
                 cm_SendSetField(rec->netId, 0x1cc, 4, 0x20000, 0);
                 txt_Format(buf, 0x422f, req->id);
-                he_ShowNews(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1, buf, 0, 0x5ec,
+                he_ShowNews(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, -1, buf, 0, 0x5ec,
                             0);
                 if (req->kind == 6 || req->kind == 7) {
                     txt_Format(buf, 0x4230, ai_PlayerId, 1);
@@ -2451,11 +2449,11 @@ void ai_TailorContact(int building, int arg)
 {
     CONTACTREQ req;
 
-    if ((((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x20000) != 0) {
+    if ((((AICHARVIEW *)&ai_Chars[ai_PlayerId])->flags1cc & 0x20000) != 0) {
         sv_MessageBox((int)ai_TailorBlockedText, 4);
         return;
     }
-    if (sv_CheckMoney((char *)(ai_CharsC + ai_PlayerId * 0x21c), 1) != 0) {
+    if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 1) != 0) {
         D3_ZERO(&req, sizeof(req));
         req.type = 1;
         req.a = 0x400;
@@ -2657,7 +2655,7 @@ void ai_BloodRevengeWindow(int building)
     memset(sel, 0xff, 5 * sizeof(int));
     total = 0;
     tick = 0;
-    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 8) {
+    if (((AICHARVIEW *)&ai_Chars[ai_PlayerId])->flags1cc & 8) {
         sv_MessageBoxGreen((int)txt_Ptrs[0x41b2], (int)txt_Ptrs[0x41b3], 0);
         return;
     }
@@ -2722,21 +2720,21 @@ void ai_BloodRevengeWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], total) == 1) {
                     AICHARVIEW *av = rows[0].rec;
 
                     txt_Format(msg, 0x41bf, av->id);
                     k = 0;
                     for (i = 1; i < 5; i++) {
                         if (rows[i].rec != 0) {
-                            r = 0x32 - (int)(gm_Mix((int)(ai_CharsC + ai_PlayerId * 0x21c), (int)rows[i].rec, 4) * -50.0f);
+                            r = 0x32 - (int)(gm_Mix((int)((char *)&ai_Chars[ai_PlayerId]), (int)rows[i].rec, 4) * -50.0f);
                             cm_SendRelations(rows[0].rec->id, rows[i].rec->id, -r, 1);
                             sel[5 + k] = (int)rows[i].rec;
                             k++;
                         }
                     }
-                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -total);
-                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
+                    gm_SendMoneyDelta(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, -total);
+                    cm_SendSetField(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, 8, 0);
                     ai_GypsyDeliveryText((struct AIPER *)av, k, (struct AIPER **)&sel[5]);
                     txt_Format(msg, 0x41b9, 0x41b2);
                     sv_MessageBox((int)msg, 0);
@@ -2806,7 +2804,7 @@ void ai_CurseWindow(int building)
     AICHARVIEW *target;
     int limit, v;
 
-    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x10) {
+    if (((AICHARVIEW *)&ai_Chars[ai_PlayerId])->flags1cc & 0x10) {
         snd_PlayVoice(-7, 0, "RAUSWURF", -1);
         sv_MessageBoxGreen((int)txt_Ptrs[0x41c1], (int)txt_Ptrs[0x41c2], 0);
         return;
@@ -2852,20 +2850,20 @@ void ai_CurseWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckGoodAmount(ai_CharsC + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
+                if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], v, ai_OwnPlayer) != 0) {
                     char name[100];
                     CURSEMSG msg;
 
-                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
+                    cm_SendSetField(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, 0x10, 0);
                     if (ai_PlayerId != ((CURSEBLD *)building)->owner)
-                        cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,
+                        cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer,
                                                   (v > 1 ? v : 1) * 32000);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x9d;
                     msg.fromId = -1;
                     msg.flags = 2;
                     msg.arg[0] = v;
-                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId;
                     memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     msg.arg[1] = target->netId;
                     cm_SendLongMessage((char *)&msg);
@@ -2970,12 +2968,12 @@ void ai_CurseTargetWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, cls) == 1) {
-                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -cls);
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], cls) == 1) {
+                    gm_SendMoneyDelta(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, -cls);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xa0;
                     msg.flags = 2;
-                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
                     memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     msg.arg[0] = value;
@@ -3014,7 +3012,7 @@ void ai_HomageWindow(int building)
         sv_CameraFollow();
         return;
     }
-    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x20) {
+    if (((AICHARVIEW *)&ai_Chars[ai_PlayerId])->flags1cc & 0x20) {
         sv_MessageBoxGreen((int)txt_Ptrs[0x4207], (int)txt_Ptrs[0x4208], 0);
         return;
     }
@@ -3048,10 +3046,10 @@ void ai_HomageWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, value) == 1) {
-                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x20, 0);
-                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -value);
-                    cm_SendRelations(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, target->netId, value * 5, 1);
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], value) == 1) {
+                    cm_SendSetField(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, 0x20, 0);
+                    gm_SendMoneyDelta(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, -value);
+                    cm_SendRelations(((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId, target->netId, value * 5, 1);
                     if (target->kind == 6 || target->kind == 7) {
                         txt_Format(text, 0x420e, ai_PlayerId);
                         he_ShowNews(target->netId, -1, text, 0, 0x5f0, "_NACHRICHTEN_ZIGEUNER_04");
@@ -3101,7 +3099,7 @@ void ai_GypsyBeggingWindow(int building)
             if (d2_PointerObj == ids[0]) {
                 count = 0;
                 for (i = 0; i < 768 && count < 4; i++) {
-                    if (((AICHARVIEW *)(ai_CharsC + i * 0x21c))->selected != 0) {
+                    if (((AICHARVIEW *)&ai_Chars[i])->selected != 0) {
                         chosen[count] = i;
                         count++;
                     }
@@ -3110,11 +3108,11 @@ void ai_GypsyBeggingWindow(int building)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xa1;
                     msg.flags = 1;
-                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)&ai_Chars[ai_PlayerId])->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
                     memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     for (i = 0; i < count; i++)
-                        msg.ids[i] = ((AICHARVIEW *)(ai_CharsC + chosen[i] * 0x21c))->netId;
+                        msg.ids[i] = ((AICHARVIEW *)&ai_Chars[chosen[i]])->netId;
                     cm_SendLongMessage((char *)&msg);
                     sv_PopRequest = 1;
                 } else {

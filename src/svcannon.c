@@ -127,13 +127,11 @@ extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 
 
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
@@ -156,7 +154,6 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62a634[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -172,7 +169,6 @@ extern int d2_LastWindow;
 
 extern GAPDATA full_data_602568[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -183,7 +179,6 @@ extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
-extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern int d2_PointerObj;
@@ -204,7 +199,6 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a450[];
 extern unsigned char kb_Last;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -215,7 +209,6 @@ extern int d2_LastWindow;
 
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
@@ -226,13 +219,11 @@ extern int d2_LastWindow;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 
 extern const int sv_PhaseMinutes[24];
 
 
-extern char ai_Chars[768][0x21c];
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -252,7 +243,6 @@ extern int ai_ClickedObject;
 
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int gm_AllowAll;
 extern int d2_ClickedId;
@@ -265,7 +255,6 @@ extern int ai_ClickedObject;
 
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
-extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
 extern int di_Absolute;
@@ -287,7 +276,6 @@ extern unsigned char kb_Last;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern char ai_Chars[768][0x21c];
 
 
 #define U_I(a) (*(int *)(a))
@@ -310,7 +298,6 @@ struct SBSAMPLE;
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 extern TUTSTATE *const ai_Tutorial;
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -1061,7 +1048,7 @@ void ai_CannonShotResults(CANNONSCENE *sc)
                     else
                         io_PrintText("$C");
                     w = bld->owner;
-                    if (w == 0xffff || (void *)&ai_CharsT[w] == (void *)ai_PlayerChar)
+                    if (w == 0xffff || (void *)&ai_Chars[w] == (void *)ai_PlayerChar)
                         io_PrintText(0x406c, bld, v);
                     else
                         io_PrintText(0x406d, (int)w, bld, v);
@@ -1129,7 +1116,7 @@ void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
     d2_Objs[sc->selBtn[0]].checked = sc->selected == 0;
     d2_Objs[sc->selBtn[1]].checked = sc->selected == 1;
     d2_Objs[sc->selBtn[2]].checked = sc->selected == 2;
-    m = gv_CannonCost(ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &l1, &l2);
+    m = gv_CannonCost((char *)&ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &l1, &l2);
     if (sc->zoom <= 0.01f && m != 0 && run->charge[sc->selected] >= c && (run->flags & 2) == 0)
         w = 1;
     else
@@ -1154,7 +1141,7 @@ void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
     d2_Objs[m].centred = 1;
     d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
     d2_SetObjFont(m, 0x54);
-    txt_Format(buf, (int)"%T %a", gm_CharCurrency(ai_Chars[ai_PlayerId], ai_OwnPlayer), ((AICHAR *)ai_Chars[ai_PlayerId])->money);
+    txt_Format(buf, (int)"%T %a", gm_CharCurrency((char *)&ai_Chars[ai_PlayerId], ai_OwnPlayer), ((AICHAR *)&ai_Chars[ai_PlayerId])->money);
     m = d2_CreateWinText(d2_Wins[d2_LastWindow].w / 2, 0x23, buf, d2_LastWindow);
     d2_Objs[m].centred = 1;
     d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
@@ -1314,7 +1301,7 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
 
     a = d2_GetObjValue(sc->kindSlider);
     b = d2_GetObjValue(sc->speedSlider);
-    if (gv_CannonCost(ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &cost, &x) == 0)
+    if (gv_CannonCost((char *)&ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &cost, &x) == 0)
         return;
     gv_CannonScatter(rec, &spread, &speedSpread);
     charge = (gv_CannonItemFactor(rec) * ai_CannonBalls[a].b - ai_CannonBalls[a].a) * ((float)b * 0.01f) + ai_CannonBalls[a].a;
@@ -1340,7 +1327,7 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         p1.z = t.z + sc->pos.z;
         ai_InitShot(&shotA, &p1, &sc->dir, charge, size, ai_IronDensity);
         ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
-        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotA, 0, 0, gv_SalvoCharge(a, b, 1), cost, x);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)&ai_Chars[ai_PlayerId], &shotA, 0, 0, gv_SalvoCharge(a, b, 1), cost, x);
         x1 = 0;
         y1 = 0;
         z1 = 50;
@@ -1370,7 +1357,7 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         ai_InitShot(&shotA, &p2, &sc->dir, charge, size, ai_IronDensity);
         ai_ScatterShot(&shotB, spread, &sc->side, spread, &sc->up, speedSpread);
         ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
-        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotB, &shotA, 0, gv_SalvoCharge(a, b, 1), cost, x);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)&ai_Chars[ai_PlayerId], &shotB, &shotA, 0, gv_SalvoCharge(a, b, 1), cost, x);
         x1 = 5;
         y1 = 0;
         z1 = 40;
@@ -1420,7 +1407,7 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         ai_ScatterShot(&shotC, spread, &sc->side, spread, &sc->up, speedSpread);
         ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
         ai_ScatterShot(&shotB, spread, &sc->side, spread, &sc->up, speedSpread);
-        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotC, &shotA, &shotB, gv_SalvoCharge(a, b, 1), cost, x);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)&ai_Chars[ai_PlayerId], &shotC, &shotA, &shotB, gv_SalvoCharge(a, b, 1), cost, x);
         x1 = 5;
         y1 = -3;
         z1 = 40;
@@ -1641,15 +1628,15 @@ void ai_CabinetSpyWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
+                if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
                     AIMSG msg;
                     int pick;
                     LARGE_INTEGER mask;
-                    AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                    AIFIN *fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
                         fin->spyPaid += amount;
-                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, amount);
+                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)&ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, amount);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
                     msg.flags = 2;
@@ -1658,13 +1645,13 @@ void ai_CabinetSpyWindow(AIBLD *rec)
                     msg.arg[4] = 3;
                     msg.arg[5] = i;
                     pick = -1;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[1] = rec->id;
                     mask.LowPart = 0x7b4c4a0;
                     mask.HighPart = 0;
-                    ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                    ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                     msg.arg[0] = pick;
                     id = cm_SendLongMessage((char *)&msg);
                     while (id != -1 && cm_GetSlotState(id) == 0)
@@ -1759,21 +1746,21 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost[i], ai_OwnPlayer) != 0 &&
-                    sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
-                    AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], cost[i], ai_OwnPlayer) != 0 &&
+                    sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
+                    AIFIN *fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
                         fin->spyPaid += cost[i];
-                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, cost[i]);
-                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -amt[i]);
+                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)&ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, cost[i]);
+                    gm_SendMoneyDelta(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, -amt[i]);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
                     msg.flags = 2;
                     msg.arg[3] = -1;
                     msg.arg[4] = 2;
                     msg.arg[5] = i;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[2] = p->netId;
@@ -1788,7 +1775,7 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
-                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                         msg.arg[0] = pick;
                     }
                     id = cm_SendLongMessage((char *)&msg);
@@ -1876,14 +1863,14 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
-                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -amt[i]);
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
+                    gm_SendMoneyDelta(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, -amt[i]);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
                     msg.flags = 2;
                     msg.arg[3] = -1;
                     msg.arg[4] = 1;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[2] = p->netId;
@@ -1899,7 +1886,7 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
-                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                         msg.arg[0] = pick;
                     }
                     id = cm_SendLongMessage((char *)&msg);
@@ -1979,18 +1966,18 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
-                    sv_CheckMoney(ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn(rec) != 0) {
-                    AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
+                    sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn(rec) != 0) {
+                    AIFIN *fin = (AIFIN *)gm_PlayerRecord((char *)&ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
                         fin->spyPaid += price;
-                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, price);
-                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -0x10);
+                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)&ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, price);
+                    gm_SendMoneyDelta(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, -0x10);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
                     msg.flags = 2;
-                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.to = ((AICHAR *)&ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
                     msg.arg[1] = rec->id;
@@ -2008,7 +1995,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
-                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        ai_PickActionBuilding((struct AIPER *)&ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
                         msg.arg[0] = pick;
                     }
                     id = cm_SendLongMessage((char *)&msg);
@@ -2128,9 +2115,9 @@ void ai_UnlockRoomWindow(AIBLD *rec, AIOBJ *room)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], price) == 1) {
+                if (sv_CheckMoney((char *)&ai_Chars[ai_PlayerId], price) == 1) {
                     zero = 0;
-                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -price);
+                    gm_SendMoneyDelta(((AICHAR *)&ai_Chars[ai_PlayerId])->netId, -price);
                     cm_BeginFieldBlock((char *)room, room->objId);
                     cm_AddFieldDelta(4, 1, 0x1c, &zero);
                     cm_AddFieldDelta(4, 1, 0x20, &zero);

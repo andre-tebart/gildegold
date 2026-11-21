@@ -23,7 +23,6 @@ typedef unsigned int SOCKET;
 #include "data_views.h"
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #include "d3_types.h"
 #include "am_types.h"                /* AIACT */
 #include "ahm.h"
@@ -78,12 +77,12 @@ void ai_UpdateNeeds(void)
 {
     AICHAR *c;
 
-    c = ai_CharsT;
+    c = ai_Chars;
     do {
         if (c->id != 0xffff)
             ai_GrowNeeds(c);
         c++;
-    } while ((int)c < (int)(ai_CharsT + 768));
+    } while ((int)c < (int)(ai_Chars + 768));
 }
 /* 0x47dab0, lets the 13 needs of a character grow (value = value + a - b * value, kept in 0..1000) and
    switches its current need to the strongest one */
@@ -227,7 +226,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
         if (!(c->officeKind || c->secondOffice || c->kind == 5))
             return 0;
         for (i = 0; i < 768; i++) {
-            o = &ai_CharsT[i];
+            o = &ai_Chars[i];
             id = c->id;
             if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->officeKind || o->secondOffice)) {
                 d = gm_CharLevel(i, 0);
@@ -251,11 +250,11 @@ AICHAR *ai_FindPartner(AICHAR *c)
             a = (unsigned char)(d / 3 + 1);
             a = max(min(a, ai_Difficulty * 2 + 0x23), ai_Difficulty * 2 + 0xf);
             cm_AddFieldDelta(1, 1, 0x216, &a);
-            cm_AddFieldDelta(4, 1, 0x210, &ai_CharsT[best].netId);
+            cm_AddFieldDelta(4, 1, 0x210, &ai_Chars[best].netId);
             cm_AddFieldDelta(1, 1, 0x214, &ai_RelationMemory[best][c->id]);
             cm_SendFieldDeltas();
-            cm_SendRelations(ai_CharsT[best].netId, c->netId, 0, 2);
-            ai_ShowFeudNews(c, &ai_CharsT[best]);
+            cm_SendRelations(ai_Chars[best].netId, c->netId, 0, 2);
+            ai_ShowFeudNews(c, &ai_Chars[best]);
         }
         return 0;
     }
@@ -340,7 +339,7 @@ void ai_MasterUpdate(AICHAR *c)
                     lo = 1 << (unsigned char)bt->kind;
                 if (b->owner == c->id && !(b->flags5a & 1) && ((lo & ai_BuildingTypeMasks[2]) || (hi & ai_BuildingTypeMasks[3]))) {
                     found = 0;
-                    p = ai_CharsT;
+                    p = ai_Chars;
                     while (1) {
                         if ((int)&p->kind >= (int)&gm_PlayerRecordBytes)
                             break;
@@ -408,8 +407,8 @@ void ai_UpdateCharacters(void)
         sprintf(buf, "Player count: %i, Starting with: %i Count: %i Deltatime: %i", count, ai_Update.start, count, n);
         idx = ai_Update.start;
         for (; count != 0; count--) {
-            if (ai_CharsT[idx].id != 0xffff) {
-                c = &ai_CharsT[idx];
+            if (ai_Chars[idx].id != 0xffff) {
+                c = &ai_Chars[idx];
                 ai_UnloadCarts(c);
                 if (ai_Time.hour > 6 && ai_Time.hour < 0x16 && !(ai_GameFlags & 0x80) &&
                     (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_Time.hour) & 1) == 0))
@@ -455,7 +454,7 @@ int ai_IsLocalWorker(AICHAR *c)
         return 0;
     o = c;
     if (c->bld != 0 && (id = c->bld->owner) != 0xffff)
-        o = &ai_CharsT[id];
+        o = &ai_Chars[id];
     if (net_Conn.s != -1 && o->netId % ai_NumPlayers != ai_NetPlayer)
         return 0;
     return 1;
@@ -476,9 +475,9 @@ int ai_IsLocalJob(AICHAR *c)
     id = c->bld->owner;
     if (id == 0xffff)
         return 0;
-    if (ai_CharsT[id].kind == 7)
+    if (ai_Chars[id].kind == 7)
         return 0;
-    if (net_Conn.s != -1 && ai_CharsT[id].kind != 6 && ai_CharsT[id].netId % ai_NumPlayers != ai_NetPlayer)
+    if (net_Conn.s != -1 && ai_Chars[id].kind != 6 && ai_Chars[id].netId % ai_NumPlayers != ai_NetPlayer)
         return 0;
     return 1;
 }
@@ -515,7 +514,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
                     ai_LoggedMaster->bld->name);
             sprintf(buf, "Aktuelles Budget: %li", ai_LoggedMaster->budget);
             sprintf(buf, "Tats\xe4" "chlich verf\xfc" "gbares Budget: %li",
-                    gm_GetGoodsValue(&ai_CharsT[c->bld->owner]));
+                    gm_GetGoodsValue(&ai_Chars[c->bld->owner]));
         }
         if (c->bld->owner == c->id)
             c->budget = gm_GetGoodsValue(c);
@@ -523,7 +522,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
             w = &ai_Watch;
             w->bld = c->bld;
             w->ch = c;
-            w->owner = &ai_CharsT[c->bld->owner];
+            w->owner = &ai_Chars[c->bld->owner];
             w->budget = c->budget;
         }
         if (gm_BuildingClass(c->bld->type) != 1 && gm_BuildingClass(c->bld->type) != 4) {
@@ -679,7 +678,7 @@ void ai_EvaluateProduction(AICHAR *ch)
         if (found)
             goto done;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
+    if (ai_Chars[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
@@ -764,9 +763,9 @@ done:
     n2 = 0;
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
-            && ai_CharsT[j].title && ai_CharsT[j].model && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id) {
-            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
+        if (ai_Chars[j].health && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10 && ai_Chars[j].bld == ch->bld
+            && ai_Chars[j].title && ai_Chars[j].model && ai_Chars[j].model->bldId == ai_Chars[j].bld->id) {
+            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
             n2 = info.n2 + 1;
             info.n2 = n2;
         }
@@ -865,7 +864,7 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         if (found)
             goto done;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
+    if (ai_Chars[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
@@ -981,10 +980,10 @@ done:
     n2 = 0;
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
-            && ai_CharsT[j].title && ai_CharsT[j].model && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id
-            && (!ai_CharsT[j].job || (ai_CharsT[j].job->kind != 0x14 && ai_CharsT[j].job->kind != 0x15))) {
-            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
+        if (ai_Chars[j].health && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10 && ai_Chars[j].bld == ch->bld
+            && ai_Chars[j].title && ai_Chars[j].model && ai_Chars[j].model->bldId == ai_Chars[j].bld->id
+            && (!ai_Chars[j].job || (ai_Chars[j].job->kind != 0x14 && ai_Chars[j].job->kind != 0x15))) {
+            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
             n2 = info.n2 + 1;
             info.n2 = n2;
         }
@@ -1107,7 +1106,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
 
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 9;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.nIds = 0;
                 msg.reserved14 = 0;
@@ -1129,7 +1128,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
             sv_MoveToGroup(ch->bld, 0, ch->id, job);
         found = 1;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6) {
+    if (ai_Chars[ch->bld->owner].kind == 6) {
         id = ai_DrawSettingGood(ch->bld);
         if (o) {
             for (i = 0; i < 32; i++) {
@@ -1228,11 +1227,11 @@ check:
     ai_FreeJobCharacters(ch, 3);
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health > 0 && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10
-            && ai_CharsT[j].bld == ch->bld && ai_CharsT[j].title && ai_CharsT[j].model
-            && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id && (!ai_CharsT[j].job || ai_CharsT[j].job->kind != '(')
-            && (!found || ch != &ai_CharsT[j])) {
-            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
+        if (ai_Chars[j].health > 0 && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10
+            && ai_Chars[j].bld == ch->bld && ai_Chars[j].title && ai_Chars[j].model
+            && ai_Chars[j].model->bldId == ai_Chars[j].bld->id && (!ai_Chars[j].job || ai_Chars[j].job->kind != '(')
+            && (!found || ch != &ai_Chars[j])) {
+            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
             info.n2++;
         }
     }
@@ -1390,10 +1389,10 @@ void ai_CalcMeisterWache(AICHAR *ch)
     total = 0;
     idle = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10 && ai_CharsT[i].bld == ch->bld
-            && ai_CharsT[i].title && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+        if (ai_Chars[i].health > 0 && ai_Chars[i].id != 0xffff && ai_Chars[i].kind != 10 && ai_Chars[i].bld == ch->bld
+            && ai_Chars[i].title && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
             total++;
-            if (!ai_CharsT[i].job)
+            if (!ai_Chars[i].job)
                 idle++;
         }
     }
@@ -1407,7 +1406,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
         sprintf(buf, "ai_CalcMeisterWache(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    kind = ai_CharsT[ch->bld->owner].kind;
+    kind = ai_Chars[ch->bld->owner].kind;
     if (kind != 6 && kind != 7) {
         if (!(util_RandomF() > 0.85) || idle < 3 || ai_Time.year < 7 - ai_Difficulty)
             r = util_Random(3);
@@ -1457,7 +1456,7 @@ city:
         sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert bei '%s'", ch->name, sel->name);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x43;
-        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.to = ai_Chars[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_Time;
         msg.flags = 2;
@@ -1466,9 +1465,9 @@ city:
         msg.patrolRoll = util_Random(4) + 2;
         n = min(idle, 4);
         for (k = 0, c = 0; k < n && c < 768; c++) {
-            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-                msg.arg[6 + k++] = ai_CharsT[c].netId;
+            if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+                && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
+                msg.arg[6 + k++] = ai_Chars[c].netId;
         }
         for (; k < 4; k++)
             msg.arg[6 + k] = -1;
@@ -1511,7 +1510,7 @@ city:
         sprintf(buf, "ai_CalcMeisterWache(): Meister %s \xfc" "berpr\xfc" "ft '%s'", name, sel->name);
         memset(&msg, 0, sizeof(msg));
         msg.type = 100;
-        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.to = ai_Chars[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_Time;
         msg.flags = 1;
@@ -1528,9 +1527,9 @@ city:
         /* @original found is never set before the search: the original reads the stack slot it shares with name
            (nonzero), so the search never runs and the check is never sent */
         for (c = 0; !found && c < 768; c++) {
-            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-                guard = ai_CharsT[c].netId;
+            if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+                && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
+                guard = ai_Chars[c].netId;
                 found++;
                 msg.arg[0] = guard;
             }
@@ -1547,7 +1546,7 @@ umland:
     sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert im Umland", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x65;
-    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 2;
@@ -1561,9 +1560,9 @@ umland:
     msg.arg[9] = o->objId;
     n = min(idle, 6);
     for (cnt = 0, k = 0, c = 0; cnt < n && c < 768; c++) {
-        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
-            && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-            msg.ids[k++] = ai_CharsT[c].netId;
+        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && !ai_Chars[c].job
+            && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
+            msg.ids[k++] = ai_Chars[c].netId;
             cnt++;
         }
     }
@@ -1579,9 +1578,9 @@ umland:
     for (c = 0; k < (n); c++) {                                                                             \
         if (c >= 768)                                                                                       \
             break;                                                                                          \
-        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title                    \
-            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)  \
-            msg.ids[k++] = ai_CharsT[c].netId;                                                              \
+        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title                    \
+            && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)  \
+            msg.ids[k++] = ai_Chars[c].netId;                                                              \
     }                                                                                                       \
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
@@ -1694,7 +1693,7 @@ spy:
     sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", name, best->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x40;
-    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 1;
@@ -1702,9 +1701,9 @@ spy:
     msg.arg[1] = ch->bld->id;
     t = min(n, 8);
     for (k = 0, c = 0; k < t && c < 768; c++) {
-        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-            msg.ids[k++] = ai_CharsT[c].netId;
+        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+            && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
+            msg.ids[k++] = ai_Chars[c].netId;
     }
     for (; k < 8; k++)
         msg.ids[k] = -1;
@@ -1729,7 +1728,7 @@ report:
     sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", name, best->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x49;
-    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 1;
@@ -1737,9 +1736,9 @@ report:
     msg.arg[1] = ch->bld->id;
     t = min(n, 8);
     for (k = 0, c = 0; k < t && c < 768; c++) {
-        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-            msg.ids[k++] = ai_CharsT[c].netId;
+        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+            && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
+            msg.ids[k++] = ai_Chars[c].netId;
     }
     for (; k < 8; k++)
         msg.ids[k] = -1;
@@ -1835,11 +1834,11 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
     all = 0;
     n = 0;
     for (c = 0; c < 768; c++) {
-        if (ai_CharsT[c].health > 0 && ai_CharsT[c].id != 0xffff && ai_CharsT[c].kind != 10
-            && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && ai_CharsT[c].model
-            && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+        if (ai_Chars[c].health > 0 && ai_Chars[c].id != 0xffff && ai_Chars[c].kind != 10
+            && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && ai_Chars[c].model
+            && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
             all++;
-            if (!ai_CharsT[c].job)
+            if (!ai_Chars[c].job)
                 n++;
         }
     }
@@ -1853,7 +1852,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
+    if (ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) {
         r = util_Random(2);
         if (r && ch->target != -1 && util_Random(2))
             goto burgle;
@@ -1882,8 +1881,8 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                     r = gm_BuildingClass(bb->type);
                     if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1) && r != 3 && r != 5
                         && r != 0
-                        && (!ai_CharsT[bb->owner].bld || ai_CharsT[bb->owner].bld->owner != ch->bld->owner)
-                        && ai_CharsT[bb->owner].kind <= 7) {
+                        && (!ai_Chars[bb->owner].bld || ai_Chars[bb->owner].bld->owner != ch->bld->owner)
+                        && ai_Chars[bb->owner].kind <= 7) {
                         if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                             w = 0.0f;
                         else
@@ -1892,8 +1891,8 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                         if (!best) {
                             bestw = w;
                             best = bb;
-                        } else if ((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w
-                                   > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw) {
+                        } else if ((float)gm_GetGoodsValue(&ai_Chars[bb->owner]) * w
+                                   > (float)gm_GetGoodsValue(&ai_Chars[best->owner]) * bestw) {
                             bestw = w;
                             best = bb;
                         }
@@ -1904,14 +1903,14 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                 if (he_FindEvent(2, 0, 0x3c, 3, ch->bld->id))
                     return;
                 sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s entf\xfc" "hrt %s aus '%s'", ch->name,
-                        ai_CharsT[best->owner].name, best->name);
+                        ai_Chars[best->owner].name, best->name);
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x3c;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.time = ai_Time;
                 msg.flags = 1;
-                msg.arg[0] = ai_CharsT[best->owner].netId;
+                msg.arg[0] = ai_Chars[best->owner].netId;
                 msg.arg[1] = best->id;
                 msg.arg[2] = ch->bld->id;
                 t = min(n, util_Random(3) + 1);
@@ -1991,7 +1990,7 @@ burgle:
             sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s bricht bei '%s' ein", name, best->name);
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x3f;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_Time;
             msg.flags = 1;
@@ -2018,7 +2017,7 @@ burgle:
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s spioniert bei '%s'", name, best->name);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x40;
-        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.to = ai_Chars[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_Time;
         msg.flags = 1;
@@ -2040,11 +2039,11 @@ pick:
     sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s m\xf6" "chte Taschen dieben", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x61;
-    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 1;
-    msg.arg[10] = ai_CharsT[ch->bld->owner].netId;
+    msg.arg[10] = ai_Chars[ch->bld->owner].netId;
     t = min(n, 8);
     AI_FILL_IDS(t)
     if (msg.ids[0] != -1)
@@ -2092,11 +2091,11 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
     all = 0;
     n = 0;
     for (c = 0; c < 768; c++) {
-        if (ai_CharsT[c].health > 0 && ai_CharsT[c].id != 0xffff && ai_CharsT[c].kind != 10
-            && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && ai_CharsT[c].model
-            && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+        if (ai_Chars[c].health > 0 && ai_Chars[c].id != 0xffff && ai_Chars[c].kind != 10
+            && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && ai_Chars[c].model
+            && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
             all++;
-            if (!ai_CharsT[c].job)
+            if (!ai_Chars[c].job)
                 n++;
         }
     }
@@ -2110,7 +2109,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
         sprintf(buf, "ai_CalcMeisterR\xe4uber(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
+    if (ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) {
         r = util_Random(2);
         if (r && ch->target != -1 && util_Random(2))
             goto lauer;
@@ -2150,7 +2149,7 @@ attack:
                         if (best == 0) {
                             bestw = w;
                             best = bb;
-                        } else if ((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw) {
+                        } else if ((float)gm_GetGoodsValue(&ai_Chars[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_Chars[best->owner]) * bestw) {
                             bestw = w;
                             best = bb;
                         }
@@ -2161,7 +2160,7 @@ attack:
             sprintf(buf, "ai_CalcMeisterR\xe4uber(): Meister %s sch\xfctzt Geld bei '%s'", ch->name, best->name);
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x62;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_Time;
             msg.flags = 2;
@@ -2177,9 +2176,9 @@ attack:
             for (c = 0; k == 0; c++) {
                 if (c >= 768)
                     break;
-                if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                    && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-                    msg.arg[0] = ai_CharsT[c].netId;
+                if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+                    && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
+                    msg.arg[0] = ai_Chars[c].netId;
                     k++;
                 }
             }
@@ -2194,7 +2193,7 @@ lauer:
     sprintf(buf, "ai_CalcMeisterR\xe4uber(): Meister %s m\xf6" "chte sich auf die Lauer legen", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x48;
-    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 2;
@@ -2206,9 +2205,9 @@ lauer:
     for (c = 0; k < want; c++) {
         if (k >= 4 || c >= 768)
             break;
-        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
-            && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-            msg.ids[t++] = ai_CharsT[c].netId;
+        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && !ai_Chars[c].job
+            && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
+            msg.ids[t++] = ai_Chars[c].netId;
             k++;
         }
     }
@@ -2272,13 +2271,13 @@ void ai_CalcMeisterBank(AICHAR *ch)
             sum += d;
             cm_BeginGroup("Bankmeister");
             cm_SendMoveGoods(ch->bld->id, -1, i, d);
-            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
+            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
             cm_EndGroup("Bankmeister");
         } else if (v > m * 6 / 20) {
             d = v - m * 4 / 20;
             sum -= d;
             cm_BeginGroup("Bankmeister");
-            cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
+            cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
             cm_SendMoveGoods(-1, ch->bld->id, i, (int)(d * 1.03));
             cm_EndGroup("Bankmeister");
         }
@@ -2287,11 +2286,11 @@ void ai_CalcMeisterBank(AICHAR *ch)
     m = ch->budget;
     if (!(v < m * 1.5) || m - sum <= 0) {
         b = ch->bld;
-        if (ai_CharsT[b->owner].kind != 6 && ai_CharsT[b->owner].kind != 7 && v > m * 2)
-            cm_SendMoveGoods(ai_CharsT[b->owner].netId, b->id, ai_OwnPlayer, (int)(v - m * 2.25));
+        if (ai_Chars[b->owner].kind != 6 && ai_Chars[b->owner].kind != 7 && v > m * 2)
+            cm_SendMoveGoods(ai_Chars[b->owner].netId, b->id, ai_OwnPlayer, (int)(v - m * 2.25));
     } else {
         b = ch->bld;
-        cm_SendMoveGoods(b->id, ai_CharsT[b->owner].netId, ai_OwnPlayer, (int)((m - sum) * 0.8));
+        cm_SendMoveGoods(b->id, ai_Chars[b->owner].netId, ai_OwnPlayer, (int)((m - sum) * 0.8));
     }
     ch->flags1c8 |= 8;
 }
@@ -2395,14 +2394,14 @@ void ai_StartBuildingWork(AICHAR *ch)
                             return;
                         break;
                     }
-                    if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                        && (!ai_CharsT[c].job || ai_CharsT[c].job->kind == 4 || ai_CharsT[c].job->kind == (char)0x8c)
-                        && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-                        f = &ai_CharsT[c];
+                    if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
+                        && (!ai_Chars[c].job || ai_Chars[c].job->kind == 4 || ai_Chars[c].job->kind == (char)0x8c)
+                        && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
+                        f = &ai_Chars[c];
                 }
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x8d;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.time = ai_Time;
                 msg.flags = 1;
@@ -2439,10 +2438,10 @@ void ai_EndWorkerPose(AICHAR *ch)
                     return;
                 break;
             }
-            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title == 0x1c
-                && ai_CharsT[c].kind == 0x14 && (ai_CharsT[c].flags1b4 & 1) && ai_CharsT[c].model
-                && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-                f = &ai_CharsT[c];
+            if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title == 0x1c
+                && ai_Chars[c].kind == 0x14 && (ai_Chars[c].flags1b4 & 1) && ai_Chars[c].model
+                && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
+                f = &ai_Chars[c];
         }
         if (util_RandomF() > 0.75f)
             ai_EndCharExtra(f, 0);
@@ -2532,7 +2531,7 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
     }
     if (found)
         goto done;
-    if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
+    if (ai_Chars[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
@@ -2644,10 +2643,10 @@ done:
     ai_FreeJobCharacters(ch, 4);
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health > 0 && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
-            && ai_CharsT[j].title && ai_CharsT[j].model && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id
-            && (!ai_CharsT[j].job || ai_CharsT[j].job->kind == 4)) {
-            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
+        if (ai_Chars[j].health > 0 && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10 && ai_Chars[j].bld == ch->bld
+            && ai_Chars[j].title && ai_Chars[j].model && ai_Chars[j].model->bldId == ai_Chars[j].bld->id
+            && (!ai_Chars[j].job || ai_Chars[j].job->kind == 4)) {
+            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
             info.n2++;
         }
     }
@@ -2769,7 +2768,7 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         if (found)
             goto done;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
+    if (ai_Chars[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
@@ -2881,10 +2880,10 @@ done:
     ai_FreeJobCharacters(ch, 4);
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health > 0 && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
-            && ai_CharsT[j].title && ai_CharsT[j].model && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id
-            && (!ai_CharsT[j].job || ai_CharsT[j].job->kind == 4)) {
-            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
+        if (ai_Chars[j].health > 0 && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10 && ai_Chars[j].bld == ch->bld
+            && ai_Chars[j].title && ai_Chars[j].model && ai_Chars[j].model->bldId == ai_Chars[j].bld->id
+            && (!ai_Chars[j].job || ai_Chars[j].job->kind == 4)) {
+            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
             info.n2++;
         }
     }
@@ -3793,8 +3792,8 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
 
     n = ai_NSlots;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0) {
-            it = (unsigned short *)gm_Query(ai_CharsT[i].inventory, 1, 4, 0xc);
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0) {
+            it = (unsigned short *)gm_Query(ai_Chars[i].inventory, 1, 4, 0xc);
             n = ai_NSlots;
             if (it == 0) {
                 for (j = 0; j < n; j++) {
@@ -3945,24 +3944,24 @@ void ai_UpdateStaff(AICHAR *ch)
     if (!(fl & 0x40)) {
         fl |= 0x40;
         ch->flags1b4 = fl;
-        if ((ai_CharsT[ch->bld->owner].kind != 6 && ai_CharsT[ch->bld->owner].kind != 7) || (fl & 2)) {
+        if ((ai_Chars[ch->bld->owner].kind != 6 && ai_Chars[ch->bld->owner].kind != 7) || (fl & 2)) {
             bt = &ai_BTypes[ch->bld->type];
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0 &&
-                    ai_CharsT[i].title == (char)bt->k230 && ai_CharsT[i].v174 >= 4) {
+                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0 &&
+                    ai_Chars[i].title == (char)bt->k230 && ai_Chars[i].v174 >= 4) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x32;
-                    msg.to = ai_CharsT[ch->bld->owner].netId;
+                    msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 2;
                     msg.time = ai_Time;
-                    msg.arg[0] = ai_CharsT[i].netId;
+                    msg.arg[0] = ai_Chars[i].netId;
                     cm_SendLongMessage(&msg);
                 }
             }
             n = 0;
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0)
+                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0)
                     n++;
             }
             job = he_FindEvent(2, 0, 6, 3, ch->bld->id);
@@ -3976,7 +3975,7 @@ void ai_UpdateStaff(AICHAR *ch)
             }
             t = ch->bld->type;
             if (n < ai_BTypes[t].k231 + ai_BTypes[t].k232) {
-                oc = &ai_CharsT[ch->bld->owner];
+                oc = &ai_Chars[ch->bld->owner];
                 v = (int)gm_JobCost(oc, t, -1, 1);
                 if (n != 0) {
                     if (ch->flags1c8 & 8)
@@ -3989,7 +3988,7 @@ void ai_UpdateStaff(AICHAR *ch)
                 if (job == 0) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 6;
-                    msg.to = ai_CharsT[ch->bld->owner].netId;
+                    msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 1;
                     msg.time = ai_Time;
@@ -4023,10 +4022,10 @@ void ai_OfferGrave(AICHAR *ch)
             bld = ch->bld;
             fl |= 0x40;
             ch->flags1b4 = fl;
-            if ((ai_CharsT[bld->owner].kind != 6 && ai_CharsT[bld->owner].kind != 7) || (fl & 2)) {
+            if ((ai_Chars[bld->owner].kind != 6 && ai_Chars[bld->owner].kind != 7) || (fl & 2)) {
                 n = 0;
                 for (i = 0; i < 768; i++) {
-                    if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == bld && ai_CharsT[i].title != 0)
+                    if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == bld && ai_Chars[i].title != 0)
                         n++;
                 }
                 if (n < ai_BTypes[bld->type].k231 + ai_BTypes[bld->type].k232) {
@@ -4072,7 +4071,7 @@ void ai_BuyUpgrade(AICHAR *ch)
     bld = ch->bld;
     flags |= 0x400;
     ch->flags1b4 = flags;
-    if (ai_CharsT[bld->owner].kind != 6 && ai_CharsT[bld->owner].kind != 7)
+    if (ai_Chars[bld->owner].kind != 6 && ai_Chars[bld->owner].kind != 7)
         return;
     if (!(flags & 8))
         return;
@@ -4088,14 +4087,14 @@ void ai_BuyUpgrade(AICHAR *ch)
             msg.type = 0x1c;
             msg.fromId = -1;
             msg.flags = 1;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.arg[0] = ch->bld->id;
             msg.arg[1] = 100 - ch->bld->level;
             cm_BeginGroup("renovieren");
-            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)f);
+            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)f);
             cm_SendLongMessage(&msg);
             cm_EndGroup("renovieren");
-            fin = gm_PlayerRecord(&ai_CharsT[ch->bld->owner]);
+            fin = gm_PlayerRecord(&ai_Chars[ch->bld->owner]);
             if (fin)
                 fin->renovationSpent = (int)(fin->renovationSpent + f);
             ch->budget = (int)(ch->budget - f);
@@ -4141,18 +4140,18 @@ found:
         if (ch->budget > cost * 3) {
             memset(&msg2, 0, sizeof(msg2));
             msg2.type = 2;
-            msg2.to = ai_CharsT[ch->bld->masterId].netId;
+            msg2.to = ai_Chars[ch->bld->masterId].netId;
             msg2.fromId = ch->bld->id;
             msg2.time = ai_Time;
             msg2.flags = 1;
             msg2.itemId = ret;
             msg2.arg[1] = o->objId;
             msg2.arg[3] = 1;
-            fin = gm_PlayerRecord(&ai_CharsT[ch->bld->masterId]);
+            fin = gm_PlayerRecord(&ai_Chars[ch->bld->masterId]);
             if (fin)
                 fin->upgradeSpent += cost;
             cm_BeginGroup("upgrade_meister_ai");
-            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->masterId].netId, ai_OwnPlayer, cost);
+            cm_SendMoveGoods(-1, ai_Chars[ch->bld->masterId].netId, ai_OwnPlayer, cost);
             cm_SendLongMessage(&msg2);
             cm_EndGroup("upgrade_meister_ai");
             ch->budget -= cost;
@@ -4187,7 +4186,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
         if ((0 < x || 0 < y) && c->budget >= 24000) {
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x12;
-            msg.to = ai_CharsT[bld->owner].netId;
+            msg.to = ai_Chars[bld->owner].netId;
             msg.fromId = bld->id;
             msg.flags = 1;
             msg.time = ai_Time;
@@ -4198,7 +4197,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
             msg.arg[3] = 1;
             cm_BeginGroup("AI-Slots");
             cm_SendLongMessage(&msg);
-            cm_SendMoveGoods(-1, ai_CharsT[c->bld->owner].netId, ai_OwnPlayer, 8000);
+            cm_SendMoveGoods(-1, ai_Chars[c->bld->owner].netId, ai_OwnPlayer, 8000);
             switch (ls_GetLanguage()) {
             case 0:
                 if (cnt == 1)
@@ -4213,7 +4212,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
                     txt_Format(buf, 0x1bbd, c->id, c->bld, cnt);
                 break;
             }
-            he_MessageBoxQuickjump(ai_CharsT[c->bld->owner].netId, ai_CharsT[c->bld->owner].netId, buf, 0, 0x60b,
+            he_MessageBoxQuickjump(ai_Chars[c->bld->owner].netId, ai_Chars[c->bld->owner].netId, buf, 0, 0x60b,
                          c->bld->id, -1, 0, 0);
             c->budget += cnt * -8000;
             cm_EndGroup("AI-Slots");
@@ -4233,7 +4232,7 @@ void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n)
             if (!he_FindEvent(2, 0, 0x13, 3, c->bld->id) && b->count < 3 && c->budget >= 0x9600) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x13;
-                msg.to = ai_CharsT[c->bld->owner].netId;
+                msg.to = ai_Chars[c->bld->owner].netId;
                 msg.fromId = c->bld->id;
                 msg.flags = 1;
                 msg.time = ai_Time;
@@ -4242,7 +4241,7 @@ void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n)
                 msg.arg[3] = 1;
                 cm_BeginGroup("AI-kapazit\344t");
                 cm_SendLongMessage(&msg);
-                cm_SendMoveGoods(-1, ai_CharsT[c->bld->owner].netId, ai_OwnPlayer, 0x3200);
+                cm_SendMoveGoods(-1, ai_Chars[c->bld->owner].netId, ai_OwnPlayer, 0x3200);
                 c->budget += -0x3200;
                 cm_EndGroup("AI-kapazit\344t");
                 c->flags1c8 |= 8;
@@ -4278,8 +4277,8 @@ void ai_FreeJobCharacters(AICHAR *ch, int n)
         }
         if (found) {
             for (i = 0; i < 768; i++) {
-                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].job == job)
-                    sv_MoveToGroup(c->bld, 0, ai_CharsT[i].id, 0);
+                if (ai_Chars[i].id != 0xffff && ai_Chars[i].job == job)
+                    sv_MoveToGroup(c->bld, 0, ai_Chars[i].id, 0);
             }
         }
     }
@@ -4331,8 +4330,8 @@ void ai_SendJobOrders(AIINFO *info)
                 total--;
         }
         for (i = 0; info->z2 < total && i < 768; i++) {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && !ai_CharsT[i].job
-                && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && !ai_Chars[i].job
+                && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
                 AIMSG msg;
 
                 found = 0;
@@ -4346,7 +4345,7 @@ void ai_SendJobOrders(AIINFO *info)
                 k = found->id;
                 memset(&msg, 0, sizeof(msg));
                 msg.type = info->type;
-                msg.to = ai_CharsT[info->ch->bld->owner].netId;
+                msg.to = ai_Chars[info->ch->bld->owner].netId;
                 msg.fromId = info->ch->bld->id;
                 msg.nIds = 1;
                 msg.reserved14 = 0;
@@ -4354,7 +4353,7 @@ void ai_SendJobOrders(AIINFO *info)
                 msg.flags = 1;
                 msg.arg[3] = k;
                 msg.arg[0] = info->ch->bld->id;
-                msg.arg[1] = ai_CharsT[i].netId;
+                msg.arg[1] = ai_Chars[i].netId;
                 cm_SendLongMessage(&msg);
                 info->z2++;
             }
@@ -4369,7 +4368,7 @@ void ai_SendJobOrders(AIINFO *info)
             total = info->z2 + info->n2 / n + info->n2 % n;
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_CharsT[info->ch->bld->owner].netId;
+        msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.time = ai_Time;
         msg.nIds = 0;
@@ -4379,9 +4378,9 @@ void ai_SendJobOrders(AIINFO *info)
         o = (AIOBJ *)gm_BuildingMainObject(info->ch->bld);
         msg.arg[1] = o->objId;
         for (i = 0; info->z2 < total && i < 768; i++) {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && !ai_CharsT[i].job
-                && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
-                msg.ids[msg.nIds] = ai_CharsT[i].netId;
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && !ai_Chars[i].job
+                && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                msg.ids[msg.nIds] = ai_Chars[i].netId;
                 msg.nIds++;
                 info->z2++;
             }
@@ -4407,7 +4406,7 @@ void ai_SendJobOrders(AIINFO *info)
         o = gm_Query(info->ch->bld->objList, 2, 6, 0, 0xdd);
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_CharsT[info->ch->bld->owner].netId;
+        msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.nIds = 0;
         msg.time = ai_Time;
@@ -4424,9 +4423,9 @@ void ai_SendJobOrders(AIINFO *info)
                 msg.arg[2] = -1;
         }
         for (i = 0; info->z2 < total && i < 768; i++) {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && !ai_CharsT[i].job
-                && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
-                msg.ids[msg.nIds] = ai_CharsT[i].netId;
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && !ai_Chars[i].job
+                && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                msg.ids[msg.nIds] = ai_Chars[i].netId;
                 msg.nIds++;
                 info->z2++;
             }
@@ -4449,7 +4448,7 @@ void ai_SendJobOrders(AIINFO *info)
             total = info->n2 % n + base + info->n2 / n;
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_CharsT[info->ch->bld->owner].netId;
+        msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.time = ai_Time;
         msg.nIds = 0;
@@ -4458,9 +4457,9 @@ void ai_SendJobOrders(AIINFO *info)
         msg.itemId = info->e->item;
         if (base < total) {
             for (i = 0; info->z2 < total && i < 768; i++) {
-                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title
-                    && !ai_CharsT[i].job && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
-                    msg.ids[msg.nIds] = ai_CharsT[i].netId;
+                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title
+                    && !ai_Chars[i].job && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                    msg.ids[msg.nIds] = ai_Chars[i].netId;
                     msg.nIds++;
                     info->z2++;
                 }
@@ -4490,9 +4489,9 @@ void ai_SendJobOrders(AIINFO *info)
                 else if (k == 4)
                     v = gm_BuildingMainObject(info->ch->bld);
                 for (i = 0; info->z2 < total && i < 768; i++) {
-                    if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title
-                        && !ai_CharsT[i].job) {
-                        sv_MoveToGroup(info->ch->bld, v, ai_CharsT[i].id, job);
+                    if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title
+                        && !ai_Chars[i].job) {
+                        sv_MoveToGroup(info->ch->bld, v, ai_Chars[i].id, job);
                         info->z2++;
                     }
                 }
@@ -4502,7 +4501,7 @@ void ai_SendJobOrders(AIINFO *info)
         }
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_CharsT[info->ch->bld->owner].netId;
+        msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.time = ai_Time;
         msg.nIds = 0;
@@ -4544,8 +4543,8 @@ int ai_CheckFreeThieves(AICHAR *ch)
     while (1) {
         if (i >= 768)
             break;
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 && !(ai_CharsT[i].flags1c8 & 4) &&
-            ((float)ai_CharsT[i].sk83 < 168.0f || (float)ai_CharsT[i].sk82 < 168.0f))
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && ai_Chars[i].job == 0 && !(ai_Chars[i].flags1c8 & 4) &&
+            ((float)ai_Chars[i].sk83 < 168.0f || (float)ai_Chars[i].sk82 < 168.0f))
             found = 1;
         i++;
         if (found)
@@ -4554,12 +4553,12 @@ int ai_CheckFreeThieves(AICHAR *ch)
     if (found && util_Random(0x80) < 0x20)
         return 0;
     if (!found) {
-        if (((float)ai_CharsT[i].sk83 < 252.0f || (float)ai_CharsT[i].sk82 < 252.0f) && util_Random(0x80) > 0x60)
+        if (((float)ai_Chars[i].sk83 < 252.0f || (float)ai_Chars[i].sk82 < 252.0f) && util_Random(0x80) > 0x60)
             return 0;
     }
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 && !(ai_CharsT[i].flags1c8 & 4))
-            ai_CharsT[i].flags1b4 |= 0x10;
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && ai_Chars[i].job == 0 && !(ai_Chars[i].flags1c8 & 4))
+            ai_Chars[i].flags1b4 |= 0x10;
     }
     return 1;
 }
@@ -4582,9 +4581,9 @@ int ai_CheckFreeStaff(AICHAR *ch)
     while (1) {
         if (i >= 768)
             break;
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title &&
-            (ai_CharsT[i].job == 0 || ai_CharsT[i].job->kind == 4 || ai_CharsT[i].job->kind == -0x74) && !(ai_CharsT[i].flags1c8 & 4) &&
-            ((float)ai_CharsT[i].sk81 < 168.0f || (float)ai_CharsT[i].sk82 < 168.0f || (float)ai_CharsT[i].sk84 < 168.0f))
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title &&
+            (ai_Chars[i].job == 0 || ai_Chars[i].job->kind == 4 || ai_Chars[i].job->kind == -0x74) && !(ai_Chars[i].flags1c8 & 4) &&
+            ((float)ai_Chars[i].sk81 < 168.0f || (float)ai_Chars[i].sk82 < 168.0f || (float)ai_Chars[i].sk84 < 168.0f))
             found = 1;
         i++;
         if (found)
@@ -4593,14 +4592,14 @@ int ai_CheckFreeStaff(AICHAR *ch)
     if (found && util_Random(0x80) < 0x60)
         return 0;
     if (!found) {
-        if (((float)ai_CharsT[i].sk81 < 252.0f || (float)ai_CharsT[i].sk82 < 252.0f ||
-             (float)ai_CharsT[i].sk84 < 252.0f) && util_Random(0x80) > 0x20)
+        if (((float)ai_Chars[i].sk81 < 252.0f || (float)ai_Chars[i].sk82 < 252.0f ||
+             (float)ai_Chars[i].sk84 < 252.0f) && util_Random(0x80) > 0x20)
             return 0;
     }
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title &&
-            (ai_CharsT[i].job == 0 || ai_CharsT[i].job->kind == 4 || ai_CharsT[i].job->kind == -0x74) && !(ai_CharsT[i].flags1c8 & 4))
-            ai_CharsT[i].flags1b4 |= 0x10;
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title &&
+            (ai_Chars[i].job == 0 || ai_Chars[i].job->kind == 4 || ai_Chars[i].job->kind == -0x74) && !(ai_Chars[i].flags1c8 & 4))
+            ai_Chars[i].flags1b4 |= 0x10;
     }
     return 1;
 }
@@ -4617,7 +4616,7 @@ void ai_SendFreeThieves(AICHAR *ch)
 
     n = 2;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && ai_CharsT[i].job && ai_CharsT[i].job->kind == 0x16)
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && ai_Chars[i].job && ai_Chars[i].job->kind == 0x16)
             n--;
     }
     if (0 < n) {
@@ -4631,7 +4630,7 @@ void ai_SendFreeThieves(AICHAR *ch)
             o = 0;
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x16;
-        msg.to = ai_CharsT[c->bld->owner].netId;
+        msg.to = ai_Chars[c->bld->owner].netId;
         msg.fromId = c->bld->id;
         msg.time = ai_Time;
         msg.flags = 1;
@@ -4643,24 +4642,24 @@ void ai_SendFreeThieves(AICHAR *ch)
         while (1) {
             if (i >= 768)
                 break;
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && (ai_CharsT[i].flags1b4 & 0x10)) {
-                if (ai_CharsT[i].job) {
-                    if (ai_CharsT[i].job->kind == 0x16)
-                        ai_CharsT[i].flags1b4 &= ~0x10;
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && (ai_Chars[i].flags1b4 & 0x10)) {
+                if (ai_Chars[i].job) {
+                    if (ai_Chars[i].job->kind == 0x16)
+                        ai_Chars[i].flags1b4 &= ~0x10;
                 } else {
-                    if (ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
-                        if (ai_CharsT[i].sk83 < ai_CharsT[i].sk82) {
-                            msg.arg[1] = ai_CharsT[i].netId;
+                    if (ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                        if (ai_Chars[i].sk83 < ai_Chars[i].sk82) {
+                            msg.arg[1] = ai_Chars[i].netId;
                             msg.thiefClass = 3;
                             cm_SendLongMessage(&msg);
                             n--;
                         } else {
-                            msg.arg[1] = ai_CharsT[i].netId;
+                            msg.arg[1] = ai_Chars[i].netId;
                             msg.thiefClass = 2;
                             cm_SendLongMessage(&msg);
                             n--;
                         }
-                        ai_CharsT[i].flags1c8 |= 4;
+                        ai_Chars[i].flags1c8 |= 4;
                     }
                 }
             }
@@ -4703,13 +4702,13 @@ void ai_SendFreeSpies(AICHAR *ch)
 
     n = 1;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title && ai_CharsT[i].job && ai_CharsT[i].job->kind == -0x71)
+        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title && ai_Chars[i].job && ai_Chars[i].job->kind == -0x71)
             n--;
     }
     if (0 < n && ai_BTypes[ch->bld->type].kind == 0x1d && (o = gm_Query(ch->bld->objList, 2, 6, 0, 0x211)) != 0) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x8f;
-        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.to = ai_Chars[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_Time;
         msg.flags = 1;
@@ -4718,22 +4717,22 @@ void ai_SendFreeSpies(AICHAR *ch)
         while (1) {
             if (i >= 768)
                 break;
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title && (ai_CharsT[i].flags1b4 & 0x10)) {
-                if (ai_CharsT[i].job) {
-                    if (ai_CharsT[i].job->kind == -0x71)
-                        ai_CharsT[i].flags1b4 &= ~0x10;
+            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title && (ai_Chars[i].flags1b4 & 0x10)) {
+                if (ai_Chars[i].job) {
+                    if (ai_Chars[i].job->kind == -0x71)
+                        ai_Chars[i].flags1b4 &= ~0x10;
                 } else {
-                    if (ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
-                        ai_CharsT[i].flags1b4 &= ~0x10;
-                        if (ai_CharsT[i].sk81 < ai_CharsT[i].sk82) {
-                            msg.arg[0] = ai_CharsT[i].netId;
+                    if (ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                        ai_Chars[i].flags1b4 &= ~0x10;
+                        if (ai_Chars[i].sk81 < ai_Chars[i].sk82) {
+                            msg.arg[0] = ai_Chars[i].netId;
                             msg.arg[1] = 1;
                             cm_SendLongMessage(&msg);
                             n--;
                         } else {
                             msg.arg[1] = 2;
-                            msg.arg[0] = ai_CharsT[i].netId;
-                            if (ai_CharsT[i].sk82 < ai_CharsT[i].sk84) {
+                            msg.arg[0] = ai_Chars[i].netId;
+                            if (ai_Chars[i].sk82 < ai_Chars[i].sk84) {
                                 cm_SendLongMessage(&msg);
                                 n--;
                             } else {
@@ -4742,7 +4741,7 @@ void ai_SendFreeSpies(AICHAR *ch)
                                 n--;
                             }
                         }
-                        ai_CharsT[i].flags1c8 |= 4;
+                        ai_Chars[i].flags1c8 |= 4;
                     }
                 }
             }
@@ -4767,7 +4766,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
 
     i = 0;
     do {
-        c = &ai_CharsT[i];
+        c = &ai_Chars[i];
         if (c->id != 0xffff && c->bld == ch->bld && c->title && c->model && c->model->bldId == c->bld->id) {
             sel = NULL;
             p = (unsigned short *)gm_Query(c->inventory, 1, 4, 12);
@@ -4903,7 +4902,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xf;
                     msg.flags = 2;
-                    msg.to = ai_CharsT[ch->bld->owner].netId;
+                    msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.time = ai_Time;
                     msg.car = t->objId;
                     msg.fromId = -1;
@@ -4921,7 +4920,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         bt = &ai_BTypes[ch->bld->type];
         if (bt->kind == 9) {
             if (n == n136) {
-                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
+                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
                 cm_SendExSellObject(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
                 sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
                 return;
@@ -4935,7 +4934,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     return;
                 if (ch->budget <= (int)gm_ItemPrice(0x136, 100) * 2)
                     return;
-                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x136, 100));
+                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x136, 100));
                 cm_SendExSellObject(ch->bld->id, -1, 0x136, 1, ai_OwnPlayer, 0);
             } else {
                 if (ch->flags1c8 & 8)
@@ -4947,19 +4946,19 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 item = 0x136 - (util_Random(8) < 4);
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
-                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
+                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
                 cm_SendExSellObject(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
             }
         } else {
             if (n == 0) {
-                if ((ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
+                if ((ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
                     return;
-                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
+                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
                 cm_SendExSellObject(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
                 sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
                 return;
             }
-            if ((ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
+            if ((ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
                 return;
             if (ch->flags1c8 & 8)
                 return;
@@ -4969,7 +4968,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 return;
             if (ch->budget <= (int)gm_ItemPrice(0x135, 100) * 2)
                 return;
-            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x135, 100));
+            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x135, 100));
             cm_SendExSellObject(ch->bld->id, -1, 0x135, 1, ai_OwnPlayer, 0);
         }
         sprintf(buf, "ai_MeisterCollectTrans(): Um %li:%li Uhr zus\xe4tzlichen Transporter f\xfcr %s gekauft",
@@ -4994,7 +4993,7 @@ void ai_UnloadCarts(AICHAR *ch)
             if (car->fill < util_Random(0x20) + 0x28) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
                 msg.time = ai_Time;
@@ -5066,7 +5065,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
         if (!(ch->flags1b4 & 0x200)) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (!(ai_Entries[i].flags & 6) && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > 3)) {
-                    if (ai_CharsT[ch->bld->owner].kind == 6) {
+                    if (ai_Chars[ch->bld->owner].kind == 6) {
                         f = ai_SettingFactor(ch->bld);
                         g = gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
                         if (f <= g / gm_ItemPrice(ai_Entries[i].item, 100)) {
@@ -5087,8 +5086,8 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     }
                 }
             }
-            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]) < 8000) {
-                v = min(ch->budget, gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]));
+            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_Chars[ch->bld->owner]) < 8000) {
+                v = min(ch->budget, gm_GetGoodsValue(&ai_Chars[ch->bld->owner]));
                 for (i = 0; v < 32000 && i < ai_NEntries; i++) {
                     if (!(ai_Entries[i].flags & 6)) {
                         k = (int)gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
@@ -5149,7 +5148,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             if (car->fill < 0x21) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
                 msg.time = ai_Time;
@@ -5420,7 +5419,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     if (n == -1)
                         n = msg.dst[3];
                     msg.type = 11;
-                    msg.to = ai_CharsT[ch->bld->owner].netId;
+                    msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.time = ai_Time;
                     msg.flags = 1;
@@ -5498,8 +5497,8 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     }
                 }
             }
-            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]) < 8000) {
-                v = min(ch->budget, gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]));
+            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_Chars[ch->bld->owner]) < 8000) {
+                v = min(ch->budget, gm_GetGoodsValue(&ai_Chars[ch->bld->owner]));
                 for (i = 0; v < 32000 && i < ai_NEntries; i++) {
                     if (!(ai_Entries[i].flags & 6)) {
                         k = (int)gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
@@ -5537,7 +5536,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
             if (car->fill < 0x21) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
+                msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
                 msg.time = ai_Time;
@@ -5770,7 +5769,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     if (n == -1)
                         n = msg.dst[3];
                     msg.type = 11;
-                    msg.to = ai_CharsT[ch->bld->owner].netId;
+                    msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.time = ai_Time;
                     msg.flags = 1;
@@ -5816,7 +5815,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
         if (car->fill < 0x21) {
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x10;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
             msg.time = ai_Time;
@@ -5891,18 +5890,18 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                 }
             }
             for (i = 1; i < 4; i++) {
-                v = gm_SumSlotAmounts(ai_CharsT[ch->bld->owner].inventory, i);
+                v = gm_SumSlotAmounts(ai_Chars[ch->bld->owner].inventory, i);
                 if (v < exp[i]) {
                     d = exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, i, d);
-                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, i, d);
+                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 } else if (v > exp[i] * 2) {
                     d = v - exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
-                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, i, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
+                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, i, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 }
             }
@@ -5927,7 +5926,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             if (n == -1)
                 n = msg.dst[3];
             msg.type = 0xb;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_Time;
             msg.flags = 1;
@@ -5970,7 +5969,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
         if (car->fill < 0x21) {
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x10;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
             msg.time = ai_Time;
@@ -6057,18 +6056,18 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                 }
             }
             for (i = 1; i < 4; i++) {
-                v = gm_SumSlotAmounts(ai_CharsT[ch->bld->owner].inventory, i);
+                v = gm_SumSlotAmounts(ai_Chars[ch->bld->owner].inventory, i);
                 if (v < exp[i]) {
                     d = exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, i, d);
-                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, i, d);
+                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 } else if (v > exp[i] * 2) {
                     d = v - exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
-                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, i, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
+                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, i, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 }
             }
@@ -6076,7 +6075,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             if (n == -1)
                 n = msg.dst[3];
             msg.type = 0xb;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
+            msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_Time;
             msg.flags = 1;

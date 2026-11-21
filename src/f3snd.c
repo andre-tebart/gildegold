@@ -66,8 +66,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 /* 0x4c01b0, stops the queue: restores the music after a fanfare (fade back to 1.0), frees every queued sound */
 void snd_ClearQueue(void)
 {
@@ -845,7 +843,7 @@ int snd_FindVoiceSample(int id, int bank, char *text, int var)
     isvar = 0;
     if (id != -7) {
         if (id < 0x300 && id >= 0) {
-            c = &ai_CharsT[id];
+            c = &ai_Chars[id];
             if (c->sex == 1)
                 sprintf(sfx, "_W%i", (c->netId & 1) + 1);
             else if (c->sex == 0)
@@ -1052,7 +1050,7 @@ void snd_PlaySelectedClick(void)
 
     for (i = 0, p = ai_Selected; (int)p < (int)(ai_Selected + 0x300 * 0x21c); p += 0x21c, i++) {
         if (*p != 0) {
-            snd_PlayWorkerClick((G16CHARCLICK *)(ai_CharsC + i * 0x21c));
+            snd_PlayWorkerClick((G16CHARCLICK *)&ai_Chars[i]);
             return;
         }
     }

@@ -22,7 +22,6 @@
 #include "lc.h"
 #include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT_MALE 0x600c01  /* as AI_PARTNER_FILTER_MINOR_SERVANT and a male candidate: bit 0 rejects sex 1 (AICHAR.sex 0 male / 1 female) */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -96,8 +95,8 @@ int ai_MsgOfficeApplicantPayment(G14MSG *m)
             goto found;
         if (r[i].state == 3 && r[i].cnt != 0) {
             for (j = 0; j < 768; j++) {
-                if (ai_CharsT[j].appliedOffice == r[i].kind && (ai_CharsT[j].kind == 3 || ai_CharsT[j].kind == 4)) {
-                    p = &ai_CharsT[j];
+                if (ai_Chars[j].appliedOffice == r[i].kind && (ai_Chars[j].kind == 3 || ai_Chars[j].kind == 4)) {
+                    p = &ai_Chars[j];
                     break;
                 }
             }
@@ -490,7 +489,7 @@ int ai_MsgPartnerRelation4to10Type15(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT;  /* the partner filter bits of ai_PassesPartnerFilter */
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     n = util_Random(4) * 2 + 4;
     cm_SendRelations(c->netId, p->netId, n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id);
@@ -513,7 +512,7 @@ int ai_MsgPartnerRelation6to14Type16(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     n = util_Random(5) * 2 + 6;
     cm_SendRelations(c->netId, p->netId, n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id);
@@ -536,7 +535,7 @@ int ai_MsgPartnerRelation6to18Type17(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT_MALE;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     n = util_Random(7) * 2 + 6;
     cm_SendRelations(c->netId, p->netId, n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id);
@@ -564,7 +563,7 @@ int ai_MsgBuildingOwnerRelationsType18(G14MSG *m)
         return 0x400;
     for (b = gm_BuildQuery(1, 5, 7); b != 0 && n < 16; b = gm_BuildNext()) {
         if (b->owner != 0xffff)
-            ids[n++] = ai_CharsT[b->owner].netId;
+            ids[n++] = ai_Chars[b->owner].netId;
     }
     if (n == 0)
         return 0x400;
@@ -604,8 +603,8 @@ int ai_MsgOfficeGroupRelationsType19(G14MSG *m)
     if (c->secondOffice >= 0x1e && c->secondOffice <= 0x21 && (g = gm_TitleGroup(c->jobId)) != 0
         && !ai_InventoryHas(c, 0x290)) {
         for (i = 0; i < 768; i++) {
-            if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && g == gm_TitleGroup(ai_CharsT[i].jobId))
-                cm_SendRelations(c->netId, ai_CharsT[i].netId, util_Random(8) + 1, 1);
+            if (ai_Chars[i].kind != 6 && ai_Chars[i].kind != 7 && g == gm_TitleGroup(ai_Chars[i].jobId))
+                cm_SendRelations(c->netId, ai_Chars[i].netId, util_Random(8) + 1, 1);
         }
         k = util_Random(4) + 1.0;
         v = (int)(gm_GetWorth(c->id) * k * 0.01);
@@ -644,7 +643,7 @@ int ai_MsgPartnerRelationMinus6to14Type1a(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     n = util_Random(5) * 2 + 6;
     cm_SendRelations(c->netId, p->netId, -n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id, p->id);
@@ -669,7 +668,7 @@ int ai_MsgPartnerRelationMinus10to38Type1b(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     if (p == 0)
         return 0x400;
     n = util_Random(15) * 2 + 10;
@@ -695,7 +694,7 @@ int ai_MsgPartnerRelationMinus4to18Type1c(G14MSG *m)
     fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_CharsT[id];
+    p = &ai_Chars[id];
     n = util_Random(8) * 2 + 4;
     cm_SendRelations(c->netId, p->netId, -n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id);
@@ -731,8 +730,8 @@ int ai_MsgWorkerHealthLossType1d(G14MSG *m)
     k = 0;
     b = a[util_Random(n)];
     for (i = 0; i < 768 && k < 6; i++) {
-        if (ai_CharsT[i].kind != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
-            a[k++] = &ai_CharsT[i];
+        if (ai_Chars[i].kind != 0xffff && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
+            a[k++] = &ai_Chars[i];
     }
     if (k != 0)
         p = a[util_Random(k)];
@@ -775,8 +774,8 @@ int ai_MsgWorkerKilledType1e(G14MSG *m)
     k = 0;
     b = a[util_Random(n)];
     for (i = 0; i < 768 && k < 6; i++) {
-        if (ai_CharsT[i].kind != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
-            a[k++] = &ai_CharsT[i];
+        if (ai_Chars[i].kind != 0xffff && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
+            a[k++] = &ai_Chars[i];
     }
     if (k > 2) {
         s = util_Random(k);
@@ -821,7 +820,7 @@ int ai_MsgWorkerOwnHealthLossType1f(G14MSG *m)
     w = -1;
     b = a[util_Random(n)];
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
+        if (ai_Chars[i].kind != 0xffff && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
             w = i;
     }
     if (w == -1 || b == 0)
@@ -1315,8 +1314,8 @@ int ai_MsgWorkerStop(G14MSG *m)
     k = 0;
     b = a[util_Random(n)];
     for (i = 0; i < 768 && k < 6; i++) {
-        if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
-            a[k++] = &ai_CharsT[i];
+        if (ai_Chars[i].kind == 0 && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
+            a[k++] = &ai_Chars[i];
     }
     if (k > 2)
         p = a[util_Random(k)];
@@ -1365,8 +1364,8 @@ int ai_MsgWorkerTitleType2c(G14MSG *m)
     k = 0;
     b = a[util_Random(n)];
     for (i = 0; i < 768 && k < 6; i++) {
-        if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
-            a[k++] = &ai_CharsT[i];
+        if (ai_Chars[i].kind == 0 && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
+            a[k++] = &ai_Chars[i];
     }
     if (k > 1)
         p = a[util_Random(k)];
@@ -1409,7 +1408,7 @@ int ai_MsgFreeBuildingObjectType2e(G14MSG *m)
     b = a[util_Random(n)];
     t = &ai_BTypes[b->type];
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b) {
+        if (ai_Chars[i].kind == 0 && ai_Chars[i].bld == b) {
             if (gm_Liking(c->id, i, 1) < r)
                 goto none;
             if (++k >= t->k231 + t->k232)
@@ -1425,7 +1424,7 @@ int ai_MsgFreeBuildingObjectType2e(G14MSG *m)
         msg.fromId = b->id;
         msg.flags = 1;
         msg.n = msg.fromId;
-        msg.to = ai_CharsT[ai_PlayerId].netId;
+        msg.to = ai_Chars[ai_PlayerId].netId;
         msg.time = ai_Time;
         /* the text id at 0x64 is the message's 16-bit news text field (freeBuilding.textId) */
         msg.freeBuilding.textId = m->type + 0x12e7;
@@ -1461,8 +1460,8 @@ int ai_MsgWorkerAddSkillType2f(G14MSG *m)
         return 0x400;
     b = a[util_Random(n)];
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld == b) {
-            p = &ai_CharsT[i];
+        if (ai_Chars[i].kind == 1 && ai_Chars[i].bld == b) {
+            p = &ai_Chars[i];
             break;
         }
     }
@@ -1501,8 +1500,8 @@ int ai_MsgWorkerLoseSkillType30(G14MSG *m)
         return 0x400;
     b = a[util_Random(n)];
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld == b) {
-            p = &ai_CharsT[i];
+        if (ai_Chars[i].kind == 1 && ai_Chars[i].bld == b) {
+            p = &ai_Chars[i];
             break;
         }
     }
@@ -1563,8 +1562,8 @@ int ai_MsgBuildingGetsItemType31(G14MSG *m)
         }
     }
     for (i = lo; i < hi; i += d) {
-        if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && ai_CharsT[i].kind < 10 && ai_CharsT[i].id != 0xffff) {
-            a[k++] = &ai_CharsT[i];
+        if (ai_Chars[i].kind != 6 && ai_Chars[i].kind != 7 && ai_Chars[i].kind < 10 && ai_Chars[i].id != 0xffff) {
+            a[k++] = &ai_Chars[i];
             if (k == 16)
                 break;
         }

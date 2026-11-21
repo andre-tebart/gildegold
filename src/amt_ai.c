@@ -69,7 +69,6 @@ extern int ai_EvalStack[73];
 #include "d3_pose.h"
 #include "menu.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
@@ -1006,8 +1005,8 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     k = 0x300;
     i = util_Random(0x300);
     while (cnt < n && k != 0) {
-        t = ai_CharsT[i].kind;
-        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId != 0 && ai_CharsT[i].jobId != 'R'
+        t = ai_Chars[i].kind;
+        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_Chars[i].jobId != 0 && ai_Chars[i].jobId != 'R'
             && ai_PassesPartnerFilter(p->id, (unsigned short)i, q, 0) != 0
             && abs(rank - gm_CharPrevLevel((unsigned short)i, 0)) < 6
             && (!win || (r = gm_Liking(i, p->id, 1), !(r < lo) && !(r > hi)))) {
@@ -1019,8 +1018,8 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     k = 0x300;
     i = util_Random(0x300);
     while (cnt < n && k != 0) {
-        t = ai_CharsT[i].kind;
-        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId == 0
+        t = ai_Chars[i].kind;
+        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_Chars[i].jobId == 0
             && ai_PassesPartnerFilter(p->id, (unsigned short)i, q, 0) != 0
             && abs(rank - gm_CharPrevLevel((unsigned short)i, 0)) < 6
             && (!win || (r = gm_Liking(i, p->id, 1), !(r < lo) && !(r > hi)))) {
@@ -1077,7 +1076,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
             }
             if (ai_PassesPartnerFilter(p->id, (unsigned short)c, q, 0) != 0
                 && (!win || (r = gm_Liking(c, p->id, 1), !(r < lo) && !(r > hi)))
-                && abs(home - amt_GetKindLevel(ai_CharsT[c].officeKind)) <= d) {
+                && abs(home - amt_GetKindLevel(ai_Chars[c].officeKind)) <= d) {
                 found = 1;
                 id[i] = (unsigned short)c;
             }

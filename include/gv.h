@@ -83,7 +83,6 @@ typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon s
 } GVCANNON;
 extern GVCANNON gv_Cannon;              /* 0x925100 */
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 
 /* the 0x21c-byte character records (ai_Chars) as the order handlers read them */
 typedef struct ORDCHAR {

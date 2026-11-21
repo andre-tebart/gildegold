@@ -66,7 +66,6 @@ int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 d
 #include "menu.h"
 #include "amt_ai.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
-#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
@@ -581,7 +580,7 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         flags = 0xc00;
         if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_Random(30) + 40.0f, &id) == 0)
             goto release;
-        q = (AGCH *)&ai_CharsT[id];
+        q = (AGCH *)&ai_Chars[id];
     } else
         goto release;
     if (q != 0) {
@@ -1433,7 +1432,7 @@ void ai_RollCharFlags(void)
 
     f = 1;
     for (i = 0; i < 768; i++) {
-        c = (AIPER *)&ai_CharsT[i];
+        c = (AIPER *)&ai_Chars[i];
         if (c->kind == 3) {
             f |= util_Random(2) ? 2 : 0;
             f |= util_Random(3) ? 4 : 0;
@@ -2014,7 +2013,7 @@ int ai_DecideBribe(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             flags = 0x10000500;
             if (!ai_PickPartnerChain(p, 1, &flags, 0, util_Random(25) + 10.0, &cid))
                 return 0;
-            c = (AIPER *)&ai_CharsT[cid];
+            c = (AIPER *)&ai_Chars[cid];
         }
         if (!c)
             return 0;
@@ -2229,7 +2228,7 @@ int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         else if (bld) {
             if (bld->owner == 0xffff)
                 return 0;
-            owner = (AIPER *)&ai_CharsT[bld->owner];
+            owner = (AIPER *)&ai_Chars[bld->owner];
         } else if (c)
             owner = c;
         else
@@ -2312,7 +2311,7 @@ int ai_DecideBuyRoom(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     if (bld->owner == 0xffff)
         return 0;
-    c = (AIPER *)&ai_CharsT[bld->owner];
+    c = (AIPER *)&ai_Chars[bld->owner];
     v = gm_CharCurrency(c, ai_OwnPlayer);
     if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
         v = (int)(v * o1->fvalue);
@@ -3158,11 +3157,11 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if ((ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
                 || ai_PickActionBuilding(p, 6, mask.QuadPart, 0, util_Random(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
-                if (y && y->owner != 0xffff && he_NoEvent88Pair(&ai_CharsT[y->owner], (AICHAR *)p)) {
+                if (y && y->owner != 0xffff && he_NoEvent88Pair(&ai_Chars[y->owner], (AICHAR *)p)) {
                     memset(buf, 0, sizeof(buf));
                     buf[0] = 1;
                     v = (int)(gm_EquipmentValue(y, 100) * 0.05f + gm_GetWorth(p->id) * 0.02f);
-                    ch = (AIPER *)&ai_CharsT[y->owner];
+                    ch = (AIPER *)&ai_Chars[y->owner];
                     if (ord_DispatchOrder(0x1b, p, buf) & 2)
                         v /= 2;
                     if (!(m * 0.44f < v)) {
@@ -3182,9 +3181,9 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             }
                             return r;
                         }
-                        if (he_NoEvent4bPair((AIPER *)&ai_CharsT[y->owner], p)
-                            && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_NoProtectionEvent((AIBLD *)y)
-                            && he_NoEvent88Pair(&ai_CharsT[y->owner], (AICHAR *)p)) {
+                        if (he_NoEvent4bPair((AIPER *)&ai_Chars[y->owner], p)
+                            && he_NoEvent2ePair((AIPER *)&ai_Chars[y->owner], p) && he_NoProtectionEvent((AIBLD *)y)
+                            && he_NoEvent88Pair(&ai_Chars[y->owner], (AICHAR *)p)) {
                             o1->kind = 4;
                             o1->ref = y->id;
                             o1->arg = 1;
@@ -3309,7 +3308,7 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         t = util_Random(0x20) + 32.0f;
                         if (!ai_PickPartnerChain(p, 1, &flags, 0, t, &cid))
                             return 0;
-                        c = (AIPER *)&ai_CharsT[cid];
+                        c = (AIPER *)&ai_Chars[cid];
                     }
                     if (c->money >= 2) {
                         g = gm_Mix(p, c, 3);
@@ -3431,9 +3430,9 @@ int ai_ExecuteCitizenship(G5CH *p)
         for (i = 0; i < 768; i++) {
             if (n >= (int)ai_NumPlayers)
                 break;
-            if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
+            if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) {
                 AI_ZERO(&m, 0xf8);
-                m.to = ai_CharsT[i].netId;
+                m.to = ai_Chars[i].netId;
                 m.type = 0x69;
                 m.fromId = -1;
                 m.flags = 9;
@@ -3523,9 +3522,9 @@ int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
     n = 0;
     sum = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].bld == b) {
+        if (ai_Chars[i].bld == b) {
             n++;
-            sum += ai_CharsT[i].b1c5;
+            sum += ai_Chars[i].b1c5;
         }
     }
     if (util_Random(4) + (float)sum / n < 6.0f)
@@ -3682,7 +3681,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.ref = ai_CharsT[id].netId;
+        s1.ref = ai_Chars[id].netId;
         s1.arg = -1;
     } else if (i == 10) {
         int flags;
@@ -3692,7 +3691,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.ref = ai_CharsT[id].netId;
+        s1.ref = ai_Chars[id].netId;
         s1.arg = -1;
     } else if (i == 8) {
         r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
@@ -4270,18 +4269,18 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             switch (rp->item) {
             case 0x169:
             case 0x16d:
-                s2.ref = ai_CharsT[id[0]].netId;
-                s2.arg = ai_CharsT[id[1]].netId;
+                s2.ref = ai_Chars[id[0]].netId;
+                s2.arg = ai_Chars[id[1]].netId;
                 s2.kind = 7;
                 break;
             case 0x16a:
                 s2.arg = -1;
-                s2.ref = ai_CharsT[id[0]].netId;
+                s2.ref = ai_Chars[id[0]].netId;
                 s2.kind = 7;
                 break;
             case 0x177:
                 s2.kind = 4;
-                s2.ref = ai_CharsT[id[0]].bld2->id;
+                s2.ref = ai_Chars[id[0]].bld2->id;
                 s2.arg = -1;
                 break;
             case 0x178:
@@ -4297,7 +4296,7 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             case 0x29a:
             case 0x29c:
                 s2.arg = -1;
-                s2.ref = ai_CharsT[id[0]].netId;
+                s2.ref = ai_Chars[id[0]].netId;
                 s2.kind = 7;
                 break;
             default:
@@ -4769,9 +4768,9 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
         cm_AddFieldValues(4, 1, 0x1ac, &s1->arg2);
         cm_SendFieldDeltas();
         cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s1->arg2);
-        cm_SendMoveGoodsUnchecked(ai_CharsT[b->owner].netId, -1, ai_OwnPlayer, d);
+        cm_SendMoveGoodsUnchecked(ai_Chars[b->owner].netId, -1, ai_OwnPlayer, d);
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
-        ai_ShowIndulgenceNews(p, (char *)&ai_CharsT[b->owner], (int)b, d, s1->arg2);
+        ai_ShowIndulgenceNews(p, (char *)&ai_Chars[b->owner], (int)b, d, s1->arg2);
         G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->fvalue;
         G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->fvalue;
         G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->fvalue;
@@ -4780,8 +4779,8 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
     if (s2->kind == 0xf && o != 0) {
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
         gm_SendMoneyDelta(p->netId, -s1->arg2);
-        gm_SendMoneyDelta(ai_CharsT[b->owner].netId, 1);
-        ai_ShowPaymentNews(p, (char *)&ai_CharsT[b->owner], (int)b);
+        gm_SendMoneyDelta(ai_Chars[b->owner].netId, 1);
+        ai_ShowPaymentNews(p, (char *)&ai_Chars[b->owner], (int)b);
         return 0x26;
     }
     return 0;
@@ -4874,7 +4873,7 @@ int ai_DecideThreaten(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         memset(&s2, 0, sizeof(s2));
         if (ai_DecideLittleKnownChar(p, &s1, &s2) == 0)
             return 0;
-        c = (AIPER *)&ai_CharsT[s2.arg2];
+        c = (AIPER *)&ai_Chars[s2.arg2];
         g = gm_Mix((AIPER *)p, c, 4);
         if (!(util_RandomF() + g >= 1.0f)) {
             s1.kind = 4;
@@ -6017,7 +6016,7 @@ int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
     gm_FindById((int *)&b, 0, 0, s1->arg);
     memset(&m, 0, sizeof(m));
     m.type = 0x23;
-    m.to = ai_CharsT[a->owner].netId;
+    m.to = ai_Chars[a->owner].netId;
     m.fromId = a->id;
     m.time = ai_Time;
     m.flags = 0x12;
@@ -6249,7 +6248,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         o1->ref = bl[found]->id;
         o1->arg = 'join';
         o2->kind = 0x12;
-        o2->ref = ai_CharsT[bl[found]->owner].netId;
+        o2->ref = ai_Chars[bl[found]->owner].netId;
         o2->arg = 0;
         return 0x35;
     }
@@ -6431,7 +6430,7 @@ int ai_DecideGuildRiot(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     n = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_CharsT[i].bld == (AIBLD *)y)
+        if (ai_Chars[i].bld == (AIBLD *)y)
             n++;
     }
     if (n == 0)
