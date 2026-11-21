@@ -359,7 +359,7 @@ extern unsigned char sv_InMissionComplete;                    /* 0x6f23f1 */
 extern struct AIOBJ *sv_LastRoom;              /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building) */
 extern int sv_PendingMoney;                    /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total) */
 extern int d3t_Snow;                                    /* 0x76061c */
-extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
+extern struct D3SKYLAYER *d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */
 extern SVBUBBLE sv_Bubbles[0x40];                           /* 0x761fc0, the 64 speech bubble records */
 #ifndef DATA_VIEWS_H

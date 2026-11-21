@@ -2030,7 +2030,7 @@ extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
 extern int sv_SkyPhase;  /* 0x760464 */
 extern int sv_ThunderFog;  /* 0x6f2370 */
-extern int d3_SkyLayers[6];  /* 0x760620 */
+extern struct D3SKYLAYER *d3_SkyLayers[6];  /* 0x760620 */
 extern int sv_SkyScene;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int sv_LampPhase;  /* 0x623e80 */
@@ -2237,22 +2237,22 @@ void sv_SetupWeather(struct AITIME *t, int reroll)
         d3_Sky = d3sky_Create(-0.95f, -0.2f, 600.0f);
     for (i = 0; i < 6; i++) {
         if (d3_SkyLayers[i] != 0) {
-            d3sky_DeleteLayer(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[i]);
+            d3sky_DeleteLayer(d3_Sky, d3_SkyLayers[i]);
             d3_SkyLayers[i] = 0;
         }
     }
     flags.all = 0xff;
     flags.b[2] = 0;
-    d3_SkyLayers[0] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[0].name, flags, sv_SkyFair[0].scale, 0, sv_SkyFair[0].vscale, sv_SkyFair[0].voffset);
-    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[0], 0);
+    d3_SkyLayers[0] = d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[0].name, flags, sv_SkyFair[0].scale, 0, sv_SkyFair[0].vscale, sv_SkyFair[0].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[0], 0);
     flags.all = 0;
     flags.b[2] = 0;
-    d3_SkyLayers[1] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[1].name, flags, sv_SkyFair[1].scale, 0, sv_SkyFair[1].vscale, sv_SkyFair[1].voffset);
-    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[1], 0);
+    d3_SkyLayers[1] = d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[1].name, flags, sv_SkyFair[1].scale, 0, sv_SkyFair[1].vscale, sv_SkyFair[1].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[1], 0);
     flags.all = 0;
     flags.b[2] = 0;
-    d3_SkyLayers[2] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyHeavy[2].name, flags, sv_SkyHeavy[2].scale, 0, sv_SkyHeavy[2].vscale, sv_SkyHeavy[2].voffset);
-    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[2], 0);
+    d3_SkyLayers[2] = d3sky_CreateLayer(d3_Sky, 0, sv_SkyHeavy[2].name, flags, sv_SkyHeavy[2].scale, 0, sv_SkyHeavy[2].vscale, sv_SkyHeavy[2].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[2], 0);
     scene = d3_CurrentScene;
     for (i = 0; i < 64; i++) {
         if (d3_Scenes[i].map != 0) {
@@ -2356,7 +2356,7 @@ void sv_UpdateSkyPhase(AITIME *t)
     else
         k = 600;
     if (d3_SkyLayers[2] != 0)
-        a = ((D3SKYLAYER *)d3_SkyLayers[2])->alpha * 0.003921569f;
+        a = d3_SkyLayers[2]->alpha * 0.003921569f;
     if (d3_Scenes[d3_CurrentScene].map != 0 && (unsigned)d3_Time < (unsigned)(sv_Weather.thunderStart + sv_Weather.thunderLen)) {
         d3_SetFogSet(0, 2, 1.0f);
         sv_ThunderFog = 1;
@@ -6892,7 +6892,6 @@ int ai_RunAllows();                     /* 0x5763c0 */
 void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
 extern int sv_SunRaysHour;  /* 0x623ecc */
 
-#define sv_SkyLayersT (*(D3SKYLAYER *(*)[6])&d3_SkyLayers)  /* 0x760620, d3_SkyLayers (int[6]) as the sky layers they point to */
 
 /* 0x5301a0, applies the weather of the clock's hour (sv_WeatherHour) from sv_Weather: the snow / rain emitters get the hour's clouds (rain under snow only on odd
    clouds, a fifth), the strongest clouds c of the hour and its two neighbours drive the emitters' drift against the wind and, with the wind strength, the sky:
@@ -6931,59 +6930,59 @@ void sv_UpdateWeather(void)
         d3t_SetRain((struct D3TRAIN *)d3t_Rain, 1, 2, (int)(-wx * (double)c * 0.5), (int)(-wy * (double)c * 0.5), 1000);
     if (d3_Sky != 0) {
         w = (float)(sqrt(wy * wy + wx * wx) * (c + 0x96) * 0.125);
-        if (sv_SkyLayersT[1]->alpha == 0) {
+        if (d3_SkyLayers[1]->alpha == 0) {
             if (c < 0x32) {
                 k = util_Random(4);
-                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyFair[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[1]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
                 k = util_Random(3);
-                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyMedium[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[1]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_Random(2);
-                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavy[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[1]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
             }
-            d3sky_SetLayerTex(sv_SkyLayersT[1], sky->name);
-            sv_SkyLayersT[1]->scale = sky->scale;
-            sv_SkyLayersT[1]->vscale = sky->vscale;
-            sv_SkyLayersT[1]->voffset = sky->voffset;
-            d3sky_FadeLayer(d3_Sky, sv_SkyLayersT[1], 0xff, 1500.0f);
+            d3sky_SetLayerTex(d3_SkyLayers[1], sky->name);
+            d3_SkyLayers[1]->scale = sky->scale;
+            d3_SkyLayers[1]->vscale = sky->vscale;
+            d3_SkyLayers[1]->voffset = sky->voffset;
+            d3sky_FadeLayer(d3_Sky, d3_SkyLayers[1], 0xff, 1500.0f);
         }
-        if (sv_SkyLayersT[1]->alpha == 0xff) {
+        if (d3_SkyLayers[1]->alpha == 0xff) {
             if (c < 0x32) {
                 k = util_Random(4);
-                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyFair[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[0]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
                 k = util_Random(3);
-                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyMedium[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[0]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_Random(2);
-                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavy[k].name) == 0)
+                if (strcmpi(d3_SkyLayers[0]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
             }
-            d3sky_SetLayerTex(sv_SkyLayersT[0], sky->name);
-            sv_SkyLayersT[0]->scale = sky->scale;
-            sv_SkyLayersT[0]->vscale = sky->vscale;
-            sv_SkyLayersT[0]->voffset = sky->voffset;
-            d3sky_FadeLayer(d3_Sky, sv_SkyLayersT[1], 0, 1500.0f);
+            d3sky_SetLayerTex(d3_SkyLayers[0], sky->name);
+            d3_SkyLayers[0]->scale = sky->scale;
+            d3_SkyLayers[0]->vscale = sky->vscale;
+            d3_SkyLayers[0]->voffset = sky->voffset;
+            d3sky_FadeLayer(d3_Sky, d3_SkyLayers[1], 0, 1500.0f);
         }
-        d3sky_SetLayerSpeed(d3_Sky, sv_SkyLayersT[0], w * 0.75);
-        d3sky_SetLayerSpeed(d3_Sky, sv_SkyLayersT[1], w);
+        d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[0], w * 0.75);
+        d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[1], w);
         if (c == 0)
-            d3sky_FadeLayer(d3_Sky, sv_SkyLayersT[2], 0, 2500.0f);
+            d3sky_FadeLayer(d3_Sky, d3_SkyLayers[2], 0, 2500.0f);
         else
-            d3sky_FadeLayer(d3_Sky, sv_SkyLayersT[2], (c << 6) / 1000 + 0x60, 1000.0f);
-        d3sky_SetLayerSpeed(d3_Sky, sv_SkyLayersT[2], w * 1.5);
+            d3sky_FadeLayer(d3_Sky, d3_SkyLayers[2], (c << 6) / 1000 + 0x60, 1000.0f);
+        d3sky_SetLayerSpeed(d3_Sky, d3_SkyLayers[2], w * 1.5);
     }
 }
 /* 0x530670, the weather of a frame (sv_RunFrame): draws the rain / snow emitters; in a stormy hour (sv_Weather.storm) a thunder now and then (1 in 300 frames, at storm 3
@@ -7406,7 +7405,7 @@ extern int sv_SkyPhase;
 extern int sv_WinterWeather;
 extern int sv_WeatherHour;
 extern int d3t_Snow;
-extern int d3_SkyLayers[6];
+extern struct D3SKYLAYER *d3_SkyLayers[6];
 extern int d2_HitWindow;
 extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 /* txt_NetworkSyncWait: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7645,7 +7644,7 @@ SVCLIMATE sv_Climate;  /* 0x760480, sv_CloudChance, sv_SeasonClimate (0x760484) 
 int sv_WinterWeather;  /* 0x760610 */
 int sv_WeatherHour;  /* 0x760614 */
 int d3t_Snow;  /* 0x76061c */
-int d3_SkyLayers[6];  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
+struct D3SKYLAYER *d3_SkyLayers[6];  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20];  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[128];  /* 0x761f40, the status line text */
 SVBUBBLE sv_Bubbles[0x40];  /* 0x761fc0, the 64 speech bubble records */
