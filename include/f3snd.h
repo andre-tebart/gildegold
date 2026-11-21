@@ -10,26 +10,8 @@ struct D3SOUND;
 struct MSXTRACK;
 struct SBSAMPLE;
 
-typedef struct G16SMPENTRY {            /* SBENTRY in sblib.c: the file entry of a sample */
-    int offset;                         /* 0x00, file offset of the data */
-    char name[0x32];                    /* 0x04, "Fanfare", "MausclickLinks", ... */
-} G16SMPENTRY;
-
-typedef struct G16SMP {                 /* SBSAMPLE in sblib.c; the fields the sound queue reads */
-    int handle;                         /* 0x00 */
-    G16SMPENTRY *info;                  /* 0x04, NULL = unused */
-    int start;                          /* 0x08 */
-    int loops;                          /* 0x0c */
-    unsigned int fadestart;             /* 0x10 */
-    unsigned int flags;                 /* 0x14 */
-    int delay;                          /* 0x18, repeat delay */
-} G16SMP;
-
 typedef struct G16SND {                 /* 0x10 bytes ("f3snd: snd_AddToQueue"), a queued sound */
-    union {
-        char *smp;                      /* 0x00, SBSAMPLE *, as the sb_* calls take it */
-        G16SMP *sample;                 /* 0x00, the same record's fields (the queue's view) */
-    };
+    struct SBSAMPLE *smp;               /* 0x00 */
     unsigned int delay;                 /* 0x04, time units (d3_Time * 13) after the previous one */
     int playing;                        /* 0x08 */
     struct G16SND *next;                /* 0x0c */
@@ -118,7 +100,7 @@ extern char snd_LocustLog[];             /* 0x6f0960, a debug text */
 extern struct SBSAMPLE *snd_LocustsPerm;   /* 0x6f0b94, hpLocustsPerm: the summer cricket loop */
 extern struct SBSAMPLE *snd_Locusts;       /* 0x6f0b98, hpLocusts: the cricket sample */
 extern int snd_AnimalSeason;                /* 0x6f0b9c, the season */
-extern int snd_AmbientTrack;                /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
+extern struct D3SOUND *snd_AmbientTrack;    /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
 extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
@@ -135,8 +117,8 @@ extern int *d3t_Rain;               /* 0x760618, the rain level */
 extern struct SBBANK *snd_Bank;                    /* 0x6f2404, the sample bank */
 typedef struct SNDRAIN {                /* 0x48 bytes, snd_UpdateRain's state */
     AITIME time;                        /* 0x00, a copy of ai_Time (14 bytes) */
-    struct { int unread; int smp; } loop[7];  /* 0x10, the loops (smp: the playing sample, 0: none); no surviving code
-                                           reads the int before each */
+    struct { int unread; struct SBSAMPLE *smp; } loop[7];  /* 0x10, the loops (smp: the playing sample, 0: none); no
+                                           surviving code reads the int before each */
 } SNDRAIN;
 extern SNDRAIN snd_Rain;                /* 0xf81240 */
 #define snd_TimeCopy snd_Rain.time      /* 0xf81240 */
@@ -162,16 +144,16 @@ struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                         
 int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 struct MSXTRACK * msx_Play(char *name, int once);                                            /* 0x423a90, msx.h: MSXTRACK * */
 float util_RandomF(void);                                                        /* 0x42ec20 */
-struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */
+struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
-struct D3SOUND *d3snd_Attach(struct SBSAMPLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
+struct D3SOUND *d3snd_Attach(struct SBSAMPLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c */
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
 void mem_Free(void *p);                                                          /* 0x422620, mem.c */
 
 void snd_ClearQueue(void);
 G16SND *snd_QueueTail(void);
-int snd_AddToQueue(char *smp, unsigned int delay);
+int snd_AddToQueue(struct SBSAMPLE *smp, unsigned int delay);
 void snd_UpdateQueue(void);
 void snd_UpdateRain(void);
 void snd_UpdateAnimals(void);

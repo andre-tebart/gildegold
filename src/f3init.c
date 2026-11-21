@@ -240,7 +240,6 @@ typedef struct INIT_TERRAIN {
 #include "d3_snd.h"
 #include "sblib.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define d3snd_AttachI ((int (*)(int, char *, int, float))d3snd_Attach)  /* 0x417710 (d3_snd.h: D3SOUND *(SNDHANDLE *, D3OBJECT *, int, float)): this unit's int handle / char * object view */
 #define sv_PlaceCameraB ((void (*)(int))sv_PlaceCamera)  /* 0x525dd0 (sv.h: void sv_PlaceCamera(float f)): @original init_AfterTownLoad pushes the angle's bits as an int (0x513740: push 0x3ea8f5c3 / the INIT_CAMREC angle union's int) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
@@ -3120,7 +3119,8 @@ void init_LoadShopScript(unsigned char *b, unsigned short *o)
 void init_SoundObjectHook(char *o)
 {
     char name[0x100];
-    int loop, delay, h;
+    int loop, delay;
+    struct D3SOUND *h;
     struct SBSAMPLE *s;
 
     if (strncmp(o, "sfx_", 4) == 0) {
@@ -3134,9 +3134,9 @@ void init_SoundObjectHook(char *o)
         if (snd_SfxEnabled != 0) {
             s = sb_GetSample(0, name);
             if (s != 0) {
-                h = d3snd_AttachI((int)s, o, 0x7f, (float)((int)((SCENEOBJ *)o)->soundRange + 0x32));
+                h = d3snd_Attach(s, (struct D3OBJECT *)o, 0x7f, (float)((int)((SCENEOBJ *)o)->soundRange + 0x32));
                 if (h != 0)
-                    d3snd_Play((struct D3SOUND *)h, 0, loop, delay);
+                    d3snd_Play(h, 0, loop, delay);
             }
         }
         ((SCENEOBJ *)o)->mask = 0;
