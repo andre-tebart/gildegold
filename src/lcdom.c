@@ -877,7 +877,6 @@ void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(ch
 void txt_Format(char *out, int id0, ...);
 int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
 #define sv_CheckStockB ((int (*)(AIROOM *, int, int, unsigned char))sv_CheckStock)  /* @original ai_ConstructionWindow pushes the money kind as a byte (only cl loaded) */
-#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original as sv_CheckStockB */
 int gm_IsHomeType();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
@@ -1257,7 +1256,7 @@ int ai_AskBonusAmount(void)
 
     ret = 0;
     mask = sv_FrameMask;
-    if (sv_CheckGoodAmountB((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
+    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
         return 0;
     win = d2_OpenForm(0, 0, "misc\\Messagebox");
     ctrl = d2_GetWinObj(win, 0, io_PrintText(0x1a34, ai_OwnPlayer));
@@ -1807,7 +1806,7 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
                         if (amount != 0) {
                             per = amount / nWorkers;
                             rel = per / 3;
-                            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
+                            if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
                                 for (k = 0; k < n; k++) {
                                     if (rows[k].ch != 0) {
                                         cm_BeginGroup("pay_worker");
@@ -2240,7 +2239,7 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
             if (amount != 0) {
                 per = amount / nWorkers;
                 rel = per / 3;
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
                     for (k = 0; k < n; k++) {
                         if (rows[k].ch != 0) {
                             cm_BeginGroup("pay_worker");
@@ -2457,7 +2456,7 @@ int ai_AskHelperBonus(void)
 
     ret = 0;
     mask = sv_FrameMask;
-    if (sv_CheckGoodAmountB((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
+    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
         return 0;
     win = d2_OpenForm(0, 0, "misc\\Messagebox");
     ctrl = d2_GetWinObj(win, 0, io_PrintText(0x4141, ai_OwnPlayer));
@@ -2651,7 +2650,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
                 if (amount != 0) {
                     per = amount / nWorkers;
                     rel = per / 3;
-                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
+                    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
                         for (i = 0; i < n; i++) {
                             if (rows[i].ch != 0) {
                                 cm_BeginGroup("pay_worker");
@@ -2921,7 +2920,7 @@ void ai_BuyCartWindow(AIBLD *bld)
         } else if (d2_ClickedId == 0 && d2_PointerObj == buyButton) {
             item = kind + 0x134;
             price = (int)gm_ItemPrice(item, 100);
-            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+            if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
                 switch (ls_GetLanguage()) {
                 case 0:
                     txt_Format(text2, 0xd9, price, kind * 2 + 0xc10);
@@ -3163,7 +3162,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             price = 0.0f;
         }
         total = n * price;
-        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
+        if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
             continue;
         if (slot->amount < 0)
             continue;
@@ -3215,7 +3214,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
         else
             price = 0.0f;
         total = n * price;
-        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
+        if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
             continue;
         if (slot->amount < 0)
             continue;
@@ -4308,7 +4307,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                 gm_ClockToDate(&due, (unsigned char *)&date);
                 txt_Format(text3, 0xdd, cost, n, date.day, date.month, date.year);
                 if (sv_MessageBox(text3, 0x101) != 0
-                    && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
+                    && sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
                     cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, owner, cost);
                     for (i = 0; i <= 15; i++) {
                         c = rows[i].cart;
@@ -4684,7 +4683,7 @@ void ai_StorageWindow(AIBLD *bld, int list)
                 choice = ai_NewStorageSlotWindow(store, bld, level, level2);
                 gm_SumListAmounts((void *)((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ai_OwnPlayer);
                 if (choice == 1) {
-                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
+                    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
                         slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x1f40);
                         while (cm_GetSlotState(slot) == 0)
                             sv_PumpNet();
@@ -4709,7 +4708,7 @@ void ai_StorageWindow(AIBLD *bld, int list)
                         }
                     }
                 } else if (choice == 2) {
-                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
+                    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
                         slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x1f40);
                         while (cm_GetSlotState(slot) == 0)
                             sv_PumpNet();
@@ -4737,7 +4736,7 @@ void ai_StorageWindow(AIBLD *bld, int list)
                     }
                 }
             } else if (d2_PointerObj == btn1 && (ai_GameFlags & 0x80) == 0) {
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x3200, ai_OwnPlayer) != 0) {
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], 0x3200, ai_OwnPlayer) != 0) {
                     char text[0x400];
 
                     txt_Format(text, 0x113, 0x3200);
@@ -5015,7 +5014,7 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
                   gm_EquipmentValue((unsigned char *)target, 100) * 0.05f);
     if (ord_DispatchOrder(0x1b, ai_Chars[ai_PlayerId], arg) & 2)
         price /= 2;
-    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
         return 0;
     for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x19); ev != 0; ev = (AIJOB *)he_NextEvent()) {
         if (ev->bldId == target->id) {
@@ -5152,7 +5151,7 @@ int ai_EspionageAmountCB(AICHARREC *ch)
         io_PrintText(0x42b8, price, ch->id);
         if (d2_ClickedId == -1)
             continue;
-        if (d2_PointerObj == buttons[0] && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+        if (d2_PointerObj == buttons[0] && sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
             msg.type = 0x18;
             msg.flags = 2;
             msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
@@ -5216,7 +5215,7 @@ int ai_BeatingCallback(AICHARREC *ch)
             return 0;
         }
     }
-    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
         return 0;
     if (he_NoEvent4bPair((int)ch, (int)ai_Chars[ai_PlayerId]) == 0) {
         txt_Format(buf.text, 0x170b, ch->id);
@@ -5503,7 +5502,7 @@ int ai_BribeAmountCB(AICHARREC *ch)
         if (d2_PointerObj == ok) {
             value = d2_GetObjValue(slider);
             amount = gm_PlayerFactor(value, ai_OwnPlayer);
-            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) == 0)
+            if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) == 0)
                 continue;
             rec = (LCFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
             if (rec != 0)
@@ -6510,7 +6509,7 @@ void ai_RenovationWindow(AIBLD *bld)
                     cm_EndGroup("renovieren");
                     sv_PopRequest = 1;
                 } else {
-                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) == 0)
+                    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) == 0)
                         continue;
                     fin = (LCFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                     if (fin != 0)
@@ -6677,7 +6676,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
                     price = (int)(gm_ItemPrice(rows[i].good, 100) * factor);
                     if (running + built >= type->extensions) {
                         sv_MessageBox(txt_Ptrs[0x17d0], 0);
-                    } else if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+                    } else if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
                         memset(&msg, 0, sizeof(msg));
                         msg.type = 0x1f;
                         msg.flags = 1;
@@ -6789,7 +6788,7 @@ void ai_UpgradeBuilding(AIBLD *bld)
 
         if (sv_MessageBox(text, 0x11) == 0)
             return;
-        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+        if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
             return;
         found = (AIBLD *)gm_FindBuildingById(bldId);
         if ((bld->flags5aw & 0x400) != 0 || found == 0)
@@ -6894,7 +6893,7 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
-            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer),
+            if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer),
                                     ai_OwnPlayer) != 0) {
                 msg.type = 0x21;
                 msg.fromId = -1;

@@ -25,8 +25,6 @@
    Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName reads v2c as the office
    (1 .. 9, gv.c's prevOffice / random) and ai_GraveDeadDescription v30 / nameId as text ids; which texts the
    bases 0x114 / 0x130 / 0x11e / 0x18f (and the office ones 0x253 / 0x27b) name is unknown.
-   Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
-   parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: d3_Time is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
    and the marker update load it in the original's order only through the unit's view d3_Time); its
    owner and the other units declare it plain int.
@@ -357,7 +355,6 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
     int unk4;                /* +0x4 */
     SHOTENTRY e[3];          /* +0x8 */
 } SHOTRESULT;
-#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 char *ai_TutorialStateNames[18] = {  /* 0x6291b4, the names of the tutorial's 18 states (the FT* strings 0x6291fc.. in reverse order); no reader in the image (its users were removed); the name is ours */
@@ -4254,7 +4251,7 @@ void ai_AlchemistCandidates(unsigned char *obj)
 }
 
 char * ahm_OwnerChar();
-int sv_CheckGoodAmount();
+int sv_CheckGoodAmount(char *o, int n, unsigned char t);
 int sv_MessageBox();
 void txt_Format(char *out, int id0, ...);
 int ahm_SendCreateAlchemist();
@@ -4272,7 +4269,7 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
     int slot;
 
     owner = ahm_OwnerChar(obj);
-    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], value, ai_OwnPlayer)) {
+    if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], value, ai_OwnPlayer)) {
         if (owner) {
             sv_MessageBox((int)txt_Ptrs[0x4048], 0x100);
         } else {
@@ -4865,7 +4862,7 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
                 v = gm_PlayerFactor(d2_GetObjValue(field), ai_OwnPlayer);
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
                     ahm_SendAddValue(owner, (float)v / (float)points * share * 0.75f);
                     done = 1;
                     sv_PopRequest = 1;
@@ -5035,7 +5032,7 @@ void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
 void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_ShotTableReset(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
 int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_CannonBuildPanel();
 int he_EventOnBuilding(); int sv_MessageBox();
-int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(); short * gm_PlayerRecord(char *c);
+int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(char *o, int n, unsigned char t); short * gm_PlayerRecord(char *c);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int snd_PlayVoice(int id, int bank, char *text, int var); void sv_CameraFollow();
 int ai_AmountMenu(); int amt_GetKindLevel(int k); int sv_CheckMoney(); void cm_SendMoneyDelta(int a, int b);
 void txt_Format(char *out, int id0, ...); int sv_MessageBox();

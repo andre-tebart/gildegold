@@ -882,7 +882,6 @@ int d2_WinOpenPic(short x, short y, int pic, int win); void d2_SetObjFont(); voi
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 void txt_Format(char *out, int id0, ...);
 int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
-#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original as sv_CheckStockB */
 int gm_IsHomeType();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
@@ -5449,7 +5448,7 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
         if (d2_ClickedId != -1 && !used) {
             if (d2_PointerObj == giveBtn) {
                 amount = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
-                if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], amount, ai_OwnPlayer)) {
+                if (sv_CheckGoodAmount((char *)&lc_CharRecs[ai_PlayerId], amount, ai_OwnPlayer)) {
                     unsigned int flags = giver->powerFlags | 0x20;
 
                     cm_BeginGroup("gift");
@@ -5818,7 +5817,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
             }
             if (i < 3) {
                 price = prices[i];
-                if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], price, ai_OwnPlayer)) {
+                if (sv_CheckGoodAmount((char *)&lc_CharRecs[ai_PlayerId], price, ai_OwnPlayer)) {
                     rounds = 0;
                     p = (AICHARREC *)gm_FindChar(partner);
                     left = picks[i] - level;
@@ -6517,7 +6516,7 @@ int ai_MedicusHandler(AICHARREC *ch, LCORDMSG *m)
     do {
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == yes) {
-                if (sv_CheckMoney(ch, 2) != 0 && sv_CheckGoodAmountB((char *)ch, price, ai_OwnPlayer) != 0) {
+                if (sv_CheckMoney(ch, 2) != 0 && sv_CheckGoodAmount((char *)ch, price, ai_OwnPlayer) != 0) {
                     cm_SendMoneyDelta(ch->netId, -2);
                     txt_Format(text, 0x1d3c);
                     if ((short)util_Random(2) != 0) {
@@ -6604,7 +6603,7 @@ int ai_DivorceDialog(AICHARREC *ch, LCORDMSG *m)
     do {
         if (d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
-                if (sv_CheckMoney(ch, 8) != 0 && sv_CheckGoodAmountB((char *)ch, price, ai_OwnPlayer) != 0) {
+                if (sv_CheckMoney(ch, 8) != 0 && sv_CheckGoodAmount((char *)ch, price, ai_OwnPlayer) != 0) {
                     cm_SendMoneyDelta(ch->netId, -8);
                     cm_BeginFieldBlock((char *)ch, ch->netId);
                     cm_AddFieldValue(4, 1, 0x5c, &none);
@@ -7755,7 +7754,7 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
     do {
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
-                if (sv_CheckMoney(me, 4) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
+                if (sv_CheckMoney(me, 4) != 0 && sv_CheckGoodAmount((char *)me, price, ai_OwnPlayer) != 0) {
                     int r1, r2, o1, o2;
 
                     r1 = util_RandomU(0x1e) + 3;
@@ -8176,7 +8175,7 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
                 n = 0;
                 skill = me->skills[4];
                 faith = me->faith;
-                if (sv_CheckMoney(me, 6) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
+                if (sv_CheckMoney(me, 6) != 0 && sv_CheckGoodAmount((char *)me, price, ai_OwnPlayer) != 0) {
                     cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
                     cm_SendMoneyDelta(me->netId, -6);
                     /* @original: the loop's strength-reduced pointer is based on c->kind (ai_Chars+2: cmp byte

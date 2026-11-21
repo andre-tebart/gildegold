@@ -37,7 +37,7 @@ void sv_UnregisterTick(void);                                           /* 0x520
 void sv_ResetScreenClip(void);                                          /* 0x520f20 */
 int sv_CheckMoney(char *o, int n);                                      /* 0x520f90 */
 int sv_CheckCharacterFlag(int id);                                      /* 0x520fe0 */
-int sv_CheckGoodAmount(char *o, int n, unsigned t);                     /* 0x521040 */
+int sv_CheckGoodAmount(char *o, int n, unsigned char t);                     /* 0x521040 */
 int sv_CheckStock(short *p, int stock, int n, unsigned t);              /* 0x5210a0 */
 int sv_MessageBox(int text, unsigned flags);                            /* 0x521150 */
 int sv_MessageBoxGreen(int a, int b, unsigned flags);                   /* 0x521410 */

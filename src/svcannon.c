@@ -331,7 +331,6 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
     int unk4;                /* +0x4 */
     SHOTENTRY e[3];          /* +0x8 */
 } SHOTRESULT;
-#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 extern int ai_TutorialChapterOn[5];
 extern int (*ai_TutorialChapterInit[5])(void);
 extern int ai_TutorialBanks[6];
@@ -401,7 +400,7 @@ struct G5CH; struct G9REC; struct VFSFILE;
 int sv_RunFrame(int cb, unsigned mask);
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_MessageBoxGreen(); void sv_ValueBar();
 char * ahm_OwnerChar();
-int sv_CheckGoodAmount();
+int sv_CheckGoodAmount(char *o, int n, unsigned char t);
 int sv_MessageBox();
 void txt_Format(char *out, int id0, ...);
 int ahm_SendCreateAlchemist();
@@ -1589,7 +1588,7 @@ int ai_CanSpyOn(AIBLD *rec)
     return r == 0;
 }
 
-int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(); short * gm_PlayerRecord(char *c);
+int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(char *o, int n, unsigned char t); short * gm_PlayerRecord(char *c);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int snd_PlayVoice(int id, int bank, char *text, int var); void sv_CameraFollow();
 
 /* 0x581020, the cabinet's spy window for the building rec: the form "Locations\Domizil\kabinett_spy" (centred,
@@ -1597,7 +1596,7 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_Pic
    three steps (txt 0x4021 .. 0x4023) choosing the payment: 1%, 1.5% or 2% of the player's worth (gm_GetWorth), and
    the two buttons from the text 0x4024 on (pay / leave). Each frame prints the texts 0x401e / 0x401c and 0x401f
    with the chosen amount; the right mouse button or the second button leaves (sv_PopRequest). Pay: when the player
-   has the money (sv_CheckGoodAmountB) and the building may be spied on (ai_CanSpyOn), the amount is added to the
+   has the money (sv_CheckGoodAmount) and the building may be spied on (ai_CanSpyOn), the amount is added to the
    player record's spyPaid and moved away from the player (cm_SendMoveGoodsUnchecked), the message 0x99 goes to the
    building's owner (flags 2, the game time, the building id, the step and ai_PickActionBuilding's pick of the
    player's character), its slot is waited for, the voice "KOMMENTARE" plays and the window leaves. At the end the
@@ -1648,7 +1647,7 @@ void ai_CabinetSpyWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
                     AIMSG msg;
                     int pick;
                     LARGE_INTEGER mask;
@@ -1696,7 +1695,7 @@ int ai_AmountMenu(); int amt_GetKindLevel(int k); int sv_CheckMoney(); void cm_S
    (gm_GetWorth) and take 1, 1.5 or 2 times the office level of the target (amt_GetKindLevel (officeKind) / 3 + 2)
    in money (sv_CheckMoney); the form "Locations\Domizil\kabinett_spy" with the title txt 0x4010, the two buttons
    from the text 0x4014 on (pay / leave), each frame the texts 0x400e / 0x400c (the target) and 0x400f (the amount
-   and the cost). Pay: when the player has both (sv_CheckGoodAmountB, sv_CheckMoney) and the building may be spied on
+   and the cost). Pay: when the player has both (sv_CheckGoodAmount, sv_CheckMoney) and the building may be spied on
    (ai_CanSpyOn), the cost is added to the player record's spyPaid and moved away (cm_SendMoveGoodsUnchecked), the
    amount taken off (gm_SendMoneyDelta), the message 0x99 goes to the building's owner (flags 2, the game time,
    the target's netId, 2, the step, the target's own building / building, else ai_PickActionBuilding's pick), its
@@ -1766,7 +1765,7 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost[i], ai_OwnPlayer) != 0 &&
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost[i], ai_OwnPlayer) != 0 &&
                     sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
@@ -1932,7 +1931,7 @@ void txt_Format(char *out, int id0, ...); int sv_MessageBox();
    refuses gets the message box of the text 0x4030 (the target) and return, none -> return. The price is 2% of
    the worth of the player and the target together (gm_GetWorth) plus 0x10 in money; the texts 0x402e / 0x402b
    (the price, the target) and the two buttons from the text 0x402f on (pay / leave). Pay: when the player has both
-   (sv_CheckGoodAmountB, sv_CheckMoney 0x10) and the building may be spied on (ai_CanSpyOn), the price is added to
+   (sv_CheckGoodAmount, sv_CheckMoney 0x10) and the building may be spied on (ai_CanSpyOn), the price is added to
    the player record's spyPaid and moved away (cm_SendMoveGoodsUnchecked), 0x10 taken off (gm_SendMoneyDelta), the
    message 0x99 goes to the building's owner (flags 2, the game time, the target's netId, 4, the target's own
    building / building, else ai_PickActionBuilding's pick), its slot is waited for, the voice "KOMMENTARE" plays
@@ -1986,7 +1985,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
+                if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
                     sv_CheckMoney(ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn(rec) != 0) {
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
