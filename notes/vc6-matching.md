@@ -3433,6 +3433,11 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   reused n's register: `imul esi,ebp`) is no `got` local but `n * price` written at each use (a CSE temp in
   eax), and the accumulators' order decides which loaded slot lands in the loop's register (`remaining -=`
   first; `mov esi,edi` behind the stores): a 36-order round over both loops, 26 -> byte.
+- **A running coordinate whose init store stands behind the loop guard's `je`** (`mov [y],esi` after the
+  guard, `add esi,step` where the counter is incremented, in a slot of its own): no `y` local, but the
+  expression of the counter written at each use (`d2_WinOpenSlider(0x140, n * step + top, ..)` with `n++` in
+  the same arm): VC6 strength-reduces it into a temporary initialised in the preheader. Every placement of a
+  source `y = top;` stores before the guard (ai_TechEffectsWindow, 2 -> byte).
 - **The field of a copied struct in a callee-saved register, the copy's store of it missing**: compute in the
   field itself (`clk = ai_Time; if (..) clk.year = ..; clk.year -= ..;`), not in an int local stored into it
   afterwards (gm_BirthDate byte).
