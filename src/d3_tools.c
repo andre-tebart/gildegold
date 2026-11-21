@@ -1438,34 +1438,6 @@ void d3t_DrawRain(D3TRAIN *rain)
     d3_EndScene();
 }
 
-typedef struct D3TSNOWFLAKE {        /* 0x28 bytes */
-    D3VECTOR4 pos;                   /* w = size */
-    float windScale;                 /* 0x10, weight of the wind velocity */
-    float fallScale;                 /* 0x14, weight of the fall velocity */
-    float sx1, sy1;                  /* 0x18, projected top left */
-    float sx2, sy2;                  /* 0x20, projected bottom right */
-} D3TSNOWFLAKE;
-
-typedef struct D3TSNOW {             /* 0x94 bytes */
-    int count;
-    int capacity;
-    int oldcount;
-    int newcount;
-    int spare10;                     /* 0x10, 5 at creation; never read (no reader in the binary: DrawSnow / UpdateSnow / FreeSnow) */
-    int spare14[9];                  /* 0x14, 0 at creation; never read */
-    D3TSNOWFLAKE *flakes;            /* 0x38 */
-    float oldwindx, oldwindz;
-    float windx, windz;              /* 0x44 */
-    float newwindx, newwindz;
-    float peak;                      /* 0x54, the largest SetSnow command 3 value * 2500 seen; never read */
-    int spare58;                     /* 0x58, -1 at creation; never read */
-    int time5c;                      /* last update */
-    int time60, time64, time68, time6c;
-    D3VECTOR4 campos;                /* 0x70 */
-    D3VECTOR4 cam04c;                /* 0x80 */
-    D3TEXHANDLE *Texture;            /* 0x90 */
-} D3TSNOW;
-
 /* 0x4148f0, allocates and initialises the snow system for count flakes: the D3TSNOW and its flake
    list, counts, wind vectors and times from d3_Time, the saved camera pose, per flake a random
    position in [-1,1], size 0.75..1.25 and wind / fall scales 0.025..0.035, and loads the

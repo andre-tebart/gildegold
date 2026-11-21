@@ -11,9 +11,36 @@ struct D3TMAP;
 struct D3HQUERY;
 struct D3ANIM;
 struct D3TRAIN;
-struct D3TSNOW;
 struct D3PARTSYS;
 struct D3COLOR;
+
+typedef struct D3TSNOWFLAKE {        /* 0x28 bytes */
+    D3VECTOR4 pos;                   /* w = size */
+    float windScale;                 /* 0x10, weight of the wind velocity */
+    float fallScale;                 /* 0x14, weight of the fall velocity */
+    float sx1, sy1;                  /* 0x18, projected top left */
+    float sx2, sy2;                  /* 0x20, projected bottom right */
+} D3TSNOWFLAKE;
+
+typedef struct D3TSNOW {             /* 0x94 bytes, the snow system (d3t_CreateSnow; sv.c's d3t_Snow) */
+    int count;
+    int capacity;
+    int oldcount;
+    int newcount;
+    int spare10;                     /* 0x10, 5 at creation; never read (no reader in the binary: DrawSnow / UpdateSnow / FreeSnow) */
+    int spare14[9];                  /* 0x14, 0 at creation; never read */
+    D3TSNOWFLAKE *flakes;            /* 0x38 */
+    float oldwindx, oldwindz;
+    float windx, windz;              /* 0x44 */
+    float newwindx, newwindz;
+    float peak;                      /* 0x54, the largest SetSnow command 3 value * 2500 seen; never read */
+    int spare58;                     /* 0x58, -1 at creation; never read */
+    int time5c;                      /* last update */
+    int time60, time64, time68, time6c;
+    D3VECTOR4 campos;                /* 0x70 */
+    D3VECTOR4 cam04c;                /* 0x80 */
+    D3TEXHANDLE *Texture;            /* 0x90 */
+} D3TSNOW;
 
 int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags); /* 0x411680, starts an animation that moves the object to pos and turns it to dir */
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); /* 0x411860, d3t_PlaceObject with the target position and direction given as */

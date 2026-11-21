@@ -11709,7 +11709,6 @@ int he_RandomTransporter(char *obj)
         return 0;
     return list[util_Random(list[0x20])];
 }
-#define d3t_SnowP (*(int **)&d3t_Snow)  /* 0x76061c, d3t_Snow (sv.c: int) as the pointer it holds: the snow system (d3t_CreateSnow), its first int read as the snow's strength */
 /* 0x5552c0, sets the speed factor (+0x1a0 of the record at +0x3b of `p`) from the event's value +0xc0: * the first constant when 0x76061c points to a value above 100, else * the second when 0x760618 points above 200, else unchanged; a second stage (+0xf1 == 2) multiplies it once more */
 
 void he_SetCartSpeed(int ev, int p)
@@ -11718,7 +11717,7 @@ void he_SetCartSpeed(int ev, int p)
     AIOBJ *cart = (AIOBJ *)p;
     CHARACTER *ch = (CHARACTER *)cart->sceneObj;
 
-    if (d3t_SnowP != 0 && *d3t_SnowP > 0x64)
+    if (d3t_Snow != 0 && d3t_Snow->count > 0x64)
         ch->walkSpeed = (float)(t->speed * 0.7);
     else if (d3t_Rain != 0 && *d3t_Rain > 0xc8)
         ch->walkSpeed = (float)(t->speed * 0.8);
@@ -12220,7 +12219,7 @@ void he_RunTransport(int ev)
             b = (AIBLD *)gm_FindBuildingById(o->bldId);
             if (b != 0)
                 chance = gm_BuildingSkill(b, 2, 1) + 100.0f;
-            if (d3t_SnowP != 0 && *d3t_SnowP > 100)
+            if (d3t_Snow != 0 && d3t_Snow->count > 100)
                 chance -= 15.0f;
             else if (d3t_Rain != 0 && *d3t_Rain > 200)
                 chance -= 10.0f;

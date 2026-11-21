@@ -2026,7 +2026,7 @@ extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant 
 extern int sv_WinterWeather;  /* 0x760610 */
 extern int sv_WeatherHour;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
-extern int d3t_Snow;  /* 0x76061c */
+extern struct D3TSNOW *d3t_Snow;  /* 0x76061c */
 extern int sv_SkyPhase;  /* 0x760464 */
 extern int sv_ThunderFog;  /* 0x6f2370 */
 extern struct D3SKYLAYER *d3_SkyLayers[6];  /* 0x760620 */
@@ -6906,7 +6906,7 @@ void sv_UpdateWeather(void)
 
     sv_WeatherHour = ai_Time.hour;
     if (d3t_Snow != 0)
-        d3t_SetSnow((struct D3TSNOW *)d3t_Snow, 1, 1, sv_Weather.clouds[sv_WeatherHour], 1000);
+        d3t_SetSnow(d3t_Snow, 1, 1, sv_Weather.clouds[sv_WeatherHour], 1000);
     if (d3t_Rain != 0) {
         if (d3t_Snow != 0) {
             if (sv_Weather.clouds[sv_WeatherHour] & 1)
@@ -6924,7 +6924,7 @@ void sv_UpdateWeather(void)
     if (c <= (int)sv_Weather.clouds[(sv_WeatherHour + 1) % 24])
         c = sv_Weather.clouds[(sv_WeatherHour + 1) % 24];
     if (d3t_Snow != 0)
-        d3t_SetSnow((struct D3TSNOW *)d3t_Snow, 1, 2, (int)(-wx * (double)c * 2.0), (int)(-wy * (double)c * 2.0), 1000);
+        d3t_SetSnow(d3t_Snow, 1, 2, (int)(-wx * (double)c * 2.0), (int)(-wy * (double)c * 2.0), 1000);
     if (d3t_Rain != 0)
         d3t_SetRain((struct D3TRAIN *)d3t_Rain, 1, 2, (int)(-wx * (double)c * 0.5), (int)(-wy * (double)c * 0.5), 1000);
     if (d3_Sky != 0) {
@@ -7403,7 +7403,7 @@ extern float sv_SkyScale;
 extern int sv_SkyPhase;
 extern int sv_WinterWeather;
 extern int sv_WeatherHour;
-extern int d3t_Snow;
+extern struct D3TSNOW *d3t_Snow;
 extern struct D3SKYLAYER *d3_SkyLayers[6];
 extern int d2_HitWindow;
 extern struct D3RECT d2_DirtyRect;         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
@@ -7642,7 +7642,7 @@ int sv_SkyPhase;  /* 0x760464 */
 SVCLIMATE sv_Climate;  /* 0x760480, sv_CloudChance, sv_SeasonClimate (0x760484) and sv_Weather (0x760488) */
 int sv_WinterWeather;  /* 0x760610 */
 int sv_WeatherHour;  /* 0x760614 */
-int d3t_Snow;  /* 0x76061c */
+struct D3TSNOW *d3t_Snow;  /* 0x76061c, the snow system (d3t_CreateSnow) */
 struct D3SKYLAYER *d3_SkyLayers[6];  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20];  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[128];  /* 0x761f40, the status line text */
