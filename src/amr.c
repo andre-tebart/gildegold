@@ -722,14 +722,14 @@ int ai_PlanWorth(AIPLAN *q)
 /* 0x4941b0, the AI accuser's answer to the trial's torture question (request kind 1 of the trial's ask-AI callback
    cm_TrialAskAI): a coin toss, 1 to torture the accused */
 
-int ai_DecideTorture(void)
+int ai_DecideTorture(AIPLAN *q)
 {
     return util_RandomU(2) != 0;
 }
 /* 0x4941d0, the AI accuser's pick of the torture instrument (request kind 2 of cm_TrialAskAI): a random 0 .. 6, the
    index of the seven instruments (plan.instrument) */
 
-int ai_DecideTortureInstrument(void)
+int ai_DecideTortureInstrument(AIPLAN *q)
 {
     return util_RandomU(7);
 }
