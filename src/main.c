@@ -267,7 +267,6 @@ void main_PlayOutro(void);
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void ai_ClearTurnTable(void);           /* 0x587de0, sv_t.c: not in sv_t.h (adding it there moves sv_t's drafts ai_TutorialInitChapter3 / ai_TutorialInitChapter5) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-#define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
    "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0, an LSHEADER: +5 the name, from which the city point is created (ai_CreateCityPoint, its dummy "dummy_<NAME>"), +0x30 slotByte the player limit; diff[i] = limit - players (0x62489c)),
@@ -700,7 +699,7 @@ int main_OpenEngine(void)
     d2_ClearScreen();
     f = d2_OpenForm(0, 0, "Misc\\Loading_main");
     d2_PlaceWindow(d2_Views[f].wins[0], 3);
-    d2_MoveObjS(0, d2_ScreenH - d2_Wins[d2_Views[f].wins[1]].h - 0x30, d2_Wins[d2_Views[f].wins[1]].parent);
+    d2_MoveObj(0, d2_ScreenH - d2_Wins[d2_Views[f].wins[1]].h - 0x30, d2_Wins[d2_Views[f].wins[1]].parent);
     d2_PlaceWindow(d2_Views[f].wins[1], 1);
     io_PrintText("$ADie Gilde - Gold Edition - Version 2.05$X");
     net_Connect(0, 0);
@@ -2816,7 +2815,7 @@ void main_LoadingScreen(void)
     else
         id = d2_OpenForm(0, 0, "Misc\\Loading_game");
     init_StatusForm = id;
-    d2_MoveObjS(0, d2_ScreenH - d2_Wins[d2_Views[id].wins[0]].h - 0x30, d2_Wins[d2_Views[id].wins[0]].parent);
+    d2_MoveObj(0, d2_ScreenH - d2_Wins[d2_Views[id].wins[0]].h - 0x30, d2_Wins[d2_Views[id].wins[0]].parent);
     d2_PlaceWindow(d2_Views[init_StatusForm].wins[0], 1);
     d2_SetForm(init_StatusForm, 1);
     d2_WinOpenSlider(0, 0, 0x246, 0, 0x246, 0x83, 0x42, d2_LastWindow);

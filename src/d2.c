@@ -42,7 +42,7 @@
 #include "ts_texture.h"
 #include "vfs.h"
 #include "shp.h"
-#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
+#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit calls it with promoted int coordinates (movsx pushes), as an unprototyped call does: the original unit had no d2_MoveObj prototype in scope there (d2_CenterObj stands above the definition); the short definition is the right one (int x, int y: 20 -> 37 ins), so no one prototype serves both */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3OBJECT *d3s_Lights[4];

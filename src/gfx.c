@@ -32,7 +32,7 @@
 #include "sblib.h"
 #include "sv.h"
 #include "d2.h"
-#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
+#define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit calls it with promoted int coordinates (movsx pushes), as an unprototyped call does: the original unit had no d2_MoveObj prototype in scope there (d2_CenterObj stands above the definition); the short definition is the right one (int x, int y: 20 -> 37 ins), so no one prototype serves both */
 
 /* 0x476b90, adds amount to the item list drawn next to the pointer: the entry of picture id (first match, else
    the first free one); no effect when amount is 0 or the list is full (6 entries) */
