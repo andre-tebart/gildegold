@@ -1551,10 +1551,10 @@ int cm_OrderConquer(char *rec, char *c, char *tgt)
 }
 /* 0x4d0380, an order kind 6 (walk to the goods store) for the character c: its entry (cm_CutEntrySlot, b0c cleared
    there) is copied with state 6, the name of the object tgt (dummy), the ground cell of tgt's point (d3_GetHeightAt's x / z)
-   as storeX / storeZ (a is not read), and sent as message 0x50 (cm_SendCutEntry). -1 when the point is not on the ground or the character c is in a job
-   (AICHAR.v1ac). */
+   as storeX / storeZ, and sent as message 0x50 (cm_SendCutEntry, whose result it returns). -1 when the point is not on
+   the ground or the character c is in a job (AICHAR.v1ac). */
 
-int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
+int cm_OrderWare(char *rec, char *c, char *tgt)
 {
     D3SM *hmap = (D3SM *)d3_DefaultScene->hmap;
     D3OBJECT *o = (D3OBJECT *)tgt;
@@ -1576,7 +1576,7 @@ int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
     strcpy(order.dummy, tgt);
     order.storeX = (unsigned char)x;
     order.storeZ = (unsigned char)z;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
+    return cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
    its own (cm_BestCellNear, formation type 4): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 7 and
@@ -1621,8 +1621,6 @@ void cm_OrderWait(char *rec, char *c)
     cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 
-#define cm_OrderWare3 ((int (*)(char *, char *, char *))cm_OrderWare)
-
 /* 0x4d0570, the order of a mouse click (dm_L.lup) for the character c of the cutscene record rec (CMCUTINFO): on a
    character's body (D3OBJECT.kind 2) an attack (cm_OrderAttack) when it is not in c's building or shift is down; on
    "sp_ESCAPE" cm_OrderEscape, on "sp_CONQUER.." cm_OrderConquer, on "WARE.." cm_OrderWare; with nothing picked the ground
@@ -1654,7 +1652,7 @@ char cm_OrderClick(char *rec, char *c)
                 cm_OrderConquer(rec, c, (char *)ai_ClickedObject);
                 ret = 1;
             } else if (strncmp((char *)ai_ClickedObject, "WARE", 4) == 0) {
-                cm_OrderWare3(rec, c, (char *)ai_ClickedObject);
+                cm_OrderWare(rec, c, (char *)ai_ClickedObject);
                 ret = 1;
             }
         } else {
@@ -3044,7 +3042,7 @@ void cm_CarryOutOrder(char *rec, char *c)
         o = cm_NearestWareObject(c);
         if (o == 0)
             return;
-        cm_OrderWare3(rec, c, o);
+        cm_OrderWare(rec, c, o);
         return;
     case 2:
         o = (char *)cm_NearestConquerPoint((AICHAR *)c);
