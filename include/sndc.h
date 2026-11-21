@@ -6,7 +6,7 @@
 #define UNK_40FFC0_H
 
 struct D3OBJECT;
-struct SNDHANDLE;
+struct SBSAMPLE;
 #include "evt.h"
 
 struct SBBANK;

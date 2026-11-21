@@ -218,7 +218,7 @@ void ch_SaveGround(struct D3HMAP *hmap);                                        
 
 /* ---- 0x404360..0x405810 (worker ch2): action queue, camera presets, ground map ---- */
 struct D3OBJECT;
-struct SNDHANDLE;
+struct SBSAMPLE;
 #include "d3_anim.h"
 #include "d3_sm.h"
 
@@ -540,7 +540,7 @@ typedef struct CHSLOT {             /* D3ANIMSLOT as the walk code sees it */
 extern char ch_MarkWalkErrors;           /* 0x631058, marks a failed walk animation on the character (a debug switch, always 0) */
 extern int ch_SndLib;               /* 0x63105c, sound library for step sounds */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                               /* 0x426030 */
-int d3snd_PlayAt(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);                    /* 0x417e30 */
+int d3snd_PlayAt(struct SBSAMPLE *snd, struct D3OBJECT *obj, int volume, float range);                    /* 0x417e30 */
 
 int ch_InitWalk(CHACTION *a, D3SM *h);                                                  /* 0x408690 */
 void ch_WalkSound(CHACTION *a, int ground);                                             /* 0x408ab0 */

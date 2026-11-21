@@ -29,14 +29,6 @@ typedef struct SBVAR {              /* a loaded variation: header, count SBDATAs
     int len;                        /* 0x08 */
 } SBVAR;
 
-typedef struct SBENTRY {            /* 0x40 bytes */
-    int offset;                     /* file offset of the data */
-    char name[50];                  /* 0x04 */
-    char type;                      /* 0x36, 1 sample (SBDATA), 2 variation (SBVAR) */
-    void *data;                     /* 0x38, NULL = not loaded */
-    int used;                       /* 0x3c, time of last use */
-} SBENTRY;
-
 typedef struct SBBANK {             /* 0x144 bytes, also the file header */
     char name[50];
     char path[256];                 /* 0x32 */

@@ -13503,7 +13503,7 @@ void he_RunSabotage(int ev)
             if (x->blasts == 0 && d3_CurrentScene == 0) {
                 snd = sb_GetSample(0, "Explosion");
                 if (snd != 0)
-                    d3snd_PlayAt((struct SNDHANDLE *)snd, (D3OBJECT *)b->object, 0x6b, 12200.0f);
+                    d3snd_PlayAt(snd, (D3OBJECT *)b->object, 0x6b, 12200.0f);
                 scale = 3.0f;
             }
             d3if_SelectScene(0, 1);
@@ -18007,14 +18007,14 @@ void he_RunBurn(AIJOB *ev)
                 if (x->state == 1) {
                     smp = sb_GetSample(0, "Brand_l");
                     if (smp != 0) {
-                        snd = d3snd_Attach((struct SNDHANDLE *)smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
+                        snd = d3snd_Attach(smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
                         if (snd != 0)
                             d3snd_Play(snd, 0, 0, 0);
                     }
                 } else if (x->state == 0) {
                     smp = sb_GetSample(0, "Stichflamme_s");
                     if (smp != 0)
-                        d3snd_PlayAt((struct SNDHANDLE *)smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
+                        d3snd_PlayAt(smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
                     if (b->owner == ai_PlayerId) {
                         snd_QueueVoice(-8, 0, "Brand_Betroffen", 0, 100);
                         if (x->news != 0) {

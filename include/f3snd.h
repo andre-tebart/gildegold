@@ -8,7 +8,7 @@ struct D3VECTOR;
 #define F3SND_H
 struct D3SOUND;
 struct MSXTRACK;
-struct SNDHANDLE;
+struct SBSAMPLE;
 
 typedef struct G16SMPENTRY {            /* SBENTRY in sblib.c: the file entry of a sample */
     int offset;                         /* 0x00, file offset of the data */
@@ -165,7 +165,7 @@ float util_RandomF(void);                                                       
 struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
-struct D3SOUND *d3snd_Attach(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
+struct D3SOUND *d3snd_Attach(struct SBSAMPLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
 void mem_Free(void *p);                                                          /* 0x422620, mem.c */
 

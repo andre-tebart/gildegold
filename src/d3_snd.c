@@ -14,25 +14,6 @@
 #include <d3d.h>
 #include "d3.h"
 #include "d3_snd.h"
-#define sb_SetRestartC ((void (*)(char *, int))sb_SetRestart)  /* 0x426170 (sblib.c: SBSAMPLE *): this unit's char * view of the sample */
-
-/* Sound library (0x426030..0x427390), file not identified yet. */
-typedef struct SNDENTRY {
-    int unk00;
-    char name[0x32];                /* 0x04 */
-} SNDENTRY;
-
-typedef struct SNDHANDLE {
-    int unk00;
-    SNDENTRY *entry;                /* 0x04 */
-    char pad08[0x4];
-    int loops;                      /* 0x0c, copy of D3SOUND.loops */
-    char pad10[0x4];
-    unsigned int flags;             /* 0x14, bit 3 set when the sound is let go */
-    int delay;                      /* copy of D3SOUND.delay */
-    char pad1c[0x8];
-    int volume;                     /* 0x24, SBSAMPLE.volume: set by sb_SetVolume, 0 = inaudible */
-} SNDHANDLE;
 
 #include "sblib.h"
 #include "d3_engine.h"
@@ -40,15 +21,13 @@ typedef struct SNDHANDLE {
 #include "d3_vec.h"
 #include "mem.h"
 #include "d3_pose.h"
-#define sb_PlayH ((void (*)(SNDHANDLE *, int, int))sb_Play)  /* 0x427110 (sblib.c: int (SBSAMPLE *, int, int)): @original d3_snd.c sees a SNDHANDLE pointer and void */
-#define sb_SetPanH ((void (*)(SNDHANDLE *, int))sb_SetPan)  /* 0x4272f0 (sblib.c: SBSAMPLE *): this unit's SNDHANDLE view of the sample, 0..127 */
 
 
 #define D3SND_INCH (1.0 / 39.37)            /* the engine works in inches */
 
 typedef struct D3SOUND {            /* 0x54 bytes, d3snd_Max of them at d3snd_List */
     char name[0x34];                /* 0x00, sample name */
-    SNDHANDLE *snd;                 /* 0x34 */
+    SBSAMPLE *snd;                 /* 0x34 */
     D3OBJECT *obj;                  /* 0x38, NULL = free slot */
     int idle;                       /* 0x3c, updates since the sound stopped */
     int volume;                     /* 0x40, at distance 0 */
@@ -92,15 +71,15 @@ void d3snd_Exit(void)
 D3SOUND *d3snd_Alloc(void);                                             /* 0x417800 */
 
 /* 0x417710, attaches an opened sound to obj */
-D3SOUND *d3snd_Attach(SNDHANDLE *snd, D3OBJECT *obj, int volume, float range)
+D3SOUND *d3snd_Attach(SBSAMPLE *snd, D3OBJECT *obj, int volume, float range)
 {
     D3SOUND *s = NULL;
 
     if (snd && obj && !obj->sound) {
         s = d3snd_Alloc();
-        if (s && snd->entry) {
-            sb_SetRestartC((char *)snd, 1);
-            strncpy(s->name, snd->entry->name, 0x32);
+        if (s && snd->info) {
+            sb_SetRestart(snd, 1);
+            strncpy(s->name, snd->info->name, 0x32);
             s->obj = obj;
             obj->sound = s;
             s->snd = snd;
@@ -122,7 +101,7 @@ void d3snd_Detach(D3SOUND *s)
     if (s->snd) {
         sb_Stop(s->snd, 0);
         s->snd->flags |= 8;
-        sb_SetRestartC((char *)s->snd, 0);
+        sb_SetRestart(s->snd, 0);
         s->snd = NULL;
     }
     if (s->obj) {
@@ -162,7 +141,7 @@ void d3snd_Update(void)
                 sb_Stop(d3snd_List[i].snd, 0);
                 d3snd_List[i].snd->flags |= 8;
                 if (!d3snd_List[i].hold) {
-                    sb_SetRestartC((char *)d3snd_List[i].snd, 0);
+                    sb_SetRestart(d3snd_List[i].snd, 0);
                     d3snd_List[i].snd = NULL;
                 }
             }
@@ -175,7 +154,7 @@ void d3snd_Update(void)
                     if (d3snd_List[i].loops)
                         d3snd_Detach(&d3snd_List[i]);
                     else {
-                        sb_SetRestartC((char *)d3snd_List[i].snd, 0);
+                        sb_SetRestart(d3snd_List[i].snd, 0);
                         d3snd_List[i].snd->flags |= 8;
                         d3snd_List[i].snd = NULL;
                     }
@@ -219,7 +198,7 @@ void d3snd_UpdatePan(D3SOUND *s)
         rel.x = pos.x - d3_Camera->pos.x;
         rel.y = pos.y - d3_Camera->pos.y;
         rel.z = pos.z - d3_Camera->pos.z;
-        sb_SetPanH(s->snd, (int)(sin(d3_VecAngle((D3VECTOR *)&rel, (D3VECTOR *)&dir)) * 63.5 + 63.0));
+        sb_SetPan(s->snd, (int)(sin(d3_VecAngle((D3VECTOR *)&rel, (D3VECTOR *)&dir)) * 63.5 + 63.0));
     }
 }
 /* 0x417b10, volume from the distance to the camera; opens the sound when it gets audible */
@@ -256,21 +235,21 @@ void d3snd_UpdateVolume(D3SOUND *s)
             else
                 d3snd_Play(s, 0, 0, 0);
         } else {
-            s->snd = (SNDHANDLE *)sb_GetSample(0, s->name);
+            s->snd = sb_GetSample(0, s->name);
             if (!s->snd)
                 return;
-            sb_SetRestartC((char *)s->snd, 1);
+            sb_SetRestart(s->snd, 1);
             s->snd->loops = s->loops;
             s->snd->delay = s->delay;
             sb_SetVolume(s->snd, vol);
-            sb_SetLoops((struct SBSAMPLE *)s->snd,s->loops);
+            sb_SetLoops(s->snd,s->loops);
             d3snd_Play(s, 0, s->loops, s->delay);
         }
     } else if (s->snd) {
         sb_SetVolume(s->snd, vol);
         sb_Stop(s->snd, 0);
         if (!s->hold) {
-            sb_SetRestartC((char *)s->snd, 0);
+            sb_SetRestart(s->snd, 0);
             s->snd = NULL;
         }
     }
@@ -283,19 +262,19 @@ void d3snd_Play(D3SOUND *s, int a, int loops, int delay)
 
     if (!s || !s->snd)
         return;
-    if (!s->snd->entry) {
+    if (!s->snd->info) {
         sprintf(buf, "Entry-Handle missing for %s", s->name);
         sprintf(buf, "3dSound-Handle is attached to %s", s->obj->name);
         return;
     }
     s->snd->loops = loops;
     s->loops = loops;
-    sb_SetLoops((struct SBSAMPLE *)s->snd,loops);
+    sb_SetLoops(s->snd,loops);
     s->delay = delay;
     if (!s->hold)
-        sb_PlayH(s->snd, a, delay);
+        sb_Play(s->snd, a, delay);
     else
-        sb_Resume((struct SBSAMPLE *)s->snd);
+        sb_Resume(s->snd);
     s->idle = 0;
 }
 /* 0x417db0, stops the slot's sound with the given fade */
@@ -330,7 +309,7 @@ int d3snd_IsPlaying(D3SOUND *s)
 }
 /* 0x417e30, plays snd once at obj's position without attaching it */
 
-int d3snd_PlayAt(SNDHANDLE *snd, D3OBJECT *obj, int volume, float range)
+int d3snd_PlayAt(SBSAMPLE *snd, D3OBJECT *obj, int volume, float range)
 {
     D3SOUND s;
 
@@ -345,7 +324,7 @@ int d3snd_PlayAt(SNDHANDLE *snd, D3OBJECT *obj, int volume, float range)
         d3snd_UpdatePan(&s);
         d3snd_UpdateVolume(&s);
         if (snd->volume) {
-            sb_PlayH(snd, 0, 0);
+            sb_Play(snd, 0, 0);
             return 1;
         }
     }
@@ -425,11 +404,11 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[0])) {
             s = &d3sndw_Snd[0];
             if (d3sndw_Snd[0].snd)
-                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
-            d3sndw_Snd[0].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
-            if (d3sndw_Snd[0].snd && d3sndw_Snd[0].snd->entry) {
-                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 1);
-                strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->entry->name, 0x32);
+                sb_SetRestart(d3sndw_Snd[0].snd, 0);
+            d3sndw_Snd[0].snd = sb_GetSample(0, d3sndw_Names[type]);
+            if (d3sndw_Snd[0].snd && d3sndw_Snd[0].snd->info) {
+                sb_SetRestart(d3sndw_Snd[0].snd, 1);
+                strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->info->name, 0x32);
                 *slot = 0;
             } else
                 s = NULL;
@@ -439,11 +418,11 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         } else if (!d3snd_IsPlaying(&d3sndw_Snd[1])) {
             s = &d3sndw_Snd[1];
             if (d3sndw_Snd[1].snd)
-                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
-            d3sndw_Snd[1].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
-            if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->entry) {
-                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 1);
-                strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->entry->name, 0x32);
+                sb_SetRestart(d3sndw_Snd[1].snd, 0);
+            d3sndw_Snd[1].snd = sb_GetSample(0, d3sndw_Names[type]);
+            if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->info) {
+                sb_SetRestart(d3sndw_Snd[1].snd, 1);
+                strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->info->name, 0x32);
                 *slot = 1;
             } else
                 s = NULL;
@@ -456,11 +435,11 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[1])) {
             s = &d3sndw_Snd[1];
             if (d3sndw_Snd[1].snd)
-                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
-            d3sndw_Snd[1].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
-            if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->entry) {
-                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 1);
-                strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->entry->name, 0x32);
+                sb_SetRestart(d3sndw_Snd[1].snd, 0);
+            d3sndw_Snd[1].snd = sb_GetSample(0, d3sndw_Names[type]);
+            if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->info) {
+                sb_SetRestart(d3sndw_Snd[1].snd, 1);
+                strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->info->name, 0x32);
                 *slot = 1;
             } else
                 s = NULL;
@@ -473,14 +452,14 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[0])) {
             s = &d3sndw_Snd[0];
             if (d3sndw_Snd[0].snd)
-                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
-            d3sndw_Snd[0].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
-            if (!d3sndw_Snd[0].snd || !d3sndw_Snd[0].snd->entry) {
+                sb_SetRestart(d3sndw_Snd[0].snd, 0);
+            d3sndw_Snd[0].snd = sb_GetSample(0, d3sndw_Names[type]);
+            if (!d3sndw_Snd[0].snd || !d3sndw_Snd[0].snd->info) {
                 s = NULL;
                 *slot = 0;
             } else {
-                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 1);
-                strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->entry->name, 0x32);
+                sb_SetRestart(d3sndw_Snd[0].snd, 1);
+                strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->info->name, 0x32);
                 *slot = 0;
             }
         } else if (!strcmp(d3sndw_Snd[0].name, d3sndw_Names[type]))
@@ -553,12 +532,12 @@ void d3sndw_Update(void)
     if (!d3_Terrain || !d3sndw_Sin || !d3_Camera || !snd_AmbientOn) {
         if (d3sndw_Snd[0].snd) {
             sb_Stop(d3sndw_Snd[0].snd, 0);
-            sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
+            sb_SetRestart(d3sndw_Snd[0].snd, 0);
             d3sndw_Snd[0].snd = NULL;
         }
         if (d3sndw_Snd[1].snd) {
             sb_Stop(d3sndw_Snd[1].snd, 0);
-            sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
+            sb_SetRestart(d3sndw_Snd[1].snd, 0);
             d3sndw_Snd[1].snd = NULL;
         }
         return;
@@ -569,12 +548,12 @@ void d3sndw_Update(void)
         d3sndw_Scene = d3_DefaultScene;
         if (d3sndw_Snd[0].snd) {
             sb_Stop(d3sndw_Snd[0].snd, 0);
-            sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
+            sb_SetRestart(d3sndw_Snd[0].snd, 0);
             d3sndw_Snd[0].snd = NULL;
         }
         if (d3sndw_Snd[1].snd) {
             sb_Stop(d3sndw_Snd[1].snd, 0);
-            sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
+            sb_SetRestart(d3sndw_Snd[1].snd, 0);
             d3sndw_Snd[1].snd = NULL;
         }
         return;
@@ -698,7 +677,7 @@ void d3sndw_Update(void)
         if (s) {
             if (s->snd) {
                 sb_SetVolume(s->snd, found[0].vol);
-                sb_SetPanH(s->snd, found[0].pan);
+                sb_SetPan(s->snd, found[0].pan);
             }
             if (!d3snd_IsPlaying(s))
                 d3snd_Play(s, 0, 0, 0);
@@ -712,7 +691,7 @@ void d3sndw_Update(void)
             if (s) {
                 if (s->snd) {
                     sb_SetVolume(s->snd, found[i].vol);
-                    sb_SetPanH(s->snd, found[i].pan);
+                    sb_SetPan(s->snd, found[i].pan);
                 }
                 if (!d3snd_IsPlaying(s))
                     d3snd_Play(s, 0, 0, 0);

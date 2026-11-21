@@ -2,7 +2,7 @@ struct D3PARTSYS;
 struct D3COLOR;
 struct D3SM;
 struct D3VECTOR;
-struct SNDHANDLE;
+struct SBSAMPLE;
 struct SHOTREC;
 struct AIBLD;
 struct AICHAR;

@@ -1,12 +1,20 @@
 /* Declarations of sblib.c (0x425bc0..0x4273d0): the sample library ("sb_Init", "sblib successfully initialzied"): sample
    banks loaded on demand into a memory budget, and a fixed set of playing sample slots. SBSAMPLE (the playing slot)
-   is declared here for its users; SBBANK / SBENTRY stay sblib.c's types. Names are ours. */
+   and SBENTRY (a bank entry) are declared here for their users; SBBANK stays sblib.c's type. Names are ours. */
 #ifndef SBLIB_H
 #define SBLIB_H
 
 struct SBSAMPLE;
 struct SBBANK;
 struct SBENTRY;
+
+typedef struct SBENTRY {            /* 0x40 bytes */
+    int offset;                     /* file offset of the data */
+    char name[50];                  /* 0x04 */
+    char type;                      /* 0x36, 1 sample (SBDATA), 2 variation (SBVAR) */
+    void *data;                     /* 0x38, NULL = not loaded */
+    int used;                       /* 0x3c, time of last use */
+} SBENTRY;
 
 typedef struct SBSAMPLE {           /* 0x30 bytes, sb_Count of them at sb_Samples */
     int handle;
