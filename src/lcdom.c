@@ -30,7 +30,6 @@ struct D3SM;
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -5503,7 +5502,7 @@ void ai_OpenRobberBribe(int bld)
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x40400;
     cfg.kind = 6;
-    cfg.classMask[1] = gypsyFilterWords[1];
+    cfg.classMask[1] = (unsigned int)(gypsyFilter >> 32);
     cfg.classMask[0] = 0;
     txt_Format(text, 0x174f);
     ai_AmountMenu(&cfg, text, 0, ai_BribeAmountCB);
