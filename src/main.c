@@ -2923,7 +2923,7 @@ int main_PreloadSound(char *f)
             if ((int)slot > (int)&main_SoundBanks[0x80])
                 return 0;
         }
-        if ((fp->_flag & 0x10) != 0) {
+        if (feof(fp)) {
             fclose(fp);
             return 1;
         }

@@ -2357,7 +2357,7 @@ void unk_LoadIconNames(void)
         do {
             fread(rec, 0x80, 1, f);
             gm_IconNameCount++;
-        } while ((f->_flag & 0x10) == 0);
+        } while (!feof(f));
         fclose(f);
     }
     gm_IconNames = (char *)mem_Alloc(gm_IconNameCount * 0x30, "tmp");
@@ -2373,7 +2373,7 @@ void unk_LoadIconNames(void)
                 ch = *s++;
                 *d++ = ch;
             } while (ch != 0);
-        } while ((f->_flag & 0x10) == 0);
+        } while (!feof(f));
         fclose(f);
     }
 }
