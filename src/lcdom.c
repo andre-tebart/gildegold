@@ -2072,22 +2072,32 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
    (the job's cost, the text 0x220), the fire button 0x1a21 and the promotion 0x1a25; hire sends the request 6,
    fire the message 0x31 after the question 0x1a36, promotion the message 0x32 (refused with 0x1a27 below
    four years of service). At the end the radio group is cleared, the book closed and the camera follows
-   @deep Written whole from the original (was a stub): the four-page mercenary book, the bonus split
-   (pay_worker), the inline row creation (picture 0x5db, the two texts, the first six entry controls), the
-   per-frame refill from gm_ListWorkers' third list (jobless characters), the inline fill (portrait, name,
-   opinion slider; the hire text 0x1a24 for a running request 6 of title 0x13; 'no character' with the
-   controls freed), the clicks (hire request 6 with hireTitle 0x13, fire 0x31, promotion 0x32 or the
-   refusal 0x1a27). 1075 vs 1077 instructions, every call the same number of times. Left is allocation /
-   scheduling: in the row setup ours keeps the picture x (px) in ebx and y in a slot, the original y in ebx
-   and px in a slot ('+ add ebx, 0x44' against '- mov eax, [esp + 0x24] / add eax, 0x44'), which moves the
-   d2_Objs / rows[i].name stores (the two M8 lines at +0x368 / +0x384 are those crossed stores) and the
-   msg.time = ai_Time copy is stored in another word order (M8 at +0xc31 / +0xc3b). The prover stops at
-   gm_PlayerFactor's byte argument (ai_OwnPlayer pushed through dl with other upper bits). Tried: the
-   declaration order of y / px; the opinion's (v + 128.0) * 100.0 kept in a double (that settled the M10
-   fold of 100 / 255). (references: M8 at +0x368: ours refers to d2_LastWindow (0x6ed938), the original's
-   field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3 more), explained: the M8 refs are crossed stores of the
-   same objects (rows[i].name / d2_Objs) and the words of one struct copy (msg.time = ai_Time) in another
-   order) */
+   @deep s23: the row setup in ai_HelperBook's (byte) form: D2WIN *w block for halfW / halfH, j = 0; r = 0;
+   before pg++ / vp++, rows[i].y = ..; y = rows[i].y;, the texts at px - 0x36 / y - 0x11 and y + 0x44
+   inline, j++ at the end (all five together 355 -> 106; each subset worse), bt = .. after the -1 inits
+   (106 -> 104, as the helper book). Instruction count now equal (1077), size +19. Left: (1) the click loop
+   (+0xa68..): the original walks rows in edi with the counter in ebp, ours the reverse; the original holds
+   bld in esi over the hire block (mov esi,[bld]; push esi for gm_IsHomeType hoisted above the memset) and
+   -1 in ebp after the loop (or ebp,-1; cmp ebx,ebp for sel, hireRoom = ebp, sel = ebp), ours immediates;
+   (2) the hire message's struct copy of ai_Time in another word order (M8 x2; the original loads ai_Time+8
+   first, before to); a 720-order round of the hire fill: best fromId after time (100 ins, M8 x3), not
+   kept; (3) the two inline strcpy's mov [edx+eax] vs the original's [eax+edx] (the helper book's same
+   statements are byte). climb round 1: best = that fill move (100). prior: Written whole from the original
+   (was a stub): the four-page mercenary book, the bonus split (pay_worker), the inline row creation
+   (picture 0x5db, the two texts, the first six entry controls), the per-frame refill from gm_ListWorkers'
+   third list (jobless characters), the inline fill (portrait, name, opinion slider; the hire text 0x1a24
+   for a running request 6 of title 0x13; 'no character' with the controls freed), the clicks (hire request
+   6 with hireTitle 0x13, fire 0x31, promotion 0x32 or the refusal 0x1a27). 1075 vs 1077 instructions,
+   every call the same number of times. Left is allocation / scheduling: in the row setup ours keeps the
+   picture x (px) in ebx and y in a slot, the original y in ebx and px in a slot ('+ add ebx, 0x44' against
+   '- mov eax, [esp + 0x24] / add eax, 0x44'), which moves the d2_Objs / rows[i].name stores (the two M8
+   lines at +0x368 / +0x384 are those crossed stores) and the msg.time = ai_Time copy is stored in another
+   word order (M8 at +0xc31 / +0xc3b). The prover stops at gm_PlayerFactor's byte argument (ai_OwnPlayer
+   pushed through dl with other upper bits). Tried: the declaration order of y / px; the opinion's (v +
+   128.0) * 100.0 kept in a double (that settled the M10 fold of 100 / 255). (references: M8 at +0x368:
+   ours refers to d2_LastWindow (0x6ed938), the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3
+   more), explained: the M8 refs are crossed stores of the same objects (rows[i].name / d2_Objs) and the
+   words of one struct copy (msg.time = ai_Time) in another order) */
 
 void ai_MercenaryBook(AIBLD *bld, char *model)
 {
@@ -2134,13 +2144,13 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
     AICHARREC *c;
     AIJOB *job;
 
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     nWorkers = 0;
     hireButton = -1;
     fireButton = -1;
     promoteButton = -1;
     sel = -1;
     radio = -1;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     book = sv_OpenBook(model, "Buch", 4, "Buch\\Soeldnerbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
                        "Buch\\Personalbuch_4");
     sv_UpdateBook(book);
@@ -2166,8 +2176,11 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
         io_PrintText("%s %i", 0x1a37, i + 1);
     }
     d2_SetForm(book->views[2], 3);
-    halfW = d2_Wins[d2_LastWindow].w / 2;
-    halfH = d2_Wins[d2_LastWindow].h / 2;
+    {
+        D2WIN *w = &d2_Wins[d2_LastWindow];
+        halfW = w->w / 2;
+        halfH = w->h / 2;
+    }
     for (i = 0; i < 12; i++) {
         rows[i].ch = 0;
         rows[i].pic = -1;
@@ -2180,18 +2193,18 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
             break;
         r = j / 2;
         if (r >= 2) {
+            j = 0;
+            r = 0;
             pg++;
             vp++;
-            r = 0;
-            j = 0;
             if (pg > 3)
                 break;
         }
         d2_SetForm(*vp, 3);
         rows[i].view = *vp;
         rows[i].x = j % 2 * halfW + 0x10;
-        y = r * halfH + 0x11;
-        rows[i].y = y;
+        rows[i].y = r * halfH + 0x11;
+        y = rows[i].y;
         px = rows[i].x + 0x18;
         pic = d2_WinOpenPic(px, y, 0x5db, d2_LastWindow);
         rows[i].pic = pic;
@@ -2199,23 +2212,21 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
             radio = d2_CreateRadioGroup(1, pic);
         else
             d2_RadioAdd(radio, pic);
-        px -= 0x36;
-        t = d2_CreateWinText(px, y - 0x11, txt_NoCharacter, d2_LastWindow);
+        t = d2_CreateWinText(px - 0x36, y - 0x11, txt_NoCharacter, d2_LastWindow);
         rows[i].text = t;
-        y += 0x44;
         d2_Objs[pic].interactive = 1;
         d2_Objs[t].w = 0xa0;
         d2_Objs[t].centred = 1;
-        t = d2_CreateWinText(px, y, ch_EmptyName, d2_LastWindow);
+        t = d2_CreateWinText(px - 0x36, y + 0x44, ch_EmptyName, d2_LastWindow);
         rows[i].name = t;
         rows[i].ch = 0;
         d2_Objs[t].w = 0xa0;
         d2_Objs[t].centred = 1;
-        j++;
         rows[i].icon = -1;
         rows[i].slider = -1;
         for (k = 0; k < 6; k++)
             rows[i].ctrl28[k] = -1;
+        j++;
     }
     n = i;
     d2_SetPointerSprite(0, 0);
