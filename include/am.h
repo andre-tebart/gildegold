@@ -504,7 +504,7 @@ extern int ai_NumPlayerChars;                /* 0x6f0470, number of characters o
 
 int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                        /* 0x4a67a0 */
 int ai_FireCannon(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
+int cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
 void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
 

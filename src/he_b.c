@@ -527,8 +527,6 @@ int he_RegisterEventTypeA2();
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
-#define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
                                            +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
     char pad00[0x1c];
@@ -2710,9 +2708,8 @@ D3OBJECT *he_CreateConstruction(D3VECTOR *rot, D3VECTOR *pos, unsigned char *typ
 }
 
 
-/* @original the construction event's run handler stores what gm_AddToTreasury leaves in eax as the payment's slot
-   (0x56bf1a .. 0x56bf22): it called the function without a prototype, as returning int */
-#define gm_AddToTreasuryI ((int (*)(int))gm_AddToTreasury)
+/* the construction event's run handler stores gm_AddToTreasury's result (the send slot of its goods message) as
+   the payment's slot (0x56bf1a .. 0x56bf22) */
 void sv_CreateBanners(char *b);
 
 /* 0x56be30, the run handler of the building construction event 0xd, by its stage: 0 pays the price when due (the
@@ -2796,7 +2793,7 @@ void he_RunConstruction(int ev)
             if (fin != 0)
                 fin->buildPaid += c->carry;
         } else {
-            c->slot = gm_AddToTreasuryI(c->carry);
+            c->slot = gm_AddToTreasury(c->carry);
         }
         e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         break;

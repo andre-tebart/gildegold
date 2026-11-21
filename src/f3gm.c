@@ -6,7 +6,7 @@
    Several Open lines below were written for the whole unit and now concern f3gmt's functions.
    Open: many callees are still declared K&R in this file (amt_HasTownObject must stay K&R: the typed prototype
    costs gm_Unk4fa4b0 a byte).
-   Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
+   gm_GetWorth is int in every header.
    Open: gm_IsBankrupt calls ai_LiquidateAssets (0x5b92e0: netId, character, amount, message) without a prototype;
    its definition in lc.c is still a one-parameter skeleton.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
@@ -456,7 +456,6 @@ int ai_AddNeedDelta(int k, float v);                     /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                     /* 0x4c4a20 */
 void gm_ShiftLoyalty();                   /* 0x4fb0e0 */
 int gm_FindRichest(short *id, int *rate);
-#define I50A640 ((int (*)())gm_GetWorth)
 extern char * cm_FieldObject;                /* 0xa68d2c */
 
 /* 0x4fa580, the upkeep of the characters: rate = gm_PlayerFactor (0xe - the decision 5's value, the own player); for
