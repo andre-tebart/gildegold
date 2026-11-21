@@ -3,7 +3,7 @@
    AICHAR / AIFIN / AIBLD / AIOBJ records) stand in for their types, and local canonical prototypes for ai.h /
    amt.h / rd.h, which do not compile into this unit (gv.h conflicts).
    Open: not included yet (dcp headers conflicts f3init HEADER): ai.h amt.h cm.h d2.h f3snd.h gfx.h hmt.h hst.h
-   mission.h rmsg.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
+   mission.h rmsg.h; held by own declarations that differ from the owner's:
    amt_GetKind, amt_GetOffice, d2_ClearSurface, amt_GetFirstOffice.
    unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl */
 struct VFSENTRY;
@@ -320,7 +320,7 @@ int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880, @original: this unit's call sites push the third argument as an int - 0x50f42c zero-extends the unsigned short goods id (`and eax,0xffff`) where cm.h's short view would sign-extend */
+int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 int cm_SendFieldValues(void);                     /* 0x4c49e0 */

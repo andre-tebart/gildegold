@@ -684,7 +684,7 @@ void gm_InitPlayerRecord(int p)
 int gm_FreeList(int *list);                     /* 0x500140 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
 
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
+int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */
@@ -702,7 +702,6 @@ int gm_GoodsStock(int p, int i);
 
 
 #define GM_WAIT(h) while (cm_GetSlotState(h) == 0) sv_PumpNet()
-#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which cm.h's void prototype drops; @original gm_SyncMarket pushes the goods id zero-extended (int), as ai.c's cm_SendExSellObjectI */
 
 /* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group */
 void gm_SyncMarket(unsigned p)
@@ -759,20 +758,20 @@ void gm_SyncMarket(unsigned p)
             if (o != 0) {
                 o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
                 if (o2 == 0) {
-                    h = cm_SendExSellObjectH(o->objId, -1, 0xff, 1, ai_OwnPlayer, 0);
+                    h = cm_SendExSellObject(o->objId, -1, 0xff, 1, ai_OwnPlayer, 0);
                     GM_WAIT(h);
                     o2 = (ORDOBJ *)cm_GetSlotValue(h);
                 }
                 if (g->amount != 0) {
                     m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
                     if (m == 0) {
-                        h = cm_SendExSellObjectH(o2->objId, -1, g->item, 1, ai_OwnPlayer, 0);
+                        h = cm_SendExSellObject(o2->objId, -1, g->item, 1, ai_OwnPlayer, 0);
                         GM_WAIT(h);
                     }
                 } else {
                     m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
                     if (m != 0) {
-                        h = cm_SendExSellObjectH(-1, o2->objId, g->item, m->count, ai_OwnPlayer, 0);
+                        h = cm_SendExSellObject(-1, o2->objId, g->item, m->count, ai_OwnPlayer, 0);
                         GM_WAIT(h);
                     }
                 }

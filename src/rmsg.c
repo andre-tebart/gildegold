@@ -27,7 +27,6 @@
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_MsgTakeBuildingGoodsPct5to19Type33 / ai_MsgTakeBuildingGoodsPct5to24Type34) */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_MsgWorkerOwnHealthLossType1f) */
-#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT_MALE 0x600c01  /* as AI_PARTNER_FILTER_MINOR_SERVANT and a male candidate: bit 0 rejects sex 1 (AICHAR.sex 0 male / 1 female) */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -1578,7 +1577,7 @@ int ai_MsgBuildingGetsItemType31(G14MSG *m)
         p = a[util_RandomU(k)];
     if (b == 0 || p == 0)
         return 0x400;
-    cm_SendExSellObjectI(b->id, -1, util_RandomU(2) + 0x134, 1, ai_OwnPlayer, 0);
+    cm_SendExSellObject(b->id, -1, util_RandomU(2) + 0x134, 1, ai_OwnPlayer, 0);
     txt_Format(buf, m->type + 0x12e7, p->id);
     he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
     return 0;
@@ -1615,7 +1614,7 @@ int ai_SellBuildingGoodsShare(AICHAR *c, int *id, float f)
                         v = (int)(v * f);
                         if (v < 1)
                             v = 1;
-                        cm_SendExSellObjectI(-1, o->objId, e->id, v, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(-1, o->objId, e->id, v, ai_OwnPlayer, 0);
                     }
                 }
                 return 1;
@@ -1716,7 +1715,7 @@ int ai_MsgLoseGood(G14MSG *m)
     if (n == 0)
         return 0x400;
     e = a[util_RandomU(n)];
-    cm_SendExSellObjectI(-1, c->netId, e->id, 1, ai_OwnPlayer, 0);
+    cm_SendExSellObject(-1, c->netId, e->id, 1, ai_OwnPlayer, 0);
     txt_Format(buf, m->type + 0x12e7, e->id * 2 + 0x9a8);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;

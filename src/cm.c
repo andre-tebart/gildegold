@@ -1327,9 +1327,9 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d)
     m.moveGoods.amount = d;
     cm_QueueSend(&m);
 }
-/* 0x4c4880, message 0x11 */
+/* 0x4c4880, message 0x11; returns the message's slot handle (gm_SyncMarket waits on it) */
 
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
+int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
 {
     G17MSG m;
 
@@ -1340,7 +1340,7 @@ void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
     m.sell.player = e;
     m.sell.count = d;
     m.sell.price = f;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c48e0, message 0x12 */
 

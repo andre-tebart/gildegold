@@ -320,7 +320,6 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 /* 0x531670, destroys the game window and unregisters its class "Die Gilde" */
 
 void main_DestroyWindow(void)
@@ -1612,10 +1611,10 @@ void main_GiveStartBuildings(int p)
         l = gm_Query((void *)b->objList, 1, 0, 0x13);
         if (l != 0)
             gm_ShowSlotObjects((int)b, (int)l, p);
-        cm_SendExSellObjectI(b->id, -1, 0x15, 1, ai_OwnPlayer, 0);
-        cm_SendExSellObjectI(b->id, -1, 0x17, 1, ai_OwnPlayer, 0);
-        cm_SendExSellObjectI(b->id, -1, 0x18, 1, ai_OwnPlayer, 0);
-        cm_SendExSellObjectI(b->id, -1, 0x14, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObject(b->id, -1, 0x15, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObject(b->id, -1, 0x17, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObject(b->id, -1, 0x18, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObject(b->id, -1, 0x14, 1, ai_OwnPlayer, 0);
     }
     b = (AIBLD *)gm_BuildQuery(1, 0, 0x20);
     if (b != 0) {
@@ -1629,7 +1628,7 @@ void main_GiveStartBuildings(int p)
         o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObjectI(o->objId, -1, 0x1d0, 0x19, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d0, 0x19, ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -1641,10 +1640,10 @@ void main_GiveStartBuildings(int p)
         o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObjectI(o->objId, -1, 0x1d0, 0x14, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1d7, 0xf, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1d6, 0xf, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x158, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d0, 0x14, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d7, 0xf, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d6, 0xf, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x158, 10, ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -1662,7 +1661,7 @@ void main_GiveStartBuildings(int p)
     b = (AIBLD *)gm_BuildQuery(1, 0, 0x14);
     if (b != 0) {
         gm_AssignBuilding((unsigned char *)b, p, p);
-        cm_SendExSellObjectI(b->id, -1, 0xf7, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObject(b->id, -1, 0xf7, 1, ai_OwnPlayer, 0);
     }
     b = (AIBLD *)gm_BuildQuery(1, 0, 0x32);
     if (b != 0) {
@@ -1670,9 +1669,9 @@ void main_GiveStartBuildings(int p)
         o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObjectI(o->objId, -1, 0x1cb, 10, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1cc, 10, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1d0, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1cb, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1cc, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d0, 10, ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -1694,9 +1693,9 @@ void main_GiveStartBuildings(int p)
         o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObjectI(o->objId, -1, 0x1cb, 10, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1cc, 10, ai_OwnPlayer, 0);
-            cm_SendExSellObjectI(o->objId, -1, 0x1d0, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1cb, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1cc, 10, ai_OwnPlayer, 0);
+            cm_SendExSellObject(o->objId, -1, 0x1d0, 10, ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();

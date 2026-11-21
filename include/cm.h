@@ -212,7 +212,7 @@ void cm_SendTakeOverCharacter(int a, int b);                                    
 void cm_SendDeleteObject(int id);                                                      /* 0x4c47b0 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
+int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
 void cm_SendMakeGoods(int a, short b, int c);                                        /* 0x4c48e0 */
 void cm_SendCartRoute(int a, int b, int c);                                          /* 0x4c4920 */
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */

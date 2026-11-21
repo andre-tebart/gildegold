@@ -9,7 +9,6 @@
 #include "rt.h"
 #include "di_input.h"
 #include "data_views.h"
-#define cm_SendExSellObjectI ((void (*)(int, int, int, int, int, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c, unsigned char e): @original rt.c pushes the third argument as an int (byte-matched rt_UnloadAtPoint) */
 #include "d3_types.h"
 #include "ahm.h"
 #include "cm.h"
@@ -1084,7 +1083,7 @@ void rt_UnloadAtPoint(char *c, int pl)
                             price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * ((AIBLD *)b)->priceFactor);
                     }
                     if (gm_CharCurrency(o, pl) >= price * n)
-                        cm_SendExSellObjectI(((AIOBJ *)st)->objId, ((AIOBJ *)ci.pada8[3])->objId, s[0], n, pl, price);
+                        cm_SendExSellObject(((AIOBJ *)st)->objId, ((AIOBJ *)ci.pada8[3])->objId, s[0], n, pl, price);
                 }
             }
         }

@@ -73,7 +73,6 @@ int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 d
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_ExecHandleGrave passes its AGCH record and s1 as they are */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_RelationGain) */
-#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_PickLikedColumn passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -2288,10 +2287,10 @@ int ai_ExecuteProduceGood(AIPER *p, AIARG *s1, AIARG *s2)
         if (!it)
             return 0;
         cm_SendMoveGoods(-1, it->objId, ai_OwnPlayer, price);
-        cm_SendExSellObjectI(id, -1, s1->ref, s1->arg, ai_OwnPlayer, 0);
+        cm_SendExSellObject(id, -1, s1->ref, s1->arg, ai_OwnPlayer, 0);
         return 0x39;
     }
-    cm_SendExSellObjectI(id, -1, s1->ref, s1->arg, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
+    cm_SendExSellObject(id, -1, s1->ref, s1->arg, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 11;
 }
 /* 0x497af0, decide: sell a good (o1, kind 2) to a building (o2, kind 4) with room for it (action 14) */
@@ -2348,7 +2347,7 @@ int ai_ExecuteBuyRoom(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     if (s1->kind != 2)
         return 0;
-    cm_SendExSellObjectI(bld->id, -1, s1->ref, s1->arg, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
+    cm_SendExSellObject(bld->id, -1, s1->ref, s1->arg, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 14;
 }
 /* 0x497cf0, decide: renovate the character's worst building (action 15) */
@@ -4688,7 +4687,7 @@ int ai_ExecuteBuyMarketObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     if (s1->kind != 2)
         return 0;
-    cm_SendExSellObjectI(p->netId, s2->ref, s1->ref, s1->arg, ai_OwnPlayer,
+    cm_SendExSellObject(p->netId, s2->ref, s1->ref, s1->arg, ai_OwnPlayer,
                  (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 0xc;
 }

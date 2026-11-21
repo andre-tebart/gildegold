@@ -3340,7 +3340,6 @@ AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
     return winner;
 }
 
-#define G19_4C4880U ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)
 
 /* 0x4d3d10, loot of a won fight: a random share (0.07 + 0.001 * 0 .. 49 of the loser's goods value 0x509e60, at
    most 0x9c400) is moved from the loser's record to the winner's (money message 0x4c47e0), then each object of the
@@ -3363,7 +3362,7 @@ int cm_LootStock(AIBLD *a, AIBLD *b, AICHAR *d, AICHAR *t)
             cnt = (int)(((double)(unsigned int)(cm_Random(0x14) + 0x50) * 0.01) * (double)q->count);
             if (cnt < 1)
                 cnt = 1;
-            G19_4C4880U(oa->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
+            cm_SendExSellObject(oa->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
             v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
         }
     }
@@ -3398,9 +3397,9 @@ int cm_LootCarts(CMFIGHTREC *a, AIBLD *b, AICHAR *d, int unused, float f)
                         x = 1.0f;
                     cnt = (int)x;
                     if (ob != 0)
-                        G19_4C4880U(ob->objId, q->ownerId, q->id, cnt, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(ob->objId, q->ownerId, q->id, cnt, ai_OwnPlayer, 0);
                     else
-                        G19_4C4880U(-1, q->ownerId, q->id, cnt, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(-1, q->ownerId, q->id, cnt, ai_OwnPlayer, 0);
                     dmg = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + dmg);
                 }
                 if (ob == 0) {

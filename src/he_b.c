@@ -184,7 +184,7 @@ typedef struct HESALE {                 /* the sale event 2's words over AIJOB's
     unsigned short good;                /* 0xac, the good sold (ai_Goods index; its production time sets the due clock) */
     char padae[2];
     int obj;                            /* 0xb0, the object sold (its objId: gm_Query key 1 in the building's list) */
-    int slot;                           /* 0xb4, the send slot of the sale (cm_SendExSellObjectH), asked in stage 2 */
+    int slot;                           /* 0xb4, the send slot of the sale (cm_SendExSellObject), asked in stage 2 */
     int notify;                         /* 0xb8, nonzero: a master's kind 1 character with flags1b4 bit 0 makes the news
                                            0x60b (reasoned: who sets it is not read yet) */
 } HESALE;
@@ -282,7 +282,7 @@ typedef struct HERESEARCH {             /* the research event 0xc's words over A
     int wbc;                            /* 0xbc, 0 at the allocation (no reader known) */
     int limit;                          /* 0xc0, the rounds waited for that object (0x20) */
     int rounds;                         /* 0xc4, the rounds since the order (one per minute) */
-    int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
+    int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObject) */
 } HERESEARCH;
 typedef struct HEBUILD {                /* the building event 0xd's words over AIJOB's union (he_AllocGebaeudeBauen and
                                            its run handler he_RunConstruction): the building type it builds and the position it
@@ -1232,7 +1232,6 @@ int ai_TutorialCloseIntro();
 void ai_TutorialClearHost(void);
 void sv_PopTo(int v);
 void he_FreeEventNow();
-#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunSale keeps it (as f3gm.c's cm_SendExSellObjectH) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 int gm_LevelPayout(int v, int kind);
 typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()"; as sv.c / lc.c declare it) */
@@ -1797,7 +1796,7 @@ wait:
                 if (units != 0)
                     p->slot = cm_SendMakeGoodsH(p->store, p->good, units);
                 else if (p->slot == -1 && gm_Query((void *)store->list, 1, 0, p->good) == 0)
-                    p->slot = cm_SendExSellObjectH(store->objId, -1, p->good, 0, ai_OwnPlayer, 0);
+                    p->slot = cm_SendExSellObject(store->objId, -1, p->good, 0, ai_OwnPlayer, 0);
                 ev->clock60 = ev->end;
                 gm_AddTime(&ev->end, 0, 1, 0);
             }
@@ -2201,10 +2200,10 @@ void he_RunTrade(AIJOB *ev)
     if (found == 0) {
         if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) != 0) {
             for (g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
-                t->moveSlot = cm_SendExSellObjectH(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
+                t->moveSlot = cm_SendExSellObject(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
         } else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116)) != 0) {
             for (g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
-                t->moveSlot = cm_SendExSellObjectH(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
+                t->moveSlot = cm_SendExSellObject(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
         }
         if (t->moveSlot == -1)
             goto done;
@@ -2236,7 +2235,7 @@ void he_RunTrade(AIJOB *ev)
                         if (chr != 0)
                             chr->budget += price * put;
                         if ((have -= put) != 0)
-                            t->moveSlot = cm_SendExSellObjectH(-1, cargo->objId, g->id, have, ai_OwnPlayer,
+                            t->moveSlot = cm_SendExSellObject(-1, cargo->objId, g->id, have, ai_OwnPlayer,
                                                                (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 0.8));
                     }
                 }
@@ -2268,7 +2267,7 @@ void he_RunTrade(AIJOB *ev)
                     n = min(n, left / price);
                     n = n < 0 ? 0 : n;
                     if (n != 0)
-                        t->moveSlot = cm_SendExSellObjectH(cargo->objId, store->objId, g->id, n, ai_OwnPlayer, price);
+                        t->moveSlot = cm_SendExSellObject(cargo->objId, store->objId, g->id, n, ai_OwnPlayer, price);
                     if (chr != 0 && chr->bld != 0)
                         sprintf(buf, "Meister %s (%s) kauft f\xfcr %li Credits (hat %li) %li Einheiten %s", chr->name,
                                 chr->bld->name, price * n, left, n, GM_GOOD(g->id)->name);
@@ -2360,7 +2359,7 @@ void he_AllocResearch(AIJOB *ev)
 void init_HookObject(struct D3OBJECT *o, void *p, int kind);
 
 /* 0x56b3f0, the run handler of the research event 0xc (HERESEARCH): stage 0, once due, orders the good it
-   researches (cm_SendExSellObjectH: the building +0xac as buyer, the good +0xb4, one piece) and keeps the send
+   researches (cm_SendExSellObject: the building +0xac as buyer, the good +0xb4, one piece) and keeps the send
    slot (+0xc8); stage 1 waits for that slot (cm_GetSlotState): an error (2) frees the event, else the objId of
    the object the order made (+0xb8, the reply's AIOBJ.objId) is kept and 0x20 rounds (+0xc0 / +0xc4) are
    counted from now; stage 2 looks the object up each minute (gm_FindById) and at the end of the countdown hooks
@@ -2375,7 +2374,7 @@ void he_RunResearch(int ev)
     case 0:
         if (gm_CompareTime(&e->end, &ai_Time) > 0)
             return;
-        r->slot = cm_SendExSellObjectH(r->buyer, -1, r->good, 1, ai_OwnPlayer, 0);
+        r->slot = cm_SendExSellObject(r->buyer, -1, r->good, 1, ai_OwnPlayer, 0);
         e->stage++;
         return;
     case 1:

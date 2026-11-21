@@ -267,7 +267,7 @@ typedef struct HESALE {                 /* the sale event 2's words over AIJOB's
     unsigned short good;                /* 0xac, the good sold (ai_Goods index; its production time sets the due clock) */
     char padae[2];
     int obj;                            /* 0xb0, the object sold (its objId: gm_Query key 1 in the building's list) */
-    int slot;                           /* 0xb4, the send slot of the sale (cm_SendExSellObjectH), asked in stage 2 */
+    int slot;                           /* 0xb4, the send slot of the sale (cm_SendExSellObject), asked in stage 2 */
     int notify;                         /* 0xb8, nonzero: a master's kind 1 character with flags1b4 bit 0 makes the news
                                            0x60b (reasoned: who sets it is not read yet) */
 } HESALE;
@@ -365,7 +365,7 @@ typedef struct HERESEARCH {             /* the research event 0xc's words over A
     int wbc;                            /* 0xbc, 0 at the allocation (no reader known) */
     int limit;                          /* 0xc0, the rounds waited for that object (0x20) */
     int rounds;                         /* 0xc4, the rounds since the order (one per minute) */
-    int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
+    int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObject) */
 } HERESEARCH;
 typedef struct HEBUILD {                /* the building event 0xd's words over AIJOB's union (he_AllocGebaeudeBauen and
                                            its run handler he_RunConstruction): the building type it builds and the position it
@@ -11209,12 +11209,11 @@ void he_AllocSale(int ev)
         gm_AddTime(&e->end, 0, good->workTime, 0);
 }
 
-#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunSale keeps it (as f3gm.c's cm_SendExSellObjectH) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
 /* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_AllocSale sets it due after the good's
    production time): stage 0 goes to 1; stage 1, once due, sells the object obj of the building AIJOB.from
-   (cm_SendExSellObjectH: the good, one piece, to the own player) and keeps the send slot (stage 2); a gone
+   (cm_SendExSellObject: the good, one piece, to the own player) and keeps the send slot (stage 2); a gone
    building frees the event. Stage 2 waits for the slot and its object: a grave (0x1f9 / 0x1fd / 0x201) opens a
    grave order of the size 1 / 2 / 3 for the building's owner (gv_OrderOpenSize), a 0x12d sends the message 0x2a
    to the player character; an owner of the kind 6 (a player character) gets the news 0x606 (0x60b when the
@@ -11244,7 +11243,7 @@ void he_RunSale(int ev)
             return;
         }
         gm_Query((void *)b->objList, 1, 1, s->obj);
-        s->slot = cm_SendExSellObjectH(s->obj, -1, s->good, 1, ai_OwnPlayer, 0);
+        s->slot = cm_SendExSellObject(s->obj, -1, s->good, 1, ai_OwnPlayer, 0);
         e->stage = e->stage + 1;
         return;
     case 2:

@@ -17,8 +17,6 @@
    the building types through GMBTYPE (AIBTYPE, GM_BTYPE; older functions still by
    byte offset), the kind 0x23 events through GMEVENT23, or by byte offset (the rest, GM_GOODS).
    Open: gm_QueryNext returns unsigned short * in every header though the cursor is an ORDOBJ *.
-   Open: head: cm_SendExSellObject returns its message's slot handle (gm_SyncMarket waits on it), cm.h declares
-   it void; this unit calls it through the cast cm_SendExSellObjectH.
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.
    Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d3_interface.h d3_tools.h
@@ -2459,7 +2457,7 @@ int gm_GoodsDemand(int p, int i);                   /* 0x4ff8c0 */
 float gm_ItemPrice(int item, unsigned char n); /* 0x5087f0 */
 int gm_FreeList(int *list);                     /* 0x500140 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
+int cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */
