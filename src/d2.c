@@ -3851,7 +3851,9 @@ int pic;
    [esi+0x388], ebx ...) and holds flags in ecx, reloading its low byte at the end (mov bl, [esp+0x6c]);
    the found test re... */
 
-int d2_CreateWindow(short x, short y, short w, short h, unsigned int flags)
+int d2_CreateWindow(x, y, w, h, flags)
+short x, y, w, h;
+unsigned int flags;
 {
     int desc[16];
     int i, j, ob;
@@ -4064,7 +4066,6 @@ void d2_FinishFades(void)
         }
     }
 }
-#define d2_CreateWindowI ((int (*)(int, int, int, int, unsigned int))d2_CreateWindow)  /* @original: d2.c's own call was compiled without a prototype, pushing the expressions as ints (d2_CreateChildWindow 0x472aa0 is byte-matched with plain pushes at 0x472b0e) */
 /* 0x472aa0, creates a window inside another one (relative to its scroll position) */
 
 int d2_CreateChildWindow(short x, short y, short pw, short h, unsigned int flags, int win)
@@ -4075,7 +4076,7 @@ int d2_CreateChildWindow(short x, short y, short pw, short h, unsigned int flags
 
     if (!w->active)
         return -1;
-    n = d2_CreateWindowI(w->x - w->scrollX + x, w->y - w->scrollY + y, pw, h, flags);
+    n = d2_CreateWindow(w->x - w->scrollX + x, w->y - w->scrollY + y, pw, h, flags);
     d2_AddToDrawOrder(d2_Wins[n].parent, w);
     w->objs[w->nobjs] = d2_Wins[n].parent;
     d2_Objs[d2_Wins[n].parent].win = w;

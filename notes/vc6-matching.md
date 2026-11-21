@@ -6112,10 +6112,19 @@ the bytes no portable form gives.
 - **An unsigned char result tested in a register (`test al,0x40` after the call, no `and eax,0xff`)**: the
   caller's local is `unsigned char`, not `unsigned int` (d3q_Mark's `r = d3_ClipBox(..)`: an unsigned int
   local adds the mask; the old d3_ClipBoxU cast to an unsigned int return modelled that wrong local). Byte.
+- **Callers push promoted ints (movsx) to short parameters even in the defining unit, after the definition**
+  (d2_CreateChildWindow / d2_OpenForm -> d2_CreateWindow): the definition was old style, `int
+  d2_CreateWindow(x, y, w, h, flags) short x, y, w, h; unsigned int flags; {..}`, and its declarations K&R
+  (`int d2_CreateWindow();` in d2.h and menu.c): no prototype anywhere, so every call promotes. The body
+  compiles the same as with the short prototype; the d2_CreateWindowI casts (d2.c, menu.c) went,
+  d2_CreateChildWindow stays byte and d2_OpenForm's calls now push the original's movsx (its draft distance
+  630 -> 635 ins elsewhere). pokerwin.c / shot.c's unused short prototypes went (dcp lint M5). dcp lint counts the
+  calls as M7 (cmfight 2, main, menu, sv). A prototype in scope wins over a later K&R definition (composite
+  type), so the owner header must not carry the short prototype.
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_CreateWindow /
-  d2_AddHitRect / net_Connect (short parameters the callers push promoted, the short definition is right),
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), d2_AddHitRect /
+  net_Connect (short parameters the callers push promoted, the short definition is right),
   dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
