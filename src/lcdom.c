@@ -2077,24 +2077,28 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
    the hire cost through a named owner = ai_Chars[bld->owner] as the helper book's master hire (104 -> 32:
    bld then held in esi over the hire block, -1 in ebp), the hire request filled type, flags, to, fromId,
    time, hireRows[sel] (a 720-order round: 32 -> 4, shape). Left: the two inline strcpy's of the refill
-   loop (hireText / emptyText) store through [edx+eax] where the original has [eax+edx] (operand order of
-   the copy's address add, same registers); ai_HelperBook's identical statements compile to [eax+edx]; the
-   buffers' declaration order is no lever. prior: Written whole from the original (was a stub): the
-   four-page mercenary book, the bonus split (pay_worker), the inline row creation (picture 0x5db, the two
-   texts, the first six entry controls), the per-frame refill from gm_ListWorkers' third list (jobless
-   characters), the inline fill (portrait, name, opinion slider; the hire text 0x1a24 for a running request
-   6 of title 0x13; 'no character' with the controls freed), the clicks (hire request 6 with hireTitle
-   0x13, fire 0x31, promotion 0x32 or the refusal 0x1a27). 1075 vs 1077 instructions, every call the same
-   number of times. Left is allocation / scheduling: in the row setup ours keeps the picture x (px) in ebx
-   and y in a slot, the original y in ebx and px in a slot ('+ add ebx, 0x44' against '- mov eax, [esp +
-   0x24] / add eax, 0x44'), which moves the d2_Objs / rows[i].name stores (the two M8 lines at +0x368 /
-   +0x384 are those crossed stores) and the msg.time = ai_Time copy is stored in another word order (M8 at
-   +0xc31 / +0xc3b). The prover stops at gm_PlayerFactor's byte argument (ai_OwnPlayer pushed through dl
-   with other upper bits). Tried: the declaration order of y / px; the opinion's (v + 128.0) * 100.0 kept
-   in a double (that settled the M10 fold of 100 / 255). (references: M8 at +0x368: ours refers to
-   d2_LastWindow (0x6ed938), the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3 more), explained:
-   the M8 refs are crossed stores of the same objects (rows[i].name / d2_Objs) and the words of one struct
-   copy (msg.time = ai_Time) in another order) */
+   loop (hireText 0x5ac9db / emptyText 0x5aca8c) store through [edx+eax] where the original has [eax+edx]
+   (the operand order of the copy's address add, same registers); ai_HelperBook's identical refill text
+   compiles to [eax+edx]. flip.py (want [eax+edx], 1240 mutants): only int i / int k -> unsigned (or short
+   / char) flip it, and those make every i / k loop test jb (12 ins): so the order follows something
+   global, not a statement. No lever: the buffers' declaration order, i / k declarations moved to every
+   position, unused probe locals (symbol counts), the bonus loop over i (as the helper book), the page test
+   nested as the helper's. prior: Written whole from the original (was a stub): the four-page mercenary
+   book, the bonus split (pay_worker), the inline row creation (picture 0x5db, the two texts, the first six
+   entry controls), the per-frame refill from gm_ListWorkers' third list (jobless characters), the inline
+   fill (portrait, name, opinion slider; the hire text 0x1a24 for a running request 6 of title 0x13; 'no
+   character' with the controls freed), the clicks (hire request 6 with hireTitle 0x13, fire 0x31,
+   promotion 0x32 or the refusal 0x1a27). 1075 vs 1077 instructions, every call the same number of times.
+   Left is allocation / scheduling: in the row setup ours keeps the picture x (px) in ebx and y in a slot,
+   the original y in ebx and px in a slot ('+ add ebx, 0x44' against '- mov eax, [esp + 0x24] / add eax,
+   0x44'), which moves the d2_Objs / rows[i].name stores (the two M8 lines at +0x368 / +0x384 are those
+   crossed stores) and the msg.time = ai_Time copy is stored in another word order (M8 at +0xc31 / +0xc3b).
+   The prover stops at gm_PlayerFactor's byte argument (ai_OwnPlayer pushed through dl with other upper
+   bits). Tried: the declaration order of y / px; the opinion's (v + 128.0) * 100.0 kept in a double (that
+   settled the M10 fold of 100 / 255). (references: M8 at +0x368: ours refers to d2_LastWindow (0x6ed938),
+   the original's field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3 more), explained: the M8 refs are crossed
+   stores of the same objects (rows[i].name / d2_Objs) and the words of one struct copy (msg.time =
+   ai_Time) in another order) */
 
 void ai_MercenaryBook(AIBLD *bld, char *model)
 {
