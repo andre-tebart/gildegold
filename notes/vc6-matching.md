@@ -4611,8 +4611,8 @@ How arguments are pushed, a call written in both arms, parameter and return type
   10`, the owner's `short x, short y` gave byte. No lever: loop forms, casts, `#pragma optimize`
   (ai_MessageFilterScreen 44 ins -> byte). Check the callee's real parameter types when IVs differ.
 - **Row y `slot * 0x16 + 0x28` recomputed per call (lea chains, counters in memory), ours strength-reduced**: y is
-  a short; call int-declared d2_WinOpenPicStyled through the cast macro `d2_WinOpenPicStyledS` (as sv.c)
-  (ai_OpenItemTooltip -101 ins, stuck).
+  a short; call d2_WinOpenPicStyled by its short prototype (the d2_WinOpenPicStyledS casts are gone, see
+  "Portable spellings first") (ai_OpenItemTooltip -101 ins, stuck).
 
 ### Return types of callees
 - **`mov si,ax` / `and esi,0xffff` after a call (not `mov esi,eax`)**: the callee's result is a 16-bit type at
@@ -6148,9 +6148,25 @@ the bytes no portable form gives.
   passes `0` / `(int)home` (its other calls' `0.0f` push the same `push 0`). For that to be the unit's only view,
   the float prototype moved from am.h (which he.c includes, also through mission.h / rmsg.h) to its owner
   header amt_ai.h, which aip.c, am.c, amr.c and rmsg.c now include. The ai_PickActionBuildingI cast went (byte).
-- **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
-  stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen).
+- **Where a unit saw another declaration than the defining unit, write that declaration, not a cast** (header
+  drift: 90s units declared a function in several places and nothing checked them across units). Prefer, in
+  order: one true prototype everywhere (d2_AddHitRect, net_Connect: check what the body does with the
+  parameter), typed locals / fields at the callers (d3q_Mark, ord_RandomCellPoint), a declaration in the calling
+  unit's head with `@original` (util_Random, dd_Clear, ai_PickActionBuilding in he.c, d2_MoveObj in gfx.c; the
+  unit must then not see the owner's prototype: move it to the owner header or split the header's records
+  out, as dd_vesa_types.h / amt_ai.h), an old-style definition or K&R declaration (d2_CreateWindow,
+  d3s_ShadowPoly, d2_CenterObj's block declaration), and a cast macro last. dcp check's M5 wants headers to
+  repeat the definition and accepts a differing view in a unit's head with `@original`; dcp lint counts calls
+  under a K&R declaration as M7. Only a return-type difference is an error in one unit (C2371); a parameter-type
+  redeclaration is C4028, a warning, but not legal C.
+- **(c) cases left** (the cast stays @original; no declaration arrangement compiles): util_Random in
+  he_RunInnSim (he.c reads the 16-bit result in 18 other functions and the int one here; one unit cannot declare
+  both return types: C2371 at file and at block scope, an undeclared call is implicit int and conflicts the
+  same), d3sm_Pick in cmfight.c (cm_UpdatePointer's `and eax,0xff; cmp eax,-1` needs an int result: VC6 folds the
+  test away from every char-typed spelling, casts, masks and temporaries alike; cm_OrderClick in the same unit
+  tests the char in al). Not counted: main.c's call of the GetProcAddress result (dynamic loading), function
+  pointers passed with a cast as callbacks (d3_ForEachObject2, qsort, ai_GraveWindow, ai_VgFilter, sndc's
+  evt_CurCall->fn test) and cmscene's call through cm_Kinds[].check.
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).
 - **The callers read a 16-bit result of an int function (util_Random; `mov si,ax`)**: the units saw another
