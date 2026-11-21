@@ -18,7 +18,6 @@ struct G15PLANT;
 #include "cm_types.h"                /* CRIME */
 #include "gv_types.h"                /* GVENTRY, AIDEC, ORDSTATS, ORDSTATROUND, ORDMSGREC */
 
-extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
 typedef struct GVGRAVE {                /* 0x44 bytes, a dead person in a grave (GVYARD.graves; filled by gv_BuryNewDead) */
     int id;                             /* 0x00, the object id (ai_NextObjectId), -1 when free */
@@ -197,6 +196,7 @@ typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar ta
     char padf3;
 } GVAVATAR;
 typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
+extern GVAVATAR unk_Avatars[0x20];     /* 0x60f310, the avatars: the characters the graveyard raises (gv_AllocAvatar) */
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
 

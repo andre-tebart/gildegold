@@ -2725,7 +2725,7 @@ exe	0x004ece60	ahm_DeleteAlchemist	ahm	852445fc43d25d5a	no	byte	control=byte p1=
 exe	0x004ecf10	ahm_WriteRecord	ahm	cc4f7f07dd2469c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ed040	ahm_ReadRecord	ahm	e6852db51a47729d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ed170	gv_AllocAvatar	gv	d6879ba4e15f79a6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
-exe	0x004ed1e0	gv_WriteAvatars	gv	75d5b232f909a9fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x004ed1e0	gv_WriteAvatars	gv	0ac5f7d02112f2de	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b23997eba8a73ce8
 exe	0x004ed270	gv_ReadAvatars	gv	8669053322d75f56	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004ed3f0	gv_EffectNotifyOwner	gv	3c01036a661cf5ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ed480	gv_WriteEffects	gv	a1ff32d4d59fc83c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
