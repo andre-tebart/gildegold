@@ -41,13 +41,13 @@
 #include "d3_sm.h"
 #include "d3_tools.h"
 #include "d3s.h"
-#include "dd_vesa.h"
+#include "dd_vesa_types.h"
 #include "err.h"
 #include "f3gm.h"
 #include "mem.h"
 #include "ts_texture.h"
 #include "d3_pose.h"
-#define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
+void dd_Clear(D3RECT *rect, unsigned char r, unsigned char g, unsigned char b);  /* 0x41e100, @original: dd_vesa.c defines it with (RECT *, int r, int g, int b) and this unit does not include dd_vesa.h; it passes the fog colour's bytes unwidened (mov cl,al / mov al,ah / mov dl,[..]; push) and its D3RECT viewport */
 
 void d3fl_FreeMap(D3FLMAP *map);  /* 0x43ff90, d3_fl.c; declared here because a d3_fl.h prototype perturbs d3_tools.c's d3t_UpdateSunRays */
 int d3fl_Prerender(D3FLMAP *map);  /* 0x446180, d3_fl.c; declared here for the same reason (a d3_fl.h prototype perturbs d3_tools.c) */
@@ -882,7 +882,7 @@ void d3if_ClearView(void)
             d3d_Clear(&d3_Viewport);
         } else {
             if (!dd_Cleared)
-                dd_ClearB(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
+                dd_Clear(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
         }
         d3_Frame(0x40, 1, 1);
     }

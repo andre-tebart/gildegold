@@ -694,7 +694,6 @@ extern unsigned int d3_Fps60;       /* 0x63348c, frames per second (two windows)
 extern unsigned int d3_Fps10;       /* 0x633490 */
 extern unsigned int tb_Delay;           /* 0xfe7a88, tb.c (the script clock factor) */
 void d3d_Clear(D3RECT *r);                                                              /* 0x435fb0, d3_d3d.c */
-void dd_Clear(RECT *rect, int r, int g, int b);                                         /* 0x41e100, dd_vesa.c (d3_engine.c / d3_interface.c call it through dd_ClearB) */
 float d3fl_FarDist(struct D3FLMAP *p, D3VECTOR *pos, D3MATRIX *m);                      /* 0x446990 */
 void d3fl_Draw(struct D3FLMAP *map, char water);                                      /* 0x4439e0 */
 void d3s_CollectLights(void);                                                           /* 0x45c9f0, d3s.c */

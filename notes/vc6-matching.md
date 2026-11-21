@@ -6129,10 +6129,16 @@ the bytes no portable form gives.
   `mov dx,word`)**: both sides were int. The field was an `int` (LSSAVE.port at 0x84, written whole by
   GetPrivateProfileIntA / atoi; it was a `short cur` read through an int view macro) and net_Connect takes `int
   port` (its `htons(port)` compiles the same). The net_ConnectI cast and the ls_SavePortW view went (byte).
+- **Byte registers pushed unwidened (`mov cl,al; mov al,ah; mov dl,[..]; push ecx/eax/edx`) to an int
+  parameter the callee reads whole (dd_Clear's r, g, b)**: the calling unit saw an unsigned char prototype; a
+  K&R declaration promotes (movzx) like the int one. d3_engine.c and d3_interface.c declare `void
+  dd_Clear(D3RECT *rect, unsigned char r, unsigned char g, unsigned char b);` (`@original`) in their heads and
+  do not include dd_vesa.h (d3_interface.c takes its records from the new dd_vesa_types.h, which dd_vesa.h
+  includes; d3_engine.h's copy of the int prototype went). dd_vesa.c keeps `int r, g, b`. The dd_ClearB casts
+  went (byte).
 - **(c) cases where the original units saw another prototype than the definition** (no portable form, the cast
   stays @original): util_Random in he_RunInnSim alone (the int result in a unit that reads 16 bits elsewhere), d3sm_Pick (char result read as
-  int: an int definition is worse, a char prototype makes VC6 fold or widen),
-  dd_Clear (int definition, the caller pushes bytes unwidened), d3s_ShadowPoly (byte pushed to the int slot it
+  int: an int definition is worse, a char prototype makes VC6 fold or widen), d3s_ShadowPoly (byte pushed to the int slot it
   reads whole), ai_PickActionBuilding in he.c (a pointer register pushed into the float slot).
 - **A function that takes a text id or a string's address in one `int` (txt_Format, io_PrintText)**: callers
   of a literal pass `(int)"..."` to the one prototype (no cast macro with a `char *` parameter).

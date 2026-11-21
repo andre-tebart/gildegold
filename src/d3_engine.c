@@ -52,7 +52,6 @@
 #include "d3_snd.h"
 #include "d3_tools.h"
 #include "d3s.h"
-#include "dd_vesa.h"
 #include "f3gm.h"
 #include "f3init.h"
 #include "mem.h"
@@ -63,7 +62,7 @@
 #include "poker.h"
 #include "ch.h"
 #include "bio.h"
-#define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
+void dd_Clear(D3RECT *rect, unsigned char r, unsigned char g, unsigned char b);  /* 0x41e100, @original: dd_vesa.c defines it with (RECT *, int r, int g, int b) and this unit does not include dd_vesa.h; it passes the fog colour's bytes unwidened (mov cl,al / mov al,ah / mov dl,[..]; push) and its D3RECT viewport */
 /* The stock list head lives inside its 0xfc2e00 head sentinel (the original's +0x1fc relationship). As a
    separate COMMON pointer the linker would not keep it adjacent, so the loader would link the first object
    into one address while the readers start from another. */
@@ -2529,7 +2528,7 @@ void d3_Render(unsigned int mask, char flag)
         if (d3_Hardware)
             d3d_Clear(&d3_Viewport);
         else
-            dd_ClearB(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
+            dd_Clear(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
         d3_LightKeysCulled = 0;
         d3_LightKeysVisible = 0;
         d3_MaxZ = 0.0f;
