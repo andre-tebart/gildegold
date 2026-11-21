@@ -1120,7 +1120,7 @@ int ai_BrawlWin(AIC4 *attacker, AIC4 *defender, int *out)
 }
 /* the action table file is written and read field by field; a failed transfer closes the file and fails */
 #define AM_WRITE(p, size) if (vfs_fwrite(p, size, 1, f) <= 0) { vfs_fclose(f); return 0; }
-#define AM_READ(p, size) if ((unsigned)vfs_fread(p, size, 1, f) <= 0) { vfs_fclose(f); return 0; }
+#define AM_READ(p, size) if (vfs_fread(p, size, 1, f) <= 0) { vfs_fclose(f); return 0; }
 
 /* 0x494e70, loads the action table from /gamedata/ai/ai_data_2.dfn (or, with ai_WriteActionTable set, registers
    the actions from ai_method_addon.ini and writes the table) */

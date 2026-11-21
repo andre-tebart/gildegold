@@ -23,7 +23,6 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include "tr.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (defined below as char[768][0x21c]) as the AICHAR records they are */
 
-#define vfs_freadU ((unsigned (*)(void *, int, int, VFSFILE *))vfs_fread)  /* 0x430bd0, vfs.h int: @original this unit compares the count as unsigned (ahm_LoadDfn 0x4ebabd test eax,eax; jbe for `<= 0`) */
 
 extern char ch_EmptyName[];  /* 0x631090, the shared empty string "" (ch.c) */
 
@@ -468,7 +467,7 @@ int ahm_LoadDfn(void)
 
     f = vfs_Tfopen("/gamedata/ai/alchemy.dfn", "rb", (int)vfs_Root);
     if (f != 0) {
-        if (0 < vfs_freadU(&magic, 4, 1, f) && magic == 0x61486d52 && 0 < vfs_freadU(&ai_PlayerPrototypeCount, 4, 1, f) &&
+        if (0 < vfs_fread(&magic, 4, 1, f) && magic == 0x61486d52 && 0 < vfs_fread(&ai_PlayerPrototypeCount, 4, 1, f) &&
             ai_PlayerPrototypeCount >= 1 && ai_PlayerPrototypeCount <= 0x64) {
             if (ai_PlayerPrototypes != 0) {
                 mem_Free(ai_PlayerPrototypes);
@@ -477,15 +476,15 @@ int ahm_LoadDfn(void)
             ai_PlayerPrototypes = mem_Alloc(ai_PlayerPrototypeCount * 12, "ahm_AllocPlayerPrototypes");
             if (ai_PlayerPrototypes != 0) {
                 for (i = 0; i < ai_PlayerPrototypeCount; i++) {
-                    if (vfs_freadU(&ai_PlayerPrototypes[i].plr.attr[0], 1, 1, f) <= 0 ||
-                        vfs_freadU(&ai_PlayerPrototypes[i].plr.attr[1], 1, 1, f) <= 0 ||
-                        vfs_freadU(&ai_PlayerPrototypes[i].plr.attr[2], 1, 1, f) <= 0 ||
-                        vfs_freadU(&ai_PlayerPrototypes[i].plr.attr[3], 1, 1, f) <= 0 ||
-                        vfs_freadU(&ai_PlayerPrototypes[i].plr.attr[4], 1, 1, f) <= 0 ||
-                        vfs_freadU(&ai_PlayerPrototypes[i].plr.id, 4, 1, f) <= 0)
+                    if (vfs_fread(&ai_PlayerPrototypes[i].plr.attr[0], 1, 1, f) <= 0 ||
+                        vfs_fread(&ai_PlayerPrototypes[i].plr.attr[1], 1, 1, f) <= 0 ||
+                        vfs_fread(&ai_PlayerPrototypes[i].plr.attr[2], 1, 1, f) <= 0 ||
+                        vfs_fread(&ai_PlayerPrototypes[i].plr.attr[3], 1, 1, f) <= 0 ||
+                        vfs_fread(&ai_PlayerPrototypes[i].plr.attr[4], 1, 1, f) <= 0 ||
+                        vfs_fread(&ai_PlayerPrototypes[i].plr.id, 4, 1, f) <= 0)
                         goto bad;
                 }
-                if (0 < vfs_freadU(&ai_RecipePrototypeCount, 4, 1, f) && ai_RecipePrototypeCount >= 1 && ai_RecipePrototypeCount <= 0x64) {
+                if (0 < vfs_fread(&ai_RecipePrototypeCount, 4, 1, f) && ai_RecipePrototypeCount >= 1 && ai_RecipePrototypeCount <= 0x64) {
                     if (ai_RecipePrototypes != 0) {
                         mem_Free(ai_RecipePrototypes);
                         ai_RecipePrototypes = 0;
@@ -493,9 +492,9 @@ int ahm_LoadDfn(void)
                     ai_RecipePrototypes = mem_Alloc(ai_RecipePrototypeCount * 12, "ahm_AllocRecipePrototypes");
                     if (ai_RecipePrototypes != 0) {
                         for (i = 0; i < ai_RecipePrototypeCount; i++) {
-                            if (vfs_freadU(&ai_RecipePrototypes[i].rcp.id, 4, 1, f) <= 0 ||
-                                vfs_freadU(&ai_RecipePrototypes[i].rcp.a, 4, 1, f) <= 0 ||
-                                vfs_freadU(&ai_RecipePrototypes[i].rcp.b, 4, 1, f) <= 0)
+                            if (vfs_fread(&ai_RecipePrototypes[i].rcp.id, 4, 1, f) <= 0 ||
+                                vfs_fread(&ai_RecipePrototypes[i].rcp.a, 4, 1, f) <= 0 ||
+                                vfs_fread(&ai_RecipePrototypes[i].rcp.b, 4, 1, f) <= 0)
                                 goto bad;
                         }
                         vfs_fclose(f);

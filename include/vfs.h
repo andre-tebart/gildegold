@@ -123,7 +123,7 @@ void vfs_FreeDir(VFSDIR *d);                                                    
 char vfs_MakeDirs(char *path, int unk);                                                 /* 0x4302e0 */
 VFSFILE *vfs_Tfopen(char *name, char *mode, int unk);                                   /* 0x430470 */
 int vfs_fclose(VFSFILE *f);                                                             /* 0x430aa0 */
-int vfs_fread(void *buf, int size, int n, VFSFILE *f);                                  /* 0x430bd0 */
+unsigned int vfs_fread(void *buf, int size, int n, VFSFILE *f);                                  /* 0x430bd0 */
 int vfs_fgetc(VFSFILE *f);                                                              /* 0x430d90 */
 char *vfs_fgets(char *buf, int n, VFSFILE *f);                                          /* 0x430dc0 */
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                     /* 0x430e30, writes n items of size bytes to the file (the save game writer) */

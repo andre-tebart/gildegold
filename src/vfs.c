@@ -896,7 +896,7 @@ int vfs_fclose(VFSFILE *f)
    archive (unzReadCurrentFile), inflated (gzread) or plain (fread); returns the number of bytes read (0 at
    the end of a memory image), (unsigned)-1 for a closed or write-only file */
 
-int vfs_fread(void *buf, int size, int n, VFSFILE *f)
+unsigned int vfs_fread(void *buf, int size, int n, VFSFILE *f)
 {
     char msg[0x100];
     unsigned int ret = -1;

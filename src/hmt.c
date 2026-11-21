@@ -283,7 +283,7 @@ int hmt_Init(void)
     return ret;
 }
 
-#define HMT_FR(b, s, n, f) ((unsigned int)vfs_fread(b, s, n, f) > 0)
+#define HMT_FR(b, s, n, f) (vfs_fread(b, s, n, f) > 0)
 
 /* 0x4acae0, reads /gamedata/ai/historical.dfn into h (frees what h held); 0 or -1 (h emptied) */
 int hmt_ReadBinaryFile(HMTFILE *h)
