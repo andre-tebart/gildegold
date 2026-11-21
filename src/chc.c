@@ -805,11 +805,11 @@ int chc_SetCharacterTransperancy(CHARACTER **ch, int *alpha)
         return 1;
     }
     memset(&f, 0, sizeof(f));
-    f.f0 = 0;
-    f.alpha = *alpha;
-    d3_SetObjectAlphaC((*ch)->obj, (*ch)->obj->info, f);
+    f.s.f0 = 0;
+    f.s.alpha = *alpha;
+    d3_SetObjectAlpha((*ch)->obj, (*ch)->obj->info, f.f);
     if ((*ch)->transport)
-        d3_SetObjectAlphaC(*(*ch)->transport, (*(*ch)->transport)->info, f);
+        d3_SetObjectAlpha(*(*ch)->transport, (*(*ch)->transport)->info, f.f);
     return 0;
 }
 /* 0x40d1e0, CharacterSitsDown(ch): 1 when the character's sit flag (flags byte 0x10) is set, else 0 (also 0 after an error) */

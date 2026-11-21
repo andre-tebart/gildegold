@@ -16,13 +16,15 @@
 #define CHC_UNK18C(a)   (*(int *)((char *)(a) + 0x18c))
 
 /* D3TEXFLAGS as built for d3_SetObjectAlpha by SetCharacterTransperancy */
-typedef struct CHCALPHA {
-    unsigned char alpha;
-    unsigned char b1;
-    unsigned char f0 : 1, fr : 7;
-    unsigned char b3;
+typedef union CHCALPHA {            /* d3_SetObjectAlpha's flags as chc_SetCharacterTransperancy builds them */
+    D3TEXFLAGS f;
+    struct {
+        unsigned char alpha;
+        unsigned char b1;
+        unsigned char f0 : 1, fr : 7;
+        unsigned char b3;
+    } s;
 } CHCALPHA;
-#define d3_SetObjectAlphaC ((void (*)(D3OBJECT *, struct D3OBJINFO *, CHCALPHA))d3_SetObjectAlpha)
 
 
 int chc_CreateCharacter(char **name, float *x, float *y, float *z);                     /* 0x40ba10 */
