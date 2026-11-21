@@ -14,9 +14,8 @@
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
-   Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in sv_t.h and the tutorial code up
-   to ai_TutorialWindow and the chapter transition callbacks use them; most later functions still reach the
-   state record through the S / U_I byte-offset macros; the message (AIMSG, ai.h) is typed from
+   Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in sv_t.h and every function reaches
+   the state record through ai_Tutorial; the message (AIMSG, ai.h) is typed from
    ai_CabinetSpyWindow on, earlier senders and the contact-list records still use byte offsets; the cannon
    scene struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonBuildPanel.
    The unit's .rdata: ai_Tutorial 0x5eec60 and ai_TutorialConst5, then its literal 400.0f 0x5eec68; the cannon
@@ -300,7 +299,6 @@ extern unsigned char kb_Last;
 extern int sv_FrameMask;
 
 
-#define U_I(a) (*(int *)(a))
 
 
 void ai_TutorialHideText2();
@@ -320,7 +318,6 @@ struct SBSAMPLE;
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 TUTSTATE *const ai_Tutorial = &ai_TutorialState;  /* 0x5eec60, the pointer to the tutorial state record */
 const int ai_TutorialConst5 = 5;  /* 0x5eec64, the tutorial object's second named constant (after ai_Tutorial, before its literal 400.0f); no reader in the surviving code (name from the value: its meaning is open) */
-#define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -5021,7 +5018,7 @@ void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); void ai_StorageWind
 void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void);
 char ai_ShotCallbackArg[0x40];  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
-TUTSTATE ai_TutorialState;  /* 0x6fa060, the tutorial state record ai_Tutorial points to (the tutorial code reads it through S); its last read field is progressSlider at +0x6c, the 0x10 bytes to he_OptionsPath at 0x6fa0e0 stay unowned */
+TUTSTATE ai_TutorialState;  /* 0x6fa060, the tutorial state record ai_Tutorial points to (the tutorial code reads it through ai_Tutorial); its last read field is progressSlider at +0x6c, the 0x10 bytes to he_OptionsPath at 0x6fa0e0 stay unowned */
 
 /* dcp unit split: the functions of svgrave the rest of sv_t uses */
 void ai_GraveDeadName(GVGRAVE *e, char *out);
