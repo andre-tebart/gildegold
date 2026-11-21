@@ -33,6 +33,7 @@ struct D3SM;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
+#define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, @original the filter read as a plain value: menu.h's volatile view orders its loads after a memset of the config (ai_FeastWindow) */
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -6088,23 +6089,7 @@ int ai_EvalFest(AIGRP *g, int send);   /* 0x494ac0, am.h's prototype (am.h is no
    sends the feast message 0x37 and to every guest the invitation 0x36 (flags 9 for the kinds 6 / 7, else 1) and
    writes the guests' netIds into the table (-1 for the empty seats), the second or a right click cancel. A
    running feast (or a planned one) shows its summary in "fest2": the time (0x1780), the guests (0x1781), the
-   menu (0x1782), the musicians (0x1783, with a stage) and the cost (0x1784). The camera follows
-   @deep s22: 108 -> 4 ins (shape). Kept: the menu part (both pick windows, i and noMusik) in its own block
-   inside if (ev == 0), so the address-taken byte i shares its slot with refresh (frame 0x3e4); the g fill
-   as cost, leader, n, g.n, musik, essen and the invitation fill as type, to, arg[4], fromId, inviteWhen
-   (permutes); the 0 / bld register swap (the original 0 in ebp, bld and then -1 in edi) was the guests'
-   and done's zeros: as declaration initializers (int done = 0; AICHARREC *guests[4] = {0, 0, 0, 0}; {0}
-   alone is other code) they do not raise the 0 piece's priority above bld's (c2trace: 0 piece prio 46 >
-   bld 24 took edi first). Left (order 10): xor ebp,ebp + the store of when+8 (mov [esp+0x30],edx) stand
-   after mov ecx,0x14 / xor eax,eax / lea edi of the cfg memset in ours, before them in the original. =
-   control: when as initializer at any declaration position (before done: other code, same count), all 720
-   orders of essen / memset / cfg.kind / musik / cfg.mode / cfg.filter, essen / musik as initializers
-   (worse, M8), climb 3 rounds all ops. Not levers before: the event search loop forms, hasStage forms,
-   nested if (done) for the goto close. prior: frame sweep s21: 202 -> 108 ins: none (the -1 sent by
-   address with the feast message) a local of the send block. Left: frame 0x3e8 vs 0x3e4 (one slot more:
-   the original packs ok / cancel into one slot and i / refresh), two of the original's write-once slots
-   ([esp+0xbc], [esp+0x164]) without a partner, code 70. Lead: ok / cancel as locals of the blocks that
-   create and test them. */
+   menu (0x1782), the musicians (0x1783, with a stage) and the cost (0x1784). The camera follows */
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
 {
@@ -6122,7 +6107,7 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
     AICHARREC *ch;
     AICHARREC *pick;
     unsigned short *id;
-    AITIME when = ai_Time;
+    AITIME when;
     AICHARREC *guests[4] = {0, 0, 0, 0};
     AIGRP g;
     int ctl[6];                         /* the pick rows, then the guests' rows */
@@ -6132,12 +6117,13 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
     char okText[0x100];
     char cancelText[0x100];
 
+    when = ai_Time;
     essen = 6;
     memset(&cfg, 0, sizeof(cfg));
     cfg.kind = 6;
     musik = 5;
     cfg.mode = 0x400;
-    cfg.filter = gypsyFilter;
+    cfg.filter = gypsyFilterValue;
     gm_AddTime(&when, 0x18, 0, 0);
     when.hour = 0x14;
     when.min = 0;
