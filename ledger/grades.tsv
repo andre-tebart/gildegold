@@ -4377,7 +4377,7 @@ exe	0x005aa520	ai_FillVacantPersonnelRow	lcdom	byte	readable
 exe	0x005aa700	ai_ShowBldCarts	lcdom	byte	readable		
 exe	0x005aa9a0	ai_UpdateBldCarts	lcdom	byte	readable		
 exe	0x005aab80	ai_PersonnelBook	lcdom	draft	readable	deep	
-exe	0x005ac110	ai_MercenaryBook	lcdom	draft	readable	deep	
+exe	0x005ac110	ai_MercenaryBook	lcdom	shape	readable	deep	
 exe	0x005ad000	ai_AskHelperBonus	lcdom	byte	readable		
 exe	0x005ad150	ai_HelperBook	lcdom	byte	readable		
 exe	0x005ae240	ai_BuyCartWindow	lcdom	byte	readable		
@@ -4417,11 +4417,11 @@ exe	0x005b6eb0	ai_WithdrawSaleWindow	lcdom	byte	readable
 exe	0x005b6fe0	ai_RoomUpgradeWindow	lcdom	byte	readable		
 exe	0x005b7690	ai_UpgradeBuilding	lcdom	byte	readable		
 exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	byte	readable		
-exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	draft	readable	deep	
+exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	byte	readable		
 exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable		
 exe	0x005b84f0	ai_BuildingWindow	lcdom	byte	readable		
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	byte	readable		
-exe	0x005b92e0	ai_LiquidateAssets	lcdom	draft	readable	deep	
+exe	0x005b92e0	ai_LiquidateAssets	lcdom	byte	readable		
 exe	0x005b9730	ob_HandleBepflanzung	lcdom	byte	readable		
 exe	0x005b9db0	ai_HandlePickedPlant	lcdom	byte	readable		
 exe	0x005b9f30	ai_GelageWindow	lcdom	byte	readable		
