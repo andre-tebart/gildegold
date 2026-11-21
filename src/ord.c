@@ -32,7 +32,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
 /* ai_RatingBase as the int out[6] of the statistics record: the original moves the float's bits with a dword mov
@@ -1966,7 +1965,7 @@ void ord_RebuildGridSums(void)
         b = (ORDBLD *)gm_BuildQuery(1, 1, r.place);
         if (b == 0 || b->type == 0)
             continue;
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         q = b->object;
         if (q == 0)
             continue;
@@ -2405,7 +2404,7 @@ float ord_BuildingCapacityRatio(void)
     p = ai_Blds + 0xa9;
     for (i = 0; i < 0x20; i++) {
         if (*p != 0) {
-            r = ai_BTypes + (unsigned char)*p * 0x24d;
+            r = (char *)ai_BTypes + (unsigned char)*p * 0x24d;
             a += (unsigned char)r[0x247];
             b += (unsigned char)r[0x248];
         }

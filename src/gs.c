@@ -335,7 +335,7 @@ float gv_SchoolLevelFactor(unsigned short *c)
 
     best = 0;
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
-        if (b->type != 0 && b->owner == *c && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 7) {
+        if (b->type != 0 && b->owner == *c && ai_BTypes[b->type].kind == 7) {
             v = gm_BuildingSkill((unsigned char *)b, 10, 1);
             if (v == 0x4b)
                 return 0.75f;

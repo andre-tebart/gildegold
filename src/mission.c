@@ -30,7 +30,6 @@
 #include "gv.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 /* 0x4b39f0, clears the running missions */
 int ai_ClearMissions(void)
@@ -577,7 +576,7 @@ int ai_HasThreeStockedBuildings(AICHAR *c, G13TYPE *t)
     n = 0;
     for (b = gm_BuildQuery(2, 4, c->id, 5, k); n < 3 && b != 0; b = gm_BuildNext()) {
         ok = 1;
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         for (j = 0; j < 0x40 && bt->slot[j] != 0; j++) {
             if (!gm_Query(b->objList, 2, 6, 0, bt->slot[j] & 0x7fff)) {
                 ok = 0;

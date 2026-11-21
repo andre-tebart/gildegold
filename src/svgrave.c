@@ -1740,7 +1740,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
 
     kinds[2] = 0x227;
     res = gm_Query((void *)rec->objList, 2, 6, 0, 0x2a);
-    type = &((AIBTYPE *)ai_BTypes)[rec->type];
+    type = &ai_BTypes[rec->type];
     if (type->kind == 0x1f) {
         kinds[0] = 0x293;
         kinds[1] = 0x294;
@@ -3130,7 +3130,7 @@ int ai_PermissionBits1d(char *ch, char *b, char *x)
     int f;
     int i;
 
-    bldg = &((AIBTYPE *)ai_BTypes)[((AIBLD *)b)->type];
+    bldg = &ai_BTypes[((AIBLD *)b)->type];
     v = gm_TitleJob(((AICHAR *)ch)->id, gm_BuildingJob((unsigned char)bldg->kind));
     f = 0x81;
     if (((AIBLD *)b)->masterId == ((AICHAR *)ch)->id)

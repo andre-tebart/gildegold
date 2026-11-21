@@ -18,7 +18,6 @@
 #include "aip.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
@@ -1266,7 +1265,7 @@ int ai_FindDarkCornerTarget(AIPER *p, AIARG *a, AIARG *b)
     AIOBJ *o, *o2;
 
     for (bld = gm_BuildQuery(2, 4, p->id, 5, 0x16); bld != 0; bld = gm_BuildNext()) {
-        if (ai_BTypesT[bld->type].cap247 > 1 && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
+        if (ai_BTypes[bld->type].cap247 > 1 && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
             && (o2 = gm_Query(o->list, 1, 0, 300)) != 0 && he_FindEvent(2, 0, 0x74, 3, bld->id) == 0) {
             a->kind = 4;
             a->ref = bld->id;
@@ -1325,7 +1324,7 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
         bld = gm_BuildQuery(1, 5, 0x16);
         if (bld != 0) {
             do {
-                if (bld->owner != 0xffff && bld->owner != p->id && ai_BTypesT[bld->type].cap247 > 1
+                if (bld->owner != 0xffff && bld->owner != p->id && ai_BTypes[bld->type].cap247 > 1
                     && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
                     && (o = gm_Query(o->list, 1, 0, 300)) != 0) {
                     shops[n].bld = bld;
@@ -1444,7 +1443,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
         return 0;
     b = ai_BldsT;
     for (i = 0x100; i != 0; i--) {
-        if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
+        if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x27c) != 0) {
             if (best == 0) {
                 best = b;
@@ -1549,7 +1548,7 @@ int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
         return 0;
     b = ai_BldsT;
     for (i = 0x100; i != 0; i--) {
-        if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
+        if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x28a) != 0) {
             if (best == 0) {
                 best = b;
@@ -1625,7 +1624,7 @@ int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
         b = ai_BldsT;
         for (i = 0x100; i != 0; i--) {
             if (b->type != 0 && b->owner == p->id) {
-                bt = &ai_BTypesT[b->type];
+                bt = &ai_BTypes[b->type];
                 if (bt->kind == 0x1f && gm_Query(b->objList, 2, 6, 0, 0x27f) != 0 && ai_FindCurseEvent(b) == 0) {
                     if (best == 0) {
                         k = bt->cap247 != 2 ? 4 : 7;
@@ -1703,7 +1702,7 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
         return 0;
     b = ai_BldsT;
     for (i = 0; i < 0x100; i++, b++) {
-        if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
+        if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = PARTNER_FLAGS_ANY;
             if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)

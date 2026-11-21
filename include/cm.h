@@ -402,7 +402,7 @@ int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 int gm_FindObjectInst(int id);  /* 0x4fe980 */
 int gm_RemoveOwned(int *list, int id);  /* 0x5000c0, f3gm.h */
 extern int veg_NextId;  /* 0x6f0748 */
-extern char *ai_BTypes;  /* 0x7e3f30 */
+extern AIBTYPE *ai_BTypes;  /* 0x7e3f30 */
 #ifndef DATA_VIEWS_H
 extern char init_SceneDirty[];  /* 0xfd7f75 */
 #endif

@@ -53,7 +53,7 @@ extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern unsigned char kb_Last;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char * sv_SelectedObject;
@@ -107,7 +107,7 @@ extern int d2_ClickedId;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -233,11 +233,11 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_CutsceneActive;
 extern struct SBBANK *snd_RoomBank;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 #include "menu_types.h"
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -272,7 +272,7 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -335,11 +335,11 @@ extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -444,7 +444,7 @@ extern unsigned char kb_Last;
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60d568[];
 
 extern char ch_EmptyName[1];
@@ -496,7 +496,7 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
 } G8INVOBJ;
 #pragma pack(pop)
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -534,7 +534,7 @@ extern GAPDATA full_data_625380[];
 extern GAPDATA full_data_62bdc8[];
 extern GAPDATA full_data_62bde4[];
 extern GAPDATA full_data_62be00[];
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern unsigned char ai_OwnPlayer;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
@@ -542,7 +542,7 @@ extern struct D2OBJ *d2_Objs;
 extern char * cm_FieldObject;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
@@ -571,7 +571,7 @@ extern GAPDATA full_data_624204[];
 extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Crimes[];
 
 extern int d2_ClickedId;
@@ -3799,7 +3799,7 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
     checks[1] = -1;
     checks[2] = -1;
     checks[3] = -1;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     if (type->kind != 5) {
         on = (set.flags >> 1) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1954, 0, charId, on + 0x1955));
@@ -3930,7 +3930,7 @@ void ai_MasterHireWindow(AIBLD *bld, int mode)
                         msg.hireMasterRoom = ((AIROOM *)sv_PanelShown)->objId;
                     msg.hireTitle = 0;
                     cm_SendLongMessage((char *)&msg);
-                    txt_Format(text, 0x1939, ((AIBTYPE *)ai_BTypes)[bld->type].jobs[0] + 0x130);
+                    txt_Format(text, 0x1939, ai_BTypes[bld->type].jobs[0] + 0x130);
                     d2_ClearInput();
                     sv_MessageBox(text, 0);
                 }
@@ -4164,7 +4164,7 @@ void ai_MasterLetterWindow(AIBLD *bld)
     if (bld == 0 || ai_PlayerId != bld->owner)
         return;
     me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
     if (type->kind == 5 || type->kind == 9) {
         mode = 0x40;
@@ -4354,7 +4354,7 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     match = 0;
     ownerOk = 0;
     listed = 1;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     mask = cfg->classMask[1];
     lo = 0;
     hi = 0;
@@ -4431,7 +4431,7 @@ int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
         return 0;
     if (cfg->classMask[0] == 0 && cfg->kind == 0)
         return 1;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     lo = 0;
     hi = 0;
     if (type->kind > 0x1f)
@@ -4536,7 +4536,7 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
         rows[n++].id = bld->masterId;
     if (bld->owner != 0xffff && bld->masterId != bld->owner)
         rows[n++].id = bld->owner;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     if (bt->kind == 1 || bt->kind == 2) {
         for (i = 0; i < 768; i++) {
             if (n >= 16)
@@ -8658,7 +8658,7 @@ int ai_OpenTrial(AICHARREC *me, AICHARREC *target, int n, int byFaith)
     seated[2] = 0xffff;
     seated[3] = 0xffff;
     for (bld = gm_BuildQuery(1, 6); bld != 0; bld = gm_BuildNext())
-        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)bld)->type].kind == 0xf)
+        if (ai_BTypes[((AIBLD *)bld)->type].kind == 0xf)
             break;
     if (bld == 0)
         return 0x10;

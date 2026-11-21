@@ -71,7 +71,6 @@ extern int ai_EvalStack[73];
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -595,9 +594,9 @@ int ai_CanBuildType(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     if (s1->kind != 5)
         return 0;
     k = s1->ref;
-    if (ai_BTypesT[k].kind == 2) {
+    if (ai_BTypes[k].kind == 2) {
         h = p->bld2;
-        if (h != 0 && ai_BTypesT[h->type].cap247 >= ai_BTypesT[k].cap247 && ai_BTypesT[h->type].kind == 2)
+        if (h != 0 && ai_BTypes[h->type].cap247 >= ai_BTypes[k].cap247 && ai_BTypes[h->type].kind == 2)
             return 0;
         if (k == 4) {
             r = ord_DispatchOrder(1, p, q);
@@ -646,7 +645,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     plot = s2->ref;
     strcpy(name, "gb_");
-    strcat(name, ai_BTypesT[s1->ref].name);
+    strcat(name, ai_BTypes[s1->ref].name);
     strupr(name + 2);
     ok = 0;
     alt = 0;
@@ -665,7 +664,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
         alt = 1;
     }
     if (!ok) {
-        sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].name);
+        sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypes[s1->ref].name);
         return 0;
     }
     m.to = p->netId;
@@ -693,7 +692,7 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
     AIGOOD *g;
 
     list = b->objList;
-    t = &ai_BTypesT[b->type];
+    t = &ai_BTypes[b->type];
     cart = 0;
     for (i = 0; i < t->nslots; i++) {
         g = &ai_GoodsT[t->slot[i] & 0x7fff];

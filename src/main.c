@@ -315,7 +315,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319), main_PlayerCountDialog the same after its clamp (0x53281b) */
 #define ai_NetLibName (ai_DataPath + 0x100)  /* 0x75dda0, the network plug-in DLL (0x104 bytes inside ai_DataPath's block: game.INI [Network] Server, "Server\Server.dll") */
 #define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 /* 0x531670, destroys the game window and unregisters its class "Die Gilde" */
 
@@ -3386,12 +3385,12 @@ void main_EndRound(void)
             weight = 0;
             b = (AIBLD *)gm_BuildQuery(1, 4, k);
             while (b != 0) {
-                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
-                    if (ai_BTypesT[b->type].level == 1)
+                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypes[b->type].kind == 0x13 || ai_BTypes[b->type].kind == 4 || ai_BTypes[b->type].kind == 0x10 || ai_BTypes[b->type].kind == 5 || ai_BTypes[b->type].kind == 9) {
+                    if (ai_BTypes[b->type].level == 1)
                         weight += 2;
-                    else if (ai_BTypesT[b->type].level == 2)
+                    else if (ai_BTypes[b->type].level == 2)
                         weight += 4;
-                    else if (ai_BTypesT[b->type].level == 3)
+                    else if (ai_BTypes[b->type].level == 3)
                         weight += 8;
                 }
                 if (ai_IsLocalMaster(&ai_CharsT[k]) != 0 || ai_CharsT[k].kind == 1) {
@@ -3425,25 +3424,25 @@ void main_EndRound(void)
             }
             b = (AIBLD *)gm_BuildQuery(1, 4, k);
             while (b != 0) {
-                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
-                    if (ai_BTypesT[b->type].level == 1) {
+                if (gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 || ai_BTypes[b->type].kind == 0x13 || ai_BTypes[b->type].kind == 4 || ai_BTypes[b->type].kind == 0x10 || ai_BTypes[b->type].kind == 5 || ai_BTypes[b->type].kind == 9) {
+                    if (ai_BTypes[b->type].level == 1) {
                         b->budget = value * 2 / weight;
                         b->budget = b->budget < 0 ? 0 : b->budget;
-                        if (ai_BTypesT[b->type].kind == 5)
+                        if (ai_BTypes[b->type].kind == 5)
                             b->budget = b->budget < 192000 ? b->budget : 192000;
                         else
                             b->budget = b->budget < 64000 ? b->budget : 64000;
-                    } else if (ai_BTypesT[b->type].level == 2) {
+                    } else if (ai_BTypes[b->type].level == 2) {
                         b->budget = value * 4 / weight;
                         b->budget = b->budget < 0 ? 0 : b->budget;
-                        if (ai_BTypesT[b->type].kind == 5)
+                        if (ai_BTypes[b->type].kind == 5)
                             b->budget = b->budget < 320000 ? b->budget : 320000;
                         else
                             b->budget = b->budget < 128000 ? b->budget : 128000;
-                    } else if (ai_BTypesT[b->type].level == 3) {
+                    } else if (ai_BTypes[b->type].level == 3) {
                         b->budget = value * 8 / weight;
                         b->budget = b->budget < 0 ? 0 : b->budget;
-                        if (ai_BTypesT[b->type].kind == 5)
+                        if (ai_BTypes[b->type].kind == 5)
                             b->budget = b->budget < 640000 ? b->budget : 640000;
                         else
                             b->budget = b->budget < 256000 ? b->budget : 256000;
@@ -3943,7 +3942,7 @@ void main_SettleRound(unsigned short pl)
     {
         for (n = 0; n < 0x100; n++, c++) {
             if (c->type != 0 && c->owner == pl) {
-                AIBTYPE *bt = &ai_BTypesT[c->type];
+                AIBTYPE *bt = &ai_BTypes[c->type];
                 char kind;
 
                 c->roundSums[1] = 0;
@@ -3994,7 +3993,7 @@ void main_SettleRound(unsigned short pl)
 
                         if (m == 0) {
                             cnt++;
-                            cm_SendMessage3d((char *)c, 1, 0, ai_BTypesT[c->type].jobBytes);
+                            cm_SendMessage3d((char *)c, 1, 0, ai_BTypes[c->type].jobBytes);
                         } else if ((m->flags1b4 & 1) == 0) {
                             AIWORKSET ws;
 
@@ -4075,7 +4074,7 @@ void main_SettleRound(unsigned short pl)
     while (p != 0) {
         if (p->owner == pl) {
             ps = &ai_CharsT[p->owner];
-            if (ai_BTypesT[p->type].kind == 0x1e) {
+            if (ai_BTypes[p->type].kind == 0x1e) {
                 AICHAR *r = (AICHAR *)ahm_OwnerChar((unsigned char *)p);
 
                 if (r != 0) {
@@ -4306,13 +4305,13 @@ void main_BeginPlayerRound(void)
     }
     b = (AIBLD *)gm_BuildQuery(1, 6);
     while (b != 0) {
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         if (b->type == 0x1e) {
             i = init_BuildingSceneUniverse((unsigned char *)b);
             if (i != -1) {
                 int scene = d3_CurrentScene;
 
-                d3if_SelectScene(init_BuildingUniverse[ai_BTypesT[b->type].kind], 1);
+                d3if_SelectScene(init_BuildingUniverse[ai_BTypes[b->type].kind], 1);
                 d3_InflateScene(3);
                 veg_GrowPlants((G15PLANT *)b->plants);
                 d3_DeflateScene(3);

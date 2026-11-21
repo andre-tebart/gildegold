@@ -601,7 +601,6 @@ int he_RegisterEventTypeA2();
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it (the headers declare it unsigned short): @original he_RunInnSim reads the full int result (util_Random(4) + 3, no 16-bit mask); every other caller of this unit reads 16 bits */
 int gm_SumListMoney(void *list);  /* f3gmt.c, folded into gm_SumListAmounts 0x509e30: he_AllocTheft pushes only the list */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -2503,7 +2502,7 @@ void he_TopUpCharMoney(void)
 #define HE_FIND_OWN(k) \
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) { \
         if (b->type != 0) { \
-            bt = &ai_BTypesT[b->type]; \
+            bt = &ai_BTypes[b->type]; \
             if (bt->kind == (k) && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) \
                 break; \
         } \
@@ -2586,7 +2585,7 @@ void he_SpawnFounders(void)
     memset(own, 0, sizeof(own));
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
         if (b->type != 0) {
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             if (bt->kind < 0x21) {
                 cnt[bt->kind]++;
                 if (b->owner == 0xffff || b->owner == *ai_PlayerChar)
@@ -2876,7 +2875,7 @@ void he_SpawnFounders(void)
                     fl = 1;
                 for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
                     if (b->type != 0) {
-                        bt = &ai_BTypesT[b->type];
+                        bt = &ai_BTypes[b->type];
                         if (bt->kind == 7 && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) {
                             HE_OFFER_FOUND(7);
                             break;
@@ -5718,7 +5717,7 @@ void he_AllocGeselle(int ev)
     gm_FindById((int *)&b, 0, 0, g->bldId);
     if (b == 0)
         he_FreeEvent((int *)ev);
-    t = &ai_BTypesT[b->type];
+    t = &ai_BTypes[b->type];
     g->slot = cm_SendMessage3d((char *)b, 0, t->title, 0);
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 6, 0);
@@ -6140,7 +6139,7 @@ void he_RunStoreSale(int ev)
     do {
         if (n >= 16)
             break;
-        t = &ai_BTypesT[b->type];
+        t = &ai_BTypes[b->type];
         if (gm_BuildingClass(b->type) == 1 || t->kind == 9)
             sel[n++] = b;
     } while ((b = (AIBLD *)gm_BuildNext()) != 0);
@@ -6671,7 +6670,7 @@ void he_BeginPlague(int ev)
     i = util_Random(0x100);
     do {
         b = &ai_BldsT[i];
-        if (ai_BTypesT[b->type].kind == 7) {
+        if (ai_BTypes[b->type].kind == 7) {
             p->walk = util_Random(0x100);
             p->step = ai_RandomStrides[util_Random(0x10)];
             D3_ZERO(&msg, sizeof(msg));
@@ -6802,7 +6801,7 @@ void he_RunPlague(int ev)
         do {
             o = &ai_BldsT[k];
             hi = 0;
-            bt = &ai_BTypesT[o->type];
+            bt = &ai_BTypes[o->type];
             lo = 0;
             if ((unsigned char)bt->kind > 0x1f)
                 hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -7070,7 +7069,7 @@ void he_RunGang(int ev)
                     }
                 }
             }
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             do
                 kind = pick[util_Random(5)];
             while ((unsigned char)bt->kind == kind);
@@ -8531,7 +8530,7 @@ void he_RunPopulation(int ev)
         i = util_Random(0x100);
         while (found == 0 && n != 0) {
             b = &ai_BldsT[i];
-            if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
+            if (ai_BTypes[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                 && (unsigned short)b->residents < (unsigned short)kind[0])
                 found = 1;
             n--;
@@ -8599,7 +8598,7 @@ void he_RunPopulation(int ev)
             j = util_Random(0x100);
             while (found == 0 && n != 0) {
                 b = &ai_BldsT[j];
-                if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
+                if (ai_BTypes[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                     && (unsigned short)b->residents < (unsigned short)kind[0])
                     found = 1;
                 n--;
@@ -8816,7 +8815,7 @@ void he_RunDiseaseSim(int ev)
             risk = 0.0f;
             immunity = 0.0f;
             if (ai_CharsT[cur].bld2 != 0) {
-                if (ai_BTypesT[ai_CharsT[cur].bld2->type].kind == 2)
+                if (ai_BTypes[ai_CharsT[cur].bld2->type].kind == 2)
                     immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.0125f);
                 else
                     immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.02f);
@@ -8956,7 +8955,7 @@ void he_RunDarkCorner(int ev)
         do {
             bld = &ai_BldsT[idx];
             lo = 0;
-            bt = &ai_BTypesT[bld->type];
+            bt = &ai_BTypes[bld->type];
             hi = 0;
             if ((unsigned char)bt->kind > 0x1f)
                 hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -9578,7 +9577,7 @@ void he_StartReaper(int ev)
     do {
         o = &ai_BldsT[k];
         hi = 0;
-        bt = &ai_BTypesT[o->type];
+        bt = &ai_BTypes[o->type];
         lo = 0;
         if ((unsigned char)bt->kind > 0x1f)
             hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -9666,7 +9665,7 @@ void he_RunReaper(int ev)
             do {
                 o = &ai_BldsT[k];
                 lo = 0;
-                bt = &ai_BTypesT[o->type];
+                bt = &ai_BTypes[o->type];
                 hi = 0;
                 if ((unsigned char)bt->kind > 0x1f)
                     hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -10086,7 +10085,7 @@ void he_StepWalk(HEWALKSLOT *s)
         do {
             b = &ai_BldsT[idx];
             if (b->type != 0) {
-                bt = &ai_BTypesT[b->type];
+                bt = &ai_BTypes[b->type];
                 lo = 0;
                 hi = 0;
                 if (bt->kind > 0x1f)
@@ -10108,7 +10107,7 @@ void he_StepWalk(HEWALKSLOT *s)
     s->bldIndex = (unsigned char)idx;
     s->target = b->id;
     s->stage++;
-    bt = &ai_BTypesT[b->type];
+    bt = &ai_BTypes[b->type];
     if (bt->kind == 0x16 || bt->kind == 7 || bt->kind == 0xf)
         cm_SendChrGotoBuilding(s->chr, s->target, -1, 0, 0, "Sim Politicians");
     else
@@ -11273,7 +11272,7 @@ void he_RunSale(int ev)
             g = GM_GOOD(s->good);
             if (q != 0 && q->type != 0xfd) {
                 tid = 0x606;
-                if (ai_BTypesT[b->type].kind != 6) {
+                if (ai_BTypes[b->type].kind != 6) {
                     AICHAR *m = (AICHAR *)gm_FindCharacterByMaster((int)b);
 
                     if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0 && s->notify != 0)
@@ -11286,7 +11285,7 @@ void he_RunSale(int ev)
                 he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, s->obj, jump, "_NACHRICHTEN_HS_53");
             } else {
                 tid = 0x606;
-                if (ai_BTypesT[b->type].kind != 6) {
+                if (ai_BTypes[b->type].kind != 6) {
                     AICHAR *m = (AICHAR *)gm_FindCharacterByMaster((int)b);
 
                     if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0 && s->notify != 0)
@@ -11476,7 +11475,7 @@ void he_RunHire(int ev)
             break;
         owner = &ai_CharsT[b->owner];
         cost = (int)gm_JobCost(owner, b->type, h->job, -1);
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         if (cost > gm_GetGoodsValue(&ai_CharsT[b->owner])) {
             txt_Format(text, 0x1a41, b);
             he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, 0x5f2, b->id, h->target, 0, 0);
@@ -11507,7 +11506,7 @@ void he_RunHire(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0)
             break;
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         n = (AICHAR *)cm_GetSlotValue(h->slot);
         n->jobId = bt->jobs[h->job];
         n->title = 0;
@@ -11594,7 +11593,7 @@ void he_AllocTransport(int ev)
     to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
     if (to == 0)
         goto fail;
-    if (ai_BTypesT[to->type].kind == 0xa && o != 0 && (o->flags20 & 1) != 0) {
+    if (ai_BTypes[to->type].kind == 0xa && o != 0 && (o->flags20 & 1) != 0) {
         best = to;
         mind = 1e8f;
         d3_PointToWorld((D3OBJECT *)from->object, &((D3OBJECT *)from->object)->pos, (D3VECTOR *)&p1);
@@ -11776,7 +11775,7 @@ void he_TransportFromHome(int ev)
     guards = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
     gm_BuildQuery(1, 0, 0x45);
     from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
-    bt = &ai_BTypesT[from->type];
+    bt = &ai_BTypes[from->type];
     to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
     sc = d3_CurrentScene;
     tr = (AIOBJ *)gm_FindObjectInst(t->cart);
@@ -11879,7 +11878,7 @@ void he_TransportToHome(int ev)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
         } else {
-            bt = &ai_BTypesT[to->type];
+            bt = &ai_BTypes[to->type];
             icon = 0x609;
             if (to->type == 0x1e)
                 strcpy(quick, "_NACHRICHTEN_HS_58");
@@ -12105,7 +12104,7 @@ void he_TransportHomeHome(int ev)
                 && (tr->flags20 & 1) == 0 && t->quiet == 0)
                 he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
         } else {
-            bt = &ai_BTypesT[to->type];
+            bt = &ai_BTypes[to->type];
             if (to->type == 0x1e)
                 strcpy(quick, "_NACHRICHTEN_HS_58");
             else if (to->type == 0x1f)
@@ -12666,7 +12665,7 @@ void he_RunSlotOrder(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0)
             break;
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         if (o->type != 0x116) {
             lim0 = bt->min0;
             lim1 = bt->min1;
@@ -12952,7 +12951,7 @@ void he_RunHerbGathering(int ev)
                 if (o == 0)
                     break;
                 season = gm_ClockSeason(&ai_Time);
-                if (ai_BTypesT[b->type].kind == ' ')
+                if (ai_BTypes[b->type].kind == ' ')
                     amount = (int)((util_Random(6) + 9) * h->n * (gm_BuildingSkill((unsigned char *)b, 0x1e, 1) * (1.0 / 90) + 1.0));
                 else
                     amount = (int)((util_Random(6) + 9) * h->n * (gm_BuildingSkill((unsigned char *)b, 0xb, 1) * (1.0 / 90) + 1.0));
@@ -13191,7 +13190,7 @@ void he_RunStudy(int ev)
         m = (AICHAR *)gm_FindCharacterByMaster((int)b);
         if (m == 0 || (m->flags1b4 & 1) == 0) {
             q = 0;
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             if (bt->kind == 4)
                 q = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x60);
             else if (bt->kind == 0x13)
@@ -13506,7 +13505,7 @@ void he_RunSabotage(int ev)
                     msg.fromId = -1;
                     msg.flags = 2;
                     msg.extraFlag = 0;
-                    bt = &ai_BTypesT[b->type];
+                    bt = &ai_BTypes[b->type];
                     msg.to = ai_CharsT[e->chr].netId;
                     msg.time = ai_Time;
                     msg.arg[0] = b->id;
@@ -13695,7 +13694,7 @@ void he_RunSpying(int ev)
         n = 0x100;
         do {
             bld = &ai_BldsT[idx];
-            bt = &ai_BTypesT[bld->type];
+            bt = &ai_BTypes[bld->type];
             hi = 0;
             lo = 0;
             if (bt->kind > 0x1f)
@@ -14061,7 +14060,7 @@ void he_AllocTheft(AIJOB *e)
         he_FreeEvent((int *)e);
         return;
     }
-    bt = &ai_BTypesT[b->type];
+    bt = &ai_BTypes[b->type];
     if (bt->kind == 0xd || bt->kind == 0xc || bt->kind == 0xb) {
         he_FreeEvent((int *)e);
         return;
@@ -14113,7 +14112,7 @@ void he_RunTheft(AIJOB *e)
                 he_FreeEvent((int *)e);
                 return;
             }
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             if (bt->kind == 0xd || bt->kind == 0xc || bt->kind == 0xb) {
                 he_FreeEvent((int *)e);
                 return;
@@ -14260,7 +14259,7 @@ void he_AllocUpgrade(AIJOB *e)
         return;
     }
     if (gm_AllowAll == 0) {
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         hours = (bt[1].v243 - bt->v243) * 24;
         if (hours <= 0)
             hours = 24;
@@ -14381,7 +14380,7 @@ void he_RunEvent1f(int ev)
         if (b != 0) {
             o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, g->good);
             if (o != 0) {
-                bt = &ai_BTypesT[b->type];
+                bt = &ai_BTypes[b->type];
                 txt_Format(text, 0x1c2b, b, g->good * 2 + 0x9a8);
                 if (bt->kind != 6) {
                     m = (AICHAR *)gm_FindCharacterByMaster((int)b);
@@ -14462,7 +14461,7 @@ void he_RunDemolish(int ev)
         return;
     case 1:
         b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
-        if (b != 0 && ai_BTypesT[b->type].kind != 0xf) {
+        if (b != 0 && ai_BTypes[b->type].kind != 0xf) {
             for (i = 0; i < 768; i++) {
                 c = &ai_CharsT[i];
                 if ((c->kind == 6 || c->kind == 7) && c->id != b->owner) {
@@ -14538,7 +14537,7 @@ void he_RunBuyBuilding(int ev)
         factor = 15.0f;
         buyer = (AICHAR *)gm_FindChar(p->buyer);
         b = (AIBLD *)gm_FindBuildingById(e->bldId);
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         value = gm_EquipmentValue((unsigned char *)b, b->level);
         if (bt->kind == 2) {
             home = ai_CharsT[b->masterId].bld2;
@@ -14551,7 +14550,7 @@ void he_RunBuyBuilding(int ev)
         } else {
             n = 0;
             /* @original bt is taken again here (the original's dead lea of the type record after the kind read) */
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             if (gm_BuildQuery(2, 4, ai_CharsT[b->masterId].id, 5, (unsigned char)bt->kind) != 0) {
                 do
                     n++;
@@ -15152,7 +15151,7 @@ void he_RunHarvest(int ev)
             return;
         if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
             struct VFSDIR *dir;
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             sprintf(name, "Ernten_start_%s", t->name);
             sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
             if (vfs_FindFile(path, vfs_Root, &dir) != 0 && (sc = evt_LoadScript(path)) != 0) {
@@ -15181,7 +15180,7 @@ void he_RunHarvest(int ev)
             evt_Stop(evt_FindById(e->harvestScript));
         if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
             struct VFSDIR *dir;
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             sprintf(name, "Ernten_end_%s", t->name);
             sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
             if (vfs_FindFile(path, vfs_Root, &dir) != 0 && (sc = evt_LoadScript(path)) != 0) {
@@ -15722,7 +15721,7 @@ int he_FindFigurePlace(AICHAR *p, int *bldId, int *objId, int *scene)
     if (p->kind == 0xd || p->kind == 0xe)
         return 0;
     if (p->bld != 0) {
-        bt = &ai_BTypesT[p->bld->type];
+        bt = &ai_BTypes[p->bld->type];
         if (bt->kind == 4 || bt->kind == 0x10 || bt->kind == 0x13 || bt->kind == 0x1d || bt->kind == 0x1e)
             return 0;
         k = p->jobKind;
@@ -15932,7 +15931,7 @@ void he_RunRoutine(AIJOB *ev)
 
             c = &ai_CharsT[i];
             if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
-                bt = &ai_BTypesT[c->bld->type];
+                bt = &ai_BTypes[c->bld->type];
                 if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
                     && he_FindFigurePlace(c, &place, &obj, 0) != 0
                     && (place != c->model->bldId || obj != c->model->scriptGroup)
@@ -15959,7 +15958,7 @@ void he_RunRoutine(AIJOB *ev)
 
             c = &ai_CharsT[i];
             if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0) {
-                bt = &ai_BTypesT[c->bld->type];
+                bt = &ai_BTypes[c->bld->type];
                 if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
                     && he_FindFigurePlace(c, &place, &obj, 0) != 0
                     && (place != c->model->bldId || obj != c->model->scriptGroup)
@@ -15989,7 +15988,7 @@ void he_RunRoutine(AIJOB *ev)
                 int bld, contact;
 
                 if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].bld2 != 0 && ai_CharsT[i].model != 0) {
-                    bt = &ai_BTypesT[ai_CharsT[i].bld->type];
+                    bt = &ai_BTypes[ai_CharsT[i].bld->type];
                     if (bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13
                         && he_FindFigurePlace(&ai_CharsT[i], &bld, &contact, 0) != 0
                         && (bld != ai_CharsT[i].model->bldId || contact != ai_CharsT[i].model->scriptGroup)
@@ -17774,7 +17773,7 @@ void he_AllocFire(AIJOB *ev)
     int i;
 
     for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
-        t = &ai_BTypesT[b->type];
+        t = &ai_BTypes[b->type];
         if (gm_IsHomeType((unsigned char *)b) == 0 && gm_IsType10((unsigned char *)b) == 0 && b->object != 0
             && t->kind != 3)
             list[n++] = b;
@@ -18335,7 +18334,7 @@ void he_AllocNewWorker(AIJOB *ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    t = &ai_BTypesT[b->type];
+    t = &ai_BTypes[b->type];
     if (t->kind != 2) {
         for (i = 5; i >= 0; i--) {
             if (t->jobs[i] != 0) {

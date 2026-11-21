@@ -4178,7 +4178,7 @@ exe	0x00594e50	ai_CriminalContact	lc	byte	readable
 exe	0x005950e0	ai_FarTradeContact	lc	byte	readable		
 exe	0x00595170	ai_SmithyContact	lc	byte	readable		
 exe	0x00595330	ai_CarpenterContact	lc	byte	readable		
-exe	0x00595480	ai_TradeSearchWindow	lc	byte	readable		
+exe	0x00595480	ai_TradeSearchWindow	lc	shape	readable		byte+readable -> shape+readable at 55e739c9: tie-break: ai_BTypes typed AIBTYPE * (the view ai_BTypesT went); its text only lost the (AIBTYPE *) cast, and dcp's sweep proves the same text byte under another declaration set (4 unused typedefs at the unit's start) [waits for: lc.c's declaration set (G.tiebreak)]
 exe	0x00595a00	ai_AquariumSearchWindow	lc	byte	readable		
 exe	0x00595ed0	ai_PerfumeryContact	lc	byte	readable		
 exe	0x00596060	ai_IdleContact	lc	byte	readable		

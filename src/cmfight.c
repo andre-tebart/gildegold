@@ -95,7 +95,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
@@ -1970,7 +1969,7 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     } else {
         b = (AIBLD *)gm_BuildQuery(1, 1, rec->placeId);
         if (gm_IsHomeType((unsigned char *)b) != 0) {
-            t = &ai_BTypesT[b->type];
+            t = &ai_BTypes[b->type];
             if (t->kind == 0x10) {
                 cm_LoadEventScene("Kampfszenario_RAEUBERLAGER.ed3");
                 border = 15;
@@ -1980,19 +1979,19 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
                 cm_LoadEventScene("Kampfszenario_WALDSTUECK.ed3");
             else if (t->kind == 0xd)
                 cm_LoadEventScene("Kampfszenario_MINE.ed3");
-        } else if (ai_BTypesT[b->type].kind == 4) {
-            if (ai_BTypesT[b->type].level == 1)
+        } else if (ai_BTypes[b->type].kind == 4) {
+            if (ai_BTypes[b->type].level == 1)
                 cm_LoadEventScene("Kampfszenario_SCHMUGGLERLOCH.ed3");
-            else if (ai_BTypesT[b->type].level == 2)
+            else if (ai_BTypes[b->type].level == 2)
                 cm_LoadEventScene("Kampfszenario_UNTERSCHLUPF.ed3");
-            else if (ai_BTypesT[b->type].level == 3)
+            else if (ai_BTypes[b->type].level == 3)
                 cm_LoadEventScene("Kampfszenario_DIEBESGILDE.ed3");
-        } else if (ai_BTypesT[b->type].kind == 0x13) {
-            if (ai_BTypesT[b->type].level == 1)
+        } else if (ai_BTypes[b->type].kind == 0x13) {
+            if (ai_BTypes[b->type].level == 1)
                 cm_LoadEventScene("Kampfszenario_STADTWACHE_KLEIN.ed3");
-            else if (ai_BTypesT[b->type].level == 2)
+            else if (ai_BTypes[b->type].level == 2)
                 cm_LoadEventScene("Kampfszenario_STADTWACHE_MITTEL.ed3");
-            else if (ai_BTypesT[b->type].level == 3)
+            else if (ai_BTypes[b->type].level == 3)
                 cm_LoadEventScene("Kampfszenario_STADTWACHE_GROSS.ed3");
         }
     }
@@ -3407,7 +3406,7 @@ int cm_LootCarts(CMFIGHTREC *a, AIBLD *b, AICHAR *d, int unused, float f)
 
 int cm_FightRole(unsigned char *b)
 {
-    AIBTYPE *t = &ai_BTypesT[*b];
+    AIBTYPE *t = &ai_BTypes[*b];
 
     if (t->kind == 0x13)
         return 0;
@@ -3826,7 +3825,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     io_PrintText("$C");
     io_PrintText(0x1191);
     b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
-    bt = &ai_BTypesT[b->type];
+    bt = &ai_BTypes[b->type];
     if (bt->kind == 0x13)
         role = 0;
     else if (bt->kind == 0x10)
@@ -3837,7 +3836,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     cm_FightPortraits(a->attackers, 0, 100);
     ca = (AIBLD *)gm_BuildQuery(1, 1, a->placeId);
     if (ca != 0) {
-        bt = &ai_BTypesT[ca->type];
+        bt = &ai_BTypes[ca->type];
         if (bt->kind == 0x13)
             role = 0;
         else if (bt->kind == 0x10)
@@ -3911,7 +3910,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             n++;
         if (n == 1) {
             /* the building is taken */
-            bt = &ai_BTypesT[ca->type];
+            bt = &ai_BTypes[ca->type];
             if (bt->kind == 4 || bt->kind == 0x10)
                 ai_CountMissionEvent(cm_FightAttacker, 0x1c);
             cm_SendOwnership(ca->id, cm_FightAttackerC->netId, cm_FightAttackerC->netId);
@@ -3975,7 +3974,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     } else if (a->flags & 4) {
         /* the defenders of a building of kind 0x13: their bars, the wounded paid for */
         b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
-        if (ai_BTypesT[b->type].kind == 0x13) {
+        if (ai_BTypes[b->type].kind == 0x13) {
             total = 0;
             for (v = 0; v < 16; v++) {
                 id = a->defenders[v];

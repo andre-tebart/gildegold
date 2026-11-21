@@ -847,7 +847,7 @@ int ai_QueryDefault(int *args)
     if (args[0] != 0x1a || !args[1])
         return 1;
     bld = (AIBLD *)args[1];
-    if (((AIBTYPE *)ai_BTypes)[bld->type].kind == 0x12 && *sv_PanelShown == 0x74)
+    if (ai_BTypes[bld->type].kind == 0x12 && *sv_PanelShown == 0x74)
         return 0;
     return 1;
 }
@@ -858,12 +858,12 @@ int ai_QueryDefault(int *args)
 int ai_QueryBuilding0f(int *args)
 {
     if (args[0] == 0x19 && args[1]) {
-        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x10e)
+        if (ai_BTypes[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x10e)
             return 1;
         return 0;
     }
     if (args[0] == 0x1a && args[1]) {
-        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && *sv_PanelShown == 0x10e)
+        if (ai_BTypes[((AIBLD *)args[1])->type].kind == 0xf && *sv_PanelShown == 0x10e)
             return 0;
         return 1;
     }
@@ -875,7 +875,7 @@ int ai_QueryBuilding0f(int *args)
 int ai_QueryChapter2Step3(int *args)
 {
     if (args[0] == 0x19 && args[1]
-            && ((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x110)
+            && ai_BTypes[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x110)
         return 1;
     return 0;
 }
@@ -893,7 +893,7 @@ int ai_QueryChapter2Step4(int *p)
 int ai_QueryChapter2Step5(int *args)
 {
     if (args[0] == 0x19 && args[1]
-            && ((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind != 0xf)
+            && ai_BTypes[((AIBLD *)args[1])->type].kind != 0xf)
         return 0;
     return 1;
 }
@@ -905,7 +905,7 @@ int ai_QueryChapter2Step6(int *args)
     AIBTYPE *type;
 
     if (args[0] == 0x19 && args[1]) {
-        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type];
+        type = &ai_BTypes[((AIBLD *)args[1])->type];
         if (type->kind != 0xf && type->kind != 2)
             return 0;
     }
@@ -919,7 +919,7 @@ int ai_QueryChapter2Step7(int *args)
     AIBTYPE *type;
 
     if (args[0] == 0x19 && args[1]) {
-        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type];
+        type = &ai_BTypes[((AIBLD *)args[1])->type];
         if (type->kind != 0xf && type->kind != 2 && type->kind != 0x12)
             return 0;
     }
@@ -967,7 +967,7 @@ int ai_StepChapter1Step10(int *p)
     AIBTYPE *type;
 
     if (p[0] == 0xd && p[1]) {
-        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)p[1])->type];
+        type = &ai_BTypes[((AIBLD *)p[1])->type];
         if (type->kind == 0xa) {
             ai_Tutorial->state = 0xb;
             ai_Tutorial->next = 0xb;
@@ -1071,7 +1071,7 @@ int ai_StepChapter2Step5(int *p)
         if (ai_Tutorial->next != 4)
             goto next;
         b = (AIBLD *)p[1];
-        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 0xd)
+        if (ai_BTypes[b->type].kind != 0xd)
             goto fail;
         ai_Tutorial->state = 0xa;
         ai_Tutorial->next = 0xa;
@@ -1083,7 +1083,7 @@ next:
         if (!p[1])
             goto fail;
         b = (AIBLD *)p[1];
-        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 0xd)
+        if (ai_BTypes[b->type].kind != 0xd)
             goto fail;
         ai_Tutorial->state = 0xb;
         ai_Tutorial->next = 0xb;
@@ -1160,7 +1160,7 @@ int ai_StepChapter4Step2(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
+        if (ai_BTypes[kind].kind != 0x12)
             return 3;
         if (((AIBLD *)p[1])->owner != ai_PlayerId)
             return 3;
@@ -1177,7 +1177,7 @@ int ai_StepChapter4Step2(int *p)
     if (p[0] != 0x10 || !p[1])
         return 3;
     kind = ((AIBLD *)p[1])->type;
-    if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
+    if (ai_BTypes[kind].kind != 0x12)
         return 3;
     if (((AIBLD *)p[1])->owner != ai_PlayerId)
         return 3;
@@ -1202,7 +1202,7 @@ int ai_QueryChapter4Step2(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12
+        if (ai_BTypes[kind].kind == 0x12
                 && ((AIBLD *)p[1])->owner == ai_PlayerId
                 && (p[3] == 0xc || p[3] == 0x1df))
             return 1;
@@ -1222,7 +1222,7 @@ int ai_StepChapter4Step4(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
+        if (ai_BTypes[kind].kind != 0x12)
             return 3;
         if (((AIBLD *)p[1])->owner != ai_PlayerId)
             return 3;
@@ -1239,7 +1239,7 @@ int ai_StepChapter4Step4(int *p)
     if (p[0] != 0x11 || !p[1])
         return 3;
     kind = ((AIBLD *)p[1])->type;
-    if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
+    if (ai_BTypes[kind].kind != 0x12)
         return 3;
     if (((AIBLD *)p[1])->owner != ai_PlayerId)
         return 3;
@@ -1264,7 +1264,7 @@ int ai_QueryChapter4Step4(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12
+        if (ai_BTypes[kind].kind == 0x12
                 && ((AIBLD *)p[1])->owner == ai_PlayerId
                 && (p[3] == 0x79 || p[3] == 0x7a || p[3] == 0x78))
             return 1;
@@ -1281,7 +1281,7 @@ int ai_StepChapter4Step5(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind != 2)
+        if (ai_BTypes[kind].kind != 2)
             return 3;
         if (((AIBLD *)p[1])->owner != ai_PlayerId)
             return 3;
@@ -1298,7 +1298,7 @@ int ai_StepChapter4Step5(int *p)
     if (p[0] != 0x10 || !p[1])
         return 3;
     kind = ((AIBLD *)p[1])->type;
-    if (((AIBTYPE *)ai_BTypes)[kind].kind != 2)
+    if (ai_BTypes[kind].kind != 2)
         return 3;
     if (((AIBLD *)p[1])->owner != ai_PlayerId)
         return 3;
@@ -1323,7 +1323,7 @@ int ai_QueryChapter4Step5(int *p)
 
     if (p[0] == 0x2b && p[1]) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 2
+        if (ai_BTypes[kind].kind == 2
                 && ((AIBLD *)p[1])->owner == ai_PlayerId
                 && (p[3] == 5 || p[3] == 2 || p[3] == 0xd || p[3] == 8))
             return 1;
@@ -1395,7 +1395,7 @@ int ai_QueryChapter3Step6(int *p)
     }
     if (ai_Tutorial->goalDone >= 1 && p[1] && p[0] == 0x24) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0xa) {
+        if (ai_BTypes[kind].kind == 0xa) {
             ai_Tutorial->goalDone = 2;
             return 1;
         }
@@ -1476,7 +1476,7 @@ int ai_QueryChapter3Step8(int *p)
     }
     if (ai_Tutorial->goalDone >= 2 && p[1] && p[0] == 0x24) {
         kind = ((AIBLD *)p[1])->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12
+        if (ai_BTypes[kind].kind == 0x12
                 && ((AIBLD *)p[1])->owner == ai_PlayerId) {
             ai_Tutorial->goalDone = 3;
             return 1;
@@ -1549,7 +1549,7 @@ void ai_HookChapter3Intro(int arg)
         return;
     if (ai_PlayerBuilding) {
         kind = ((AIBLD *)ai_PlayerBuilding)->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12)
+        if (ai_BTypes[kind].kind == 0x12)
             return;
     }
     r = (AIBLD *)gm_BuildQuery(1, 5, 0x12);
@@ -1574,7 +1574,7 @@ void ai_HookChapter5Intro(int arg)
         return;
     if (ai_PlayerBuilding) {
         kind = ((AIBLD *)ai_PlayerBuilding)->type;
-        if (((AIBTYPE *)ai_BTypes)[kind].kind == 2)
+        if (ai_BTypes[kind].kind == 2)
             return;
     }
     r = (AIBLD *)gm_BuildQuery(2, 5, 2, 4, ai_PlayerId);

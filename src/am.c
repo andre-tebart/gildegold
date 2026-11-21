@@ -62,7 +62,6 @@ extern char ai_DataPath[608];
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -113,7 +112,7 @@ int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     if (ai_FindMasterBuilding(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
         if (bld) {
             t = bld->type;
-            if ((unsigned char)ai_BTypesT[t].level >= 3)
+            if ((unsigned char)ai_BTypes[t].level >= 3)
                 return 0;
             if (bld->flags5a & 0x41)
                 return 0;
@@ -640,7 +639,7 @@ int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0xd, 2, p->id))
         return 0;
     if (bl) {
-        if ((unsigned char)ai_BTypesT[bl->type].level >= 3 || (bl->flags5a & 0x41))
+        if ((unsigned char)ai_BTypes[bl->type].level >= 3 || (bl->flags5a & 0x41))
             return 0;
         t = bl->type + 1;
         L.s2.ref = t;
@@ -1247,7 +1246,7 @@ int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     bld = ai_BldsT;
     n = 0;
     for (i = 0; i < 256; i++, bld++) {
-        if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypesT[bld->type].kind == 0x1d) {
+        if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypes[bld->type].kind == 0x1d) {
             if (n < 8)
                 list[n++] = bld;
             r = gv_FindEntry(p, bld, 0, gv_EntryHeldBy, 0xff);

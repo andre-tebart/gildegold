@@ -31,6 +31,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
+#include "ai_bld.h"                  /* AIBTYPE (ai_BTypes) */
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
@@ -511,7 +512,7 @@ void init_HookObject(D3OBJECT *o, void *p, int kind)
 
     switch (kind) {
     case 2:
-        b = ai_BTypes + (unsigned)((INIT_BLD *)p)->type * 0x24d;
+        b = (char *)ai_BTypes + (unsigned)((INIT_BLD *)p)->type * 0x24d;
         sprintf(o->name, "gb_%s", b + 1);
         ((INIT_BLD *)p)->object = o;
         if (*b != 10) {
@@ -794,7 +795,7 @@ int init_BuildingKindName(int k, char *out)
     int off;
     char c;
 
-    t = ai_BTypes[k + k * 0x24c];
+    t = ((char *)ai_BTypes)[k + k * 0x24c];
     if (t == 0x1d) {
         strcpy(out, "FRIEDHOF");
         return 1;
@@ -803,7 +804,7 @@ int init_BuildingKindName(int k, char *out)
         strcpy(out, "ZIGEUNERLAGER");
         return 1;
     }
-    s = ai_BTypes + k + k * 0x24c + 1;
+    s = (char *)ai_BTypes + k + k * 0x24c + 1;
     off = out - s;
     do {
         c = *s;
@@ -844,7 +845,7 @@ void init_LoadBuildingScene(int k)
         tb_SetFunctionOff(sv_UpdateClock, 1);
         changed = 1;
     }
-    slot = (char *)init_BuildingUniverse + (unsigned char)ai_BTypes[k * 0x24d];
+    slot = (char *)init_BuildingUniverse + ai_BTypes[k].kind;
     if (*slot == -1) {
         if (ai_GameState != 0 && (ai_FrameWait <= 0 || sv_PanelFlag != 0)) {
             fl = sv_FrameMask & 0xfffffff7 | 0x80;
@@ -1576,7 +1577,7 @@ void init_Betrieb(INIT_BLD *b)
     unsigned short *rw, *rw0;
 
     cls = gm_BuildingClass(b->type);
-    p = ai_BTypes + (unsigned)b->type * 0x24d;
+    p = (char *)ai_BTypes + (unsigned)b->type * 0x24d;
     if (cls != 1 && cls != 4)
         return;
     o1 = (INIT_OBJ *)gm_Query((void *)b->objList, 1, 0, 0xff);
@@ -2560,7 +2561,7 @@ char init_TownBuildingHook(char *o)
     if (strncmp(o, "gb_", 3) != 0)
         return 1;
     if (o[0x4b] == 2)
-        p = ai_BTypes + (so->proto & INIT_PROTO_MASK) * 0x24d;
+        p = (char *)ai_BTypes + (so->proto & INIT_PROTO_MASK) * 0x24d;
     else
         p = 0;
     if (p == 0) {
@@ -2660,12 +2661,12 @@ void init_NameBuildings(void)
 
     b = (unsigned char *)gm_BuildQuery(1, 6);
     while (b != 0) {
-        if (ai_BTypes[*b * 0x24d] != 0x1c)
+        if (ai_BTypes[*b].kind != 0x1c)
             b[5] = ch_EmptyName[0];
         b = (unsigned char *)gm_BuildNext();
     }
     for (b = (unsigned char *)gm_BuildQuery(1, 6); b != 0; b = (unsigned char *)gm_BuildNext()) {
-        if (ai_BTypes[*b * 0x24d] != 0x1c) {
+        if (ai_BTypes[*b].kind != 0x1c) {
             cnt = 0;
             ((INIT_BLD *)b)->name[0] = ch_EmptyName[0];
             for (i = 0; i < 0xc; i++) {
@@ -2788,14 +2789,14 @@ void init_GiveFirstPlayerBuildings(void)
     while (1) {
         if (b->type != 0 &&
             ((gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 ||
-              ((k = ai_BTypes[b->type * 0x24d]) == 0x13 || k == 4)) || (k == 0x10 || (k == 5 || k == 9))) &&
-            ai_BTypes[b->type * 0x24d] != 0xb) {
+              ((k = ai_BTypes[b->type].kind) == 0x13 || k == 4)) || (k == 0x10 || (k == 5 || k == 9))) &&
+            ai_BTypes[b->type].kind != 0xb) {
             int v = 64000;
             cm_BeginFieldBlock((char *)b, b->id);
             cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x39, &v);
             cm_SendFieldDeltas();
             cm_SendOwnership(b->id, c->netId, c->netId);
-            cm_SendMessage3d((char *)b, 1, 0, (unsigned char)ai_BTypes[b->type * 0x24d + 0x223]);
+            cm_SendMessage3d((char *)b, 1, 0, ai_BTypes[b->type].jobs[0]);
             cm_SendExSellObject(b->id, -1, 0x135, 1, ai_OwnPlayer, 0);
         }
         b += 1;
@@ -2832,7 +2833,7 @@ int init_BuildingSceneUniverse(unsigned char *b)
     unsigned k;
     int uni;
 
-    k = (unsigned char)ai_BTypes[*b * 0x24d];
+    k = ai_BTypes[*b].kind;
     if (init_BuildingUniverse[k] == -1) {
         if (b != (unsigned char *)ai_FallbackBuilding && *b != 0x1e) {
             uni = d3t_FindFreeScene();
@@ -2840,7 +2841,7 @@ int init_BuildingSceneUniverse(unsigned char *b)
                 return -1;
             init_BuildingUniverse[k] = uni;
             init_SceneDirty[uni * 0x3e0] = 1;
-            strcpy(d3_Scenes[uni].name, ai_BTypes + *b * 0x24d + 1);
+            strcpy(d3_Scenes[uni].name, (char *)ai_BTypes + *b * 0x24d + 1);
         } else
             init_LoadBuildingScene(*b);
     }
@@ -2928,7 +2929,7 @@ void init_SyncSceneObjects(char *o)
                                 if (a != b) {
                                     ia = -1;
                                     ib = -1;
-                                    bt = (INIT_BTYPEREC *)(ai_BTypes + *ai_SceneBuilding * 0x24d);
+                                    bt = (INIT_BTYPEREC *)((char *)ai_BTypes + *ai_SceneBuilding * 0x24d);
                                     n = bt->nParts;
                                     for (i = 0; i < n; i++) {
                                         v = bt->parts[i] & 0x7fff;
@@ -3368,7 +3369,7 @@ char init_BuildingTextureSetHook(D3OBJECT *o, void *ctx)
     int n, i;
     int st;
 
-    p = ai_BTypes + (unsigned)*b * 0x24d;
+    p = (char *)ai_BTypes + (unsigned)*b * 0x24d;
     n = (unsigned char)p[0x247] - 1;
     if (*p == 2)
         n++;
@@ -3394,7 +3395,7 @@ void init_SetCharacterAnimations(unsigned char *b)
     int ch;
     INIT_ANIMSET *r;
 
-    cls = (unsigned char *)&ai_BTypes[*b * 0x24d];
+    cls = (unsigned char *)&ai_BTypes[*b];
     for (idx = 0; init_ClassAnims[idx].kind != 0; idx++)
         if (init_ClassAnims[idx].kind == *cls)
             break;
@@ -3436,10 +3437,10 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
 
     season = gm_ClockSeason(&ai_Time);
     cls = gm_BuildingClass(*b);
-    p = ai_BTypes + (unsigned)*b * 0x24d;
+    p = (char *)ai_BTypes + (unsigned)*b * 0x24d;
     o = (unsigned short *)gm_Query(bd->objList, 1, 0, slot);
     if (o == 0 || (proto = *o) == 0xfd) {
-        uni = init_BuildingUniverse[(unsigned char)ai_BTypes[*b * 0x24d]];
+        uni = init_BuildingUniverse[ai_BTypes[*b].kind];
         ai_SceneObject = 0;
         init_NoRoomNoOp();
     } else {
@@ -3551,7 +3552,7 @@ void init_FinishBuildingScene(unsigned char *b, unsigned short *o)
     SCENEOBJ *d;
     char *p;
 
-    p = ai_BTypes + (unsigned)*b * 0x24d;
+    p = (char *)ai_BTypes + (unsigned)*b * 0x24d;
     if (o == 0)
         o = (unsigned short *)gm_Query(bd->objList, 2, 6, 0, 0xfd);
     d = (SCENEOBJ *)d3_FindObject(0, 0xa0, 0, "contact_EINKAUF");

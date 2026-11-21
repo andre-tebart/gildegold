@@ -421,7 +421,7 @@ int gm_LoadTables(char *root)
         gm_StockBlocks[i].factorB = 1000;
         memcpy(gm_StockBlocks[i].goods, gm_DefaultStock, sizeof(gm_StockBlocks[i].goods));
     }
-    ai_BTypes = (char *)mem_Alloc(0xca78, "f3_gm:lpGebaeudePROT");
+    ai_BTypes = (AIBTYPE *)mem_Alloc(0xca78, "f3_gm:lpGebaeudePROT");
     if (ai_BTypes == 0)
         return -1;
     ai_Blds = (char *)mem_Alloc(0xa900, "f3_gm:lpGebaeudeINST");
@@ -729,7 +729,7 @@ void gm_SyncMarket(unsigned p)
             stock[i].amount = 0;
         b = (unsigned char *)gm_BuildQuery(1, 6);
         while (b != 0) {
-            if (ai_BTypes[*b * 0x24d] != 10) {
+            if (ai_BTypes[*b].kind != 10) {
                 o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
                 for (i = 0; o != 0 && i < 0x55; i++) {
                     {
@@ -850,7 +850,7 @@ void gm_RefreshGoodsLists(unsigned p)
         stock[i].amount = 0;
     b = (unsigned char *)gm_BuildQuery(1, 6);
     while (b != 0) {
-        if (ai_BTypes[*b * 0x24d] != 10) {
+        if (ai_BTypes[*b].kind != 10) {
             o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
             for (i = 0; o != 0 && i < 0x55; i++) {
                 g = &stock[i];
@@ -2039,7 +2039,7 @@ unsigned char *gm_BuildNext(void)
                     goto no;
             }
             if (gm_BQClass != 0xff)
-                m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
+                m = ai_BTypes[gm_BQCursor->type].kind == gm_BQClass;
         } else {
         no:
             m = 0;
@@ -2277,7 +2277,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     unsigned short *s;
     ORDOBJ *o;
 
-    base = ai_BTypes;
+    base = (char *)ai_BTypes;
     if (base == 0)
         return 0;
     any = 0;
@@ -2517,7 +2517,7 @@ void *gm_GetGebaeudeHauptraum(unsigned char *p)
 
 int gm_BuildingClass(int kind)
 {
-    switch ((unsigned char)ai_BTypes[kind * 0x24d]) {
+    switch (ai_BTypes[kind].kind) {
     case 0xb:
     case 0xc:
     case 0xd:
@@ -2766,7 +2766,7 @@ int gm_MayTakeJob(int k, int c)
 
 int gm_IsType10(unsigned char *b)
 {
-    return ai_BTypes[*b * 0x24d] == 10;
+    return ai_BTypes[*b].kind == 10;
 }
 /* 0x502520, 1 when the building b is a home (the types 0xb, 0xc, 0xd, 0x10, 0x1c, 0x1d, 0x1f) */
 
@@ -2776,7 +2776,7 @@ int gm_IsHomeType(unsigned char *b)
 
     if (b == 0)
         return 0;
-    k = ai_BTypes + *b * 0x24d;
+    k = (char *)ai_BTypes + *b * 0x24d;
     if (*k == 0x0b || *k == 0x0d || *k == 0x0c || *k == 0x10 || *k == 0x1c || *k == 0x1d || *k == 0x1f)
         return 1;
     return 0;
@@ -2992,7 +2992,7 @@ void gm_ShowBuildingObjects(unsigned char *b)
     int n, i, o;
 
     n = 0;
-    if (ai_BTypes[((ORDBLD *)b)->type * 0x24d] == 2) {
+    if (ai_BTypes[((ORDBLD *)b)->type].kind == 2) {
         o = (int)gm_Query(((ORDBLD *)b)->objList, 1, 4, 2);
         while (o != 0) {
             l[n] = o;
@@ -3528,7 +3528,7 @@ void gm_KillSpieler(int c, int mode)
         ch->model = 0;
     }
     if (ch->bld2 != 0) {
-        if (ai_BTypes[ch->bld2->type * 0x24d] == 1 && ch->bld2->people > 0)
+        if (ai_BTypes[ch->bld2->type].kind == 1 && ch->bld2->people > 0)
             ch->bld2->people--;
         ch->bld2 = 0;
     }
@@ -6204,7 +6204,7 @@ float gm_JobWage(char *c, int k, int a, int b)
     char *p;
 
     f = 0.0f;
-    p = ai_BTypes + k * 0x24d;
+    p = (char *)ai_BTypes + k * 0x24d;
     if (a != -1)
         f = (unsigned char)p[0x229 + a] * 0x380;
     else if (b != -1)
@@ -6544,7 +6544,7 @@ int gm_BuildingRankGate(unsigned char *b, unsigned char *c)
     int r, lim;
 
     lim = 0;
-    p = ai_BTypes + (unsigned)*b * 0x24d;
+    p = (char *)ai_BTypes + (unsigned)*b * 0x24d;
     r = gm_BuildingRank(c);
     if (p[0x247] == 1)
         lim = 1;
@@ -6666,7 +6666,7 @@ int gm_WorkMinutesBetween(AITIME *a, AITIME *b, unsigned char *bld)
     hi = gm_DayEndHours[season];
     if (ai_GameFlags & 0x80)
         return gm_MinutesBetween(a, b);
-    if (bld != 0 && ai_BTypes[*bld * 0x24d] == 0x1d)
+    if (bld != 0 && ai_BTypes[*bld].kind == 0x1d)
         return gm_MinutesBetween(a, b);
     if (gm_CompareTime(a, b) > 0)
         return 0;
@@ -8433,7 +8433,7 @@ int gm_Homeless(char *c)
         return 0;
     b = (ORDBLD *)ai_Blds;
     for (i = 0; i < 0x100; i++) {
-        if (b->type != 0 && ai_BTypes[b->type * 0x24d] == 4 && b->v65 == (int)ORD_CHAR(c)->netId)
+        if (b->type != 0 && ai_BTypes[b->type].kind == 4 && b->v65 == (int)ORD_CHAR(c)->netId)
             return 0;
         b++;
     }
@@ -8445,7 +8445,7 @@ float gm_JobCost(char *c, int k, int a, int b)
 {
     int j;
 
-    j = gm_BuildingJob((unsigned char)ai_BTypes[k * 0x24d]);
+    j = gm_BuildingJob(ai_BTypes[k].kind);
     if (j != 10 && j != 0xb && j != 0xc)
         return gm_JobWage(c, k, a, b) * 3.0f;
     return gm_JobWage(c, k, a, b) * 9.0f;
@@ -8640,7 +8640,7 @@ unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_TreeRanks;  /* 0x889f70 */
 AITIME ai_Time;  /* 0x770ae0, the game clock */
 char ai_Chars[768][0x21c];  /* 0x770b80, the characters */
-char * ai_BTypes;  /* 0x7e3f30 */
+AIBTYPE *ai_BTypes;  /* 0x7e3f30 */
 signed char ai_Relations[768][768];  /* 0x7e5360 */
 int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */
 int gm_ClassBuilding[32];  /* 0x875360 */

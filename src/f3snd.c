@@ -66,7 +66,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 /* 0x4c01b0, stops the queue: restores the music after a fanfare (fade back to 1.0), frees every queued sound */
@@ -420,7 +419,7 @@ void snd_UpdateAnimals(void)
         snd_Animals[snd_AnimalSeason][4].last = t;
     }
     if (ai_PlayerBuildingT != 0 && snd_AmbientOn != 0) {
-        bt = &ai_BTypesT[ai_PlayerBuildingT->type];
+        bt = &ai_BTypes[ai_PlayerBuildingT->type];
         panel = sv_PanelShown;
         if (bt->kind == 0x16 && panel != 0 && *panel == 0x120) {
             int c;
@@ -487,7 +486,7 @@ void snd_EnterBuilding(void)
     if (b == 0 && (b = ai_FallbackBuildingB) == 0)
         return;
     k = 0;
-    kind = (unsigned char)ai_BTypes[*b * 0x24d];
+    kind = ai_BTypes[*b].kind;
     season = gm_ClockSeason(&ai_Time);
     i = snd_FindActiveTrack();
     if (i >= 0) {
@@ -735,7 +734,7 @@ void snd_UpdateMusic(void)
         if (!(t - snd_LastDecision > 40000 && trk != snd_SpecialTrack
               && (ai_PlayerBuildingB != 0 && snd_TrackBuilding != ai_PlayerBuildingB || b2 != 0 && snd_TrackBuilding != b2
                   || ai_PlayerBuildingB == 0 && b2 == 0 && snd_TrackBuilding != 0))
-            && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypesT[*snd_TrackBuilding].kind != 2))
+            && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypes[*snd_TrackBuilding].kind != 2))
             return;
         i = snd_FindActiveTrack();
         snd_TrackBuilding = ai_PlayerBuildingB;
@@ -746,7 +745,7 @@ void snd_UpdateMusic(void)
         if (util_Random(0x80) < prio) {
             k = 0;
             if (snd_TrackBuilding != 0)
-                kind = ai_BTypesT[*snd_TrackBuilding].kind;
+                kind = ai_BTypes[*snd_TrackBuilding].kind;
             else
                 kind = 0x2694;
             while (snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind)
@@ -948,7 +947,7 @@ void snd_LoadBuildingVoices(unsigned char *b)
 
     greet[0] = ch_EmptyName[0];
     memset(greet + 1, 0, sizeof(greet) - 1);
-    t = ai_BTypes + *b * 0x24d;
+    t = (char *)ai_BTypes + *b * 0x24d;
     if (*t == 4) {
         strcpy(order, "ARBEITER_KOMMENTARE_BEFEHL_DIEBE.sbf");
         strcpy(click, "ARBEITER_KOMMENTARE_KLICK_DIEBE.sbf");

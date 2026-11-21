@@ -159,7 +159,7 @@ extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern unsigned char kb_Last;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char * sv_SelectedObject;
@@ -213,7 +213,7 @@ extern int d2_ClickedId;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -339,11 +339,11 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_CutsceneActive;
 extern struct SBBANK *snd_RoomBank;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 #include "menu_types.h"
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -378,7 +378,7 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -441,11 +441,11 @@ extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -551,7 +551,7 @@ extern unsigned char kb_Last;
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60d568[];
 
 extern char ch_EmptyName[1];
@@ -603,7 +603,7 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
 } G8INVOBJ;
 #pragma pack(pop)
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -641,7 +641,7 @@ extern GAPDATA full_data_625380[];
 extern GAPDATA full_data_62bdc8[];
 extern GAPDATA full_data_62bde4[];
 extern GAPDATA full_data_62be00[];
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern unsigned char ai_OwnPlayer;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
@@ -649,7 +649,7 @@ extern struct D2OBJ *d2_Objs;
 extern char * cm_FieldObject;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
@@ -678,7 +678,7 @@ extern GAPDATA full_data_624204[];
 extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Crimes[];
 
 extern int d2_ClickedId;
@@ -1053,7 +1053,7 @@ int ai_ProductionWindow(AIBLD *bld)
     ai_CampaignStep(0x1f, 0, 0, 0);
     win = d2_OpenForm(0, 0, "Handel\\Handel_PRODUKTION");
     d2_CentreViewWindows(win);
-    if (((AIBTYPE *)ai_BTypes)[bld->type].kind == 0x1e)
+    if (ai_BTypes[bld->type].kind == 0x1e)
         sv_OpenPlayerBar((int)bld, 2);
     else
         sv_OpenPlayerBar((int)bld, 0);
@@ -1063,7 +1063,7 @@ int ai_ProductionWindow(AIBLD *bld)
     ncols = 0;
     d2_SetForm(win, 0);
     text = 0x70b;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     if (type->kind == 0x13 || type->kind == 4 || type->kind == 0x10)
         text = 0x72f;
     else if (type->kind == 8 || type->kind == 0xe)
@@ -1944,7 +1944,7 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
                 slot->label = d2_WinOpenPic(slot->x + 0xf, slot->y + 0x3a, 0x746, d2_LastWindow);
         }
         if (side & 2) {
-            bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+            bt = &ai_BTypes[bld->type];
             gm_FormatAmount((int)(bld->type == 0x47 ? gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot)
                                   : bt->kind == 0xa
                                       ? gm_GoodsPrice(slot->good, ai_OwnPlayer) * 1.1
@@ -2726,7 +2726,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     cur = 0;
     best = 1e+09f;
     firstPick = 1;
-    if (((AIBTYPE *)ai_BTypes)[kind].kind == 2) {
+    if (ai_BTypes[kind].kind == 2) {
         for (b = gm_BuildQuery(2, 4, ai_PlayerId, 5, 2); b != 0; b = gm_BuildNext()) {
             if (*b == kind) {
                 char ask[0x400];    /* the question whether to build another one */
@@ -2741,7 +2741,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     memset(sites, 0, sizeof(sites));
     memset(flags, 0, sizeof(flags));
     strcpy(buf, "gb_");
-    strcat(buf, ((AIBTYPE *)ai_BTypes)[kind].name);
+    strcat(buf, ai_BTypes[kind].name);
     strupr(buf + 2);
     for (f = 0.0f; f < 128.0f; f += 1.0f) {
         if (f != 0.0f)
@@ -2759,7 +2759,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
         return 0;
     }
     idx = util_Random(n);
-    if (((AIBTYPE *)ai_BTypes)[kind].kind == '!')
+    if (ai_BTypes[kind].kind == '!')
         idx = ((AICHARREC *)ai_Chars)[ai_PlayerId].sex != 1;
     if (ai_BuildingName(kind, bname) == 0)
         return 0;
@@ -2933,7 +2933,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                 d3_MatFromAngles((D3VECTOR4 *)&v, &mat);
             }
             if (dm_L.lup != 0 && ok) {
-                type = (AIBTYPE *)ai_BTypes + kind;
+                type = ai_BTypes + kind;
                 i = gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind);
                 txt_Format(text, 0x17ef, i, kind * 14 + 0x48e, type->v243);
                 if (sv_MessageBox(text, 1) != 0) {
@@ -3074,7 +3074,7 @@ void ai_ConstructionWindow(void)
             for (kind = 0; kind < 88; kind++) {
                 if (gm_BuildingClass(kind) != ai_BuildGroup)
                     continue;
-                type = (AIBTYPE *)ai_BTypes + kind;
+                type = ai_BTypes + kind;
                 ok = gm_MayTakeJob(kind, ai_PlayerId);
                 if (ok == 1) {
                     if (type->kind == 0xf || type->kind == 6)
@@ -3255,7 +3255,7 @@ void ai_TradeContactChecks(void)
         init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
     }
     b = (AIBLD *)ai_FallbackBuilding;
-    type = (AIBTYPE *)ai_BTypes + b->type;
+    type = ai_BTypes + b->type;
     if (b->type == 0x20 || b->type == 0x1f || b->type == 0x1e || type->kind == 0x1f ||
         type->kind == 0x1d)
         ai_MarketContact(b);
@@ -4869,7 +4869,7 @@ void ai_BriberyWindow(char *place, AIBLD *target)
         sv_MessageBox(text, uncovered);
         return;
     }
-    type = &((AIBTYPE *)ai_BTypes)[target->type];
+    type = &ai_BTypes[target->type];
     n = 0;
     bld = (AIBLD *)ai_PlayerBuilding;
     if (bld == 0)
@@ -5309,7 +5309,7 @@ void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
     goods[1] = 0x1c5;
     goods[2] = 0x1c6;
     store = gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     if (type->kind == 0x20) {
         goods[0] = 0x2af;
         n = 1;
@@ -9407,7 +9407,7 @@ int ai_IsBuildingOpen(AIBLD *b, unsigned int *open, unsigned int *close)
     AIBTYPE *type;
     int i;
 
-    type = &((AIBTYPE *)ai_BTypes)[b->type];
+    type = &ai_BTypes[b->type];
     for (i = 0; ai_OpeningHours[i].buildingClass != 0; i++) {
         if (type->kind == ai_OpeningHours[i].buildingClass) {
             if (open != 0)
@@ -9438,7 +9438,7 @@ int ai_MayEnterBuilding(AIBLD *b)
     char title[0x80];
     char msg[0x400];
 
-    type = &((AIBTYPE *)ai_BTypes)[b->type];
+    type = &ai_BTypes[b->type];
     cls = gm_BuildingClass(b->type);
     perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
     if ((b->flags5aw & 0x400) != 0)
@@ -9825,7 +9825,7 @@ void ai_EnterOwnBuilding(AIBLD *b)
         lastEvent = evt_LastId;
         if (b->owner != ai_PlayerId) {
             cls = gm_BuildingClass(b->type);
-            type = &((AIBTYPE *)ai_BTypes)[b->type];
+            type = &ai_BTypes[b->type];
             if (cls == 2) {
                 if (d3_VecEqual(&d3_Camera->views[5].pos, &d3_Origin, 0.1f) == 0 &&
                     d3_VecEqual(&d3_Camera->views[5].dir, &d3_Origin, 0.1f) == 0) {
@@ -10583,7 +10583,7 @@ void ai_GuildCashPayWindow(AIBLD *bld)
     cancelBtn = -1;
     payBtn = -1;
     text = 0;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     box = (AIROOM *)gm_Query((void *)bld->objList, 2, 6, 0, 0x142);
     amount = gm_SumListAmounts((void *)box->list, ai_OwnPlayer);
     worth = gm_GetGoodsValue(&((AICHARREC *)ai_Chars)[ai_PlayerId]);
@@ -12224,7 +12224,7 @@ int ai_GuildSpyWindow(int ctx, AIBLD *target)
         bld = (AIBLD *)ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
         bld = (AIBLD *)ai_FallbackBuilding;
-    type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)ai_PlayerBuilding)->type];
+    type = &ai_BTypes[((AIBLD *)ai_PlayerBuilding)->type];
     if (bld != 0)
         for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0; o = (AIOBJ *)gm_QueryNext())
             if (o->reportBld != target->id)
@@ -12302,7 +12302,7 @@ void ai_EspionageStart(AIBLD *bld)
     sv_OpenPlayerBar((int)bld, 0);
     req[19] = 0x727;
     req[4] = 7;
-    if (((AIBTYPE *)ai_BTypes)[bld->type].kind == 0x13) {
+    if (ai_BTypes[bld->type].kind == 0x13) {
         req[2] = 0x90010;
         req[3] = 0;
     } else {
@@ -12599,7 +12599,7 @@ void ai_ThievesGuildListener(int building, int room)
 
     sv_ReleaseNamePlates();
     bld = (AIBLD *)building;
-    type = (AIBTYPE *)ai_BTypes + bld->type;
+    type = ai_BTypes + bld->type;
     if (type->level >= 2) {
         obj = d3_FindObject(0, 0xc0, 0, "ub_GROSSSCHWERT");
         if (obj != 0)

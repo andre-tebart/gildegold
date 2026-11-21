@@ -266,7 +266,7 @@ int rt_ChooseGoodsDialog(AIBLD *b, int x, int def)
     int o;
 
     ret = def;
-    t = &((AIBTYPE *)ai_BTypes)[b->type];
+    t = &ai_BTypes[b->type];
     w = d2_OpenForm(0, 0, "misc\\routing_choose_good_enhanced");
     d2_CentreViewWindows(w);
     d2_SetForm(w, 4);
@@ -604,7 +604,7 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     if (cart == 0 || bld == 0)
         return;
     d2_EnableViewObjects(*win, 0);
-    t = &((AIBTYPE *)ai_BTypes)[bld->type];
+    t = &ai_BTypes[bld->type];
     w = d2_OpenForm(0, 0, "misc/routing_edit_point");
     d2_CentreViewWindows(w);
     v2 = d2_GetViewWin(w, 2);
@@ -1053,7 +1053,7 @@ void rt_UnloadAtPoint(char *c, char pl)
     b = gm_FindBuildingById(q->buildingId);
     if (b == 0)
         return;
-    t = ai_BTypes + ((AIBLD *)b)->type * 0x24d;
+    t = (char *)ai_BTypes + ((AIBLD *)b)->type * 0x24d;
     if (*t != 10 && *t != 0x1c && !gm_BuildingGoodsList(b, (unsigned *)&bi, 0))
         return;
     o = gm_ObjectBuildingOwner(c);
@@ -1120,7 +1120,7 @@ void rt_LoadAtPoint(AIOBJ *c, char pl)
     b = (AIBLD *)gm_FindBuildingById(q->buildingId);
     if (b == 0)
         return;
-    t = &((AIBTYPE *)ai_BTypes)[b->type];
+    t = &ai_BTypes[b->type];
     if (t->kind != 10 && t->kind != 0x1c && !gm_BuildingGoodsList((char *)b, (unsigned *)&bi, 0) || !gm_StallGoodsList((char *)c, (unsigned *)&ci))
         return;
     s = q->loadSlots;

@@ -410,7 +410,7 @@ int gv_GraveCount(unsigned char *o);    /* 0x4ef3c0 */
 int gv_GravesInUse(unsigned char *o);    /* 0x4ef440 */
 int gv_EntryCount(unsigned char *o);    /* 0x4ef470 */
 int gv_SizeOpen(char *r, int i);      /* 0x4ef4f0 */
-extern char *ai_BTypes;              /* 0x7e3f30 */
+extern struct AIBTYPE *ai_BTypes;    /* 0x7e3f30, the building types */
 int gv_ListEntry(char *r, int i, unsigned char n);  /* 0x4ef570 */
 int gv_EntryIndex(char *r, int *e);     /* 0x4ef6b0 */
 int gv_EntryHeldBy(char *a, char *b);    /* 0x4ef710 */

@@ -3193,7 +3193,7 @@ exe	0x0050e5a0	init_PlaceOffices	f3init	ce303634650af2b7	no	shape	sweep control=
 exe	0x0050e690	init_CreateStartCharacters	f3init	fe9dd50b50d8d6d0	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	91c7cb5cfc37c4c6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050f340	init_StockMarketStalls	f3init	4300f931b43b6466	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
-exe	0x0050f570	init_Betrieb	f3init	99df6db7777cbf21	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4133274ad1112113
+exe	0x0050f570	init_Betrieb	f3init	cb41456951ecc6a6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4b3d37405eaefa6f
 exe	0x0050f750	init_OpenBuilding	f3init	35b1554abb743765	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
 exe	0x0050f910	init_OpenTown	f3init	374667a1c0e8397e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00510730	init_CollectSiteObject	f3init	85f1adfd854ea640	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4091,7 +4091,7 @@ exe	0x00587de0	ai_ClearTurnTable	sv_t	5ee801eeb1a8f560	no	byte	control=byte p1=b
 exe	0x00587e00	ai_HandleItemDrag	sv_t	efa272b114588d87	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00588160	ai_OpenBuildingTooltip	sv_t	aeb7f9ad31930e05	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00588310	ai_OpenItemTooltip	sv_t	ec68579372749dc7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	74910ee1df658629	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00588950	ai_OpenUpgradeTooltip	svtip	de4f449bcdab3eaf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c2368f95eae6cb5e
 exe	0x00588bb0	ai_OpenHelpTooltip	sv_t	b38d33aa2d8b7ef0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00588c60	ai_OpenCharTooltip	sv_t	9855bb038712efd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005890c0	ai_CharInfoWindow	sv_t	b0403141468bb00d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4177,7 +4177,7 @@ exe	0x00594e50	ai_CriminalContact	lc	6507108db6e7385f	no	shape	sweep control=sha
 exe	0x005950e0	ai_FarTradeContact	lc	2826dc29eca02f9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00595170	ai_SmithyContact	lc	7b89b53e9278130f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00595330	ai_CarpenterContact	lc	11f0c47ab092a56a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
-exe	0x00595480	ai_TradeSearchWindow	lc	67daff8d7e96f5b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00595480	ai_TradeSearchWindow	lc	483d3e52c957ab11	yes	byte	sweep control=shape best=byte by 4 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	f898618155c38a68
 exe	0x00595a00	ai_AquariumSearchWindow	lc	ca1172d0ec5a6b60	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8fdeb4f1601c0522
 exe	0x00595ed0	ai_PerfumeryContact	lc	54f42bb8ba9a40c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00596060	ai_IdleContact	lc	744a0d1f84529fda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

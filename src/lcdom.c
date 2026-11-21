@@ -47,7 +47,7 @@ extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern unsigned char kb_Last;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char * sv_SelectedObject;
@@ -101,7 +101,7 @@ extern int d2_ClickedId;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -227,11 +227,11 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 
 extern int d2_CutsceneActive;
 extern struct SBBANK *snd_RoomBank;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 #include "menu_types.h"
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -266,7 +266,7 @@ extern int d2_LastWindow;
 
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -329,11 +329,11 @@ extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -438,7 +438,7 @@ extern unsigned char kb_Last;
 extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60d568[];
 
 extern char ch_EmptyName[1];
@@ -490,7 +490,7 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
 } G8INVOBJ;
 #pragma pack(pop)
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -528,7 +528,7 @@ extern GAPDATA full_data_625380[];
 extern GAPDATA full_data_62bdc8[];
 extern GAPDATA full_data_62bde4[];
 extern GAPDATA full_data_62be00[];
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern unsigned char ai_OwnPlayer;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
@@ -536,7 +536,7 @@ extern struct D2OBJ *d2_Objs;
 extern char * cm_FieldObject;
 
 
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
@@ -565,7 +565,7 @@ extern GAPDATA full_data_624204[];
 extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern char ai_Crimes[];
 
 extern int d2_ClickedId;
@@ -1346,7 +1346,7 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
     int v;
     double f;
 
-    bt = &((AIBTYPE *)ai_BTypes)[ch->bld->type];
+    bt = &ai_BTypes[ch->bld->type];
     d2_SetForm(row->view, 3);
     row->icon = d2_WinOpenPic((short)row->x + 2, (short)row->y, ch->picture, d2_LastWindow);
     io_CharacterName(ch->id, 1, 1, text);
@@ -1646,7 +1646,7 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
     AIJOB *job;
 
     nWorkers = 0;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     fireMasterButton = -1;
     hireMasterButton = -1;
     hireButton = -1;
@@ -1841,7 +1841,7 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
                                         msg.hireMasterRoom = ((AIROOM *)sv_PanelShown)->objId;
                                     msg.hireTitle = 0;
                                     cm_SendLongMessage((char *)&msg);
-                                    txt_Format(text1, 0x1939, ((AIBTYPE *)ai_BTypes)[bld->type].jobs[0] + 0x130);
+                                    txt_Format(text1, 0x1939, ai_BTypes[bld->type].jobs[0] + 0x130);
                                     sv_MessageBox(text1, 0);
                                 }
                                 for (k = 0; k < 3; k++) {
@@ -2141,7 +2141,7 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
     promoteButton = -1;
     sel = -1;
     radio = -1;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     book = sv_OpenBook(model, "Buch", 4, "Buch\\Soeldnerbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
                        "Buch\\Personalbuch_4");
     sv_UpdateBook(book);
@@ -2544,7 +2544,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
     radio = -1;
     fireMasterButton = -1;
     hireMasterButton = -1;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     book = sv_OpenBook(model, "Buch", 4, "Buch\\Soeldnerbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
                        "Buch\\Personalbuch_4");
     sv_UpdateBook(book);
@@ -2705,7 +2705,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
                             msg.hireMasterRoom = ((AIROOM *)sv_PanelShown)->objId;
                         msg.hireTitle = 0;
                         cm_SendLongMessage((char *)&msg);
-                        txt_Format(text1, 0x1939, ((AIBTYPE *)ai_BTypes)[bld->type].jobs[0] + 0x130);
+                        txt_Format(text1, 0x1939, ai_BTypes[bld->type].jobs[0] + 0x130);
                         sv_MessageBox(text1, 0);
                     }
                 }
@@ -3125,7 +3125,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
     lager = 0;
     bt = 0;
     if (bld != 0)
-        bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+        bt = &ai_BTypes[bld->type];
     if (source == 0) {
         lager = gm_Query(0, 2, 7, 1, lagerId);
         if (lager == 0) {
@@ -3268,7 +3268,7 @@ void ai_TransportGoodsTotal(AIBLD *bld, float factor, int mode)
     float sum;
 
     sum = 0.0f;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     if (bld->type == 0x47)
         owner = bld->playerSlot;
     else
@@ -3446,7 +3446,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         b = ai_MarketBuilding;
     }
     lc_Settings.escort = 0;
-    bt = &((AIBTYPE *)ai_BTypes)[b->type];
+    bt = &ai_BTypes[b->type];
     if (sv_PanelShown != 0) {
         mode1 = mode & 1;
         if (mode1) {
@@ -4247,8 +4247,8 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                             home = (AIBLD *)ai_PlayerBuilding;
                         else if (ai_FallbackBuilding != 0)
                             home = (AIBLD *)ai_FallbackBuilding;
-                        if (home == 0 || (((AIBTYPE *)ai_BTypes)[home->type].kind != 0x1e
-                                          && ((AIBTYPE *)ai_BTypes)[home->type].kind != 0x1d))
+                        if (home == 0 || (ai_BTypes[home->type].kind != 0x1e
+                                          && ai_BTypes[home->type].kind != 0x1d))
                             snd_PlayFavourComment();
                         ai_TransportOrderDue(c);
                         fee += ai_SendTransportOrder(ai_PlayerId, c, bld, dest);
@@ -4268,8 +4268,8 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                             home = (AIBLD *)ai_PlayerBuilding;
                         else if (ai_FallbackBuilding != 0)
                             home = (AIBLD *)ai_FallbackBuilding;
-                        if (home == 0 || (((AIBTYPE *)ai_BTypes)[home->type].kind != 0x1e
-                                          && ((AIBTYPE *)ai_BTypes)[home->type].kind != 0x1d))
+                        if (home == 0 || (ai_BTypes[home->type].kind != 0x1e
+                                          && ai_BTypes[home->type].kind != 0x1d))
                             snd_PlayFavourComment();
                         ai_TransportOrderDue(c);
                         fee += ai_SendTransportOrder(ai_PlayerId, c, bld, dest);
@@ -4535,7 +4535,7 @@ int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
     r = 0;
     second = -1;
     first = -1;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     win = d2_OpenForm(0, 0, "Handel\\Handel_Lager_Neuer_Slot");
     d2_CentreViewWindows(win);
     io_PrintText(0x10b);
@@ -4606,7 +4606,7 @@ void ai_StorageWindow(AIBLD *bld, int list)
 
     if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
+    bt = &ai_BTypes[bld->type];
     if (list == 0) {
         room = (AIOBJ *)gm_Query((void *)bld->objList, 1, 4, 2);
         if (room != 0)
@@ -6610,7 +6610,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
     }
     for (ev = (AIJOB *)he_FindEvent(2, 0, 0x1f, 3, bldId); ev != 0; ev = (AIJOB *)he_NextEvent())
         running++;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     for (i = 0; i < 0x40; i++) {
         if (nRows >= 32)
             break;
@@ -6735,7 +6735,7 @@ void ai_UpgradeBuilding(AIBLD *bld)
     int cls;
     int price;
 
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     bldId = bld->id;
     if (type->level >= type->maxLevel) {
         txt_Format(text, 0x17d7);
@@ -7156,7 +7156,7 @@ void ai_BuildingWindow(AIBLD *bld)
     fireBtn = -1;
     effectsBtn = -1;
     redraw = 1;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     saleEv = 0;
     fireEv = 0;
     bldId = bld->id;
@@ -7440,7 +7440,7 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
     techBtn = -1;
     renovateBtn = -1;
     roomBtn = -1;
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     bldId = bld->id;
     win = d2_OpenForm(0, 0, "Panel\\gebaeude_optionen_pergament");
     d2_CentreViewWindows(win);
@@ -8477,7 +8477,7 @@ int ai_GoodFitsBuilding(void *ch, int good)
     AIBLD *bld;
 
     if (ch != 0 && (bld = (chrec = (G8CHARREC *)ch)->bld) != 0) {
-        type = (AIBTYPE *)(ai_BTypes + bld->type * 0x24d);
+        type = &ai_BTypes[bld->type];
         if (((good == 0x172 || good == 0x174) && type->kind != 4) ||
             ((good == 0x158 || good == 0x160) && type->kind != 0x13) ||
             ((good == 0x16e || good == 0x176) && type->kind != 0x10))
@@ -8720,7 +8720,7 @@ void ai_TrainingWindow(AIBLD *bld)
     AICHARREC *ch;
     AIJOB *ev;
 
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     en2 = 0;
     n2 = 0;
     row = 0;
@@ -9096,7 +9096,7 @@ void ai_BuildingDetailWindow(AIBLD *bld)
     AIBTYPE *type;
     int win;
 
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    type = &ai_BTypes[bld->type];
     win = d2_OpenForm(0x3c, 0, "panel\\player_stats_geb_detail");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);

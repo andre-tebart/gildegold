@@ -644,8 +644,8 @@ void ai_HandleItemDrag(void)
                 bkind = ((AIBLD *)user)->type;
                 if (bkind >= 0x58)
                     bkind = 0;
-            } else if ((char *)user >= ai_BTypes && (char *)user < ai_BTypes + 0x58 * 0x24d) {
-                bkind = ((char *)user - ai_BTypes) / 0x24d;
+            } else if ((char *)user >= (char *)ai_BTypes && (char *)user < (char *)&ai_BTypes[0x58]) {  /* ai_BTypes[0x58]: one past the table */
+                bkind = (AIBTYPE *)user - ai_BTypes;
             } else if ((char *)user >= (char *)ai_Objects && (char *)user < (char *)&ai_Objects[0x5008]) {  /* ai_Objects[0x5008]: one past the table */
                 item = ((AIOBJ *)user)->id;
                 if (item >= 0x2dc)
@@ -718,7 +718,7 @@ int ai_OpenBuildingTooltip(int idx)
     AIBTYPE *bt;
     int view;
 
-    bt = (AIBTYPE *)ai_BTypes + idx;
+    bt = ai_BTypes + idx;
     view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Gebaeude");
     d2_CentreViewWindows(view);
     d2_SetForm(0, 1);
@@ -969,7 +969,7 @@ int ai_OpenUpgradeTooltip(int idx)
     }
     if (item->type == 2 || item->type == 6)
         return view;
-    bt = (AIBTYPE *)ai_BTypes + ((AIBLD *)bld)->type;
+    bt = ai_BTypes + ((AIBLD *)bld)->type;
     for (i = 0; i < 0x40; i++) {
         if ((bt->objs[i] & 0x7fff) == idx) {
             cls = bt->objClass[i];
@@ -1644,7 +1644,7 @@ void ai_BookmarksPreset(void)
     n = 3;
     b = (AIBLD *)gm_BuildQuery(1, 4, i);
     while (b != 0) {
-        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 2)
+        if (ai_BTypes[b->type].kind != 2)
             ai_BookmarkSetBuilding(n++, b);
         b = (AIBLD *)gm_BuildNext();
     }

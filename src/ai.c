@@ -25,7 +25,6 @@ typedef unsigned int SOCKET;
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #include "d3_types.h"
 #include "am_types.h"                /* AIACT */
@@ -336,7 +335,7 @@ void ai_MasterUpdate(AICHAR *c)
             if (b->type) {
                 lo = 0;
                 hi = 0;
-                bt = &ai_BTypesT[b->type];
+                bt = &ai_BTypes[b->type];
                 if ((unsigned char)bt->kind > 0x1f)
                     hi = 1 << ((unsigned char)bt->kind - 0x20);
                 else
@@ -355,7 +354,7 @@ void ai_MasterUpdate(AICHAR *c)
                     }
                     if (gm_BuildingClass(b->type) != 6 && !found) {
                         v = b->type;
-                        cm_SendMessage3d(b, 1, ai_BTypesT[v].title2, ai_BTypesT[v].jobBytes);
+                        cm_SendMessage3d(b, 1, ai_BTypes[v].title2, ai_BTypes[v].jobBytes);
                         sprintf(buf, "%li:%02li - %s stellt Meister f\xfc" "r '%s' ein", ai_Time.hour,
                                 ai_Time.min, c->name, b->name);
                     }
@@ -534,7 +533,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
                 ai_EvaluateProductionCategory2(c);
                 return;
             }
-            k = ai_BTypesT[c->bld->type].kind;
+            k = ai_BTypes[c->bld->type].kind;
             if (k == 0x13) {
                 ai_CalcMeisterWache(c);
                 return;
@@ -556,7 +555,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
             ai_CalcMeisterFernhaendler(c);
             return;
         }
-        k = ai_BTypesT[c->bld->type].kind;
+        k = ai_BTypes[c->bld->type].kind;
         if (k != 0xe && k != 8 && k != 0x20) {
             if (k == 0x1d)
                 ai_EvaluateProductionGraveyard(c);
@@ -1103,7 +1102,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
     o = a;
-    if (!(ch->flags1c8 & 0x10) && ai_BTypesT[ch->bld->type].kind != 11) {
+    if (!(ch->flags1c8 & 0x10) && ai_BTypes[ch->bld->type].kind != 11) {
         for (o = gm_Query(a->list, 1, 4, 0x17); o; o = gm_QueryNext()) {
             if (o->count == 1) {
                 AIMSG msg;
@@ -1211,7 +1210,7 @@ check:
         if (ai_Entries[i].flags & 8) {
             g = &ai_GoodsT[ai_Entries[i].item];
             if (g->type == 0x17) {
-                if (ai_BTypesT[ch->bld->type].kind == 11) {
+                if (ai_BTypes[ch->bld->type].kind == 11) {
                     ai_Entries[i].flags |= 0x10;
                 } else {
                     o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
@@ -1245,7 +1244,7 @@ check:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8)
             info.n1++;
-        if ((ai_Entries[i].flags & 0x10) && ai_BTypesT[ch->bld->type].kind != 11)
+        if ((ai_Entries[i].flags & 0x10) && ai_BTypes[ch->bld->type].kind != 11)
             info.n1++;
     }
     if (info.n1 >= info.n2)
@@ -1256,7 +1255,7 @@ check:
         info.ch = ch;
         info.z2 = 0;
         info.z1 = 0;
-        if (ai_BTypesT[ch->bld->type].kind == 11) {
+        if (ai_BTypes[ch->bld->type].kind == 11) {
             if (ai_Time.hour % 2 == 0) {
                 ch->flags1b4 &= ~0x20;
             } else if (!(ch->flags1b4 & 0x20)) {
@@ -1291,14 +1290,14 @@ check:
             }
         }
         for (i = 0; i < ai_NEntries; i++) {
-            if ((ai_Entries[i].flags & 0x10) && ai_BTypesT[ch->bld->type].kind != 11) {
+            if ((ai_Entries[i].flags & 0x10) && ai_BTypes[ch->bld->type].kind != 11) {
                 info.type = 8;
                 info.e = &ai_Entries[i];
                 ai_SendJobOrders(&info);
             }
             if (ai_Entries[i].flags & 8) {
                 if (ai_GoodsT[ai_Entries[i].item].type == 0x17) {
-                    if (ai_BTypesT[ch->bld->type].kind != 11) {
+                    if (ai_BTypes[ch->bld->type].kind != 11) {
                         info.type = 3;
                         info.e = &ai_Entries[i];
                         ai_SendJobOrders(&info);
@@ -1655,7 +1654,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         for (t = 256; t; t--, bb++) {
             if (!bb->type)
                 continue;
-            bt = &ai_BTypesT[bb->type];
+            bt = &ai_BTypes[bb->type];
             if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                 && bb->owner != *ai_PlayerChar
                 && (bt->kind == 0x13 || bt->kind == 4 || bt->kind == 0x10)
@@ -1677,8 +1676,8 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         }
         ch->target = best->id;
     }
-    if (!best || (ai_BTypesT[best->type].kind != 0x13 && ai_BTypesT[best->type].kind != 4
-                  && ai_BTypesT[best->type].kind != 0x10))
+    if (!best || (ai_BTypes[best->type].kind != 0x13 && ai_BTypes[best->type].kind != 4
+                  && ai_BTypes[best->type].kind != 0x10))
         return 0;
     for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext())
         if (o->reportBld == best->id)
@@ -1953,7 +1952,7 @@ burgle:
             for (t = 256; t; t--, bb++) {
                 if (!bb->type)
                     continue;
-                bt = &ai_BTypesT[bb->type];
+                bt = &ai_BTypes[bb->type];
                 if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                     && bb->owner != *ai_PlayerChar && !gm_IsHomeType(bb) && bt->kind != '!'
                     && he_NoProtectionEvent(bb)) {
@@ -2142,7 +2141,7 @@ attack:
             bb = ai_BldsT;
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type) {
-                    bt = &ai_BTypesT[bb->type];
+                    bt = &ai_BTypes[bb->type];
                     if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                         && bb->owner != *ai_PlayerChar && !gm_IsHomeType(bb) && bt->kind != '!') {
                         if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
@@ -2341,11 +2340,11 @@ void ai_CalcMeisterFernhaendler(AICHAR *ch)
             }
             ch->flags1b4 |= 0x20;
             ai_BuildTradeOffers(ch, obj, ok);
-            if (ai_BTypesT[ch->bld->type].level == 1)
+            if (ai_BTypes[ch->bld->type].level == 1)
                 f = ch->bld->budget * 1.5625e-05f;
-            else if (ai_BTypesT[ch->bld->type].level == 2)
+            else if (ai_BTypes[ch->bld->type].level == 2)
                 f = ch->bld->budget * 7.8125e-06f;
-            else if (ai_BTypesT[ch->bld->type].level == 3)
+            else if (ai_BTypes[ch->bld->type].level == 3)
                 f = ch->bld->budget * 3.90625e-06f;
             f = f * 0.5f + 0.25f;
             if (ai_NSlots != 0) {
@@ -3002,7 +3001,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypesT[ch->bld->type].kind;
+    kind = ai_BTypes[ch->bld->type].kind;
     if (kind == 14 || kind == 8 || kind == 32) {
         for (j = 0; j < ai_NSlots; j++) {
             int is24 = ai_Slots[j].item == 0x1c7 || ai_Slots[j].item == 0x1c4 || ai_Slots[j].item == 0x1c5 || ai_Slots[j].item == 0x1c6 || ai_Slots[j].item == 0x2af || ai_Slots[j].item == 0x2b0;  /* the item is one of the goods marked 0x24 */
@@ -3053,7 +3052,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypesT[ch->bld->type].kind;
+    kind = ai_BTypes[ch->bld->type].kind;
     if (kind == 29 || kind == 31) {
         for (j = 0; j < ai_NSlots; j++) {
             if (ai_Slots[j].item == 0x225 || ai_Slots[j].item == 0x226 || ai_Slots[j].item == 0x227 || ai_Slots[j].item == 0x293
@@ -3147,7 +3146,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypesT[ch->bld->type].kind;
+    kind = ai_BTypes[ch->bld->type].kind;
     if (kind == 8 || kind == 14) {
         for (job = he_FindEvent(2, 0, 0x14, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {
@@ -3156,7 +3155,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    if (ai_BTypesT[ch->bld->type].kind == 8) {
+    if (ai_BTypes[ch->bld->type].kind == 8) {
         for (job = he_FindEvent(2, 0, 0x15, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {
                 if (ai_Slots[j].item == job->u.w.hi)
@@ -3164,7 +3163,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypesT[ch->bld->type].kind;
+    kind = ai_BTypes[ch->bld->type].kind;
     if (kind == 29 || kind == 31) {
         for (job = he_FindEvent(2, 0, 0x8c, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {
@@ -3949,7 +3948,7 @@ void ai_UpdateStaff(AICHAR *ch)
         fl |= 0x40;
         ch->flags1b4 = fl;
         if ((ai_CharsT[ch->bld->owner].kind != 6 && ai_CharsT[ch->bld->owner].kind != 7) || (fl & 2)) {
-            bt = &ai_BTypesT[ch->bld->type];
+            bt = &ai_BTypes[ch->bld->type];
             for (i = 0; i < 768; i++) {
                 if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0 &&
                     ai_CharsT[i].title == (char)bt->k230 && ai_CharsT[i].v174 >= 4) {
@@ -3978,7 +3977,7 @@ void ai_UpdateStaff(AICHAR *ch)
                 }
             }
             t = ch->bld->type;
-            if (n < ai_BTypesT[t].k231 + ai_BTypesT[t].k232) {
+            if (n < ai_BTypes[t].k231 + ai_BTypes[t].k232) {
                 oc = &ai_CharsT[ch->bld->owner];
                 v = (int)gm_JobCost(oc, t, -1, 1);
                 if (n != 0) {
@@ -4000,7 +3999,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     gm_IsHomeType(ch->bld);
                     msg.amount[1] = -1;
                     ((unsigned char *)&msg.arg[0])[1] = 1;
-                    ((unsigned char *)&msg.arg[0])[0] = ai_BTypesT[ch->bld->type].k230;
+                    ((unsigned char *)&msg.arg[0])[0] = ai_BTypes[ch->bld->type].k230;
                     cm_SendLongMessage(&msg);
                     ch->budget -= v;
                 }
@@ -4032,7 +4031,7 @@ void ai_OfferGrave(AICHAR *ch)
                     if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == bld && ai_CharsT[i].title != 0)
                         n++;
                 }
-                if (n < ai_BTypesT[bld->type].k231 + ai_BTypesT[bld->type].k232) {
+                if (n < ai_BTypes[bld->type].k231 + ai_BTypes[bld->type].k232) {
                     if (n == 0 || (!(ch->flags1c8 & 8) && util_Random(0x48) >= (0x12 - n) * 2))
                         gv_SendGrave(ch->bld);
                 }
@@ -4104,7 +4103,7 @@ void ai_BuyUpgrade(AICHAR *ch)
             ch->budget = (int)(ch->budget - f);
         }
     }
-    bt = &ai_BTypesT[ch->bld->type];
+    bt = &ai_BTypes[ch->bld->type];
     if (bt->nslots > 0) {
         for (i = 0; i < bt->nslots; i++) {
             if (ret)
@@ -4183,9 +4182,9 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
             d += job->slotOrder1d;
         }
         bld = c->bld;
-        mb = ai_BTypesT[bld->type].min1;
+        mb = ai_BTypes[bld->type].min1;
         y = mb - d;
-        ma = ai_BTypesT[bld->type].min0;
+        ma = ai_BTypes[bld->type].min0;
         x = ma - a;
         if ((0 < x || 0 < y) && c->budget >= 24000) {
             memset(&msg, 0, sizeof(msg));
@@ -4624,7 +4623,7 @@ void ai_SendFreeThieves(AICHAR *ch)
             n--;
     }
     if (0 < n) {
-        bt = &ai_BTypesT[c->bld->type];
+        bt = &ai_BTypes[c->bld->type];
         k = ((volatile AIBTYPE *)bt)->kind;
         if (k == 4)
             o = gm_Query(c->bld->objList, 2, 6, 0, 0x60);
@@ -4709,7 +4708,7 @@ void ai_SendFreeSpies(AICHAR *ch)
         if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title && ai_CharsT[i].job && ai_CharsT[i].job->kind == -0x71)
             n--;
     }
-    if (0 < n && ai_BTypesT[ch->bld->type].kind == 0x1d && (o = gm_Query(ch->bld->objList, 2, 6, 0, 0x211)) != 0) {
+    if (0 < n && ai_BTypes[ch->bld->type].kind == 0x1d && (o = gm_Query(ch->bld->objList, 2, 6, 0, 0x211)) != 0) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x8f;
         msg.to = ai_CharsT[ch->bld->owner].netId;
@@ -4921,7 +4920,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         next:
             t++;
         } while (--i);
-        bt = &ai_BTypesT[ch->bld->type];
+        bt = &ai_BTypes[ch->bld->type];
         if (bt->kind == 9) {
             if (n == n136) {
                 cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
@@ -5058,7 +5057,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
         if (!(ai_Slots[m].flags & 6) && (ai_Slots[m].flags & 8)) {
             n = ai_Slots[m].amount;
             if (n > gm_ListStock(b, ai_Slots[m].item) / 3) {
-                if (ai_BTypesT[ch->bld->type].kind == 22)
+                if (ai_BTypes[ch->bld->type].kind == 22)
                     ai_Slots[m].sellAmount = n / 2;
                 else
                     ai_Slots[m].sellAmount = n;
@@ -5134,7 +5133,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypesT[ch->bld->type].kind;
+    kind = ai_BTypes[ch->bld->type].kind;
     if (kind == 13 || kind == 11 || kind == 12) {
         for (i = 0; i < ai_NEntries; i++) {
             if (!(ai_Entries[i].flags & 6) && (o = gm_Query(b->list, 1, 0, ai_Entries[i].item)) != NULL

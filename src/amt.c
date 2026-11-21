@@ -34,7 +34,6 @@ extern int gm_PlayerRecords[688];
 #include "d3_pose.h"
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ai.h: char[768][0x21c]) as the AICHAR records they are */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #pragma pack(push, 1)
 typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
@@ -2103,7 +2102,7 @@ void amt_CalcZuenfte(unsigned int kind)
 
         scene = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        t = &ai_BTypesT[bld];
+        t = &ai_BTypes[bld];
         ai_BuildingName(bld, buf);
         cnt = ai_FindBauplaetze(buf, list);
         j = list[util_Random(cnt)];
@@ -2293,7 +2292,7 @@ int amt_CanUseMayorPower2(char *c)
             return 0;
         }
         it = (AMTBLDVIEW *)gm_BuildQuery(1, 5, v);
-        if (it != 0 && (it->flags5a & 1) == 0 && (unsigned char)ai_BTypes[it->type * 0x24d + 0x247] >= 2) {
+        if (it != 0 && (it->flags5a & 1) == 0 && ai_BTypes[it->type].level >= 2) {
             if ((cv->powerFlags & 0x8000000) != 0)
                 return -1;
             return (((cv->money >= 5) - 1) & -3) + 1;
@@ -2320,7 +2319,7 @@ int amt_CanUseMayorPower3(char *c)
             return 0;
         }
         it = (AMTBLDVIEW *)gm_BuildQuery(1, 5, v);
-        if (it != 0 && (it->flags5a & 1) == 0 && (unsigned char)ai_BTypes[it->type * 0x24d + 0x247] >= 3) {
+        if (it != 0 && (it->flags5a & 1) == 0 && ai_BTypes[it->type].level >= 3) {
             if ((cv->powerFlags & 0x10000000) != 0)
                 return -1;
             return (((cv->money >= 8) - 1) & -3) + 1;
@@ -2360,7 +2359,7 @@ int amt_ExecutePriceMessage(char *c, int *m)
             it = (AMTBLDVIEW *)gm_BuildQuery(1, 5, t);
             if (it != 0) {
                 do {
-                    bt = &ai_BTypesT[it->type];
+                    bt = &ai_BTypes[it->type];
                     if (bt->level > best) {
                         best = bt->level;
                         id = it->type;

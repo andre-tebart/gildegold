@@ -81,7 +81,7 @@ typedef struct AHMCREATEMSG {           /* 0x24 bytes, the data of the type 99 m
     float value;                        /* +0x20, the +8 of the recipe entry of the prototype's id (AHMGRID.rcp.b), the value of the first place */
 } AHMCREATEMSG;
 
-extern char *ai_BTypes;              /* 0x7e3f30 */
+extern struct AIBTYPE *ai_BTypes;    /* 0x7e3f30, the building types */
 extern int ai_PlayerPrototypeCount;                /* 0x6f0e28 */
 extern AHMGRID *ai_PlayerPrototypes;           /* 0x6f0e2c */
 extern int ai_RecipePrototypeCount;                /* 0x6f0e30 */

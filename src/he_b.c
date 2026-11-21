@@ -519,7 +519,6 @@ int he_RegisterEventTypeA2();
 #include "rmsg.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
@@ -1624,7 +1623,7 @@ void he_RunProduktion(AIJOB *ev)
                 ev->stage = -1;
                 return;
             }
-            bt = &ai_BTypesT[bld->type];
+            bt = &ai_BTypes[bld->type];
             if (cm_GetSlotState(p->slot) == 2) {
                 worker = 0;
                 name[0] = 0;
@@ -1700,7 +1699,7 @@ wait:
         }
         if (bld->smokeEffect == -1)
             cm_SendUpdateSmoke(bld->id);
-        bt = &ai_BTypesT[bld->type];
+        bt = &ai_BTypes[bld->type];
         f = gm_BuildingSkill(bld, 1, 1) * 0.01 + 1.0;
         master = (AICHAR *)gm_FindCharacterByMaster(bld);
         if (master == 0)
@@ -2209,7 +2208,7 @@ void he_RunTrade(AIJOB *ev)
             if (t->sell[i] != 0 && t->sellBld[i] == bld->id) {
                 g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 0, t->sell[i]);
                 if (g != 0) {
-                    if (ai_BTypesT[bld->type].kind == 0xa)
+                    if (ai_BTypes[bld->type].kind == 0xa)
                         store = (AIOBJ *)gm_FindMarketObject(t->sell[i]);
                     else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) == 0)
                         store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
@@ -2241,7 +2240,7 @@ void he_RunTrade(AIJOB *ev)
         }
         for (i = 0; i < slots; i++) {
             if (t->buy[i] != 0 && t->buyBld[i] == bld->id) {
-                if (ai_BTypesT[bld->type].kind == 0xa)
+                if (ai_BTypes[bld->type].kind == 0xa)
                     store = (AIOBJ *)gm_FindMarketObject(t->buy[i]);
                 else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) == 0)
                     store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
@@ -2249,7 +2248,7 @@ void he_RunTrade(AIJOB *ev)
                     g = (AIOBJ *)gm_Query((void *)store->list, 1, 0, t->buy[i]);
                     if (g == 0)
                         continue;
-                    if (ai_BTypesT[bld->type].kind == 0xa)
+                    if (ai_BTypes[bld->type].kind == 0xa)
                         price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 1.1);
                     else
                         price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * bld->priceFactor);
@@ -2845,7 +2844,7 @@ void he_RunConstruction(int ev)
             return;
         }
         init_HookObject((D3OBJECT *)bld->object, bld, 2);
-        bt = &ai_BTypesT[bld->type];
+        bt = &ai_BTypes[bld->type];
         if (gm_AllowAll != 0) {
             c->stages = he_ConstructionStage(ev);
             c->minutes = 10;
@@ -3644,7 +3643,7 @@ void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
     char drop;
     float v;
 
-    bt = &ai_BTypesT[b->type];
+    bt = &ai_BTypes[b->type];
     if (bt->kind == 0x1e) {
         int possible[5];
 
@@ -4671,7 +4670,7 @@ void he_RunDecay(int ev)
         if (victim != 0) {
             if (util_RandomF() + chance > 1.0) {
                 bld = agent->bld;
-                bt = &ai_BTypesT[bld->type];
+                bt = &ai_BTypes[bld->type];
                 d->aged = 1;
                 age = util_Random(3) + bt->cap247 * 2 + bld->level / 50;
                 he_SetLifeByAge(victim, age);
@@ -5084,7 +5083,7 @@ void he_RunMasterWork(int ev)
         e->stage = -1;
     bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     if (bld != 0) {
-        bt = &ai_BTypesT[bld->type];
+        bt = &ai_BTypes[bld->type];
         store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
         if (store == 0)
             e->stage = -1;
@@ -5593,7 +5592,7 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
     for (n = 0; n < 0x100; n++) {
         rec = &ai_BldsT[n];
         lo = 0;
-        bt = &ai_BTypesT[rec->type];
+        bt = &ai_BTypes[rec->type];
         hi = 0;
         if ((unsigned char)bt->kind > 0x1f)
             hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -5777,7 +5776,7 @@ void he_AnswerGraveLease(int ev)
     int n;
 
     bld = (AIBLD *)gm_BuildQuery(1, 1, l->bld);
-    if (bld == 0 || ((AIBTYPE *)ai_BTypes)[bld->type].kind != 0x1d)
+    if (bld == 0 || ai_BTypes[bld->type].kind != 0x1d)
         return;
     per = (AICHAR *)gm_FindChar(e->netId);
     if (per == 0)
@@ -5801,7 +5800,7 @@ void he_ExamCancelled(int ev)
     AIBLD *bld = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
     AICHAR *per;
 
-    if (bld == 0 || ai_BTypesT[bld->type].kind != 0x1d)
+    if (bld == 0 || ai_BTypes[bld->type].kind != 0x1d)
         return;
     gv_OrderSetGraveHolder(0, bld, e->graveSize, e->graveEntry);
     per = (AICHAR *)gm_FindChar(e->netId);

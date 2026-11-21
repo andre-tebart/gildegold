@@ -90,7 +90,7 @@ int gv_GraveCount(unsigned char *o)
     GVYARD *g;
     int n;
 
-    bt = ai_BTypes + bld->type + bld->type * 0x24c;
+    bt = (char *)ai_BTypes + bld->type + bld->type * 0x24c;
     g = bld->yard;
     if (((AIBTYPE *)bt)->level == 1) {
         n = 8;
@@ -147,7 +147,7 @@ int gv_EntryCount(unsigned char *o)
     GVYARD *g;
     int n;
 
-    bt = ai_BTypes + bld->type + bld->type * 0x24c;
+    bt = (char *)ai_BTypes + bld->type + bld->type * 0x24c;
     g = bld->yard;
     if (((AIBTYPE *)bt)->level == 1) {
         n = 8;
@@ -328,7 +328,7 @@ unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), in
     GVYARD *g;
     GVENTRY *end;
 
-    bt = ai_BTypes + bld->type + bld->type * 0x24c;
+    bt = (char *)ai_BTypes + bld->type + bld->type * 0x24c;
     g = bld->yard;
     if (l != 0xff && gv_SizeOpen((char *)g, l) == 0)
         return 0;
@@ -381,7 +381,7 @@ GVGRAVE *gv_RandomGrave(unsigned char *o)
     GVYARD *g;
     int n, k, i;
 
-    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    bt = (AIBTYPE *)((char *)ai_BTypes + bld->type + bld->type * 0x24c);
     g = bld->yard;
     if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
         n = gv_GraveCount(o);
@@ -410,7 +410,7 @@ int gv_BuryNewDead(unsigned char *o, int n)
     unsigned *rec;
     int i, k, r;
 
-    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    bt = (AIBTYPE *)((char *)ai_BTypes + bld->type + bld->type * 0x24c);
     if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
         for (i = 0; i < n; i++) {
             e = (GVENTRY *)gv_FindEntry(0, o, 0, gv_EntryIsFree, 0);
@@ -466,7 +466,7 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
     GVGRAVE *gr;
     int i, ok;
 
-    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    bt = (AIBTYPE *)((char *)ai_BTypes + bld->type + bld->type * 0x24c);
     if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
         g = (GVYARD *)mem_Alloc(sizeof(GVYARD), "gv_AllocGraveyardField");
         if (g == 0)
@@ -579,7 +579,7 @@ GVYARD *gv_GrowGraveyard(unsigned char *o)
     int n[4], i;                            /* the entry count of each size (as lists[4]; [3] unused) */
 
     old = bld->yard;
-    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    bt = (AIBTYPE *)((char *)ai_BTypes + bld->type + bld->type * 0x24c);
     if (bt->kind == 0x1d && old != 0 && old->kind < 3 && bt->cap247 - old->kind == 1) {
         bld->yard = 0;
         nw = gv_AllocGraveyard(o);
@@ -693,7 +693,7 @@ int gv_BuryCharacter(int *p)
     gm_FindById((int *)&bld, 0, 0, p[2]);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     g = bld->yard;
     if (g == 0)
@@ -778,7 +778,7 @@ int gv_ReserveGrave(GVORDER *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     if (bld->yard == 0)
         return -3;
@@ -845,7 +845,7 @@ int gv_ExtendGrave(GVORDER *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     g = bld->yard;
     if (g == 0)
@@ -907,7 +907,7 @@ int gv_SetGraveHolder(GVORDER *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     g = bld->yard;
     if (g == 0)
@@ -961,7 +961,7 @@ int gv_OpenSize(GVORDER *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     g = bld->yard;
     if (g == 0)
@@ -1025,7 +1025,7 @@ int gv_AdjustEntry(GVORDER *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     if (bld->yard == 0)
         return -3;
@@ -1069,7 +1069,7 @@ int gv_AddNewDead(unsigned char *p)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || ai_Chars[bld->owner] == ai_PlayerCharC)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     if (bld->yard == 0)
         return -3;
@@ -1117,7 +1117,7 @@ int gv_MoveGrave(GVMOVE *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return -2;
     if (bld->yard == 0)
         return -3;
@@ -1211,7 +1211,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
     gm_FindById((int *)&bld, 0, 0, m->bld);
     if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return (unsigned)-1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+    if (ai_BTypes[bld->type].kind != 0x1d)
         return (unsigned)-2;
     if (bld->yard == 0)
         return (unsigned)-3;
@@ -1557,7 +1557,7 @@ int gv_RoomForRaised(unsigned char *o, int *n)
     int cnt;
 
     bld = (AIBLD *)o;
-    t = (AIBTYPE *)(ai_BTypes + bld->type * 0x24d);
+    t = &ai_BTypes[bld->type];
     if (t->kind != 0x1d)
         return -1;
     if (bld->yard == 0)
@@ -1773,7 +1773,7 @@ int gv_FindHeldEntry(void *a, unsigned char **o, int *e)
     *o = 0;
     *e = 0;
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
-        if (b->type != 0 && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 0x1d) {
+        if (b->type != 0 && ai_BTypes[b->type].kind == 0x1d) {
             r = gv_FindEntry(a, (unsigned char *)b, 0, gv_EntryHeldBy, 0xff);
             if (r != 0) {
                 *o = (unsigned char *)b;
@@ -1796,7 +1796,7 @@ int gv_FindReservedEntry(void *a, unsigned char **o, int *e)
     *o = 0;
     *e = 0;
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
-        if (b->type != 0 && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 0x1d) {
+        if (b->type != 0 && ai_BTypes[b->type].kind == 0x1d) {
             r = gv_FindEntry(a, (unsigned char *)b, 0, gv_EntrySameId, 0xff);
             if (r != 0) {
                 *o = (unsigned char *)b;

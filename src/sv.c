@@ -596,7 +596,7 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
     bld = (SVOBJREC *)o;
     if (sv_PanelFlag != 0)
         return;
-    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId][0x1b1] == 0 || (bt = &((AIBTYPE *)ai_BTypes)[bld->kind])->kind == 6 || (bt->kind == 4 && bld->ownerId == ((SVCHARREC *)ai_Chars[ai_PlayerId])->netId)))
+    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId][0x1b1] == 0 || (bt = &ai_BTypes[bld->kind])->kind == 6 || (bt->kind == 4 && bld->ownerId == ((SVCHARREC *)ai_Chars[ai_PlayerId])->netId)))
         return;
     if (ai_PlayerBuilding != 0)
         cur = (unsigned char *)ai_PlayerBuilding;
@@ -952,7 +952,6 @@ void sv_DestroyScreen(void)
 
 extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
@@ -1006,7 +1005,7 @@ void sv_LoadGroundplan(void)
         d2_FreeSurface(sv_GroundplanSurf);
         sv_GroundplanSurf = 0;
     }
-    bt = &ai_BTypesT[b->type];
+    bt = &ai_BTypes[b->type];
     sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", d2_GfxDir, bt->name);
     sv_GroundplanSurf = d2_LoadBmpSurface(name);
     if (sv_GroundplanSurf == 0) {
@@ -1176,7 +1175,7 @@ void sv_UpdateGroundplan(unsigned flags)
                     b = (AIBLD *)ai_PlayerBuilding;
                     if (b != 0) {
                         obj = 0;
-                        bt = &ai_BTypesT[b->type];
+                        bt = &ai_BTypes[b->type];
                         cnt = 0;
                         if (bt->kind == 2) {
                             for (obj = (AIOBJ *)gm_Query((void *)b->objList, 1, 4, 2); obj != 0; obj = (AIOBJ *)gm_QueryNext())
@@ -1210,7 +1209,7 @@ void sv_UpdateGroundplan(unsigned flags)
                     }
                     b = (AIBLD *)ai_FallbackBuilding;
                     if (b != 0) {
-                        bt = &ai_BTypesT[b->type];
+                        bt = &ai_BTypes[b->type];
                         obj = 0;
                         cnt = 0;
                         for (slot = 0; slot < 0x40; slot++) {
@@ -1577,7 +1576,7 @@ void sv_CountGroupMembers(char *g)
         if (*p != -1) {
             c = (char *)gm_FindChar(*p);
             if (c != 0 && ((SVCHARREC *)c)->bld != 0) {
-                b = ai_BTypes + *((SVCHARREC *)c)->bld * 0x24d;
+                b = (char *)ai_BTypes + *((SVCHARREC *)c)->bld * 0x24d;
                 /* b: the building's type record (AIBTYPE, 0x24d bytes): +0x22f / +0x230 its two title ranks, +0x00 the kind */
                 if (c[0x165] == b[0x22f]) {
                     ((SVGROUP *)g)->rank1Count++;
@@ -1648,7 +1647,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
     if (o == 0)
         o = ch->bld;
     if (it != 0) {
-        bt = &ai_BTypesT[*o];
+        bt = &ai_BTypes[*o];
         if (*it != 0xfd)
             w = init_ObjectSceneUniverse(it);
         else
@@ -1772,7 +1771,7 @@ int sv_IsCartAtDoor(char *g, unsigned char *o)
     float pos[4];
 
     r = 650.0f;
-    if (ai_BTypesT[*o].kind == 10)
+    if (ai_BTypes[*o].kind == 10)
         r = 1950.0f;
     dst = (SVMODEL *)((AIOBJ *)g)->sceneObj;
     if (((AIBLD *)o)->object != 0) {
@@ -1861,7 +1860,7 @@ void sv_UpdateMemberList(unsigned char *g)
 
     if (sv_PlayerBarForm == -1)
         return;
-    bt = ai_BTypes + *g * sizeof(AIBTYPE);
+    bt = (char *)ai_BTypes + *g * sizeof(AIBTYPE);
     d2_SetForm(sv_PlayerBarForm, 1);
     d2_ClearPointerItems();
     for (n = 0; n < 0x20; n++) {
@@ -3392,7 +3391,7 @@ void sv_UpdateChimneySmoke(AIBLD *b)
     D3VECTOR4 pos;
 
     season = gm_ClockSeason(&ai_Time);
-    if (ai_BTypesT[b->type].kind != 7 && b->object != 0) {
+    if (ai_BTypes[b->type].kind != 7 && b->object != 0) {
         for (i = 0; i < 0x300; i++) {
             if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10
                 && ai_CharsT[i].bld == b && ai_CharsT[i].jobKind == 4) {
@@ -3555,7 +3554,7 @@ void sv_OpenBuildingPanel(AIBLD *b)
     }
     if ((b->flags5a & 1) == 0 && b->type != 0x47 && b->type != 0x1d && b->type != 0x57) {
         cls = gm_BuildingClass(b->type);
-        bt = &ai_BTypesT[b->type];
+        bt = &ai_BTypes[b->type];
         perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
         if (b->owner != ai_PlayerId && b->masterId != ai_PlayerId && (perm & 0x10) == 0)
             sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnForeign);
@@ -4136,7 +4135,7 @@ void sv_UpdatePanel(void)
             sel = SV_SELBLD;
             if (sel != 0 && sel->type != 0x47) {
                 cls = gm_BuildingClass(sel->type);
-                bt = &ai_BTypesT[sel->type];
+                bt = &ai_BTypes[sel->type];
                 if ((cls == 1 || cls == 2 || cls == 4 || cls == 7 || cls == 8 || bt->kind == 0x10 || bt->kind == 0x1e) && ai_RunAllows(0x400) == 1) {
                     ai_BuildingPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sel, 0, 0);
                     ai_CampaignStep(0x12, (int)sel, 0, 0);
@@ -4677,7 +4676,7 @@ void sv_RunLocationScripts(AIBLD *a)
     cls = 0;
     if (sv_PanelShown != 0 && *sv_PanelShown != 0xfd)
         cls = &ai_GoodsT[*sv_PanelShown];
-    kind = &ai_BTypesT[a->type];
+    kind = &ai_BTypes[a->type];
     if (d3_Time > sv_SceneEventTime + 500) {
         if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[6].fn != 0)
             d3_DefaultScene->events[6].fn(d3_DefaultScene, 6, d3_DefaultScene->events[6].name, 0);
@@ -5197,7 +5196,7 @@ void sv_SpeakPicked(void)
     else if (ai_FallbackBuilding != 0)
         b = (AIBLD *)ai_FallbackBuilding;
     if (b != 0)
-        cls = &ai_BTypesT[b->type];
+        cls = &ai_BTypes[b->type];
     if (ai_PickedChar != 0)
         gm_PermissionBits(ai_PlayerId, 0, 0, ai_PickedChar);
     if (ai_PickedChar != 0)
@@ -5255,7 +5254,7 @@ void sv_SpeakPicked(void)
                     break;
                 case 0x14:
                     if (c->bld != 0) {
-                        if (ai_BTypesT[c->bld->type].kind == ' ')
+                        if (ai_BTypes[c->bld->type].kind == ' ')
                             txt_Format(text, util_Random(3) + 0x1286);
                         else
                             txt_Format(text, util_Random(3) + 0x1256);
@@ -5313,7 +5312,7 @@ void sv_SpeakPicked(void)
                     break;
                 case 0x8c:
                     if (c->bld != 0) {
-                        cls = &ai_BTypesT[c->bld->type];
+                        cls = &ai_BTypes[c->bld->type];
                         if (cls->kind == 0x1d)
                             txt_Format(text, util_Random(3) + 0x1283);
                         else if (cls->kind == 0x1f)

@@ -68,7 +68,6 @@ int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 d
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defines it returning int; this unit's callers read the 16-bit result (mov si,ax / movzx): the original's units saw a 16-bit declaration */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
@@ -2360,7 +2359,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {
             if (bl->type && bl->masterId == p->id && !(bl->flags5a & 0x45)
-                && ((1 << ai_BTypesT[bl->type].kind) & AI_REPAIR_KINDS) && bl->level < d) {
+                && ((1 << ai_BTypes[bl->type].kind) & AI_REPAIR_KINDS) && bl->level < d) {
                 d = bl->level;
                 best = bl;
             }
@@ -2426,7 +2425,7 @@ int ai_ExecuteRepairBuilding(AIPER *p, AIARG *s1, AIARG *s2)
    @deep size queue s19: the return tails' polarity (if (o1->kind == 0) return 0; return 16; and the kind 5
    twin, its return 0 falling to the final one; 5 combinations) = control, raw 1309 each: the unmerged
    credit tail (the original's kind 5 copy jmps into the kind 0 copy's fmul) is the whole gap, as the prior
-   note explains. prior: Kept: bt = &ai_BTypesT[..] between lo = 0 and hi = 0 (climb swap@27: 109 -> 63 ins
+   note explains. prior: Kept: bt = &ai_BTypes[..] between lo = 0 and hi = 0 (climb swap@27: 109 -> 63 ins
    / 401 bytes). Main hunk: the original's kind 5 credit tail jumps into the kind 0 copy at its fmul -0.5
    (jmp 0x4982c7), ours keeps two copies (432 vs 409 ins). Tail merge research (python
    tools/c2dag/c2tail.py src/am.c ai_DecideBuyBuilding --tries --il merge; notes/vc6-matching.md 'How VC6
@@ -2464,7 +2463,7 @@ int ai_DecideBuyBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     for (i = 0; i < 0x100; i++, bl++) {
         if (bl->type) {
             lo = 0;
-            bt = &ai_BTypesT[bl->type];
+            bt = &ai_BTypes[bl->type];
             hi = 0;
             if ((unsigned char)bt->kind > 0x1f)
                 hi = 1 << ((unsigned char)bt->kind - 0x20);
@@ -2504,7 +2503,7 @@ found:
     }
     if (o1->kind == 0) {
         for (bl = (AIBLDX *)gm_BuildQuery(1, 6); o1->kind == 0 && bl; bl = AI_BUILDNEXT()) {
-            if (ai_BTypesT[bl->type].kind == 2 && (bl->flags5a & 2)
+            if (ai_BTypes[bl->type].kind == 2 && (bl->flags5a & 2)
                 && ((bl->type == 4 && ok[0]) || (bl->type == 5 && ok[1]) || (bl->type == 6 && ok[2])
                     || (bl->type == 7 && ok[3]))) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
@@ -2541,7 +2540,7 @@ found:
         if (o1->ref == 7 && !ok[3])
             return 0;
         for (bl = (AIBLDX *)gm_BuildQuery(1, 6); o1->kind == 5 && bl; bl = AI_BUILDNEXT()) {
-            if ((unsigned char)ai_BTypesT[bl->type].kind == o1->ref) {
+            if ((unsigned char)ai_BTypes[bl->type].kind == o1->ref) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
                     if (j->u.id == bl->id) {
                         v = ((AIJOBX *)j)->price;
@@ -2619,7 +2618,7 @@ int ai_DecideBuildResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
     b = ai_BldsT;
     for (i = 0; i < 0x100; i++, b++) {
         if (b->type != 0) {
-            bt = &ai_BTypesT[b->type];
+            bt = &ai_BTypes[b->type];
             lo = 0;
             hi = 0;
             if ((unsigned char)bt->kind > 0x1f)
@@ -2640,8 +2639,8 @@ found:
     s2.arg = 0;
     if (o1->kind == 0) {
         h = p->bld2;
-        if (h != 0 && ai_BTypesT[h->type].kind == 2 && (h->flags5a & 0x41) == 0) {
-            t = ai_BTypesT[h->type].cap247;
+        if (h != 0 && ai_BTypes[h->type].kind == 2 && (h->flags5a & 0x41) == 0) {
+            t = ai_BTypes[h->type].cap247;
             if (t < 2 || t == 3) {
                 int price;
 
@@ -2714,7 +2713,7 @@ found:
         s1 = *o1;
         if (h != 0) {
             t = h->type;
-            if (ai_BTypesT[h->type].kind != 2)
+            if (ai_BTypes[h->type].kind != 2)
                 return 0;
             if (o1->ref - t != 1)
                 return 0;
@@ -2740,7 +2739,7 @@ found:
             *o2 = s2;
             return 0x11;
         } else {
-            if (ai_BTypesT[o1->ref].kind != 2)
+            if (ai_BTypes[o1->ref].kind != 2)
                 return 0;
             if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
                 return 0;
@@ -5232,7 +5231,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
-        if (k == 0 || ai_BTypesT[rec->type].kind != 1)
+        if (k == 0 || ai_BTypes[rec->type].kind != 1)
             continue;
         fl = rec->flags5aw;     /* the original tests fl again below (no threading of the first test) */
         if (rec->flags5aw & 0x45)
@@ -5672,7 +5671,7 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     rec = ai_BldsT;
     for (i = 0; i < 0x100; i++, rec++) {
-        if (rec->type == 0 || ai_BTypesT[rec->type].kind != 3 || (rec->flags5a & 4))
+        if (rec->type == 0 || ai_BTypes[rec->type].kind != 3 || (rec->flags5a & 4))
             continue;
         lvl = rec->level;
         if (lvl < util_Random(0x40) + 0x25) {
@@ -5919,8 +5918,8 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         j = util_Random(0x100);
         for (;;) {
             own = &ai_BldsT[j];
-            if (own->type != 0 && own->owner == p->id && ((1 << ai_BTypesT[own->type].kind) & AI_CREDIT_KINDS)
-                && own->budget < lim[ai_BTypesT[own->type].cap247])
+            if (own->type != 0 && own->owner == p->id && ((1 << ai_BTypes[own->type].kind) & AI_CREDIT_KINDS)
+                && own->budget < lim[ai_BTypes[own->type].cap247])
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
@@ -5931,7 +5930,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         j = util_Random(0x100);
         for (;;) {
             b = &ai_BldsT[j];
-            if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
+            if (b->type != 0 && b->owner != p->id && ai_BTypes[b->type].kind == 5)
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
@@ -5969,7 +5968,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     j = util_Random(0x100);
     for (;;) {
         b = &ai_BldsT[j];
-        if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
+        if (b->type != 0 && b->owner != p->id && ai_BTypes[b->type].kind == 5)
             break;
         i--;
         j = (j + lim[0]) % 0x100;
@@ -6103,7 +6102,7 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     for (k = 0; k < 0x100; k++) {
         if (ai_BldsT[k].type != 0) {
-            bt = &ai_BTypesT[ai_BldsT[k].type];
+            bt = &ai_BTypes[ai_BldsT[k].type];
             cnt[gm_BuildingJob((unsigned char)bt->kind)]++;
         }
     }
@@ -6324,7 +6323,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
         for (j = 0; j < 0x100; j++) {
             b = &ai_BldsT[j];
             if (b->type != 0 && b->owner != 0xffff) {
-                bt = &ai_BTypesT[b->type];
+                bt = &ai_BTypes[b->type];
                 k.LowPart = 0;
                 k.HighPart = 0;
                 if ((unsigned char)bt->kind > 0x1f)
@@ -6339,7 +6338,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
                     all[g] += bt->cap247;
                     if (best[g] == 0)
                         best[g] = b->type;
-                    else if (bt->cap247 > ai_BTypesT[best[g]].cap247)
+                    else if (bt->cap247 > ai_BTypes[best[g]].cap247)
                         best[g] = b->type;
                 }
             }
@@ -6855,7 +6854,7 @@ credit:
         *o2 = b2;
         return n;
     }
-    t = &ai_BTypesT[bl->type];
+    t = &ai_BTypes[bl->type];
     if (bl->flags5a & 0x45)
         return 0;
     if (t->cap247 >= t->maxLevel)

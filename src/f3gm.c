@@ -483,7 +483,7 @@ void gm_CharacterUpkeep(void)
         }
         if (c->id == 0xffff || c->health == 0 || c->kind != 0 || c->bld2 == 0)
             continue;
-        b = ai_BTypes + c->bld2->type * 0x24d;
+        b = (char *)ai_BTypes + c->bld2->type * 0x24d;
         v = gm_GetGoodsValue((char *)c);
         if (v < 0) {
             if (c->bld == 0 && c->partner == -1 && abs(v) > rate * 2) {
@@ -2254,7 +2254,7 @@ char *gm_HomeObject(unsigned char *b)
     char *o = 0;
     char *type;
 
-    type = ai_BTypes + bld->type * 0x24d;
+    type = (char *)ai_BTypes + bld->type * 0x24d;
     if (*type == 1)
         o = gm_Query((void *)bld->objList, 1, o, 0x12);
     else if (*type == 2)
@@ -2288,7 +2288,7 @@ char *gm_CharacterHome(char *c, int *out2, int *out3)
     i = gm_HomeSearchStart;
     for (; n != 0; n--) {
         if (((ORDBLD *)ai_Blds)[i].type != 0) {
-            type = ai_BTypes + ((ORDBLD *)ai_Blds)[i].type * 0x24d;
+            type = (char *)ai_BTypes + ((ORDBLD *)ai_Blds)[i].type * 0x24d;
             if (*type == 3 || *type == 0x16 || *type == 0x0f) {
                 gm_HomeSearchStart = i + 1;
                 *out3 = -1;

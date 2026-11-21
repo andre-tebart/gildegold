@@ -33,7 +33,7 @@ char *ahm_OwnerChar(unsigned char *p)
 {
     AHMOBJ *o = (AHMOBJ *)p;
 
-    if (ai_BTypes[o->kind * 0x24d] == 0x1e && o->rec != 0)
+    if (ai_BTypes[o->kind].kind == 0x1e && o->rec != 0)
         return (char *)gm_FindChar(o->rec->id);
     return 0;
 }
@@ -62,7 +62,7 @@ int ahm_HasRecord(char *c)
     AHMCHAR *ch = (AHMCHAR *)c;
 
     if ((c[0x1cc] & 4) != 0 && ch->obj != 0) {
-        if (ai_BTypes[ch->obj->kind * 0x24d] == 0x1e)
+        if (ai_BTypes[ch->obj->kind].kind == 0x1e)
             return ch->obj->rec != 0;
         return 0;
     }
@@ -791,7 +791,7 @@ int ahm_CreateAlchemist(AHMCREATEMSG *m)
     gm_FindById((int *)&o, 0, 0, m->building);
     if (o == 0)
         return 0xffff;
-    if (ai_BTypes[o->type * 0x24d] != 0x1e)
+    if (ai_BTypes[o->type].kind != 0x1e)
         return 0xffff;
     for (n = 0; n < 0x300; n++)
         if (ai_CharsT[n].id == 0xffff)
@@ -1167,7 +1167,7 @@ int ahm_ReadRecord(void *f, unsigned char *o)
 }
 
 extern char ai_Chars[768][0x21c];
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern signed char ai_Relations[768][768];
 extern signed char ai_RelationMemory[768][768];
 int ahm_Tab[8] = { 1, 3, 7, 11, 13, 17, 19, 21 };  /* 0x60f1b0 */
@@ -1185,7 +1185,7 @@ AHMGRID * ai_PlayerPrototypes = 0;  /* 0x6f0e2c */
 int ai_RecipePrototypeCount = 0;  /* 0x6f0e30 */
 AHMGRID * ai_RecipePrototypes = 0;  /* 0x6f0e34 */
 extern char ai_Chars[768][0x21c];
-extern char * ai_BTypes;
+extern struct AIBTYPE *ai_BTypes;
 extern signed char ai_Relations[768][768];
 extern signed char ai_RelationMemory[768][768];
 extern unsigned short d2_HighBitMask;

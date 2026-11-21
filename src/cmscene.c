@@ -95,7 +95,6 @@ unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: tr.c defi
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
@@ -3413,7 +3412,7 @@ void cm_RunAuction(G28REC *m)
     cm_PlaySpecialTrack(0);
     if (b == 0)
         return;
-    t = &ai_BTypesT[b->type];
+    t = &ai_BTypes[b->type];
     if (t->kind == 0xb)
         sprintf(kindName, "%s", "WALDSTUECK");
     else if (t->kind == 0xd)
@@ -3771,11 +3770,11 @@ void cm_ShowObjectScene(char *o, int id)
                 init_ShowBuildingScene(o, id);
             }
         } else {
-            k = (unsigned char)ai_BTypesT[b->type].kind;
+            k = (unsigned char)ai_BTypes[b->type].kind;
             if (init_BuildingUniverse[k] != 0) {
                 if (init_BuildingUniverse[k] == (char)0xff || init_SceneDirty[init_BuildingUniverse[k] * 0x3e0] != 0)
                     init_LoadBuildingScene(k);
-                k = (unsigned char)ai_BTypesT[b->type].kind;
+                k = (unsigned char)ai_BTypes[b->type].kind;
                 d3if_SelectScene(init_BuildingUniverse[k], 0);
                 init_ShowBuildingScene(o, 0xfd);
             }

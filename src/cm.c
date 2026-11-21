@@ -118,7 +118,6 @@ extern GAPDATA full_data_602568[];
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
-#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define CM_KEEPER_FLAG 0x800000     /* flags1c8 bit 23 (he.c HE_LOVER_FLAG: has a keeper; f3gm.c ORD_F1C8_ANEW): message 0x19
@@ -4278,7 +4277,7 @@ int cm_ExSetPlant(G17MSG *m, G17STAT *s)
         } else if (m->plant.fallId != -1) {
             o = veg_FindPlantAt((G15PLANT *)b->plants, m->plant.x, m->plant.z);
             if (o != 0 && o->fallId == m->plant.fallId) {
-                d3if_SelectScene(init_BuildingUniverse[(unsigned char)ai_BTypesT[b->type].kind], 1);
+                d3if_SelectScene(init_BuildingUniverse[(unsigned char)ai_BTypes[b->type].kind], 1);
                 d3if_Delete((struct D3OBJECT *)o->obj);
                 o->obj = 0;
                 veg_LoadModel(o, 0);
@@ -4293,7 +4292,7 @@ int cm_ExSetPlant(G17MSG *m, G17STAT *s)
             return 0;
         }
         if (fits != 0) {
-            d3if_SelectScene(init_BuildingUniverse[(unsigned char)ai_BTypesT[b->type].kind], 1);
+            d3if_SelectScene(init_BuildingUniverse[(unsigned char)ai_BTypes[b->type].kind], 1);
             o = veg_SetPlant((G15PLANT *)b->plants, m->plant.x, m->plant.z, m->plant.type, m->plant.fall);
             d3if_SelectScene(save, 1);
         }
@@ -4948,7 +4947,7 @@ int cm_ExSetHome(G17MSG *m, G17STAT *s)
     c = (AICHAR *)gm_FindChar(m->home.charId);
     if (c == 0 && m->home.charId != -1)
         return 1;
-    if (ai_BTypesT[b->type].kind == 1) {
+    if (ai_BTypes[b->type].kind == 1) {
         ord_GetKindRecord(b->type, kind);
         if (b->residents >= (unsigned short)kind[0])
             return 1;
@@ -4956,7 +4955,7 @@ int cm_ExSetHome(G17MSG *m, G17STAT *s)
     }
     o = c->bld2;
     if (o != 0) {
-        if (ai_BTypesT[o->type].kind == 1 && o->residents > 0)
+        if (ai_BTypes[o->type].kind == 1 && o->residents > 0)
             o->residents--;
     }
     c->bld2 = b;
@@ -4991,7 +4990,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
     b = (AIBLD *)gm_BuildQuery(1, 1, m->upgrade.bldId);
     if (b == 0)
         return 1;
-    t = &ai_BTypesT[b->type];
+    t = &ai_BTypes[b->type];
     if (t->cap247 >= t->maxLevel) {
         err_Message("cm_ExSetGebUpgrade(): already highest level");
         return 1;
@@ -5003,7 +5002,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
     if (t->kind == 0x1d)
         gv_GrowGraveyard((unsigned char *)b);
     strcpy(name, "gb_");
-    strcat(name, ai_BTypesT[b->type].name);
+    strcat(name, ai_BTypes[b->type].name);
     strupr(name + 2);
     for (i = 0; i < 4; i++) {
         if (t->kind == 0x21) {
@@ -5610,7 +5609,7 @@ int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
         char name[MAX_PATH];
 
         strcpy(name, "gb_");
-        strcat(name, ai_BTypesT[b->type].name);
+        strcat(name, ai_BTypes[b->type].name);
         strupr(name + 2);
         for (i = 0; i < 4; i++) {
             if (i != 0)
