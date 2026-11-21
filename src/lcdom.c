@@ -2482,7 +2482,8 @@ int ai_AskHelperBonus(void)
    page 1 the bonus (ai_AskHelperBonus split over the helpers, the group "pay_worker"), the master row following
    the building's master and a click on it (the hire button 0x1a22 sends the master request 7 with the text
    0x1939, the fire button 0x1a21 the message 0x31 after the question 0x1a36). The helper rows are refilled from
-   gm_ListWorkers' third list (the characters without a job) as in the mercenary book; a click on a helper offers
+   gm_ListWorkers' second list (the workers of the type's second title, those without a job; the mercenary book
+   reads the third list); a click on a helper offers
    the dismissal 0x413f, which after the question 0x4140 takes 1000 of its health (gm_AddHealth). At the end the
    radio group is cleared, the book closed and the camera follows
    @deep Written whole from the original (was a stub): the helpers' book (ob_GEHILFENBUCH), the mercenary
@@ -2742,7 +2743,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
             rows[k].ch = 0;
         nWorkers = gm_ListWorkers((unsigned char *)bld, workers);
         for (i = 0; i < 12; i++) {
-            v = workers[0x19 + i];
+            v = workers[0xd + i];
             if (v != 0xffff && ((AICHARREC *)ai_Chars[v])->jobId == 0) {
                 for (k = 0; k < n; k++)
                     if (rows[k].ch == (AICHARREC *)ai_Chars[v])
