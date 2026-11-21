@@ -84,7 +84,6 @@ struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_Select
 
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern unsigned char kb_Last;  /* 0x1468410 */
-/* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 #define sv_D2Objs d2_Objs  /* 0xf8f080, the typed view d2.h gives it (D2OBJ *) */
 
 extern int sv_ViewShape;  /* 0x6f22c0 */

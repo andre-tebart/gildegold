@@ -360,7 +360,7 @@ void ai_MasterUpdate(AICHAR *c)
             ai_FillNearRing(c);
             sel = c->act;
             if (!c->heldRounds) {
-                if (ai_ChooseAction(c->id) && (c->act != sel || (ai_ActionFlags[c->act][0] & 0x200)))
+                if (ai_ChooseAction(c->id) && (c->act != sel || (ai_Actions[c->act].flags & 0x200)))
                     ai_ExecuteAction(c->id);
             }
             ai_Partner = 0;
@@ -6091,7 +6091,6 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 AICHAR * ai_Partner = 0;  /* 0x6f0468 */
 int ai_TradeMsgCount = 0;  /* 0x6f046c, the trade messages sent since the last reset */
 extern AIGRID ai_Grid[8][8];
-/* ai_ActionFlags: view of ai_Actions (tools/data_views.py) */
 int ai_TradeMsgOff;  /* 0xf86a24, read-only in every source: nonzero suppresses the trade
                                            message and its count (never set in this build) */
 int ai_NSlots;  /* 0xf86a28 */

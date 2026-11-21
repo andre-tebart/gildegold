@@ -13,12 +13,6 @@
 #define ai_Selected              (*(char (*)[132])((char *)&ai_Chars + 0x188))  /* 0x770d08 */
 #define ai_Unk770d8c             (*(char (*)[414196])((char *)&ai_Chars + 0x20c))  /* 0x770d8c */
 
-/* d2_Radios */
-#define d2_RadioSel              (*(int (*)[278])((char *)&d2_Radios + 0x8))  /* 0xfa5aa8 */
-
-/* ai_Actions */
-#define ai_ActionFlags           (*(unsigned int (*)[22][37])((char *)&ai_Actions + 0x90))  /* 0xf83f50 */
-
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */
 

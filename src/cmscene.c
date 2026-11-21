@@ -5187,7 +5187,7 @@ int cm_MessageBox(int id, int flags)
         if (flags & 0x40)
             d2_RaiseViewWindows(win);
         if (d2_ClickedId == 0 && d2_HitWindow == textwin) {
-            ret = d2_RadioSel[radio * 35] + 1;
+            ret = d2_Radios[radio].sel + 1;
             sv_PopRequest = 1;
         } else if (d2_ClickedId == 1 && d2_HitWindow == textwin || kb_Last == 1) {
             ret = 0;

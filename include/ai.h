@@ -253,9 +253,6 @@ extern int ai_Difficulty;                 /* 0x6f23fc, the game difficulty 0 .. 
 extern AISTORE gm_Offers[];          /* 0x7e4b20 */
 extern AIGRID ai_Grid[8][8];            /* 0x91ae60 */
 extern char *cm_FieldObject;              /* 0xa68d2c */
-#ifndef DATA_VIEWS_H
-extern unsigned int ai_ActionFlags[][37]; /* 0xf83f50, 0x94 byte entries, flags first */
-#endif
 extern int ai_TradeMsgOff;              /* 0xf86a24, read-only in every source: nonzero suppresses the trade
                                            message and its count (never set in this build) */
 extern AIOBJ *ai_Carts[16];             /* 0xf89540, the master's kind-0x1d cart objects without a running
