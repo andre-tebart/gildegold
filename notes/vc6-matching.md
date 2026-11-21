@@ -6050,6 +6050,10 @@ the bytes no portable form gives.
   definition must return int (`mov eax,edx` / `xor eax,eax`; unsigned short gives `mov ax,dx`), and
   `(unsigned short)util_Random(n)` gives `mov esi,eax; and esi,0xffff` (106 functions fall): the original's
   units saw a 16-bit return type. util_RandomU / util_RandomS stay @original.
+- **Identifiers that a Windows SDK header defines as macros**: mingw's windows.h includes dlgs.h, which
+  defines `ctl1` (0x04A0) and the `cmb*` / `lst*` / `stc*` / `scr*` .. control ids (VC98's DLGS.H has no ctl1).
+  Do not name locals after them; lc.c / rt.c's ctl1 / ctl2 locals are exchangeCtl / feeCtl and loadCtls /
+  unloadCtls (renaming locals left every grade unchanged).
 - **`__asm` reading the parameters (`mov eax,[ebp+8]`)**: name them (`mov eax,x`); VC6 assembles the name to
   the same frame operand (d2_ShpBlit8, d2_ShpBlit8To16, d2_ShpBlit16ClipY / ClipXY, d2_ShpDarken16 byte).
 

@@ -8959,8 +8959,8 @@ void ai_ExchangeWindow(AIBLD *bank)
 void ai_ExchangeFeesWindow(AIBLD *bank)
 {
     int win;
-    int ctl1;
-    int ctl2;
+    int exchangeCtl;
+    int feeCtl;
     int text;
 
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_WechselGebuehren");
@@ -8969,10 +8969,10 @@ void ai_ExchangeFeesWindow(AIBLD *bank)
     io_PrintText(0x1908);
     d2_SetForm(win, 1);
     text = io_PrintText(0x1907);
-    ctl1 = d2_GetWinObj(win, 1, text);
-    ctl2 = d2_GetWinObj(win, 1, text + 1);
-    d2_SetObjValue4(ctl2, 3, 0xf, bank->messengerFee);
-    d2_SetObjValue4(ctl1, 3, 0xf, bank->exchangeFee);
+    exchangeCtl = d2_GetWinObj(win, 1, text);
+    feeCtl = d2_GetWinObj(win, 1, text + 1);
+    d2_SetObjValue4(feeCtl, 3, 0xf, bank->messengerFee);
+    d2_SetObjValue4(exchangeCtl, 3, 0xf, bank->exchangeFee);
     for (;;) {
         if (sv_RunFrame(ai_ExchangeFeesWindow, 0x677c7) == 0) {
             d2_CloseView(win);
@@ -8981,8 +8981,8 @@ void ai_ExchangeFeesWindow(AIBLD *bank)
         if (dm_L.rup != 0 || d2_ClickedId == 1)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
-            int fee = d2_GetObjValue(ctl2);
-            int exchange = d2_GetObjValue(ctl1);
+            int fee = d2_GetObjValue(feeCtl);
+            int exchange = d2_GetObjValue(exchangeCtl);
             cm_BeginFieldBlock((char *)bank, bank->id);
             cm_AddFieldDelta(4, 1, 0x69, &fee);
             cm_AddFieldDelta(4, 1, 0x6d, &exchange);

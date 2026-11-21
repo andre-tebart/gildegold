@@ -577,7 +577,7 @@ void rt_InitControls(int *out)
    objs1 stores from 'or edx,-1', objs2 from 'or eax,-1'; ours one 'or eax,-1'): objs1/objs2 interleaved
    (35 ins, slots 2), objs2 first (35), chained a=b=c=-1 (37) / reversed chain (= control), objs2[k] =
    objs1[k] (= control), gm_ListStock after the inits (50) or between them (41). Left: +0x147 code hunk
-   (the second -1 register and the rt_InitControls loop's ecx/eax for ctl1/ctl2), regs eax->edx edx->ecx
+   (the second -1 register and the rt_InitControls loop's ecx/eax for loadCtls/unloadCtls), regs eax->edx edx->ecx
    after it, order hunks at +0x4e8/+0x523 (mov edi,1/2 after mov ebx,ecx in the original) and +0x653. Park
    for the unit's declaration pass. (tiebreak: sensitive) */
 
@@ -599,8 +599,8 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     int a;
     int objs1[3];
     int objs2[3];
-    int ctl1[3][3];
-    int ctl2[3][3];
+    int loadCtls[3][3];
+    int unloadCtls[3][3];
     int offs[9];
     int o;
     int i;
@@ -638,8 +638,8 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     for (i = 0; i < 3; i++)
         objs2[i] = -1;
     for (i = 0; i < 3; i++) {
-        rt_InitControls(ctl1[i]);
-        rt_InitControls(ctl2[i]);
+        rt_InitControls(loadCtls[i]);
+        rt_InitControls(unloadCtls[i]);
     }
     d2_WinOpenPic(0x6e, 0x1a, cart->id + 0x4ae, v2);
     o = d2_CreateWinText(0x6e, 2, txt_RouteLoadHead, v2);
@@ -679,34 +679,34 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
         else
             d2_SetObjEnabled(del, 0);
         for (i = 0; i < 3; i++) {
-            if (ctl1[i][1] == -1 && p->loadSlots[i * 2] != 0) {
-                rt_OpenSlotControls(cart, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
-                d2_SetObjValue4(ctl1[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
+            if (loadCtls[i][1] == -1 && p->loadSlots[i * 2] != 0) {
+                rt_OpenSlotControls(cart, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, loadCtls[i]);
+                d2_SetObjValue4(loadCtls[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
             }
-            if (ctl1[i][2] != -1)
-                d2_SetObjValue4(ctl1[i][2], 0, a, d2_GetObjValue(ctl1[i][1]));
+            if (loadCtls[i][2] != -1)
+                d2_SetObjValue4(loadCtls[i][2], 0, a, d2_GetObjValue(loadCtls[i][1]));
         }
         for (i = 0; i < 3; i++) {
-            if (ctl2[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
-                rt_OpenSlotControls(cart, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
-                d2_SetObjValue4(ctl2[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
+            if (unloadCtls[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
+                rt_OpenSlotControls(cart, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, unloadCtls[i]);
+                d2_SetObjValue4(unloadCtls[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
             }
-            if (ctl2[i][2] != -1)
-                d2_SetObjValue4(ctl2[i][2], 0, a, d2_GetObjValue(ctl2[i][1]));
+            if (unloadCtls[i][2] != -1)
+                d2_SetObjValue4(unloadCtls[i][2], 0, a, d2_GetObjValue(unloadCtls[i][1]));
         }
         if (d2_ClickedId != -1) {
             kind = 0;
             for (i = 0; i < 3; i++) {
                 if (objs1[i] != -1 && objs1[i] == d2_PointerObj) {
                     sel = &p->loadSlots[i * 2];
-                    selc = ctl1[i];
+                    selc = loadCtls[i];
                     kind = 1;
                 }
             }
             for (i = 0; i < 3; i++) {
                 if (objs2[i] != -1 && objs2[i] == d2_PointerObj) {
                     sel = &p->unloadSlots[i * 2];
-                    selc = ctl2[i];
+                    selc = unloadCtls[i];
                     kind = 2;
                 }
             }
@@ -750,12 +750,12 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     }
     if (p != 0) {
         for (i = 0; i < 3; i++) {
-            if (ctl1[i][1] != -1)
-                p->loadSlots[i * 2 + 1] = d2_GetObjValue(ctl1[i][1]);
+            if (loadCtls[i][1] != -1)
+                p->loadSlots[i * 2 + 1] = d2_GetObjValue(loadCtls[i][1]);
         }
         for (i = 0; i < 3; i++) {
-            if (ctl2[i][1] != -1)
-                p->unloadSlots[i * 2 + 1] = d2_GetObjValue(ctl2[i][1]);
+            if (unloadCtls[i][1] != -1)
+                p->unloadSlots[i * 2 + 1] = d2_GetObjValue(unloadCtls[i][1]);
         }
     }
     d2_CloseView(w);

@@ -2099,7 +2099,7 @@ exe	0x004be3b0	rt_ChooseTabGood	rt	ebc2e91f70e75ed8	no	shape	sweep control=shape
 exe	0x004be790	rt_Unk4be790	rt	c8bd5cb0a485e1fd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004be8e0	rt_RemoveControls	rt	8ea0d8e150852615	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004be930	rt_InitControls	rt	555f76e1152b87b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004be940	rt_EditPointDialog	rt	9e6eef14d97b2fc2	yes	byte	sweep control=shape best=byte by 5 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	1d984c1f73a73a41
+exe	0x004be940	rt_EditPointDialog	rt	cb0a9a43ccf97a8d	yes	byte	sweep control=shape best=byte by 3 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	b40cc3c61edac9e2
 exe	0x004bf080	rt_CartSettingsDialog	rt	24a704aa4cb8c6c2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e60787fccaf24ae2
 exe	0x004bf360	rt_SetMarkPic	rt	a82a9d6be6e6b746	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	6bc939f147bce261	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
